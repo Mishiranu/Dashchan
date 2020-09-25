@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+	<item type="id" name="drawer_recycler_view" />
+
 	<item type="id" name="menu_add_post" />
 	<item type="id" name="menu_add_theme" />
 	<item type="id" name="menu_appearance" />

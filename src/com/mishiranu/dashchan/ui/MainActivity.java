@@ -36,7 +36,6 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
@@ -123,7 +122,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	private final WatcherService.Client watcherServiceClient = new WatcherService.Client(this);
 	private DownloadDialog downloadDialog;
 
-	private RecyclerView drawerRecyclerView;
 	private DrawerForm drawerForm;
 	private FrameLayout drawerParent;
 	private DrawerLayout drawerLayout;
@@ -191,10 +189,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		drawerCommon.setBackgroundColor(drawerBackground);
 		drawerWide.setBackgroundColor(drawerBackground);
 		drawerForm = new DrawerForm(drawerContext, this, configurationLock, watcherServiceClient);
-		drawerRecyclerView = drawerForm.getRecyclerView();
-		drawerRecyclerView.setId(android.R.id.tabcontent);
 		drawerParent = new FrameLayout(this);
-		drawerParent.addView(drawerRecyclerView);
+		drawerParent.addView(drawerForm.getContentView());
 		drawerCommon.addView(drawerParent);
 		drawerLayout = findViewById(R.id.drawer_layout);
 		drawerLayout.setSaveEnabled(false);
@@ -260,7 +256,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 		updateWideConfiguration(true);
 		expandedScreen = new ExpandedScreen(expandedScreenInit, drawerLayout, toolbarLayout, drawerInterlayer,
-				drawerParent, drawerRecyclerView, drawerForm.getHeaderView());
+				drawerParent, drawerForm.getContentView(), drawerForm.getHeaderView());
 		expandedScreen.setDrawerOverToolbarEnabled(!wideMode);
 		uiManager = new UiManager(this, this, () -> downloadBinder, configurationLock);
 		ViewGroup contentFragment = findViewById(R.id.content_fragment);
@@ -982,9 +978,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		watcherServiceClient.updateConfiguration(chanName);
 		drawerForm.updateConfiguration(chanName);
 		invalidateHomeUpState();
-		if (!wideMode && !drawerLayout.isDrawerOpen(GravityCompat.START)) {
-			drawerRecyclerView.scrollToPosition(0);
-		}
 	}
 
 	@Override

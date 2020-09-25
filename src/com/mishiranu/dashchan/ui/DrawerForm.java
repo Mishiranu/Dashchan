@@ -163,6 +163,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		watcherViewColorSet = new WatcherView.ColorSet(enabledColor, unavailableColor, disabledColor);
 
 		recyclerView = new PaddedRecyclerView(context);
+		recyclerView.setId(R.id.drawer_recycler_view);
 		recyclerView.setMotionEventSplittingEnabled(false);
 		recyclerView.setClipToPadding(false);
 		recyclerView.setEdgeEffectShift(this);
@@ -358,7 +359,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		updateConfiguration(chanName, false);
 	}
 
-	public RecyclerView getRecyclerView() {
+	public View getContentView() {
 		return recyclerView;
 	}
 
