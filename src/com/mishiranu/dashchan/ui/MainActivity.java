@@ -627,8 +627,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		} else {
 			Uri uri = intent.getData();
 			if (uri != null) {
-				if (!intent.getBooleanExtra(C.EXTRA_FROM_CLIENT, false)) {
-					navigateIntentUri(uri);
+				if (intent.getBooleanExtra(C.EXTRA_FROM_CLIENT, false) || !navigateIntentUri(uri)) {
+					ToastUtils.show(this, R.string.unknown_address);
 				}
 			} else {
 				String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
@@ -642,7 +642,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 	}
 
-	private void navigateIntentUri(Uri uri) {
+	private boolean navigateIntentUri(Uri uri) {
 		String chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
 		if (chanName != null) {
 			ChanLocator locator = ChanLocator.get(chanName);
@@ -654,17 +654,17 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			if (boardUri) {
 				navigateIntentData(chanName, boardName, null, null, null, null,
 						NavigationUtils.FLAG_RETURNABLE);
-				return;
+				return true;
 			} else if (threadUri) {
 				navigateIntentData(chanName, boardName, threadNumber, postNumber, null, null,
 						NavigationUtils.FLAG_RETURNABLE);
-				return;
+				return true;
 			} else if (locator.isImageUri(uri)) {
 				navigateGalleryUri(uri);
-				return;
+				return true;
 			} else if (locator.isAudioUri(uri)) {
 				AudioPlayerService.start(this, chanName, uri, locator.createAttachmentFileName(uri));
-				return;
+				return true;
 			} else if (locator.isVideoUri(uri)) {
 				String fileName = locator.createAttachmentFileName(uri);
 				if (NavigationUtils.isOpenableVideoPath(fileName)) {
@@ -673,14 +673,14 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 					NavigationUtils.handleUri(this, chanName, locator.convert(uri),
 							NavigationUtils.BrowserType.EXTERNAL);
 				}
-				return;
+				return true;
 			} else if (Preferences.isUseInternalBrowser()) {
 				NavigationUtils.handleUri(this, chanName, locator.convert(uri),
 						NavigationUtils.BrowserType.INTERNAL);
-				return;
+				return true;
 			}
 		}
-		ToastUtils.show(this, R.string.unknown_address);
+		return false;
 	}
 
 	private static boolean isSingleBoardMode(String chanName) {
