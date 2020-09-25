@@ -141,13 +141,12 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
 		super.onLayout(changed, l, t, r, b);
 
-		Adapter<?> adapter = getAdapter();
-		boolean allowFastScrolling = fastScrollerEnabled && adapter != null && adapter.getItemCount() >= 15;
-		updateFastScroller(allowFastScrolling, regularScrolling, fastScrolling);
-
+		int range = computeVerticalScrollRange();
+		int extent = computeVerticalScrollExtent();
+		boolean allowFastScrolling = extent > 0 && range >= 2 * extent;
+		updateFastScroller(allowFastScrolling && fastScrollerEnabled, regularScrolling, fastScrolling);
 		// OVER_SCROLL_IF_CONTENT_SCROLLS it not supported, see https://issuetracker.google.com/issues/37076456
-		boolean hasOverScroll = computeVerticalScrollRange() > computeVerticalScrollExtent();
-		setOverScrollMode(hasOverScroll ? OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
+		setOverScrollMode(range > extent ? OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
 	}
 
 	private final Runnable invalidateRunnable = this::invalidate;
