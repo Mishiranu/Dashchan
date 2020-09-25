@@ -27,15 +27,6 @@ public class CommonUtils {
 		}
 	}
 
-	// TODO CHAN
-	// Remove method after updating
-	// endchan
-	// Added: 24.08.20 00:02
-	@Public
-	public static boolean sleepMaxTime(long startTime, long interval) {
-		return sleepMaxRealtime(SystemClock.elapsedRealtime() - System.currentTimeMillis() + startTime, interval);
-	}
-
 	@Public
 	public static String optJsonString(JSONObject jsonObject, String name) {
 		return optJsonString(jsonObject, name, null);

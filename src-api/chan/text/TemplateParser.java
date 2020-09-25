@@ -1,36 +1,19 @@
-/*
- * Copyright 2016-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package chan.text;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import android.util.Pair;
-
 import chan.annotation.Extendable;
 import chan.annotation.Public;
 import chan.util.StringUtils;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 // TODO CHAN
-// Make internal builder methods private and remove dynamic safety check after updating alphachan alterchan arhivach
-// bonzibuddy britfags bunbunmaru candydollchan chaosach chiochan desustorage exach fourplebs freeportseven gurochan
-// haibane infinite kropyvach nowere nulldvachnet nulleu nullnyan nulltirech onechanca ozuchan ponyach randomarchive
-// sevenchan tiretirech uboachan valkyria xyntach
-// Added: 07.03.17 22:33
+// Remove this class after updating
+// alphachan alterchan arhivach brchan candydollchan chaosach chiochan dangeru dobrochan erlach exach fiftyfive
+// fourplebs haibane kropyvach lainchan lolifox nulltirech onechanca ponyach randomarchive sevenchan synch taima
+// tiretirech twentyseven uboachan valkyria wizardchan
+// Added: 24.09.20 08:23
+@SuppressWarnings("ALL")
 @Public
 public final class TemplateParser<H> {
 	private final HashMap<String, ArrayList<AttributeMatcher<H>>> openMatchers = new HashMap<>();

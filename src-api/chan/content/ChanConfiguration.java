@@ -85,7 +85,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 
 	// TODO CHAN
 	// Remove this field after updating
-	// allchan arhivach cablesix dvach fourchan meguca ronery sevenchan tumbach
+	// allchan arhivach sevenchan tumbach
 	// Added: 28.07.20 22:23
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_1 = "recaptcha_1";
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_2 = "recaptcha_2";

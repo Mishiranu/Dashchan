@@ -11,7 +11,6 @@ import chan.content.model.BoardCategory;
 import chan.content.model.Post;
 import chan.content.model.Posts;
 import chan.content.model.ThreadSummary;
-import chan.content.model.Threads;
 import chan.http.ChanFileOpenable;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
@@ -222,18 +221,6 @@ public class ChanPerformer implements ChanManager.Linked {
 		public ReadThreadsResult setValidator(HttpValidator validator) {
 			this.validator = validator;
 			return this;
-		}
-
-		// TODO CHAN
-		// Remove this constructor after updating
-		// apachan
-		// Added: 24.08.16 03:39
-		@Public
-		public ReadThreadsResult(Threads threads) {
-			this(threads != null ? threads.getThreads() : null);
-			if (threads != null) {
-				boardSpeed = threads.getBoardSpeed();
-			}
 		}
 	}
 
