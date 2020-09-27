@@ -429,6 +429,26 @@ public class ChanManager {
 		sortedExtensionNames = null;
 	}
 
+	private static class LegacyPathClassLoader extends PathClassLoader {
+		public LegacyPathClassLoader(String dexPath, String librarySearchPath, ClassLoader parent) {
+			super(dexPath, librarySearchPath, parent);
+		}
+
+		@Override
+		protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+			if ("chan.text.TemplateParser".equals(name) ||
+					name != null && name.startsWith("chan.text.TemplateParser$")) {
+				// TemplateParser is moved to the library, workaround is required for 4.4 or lower
+				try {
+					return findClass(name);
+				} catch (ClassNotFoundException e) {
+					// Extension still uses API class
+				}
+			}
+			return super.loadClass(name, resolve);
+		}
+	}
+
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private ChanHolder loadChan(ExtensionItem chanItem, PackageManager packageManager) {
 		if (chanItem.supported) {
@@ -438,8 +458,16 @@ public class ChanManager {
 				if (nativeLibraryDir != null && !new File(nativeLibraryDir).exists()) {
 					nativeLibraryDir = null;
 				}
-				ClassLoader classLoader = new PathClassLoader(chanItem.applicationInfo.sourceDir, nativeLibraryDir,
-						ChanManager.class.getClassLoader());
+				ClassLoader classLoader;
+				if (C.API_LOLLIPOP) {
+					// Don't use LegacyPathClassLoader on Lollipop,
+					// overriding loadClass method leads to incomprehensible failures
+					classLoader = new PathClassLoader(chanItem.applicationInfo.sourceDir, nativeLibraryDir,
+							ChanManager.class.getClassLoader());
+				} else {
+					classLoader = new LegacyPathClassLoader(chanItem.applicationInfo.sourceDir, nativeLibraryDir,
+							ChanManager.class.getClassLoader());
+				}
 				Resources resources = packageManager.getResourcesForApplication(chanItem.applicationInfo);
 				ChanConfiguration configuration = ChanConfiguration.INITIALIZER.initialize(classLoader,
 						chanItem.classConfiguration, chanName, resources);

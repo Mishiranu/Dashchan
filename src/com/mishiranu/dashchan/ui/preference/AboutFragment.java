@@ -317,6 +317,9 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 						break;
 					}
 				}
+				if (result == null) {
+					result = downloadChangelog(Locale.US.getLanguage().toUpperCase(Locale.US));
+				}
 				if (result != null) {
 					result = ChangelogGroupCallback.parse(result);
 				}

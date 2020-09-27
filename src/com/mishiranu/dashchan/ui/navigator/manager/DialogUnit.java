@@ -1307,6 +1307,9 @@ public class DialogUnit {
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(context);
 		if (linearLayout.getChildCount() > 0) {
+			ScrollView scrollView = new ScrollView(context);
+			scrollView.addView(linearLayout, ScrollView.LayoutParams.MATCH_PARENT,
+					ScrollView.LayoutParams.WRAP_CONTENT);
 			int resId = 0;
 			switch (state.operation) {
 				case DELETE: {
@@ -1323,7 +1326,7 @@ public class DialogUnit {
 				}
 			}
 			builder.setTitle(resId);
-			builder.setView(linearLayout);
+			builder.setView(scrollView);
 		} else {
 			if (!firstTime){
 				return;

@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.SystemClock;
+import android.provider.DocumentsContract;
 import android.util.Pair;
 import android.view.ActionMode;
 import android.view.ContextThemeWrapper;
@@ -1791,11 +1792,15 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				.setMessage(R.string.saf_instructions__sentence)
 				.setPositiveButton(R.string.proceed, (d, w) -> {
 					storageRequestState = StorageRequestState.PICKER;
+					Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+							.putExtra("android.provider.extra.SHOW_ADVANCED", true)
+							.putExtra("android.content.extra.SHOW_ADVANCED", true);
+					if (C.API_OREO) {
+						intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, DocumentsContract
+								.buildRootUri("com.android.externalstorage.documents", "primary"));
+					}
 					try {
-						startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-								.putExtra("android.provider.extra.SHOW_ADVANCED", true)
-								.putExtra("android.content.extra.SHOW_ADVANCED", true),
-								C.REQUEST_CODE_OPEN_URI_TREE);
+						startActivityForResult(intent, C.REQUEST_CODE_OPEN_URI_TREE);
 					} catch (ActivityNotFoundException e) {
 						ToastUtils.show(this, R.string.unknown_address);
 						storageRequestState = StorageRequestState.NONE;
