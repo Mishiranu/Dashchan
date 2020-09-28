@@ -3,6 +3,8 @@ package com.mishiranu.dashchan.content.service.webview;
 import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Handler;
@@ -21,10 +23,14 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import chan.http.HttpClient;
+import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.WebViewUtils;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.LinkedList;
 
 public class WebViewService extends Service {
@@ -62,9 +68,15 @@ public class WebViewService extends Service {
 	private CookieRequest cookieRequest;
 	private Thread captchaThread;
 
+	private static boolean captureImageFileInit;
+	private static File captureImageFile;
+
+	private static final int DRAW_TO_FILE_INTERVAL = 2000;
+
 	private static final int MESSAGE_HANDLE_NEXT = 1;
 	private static final int MESSAGE_HANDLE_FINISH = 2;
 	private static final int MESSAGE_HANDLE_CAPTCHA = 3;
+	private static final int MESSAGE_DRAW_TO_FILE = 4;
 
 	private final Handler handler = new Handler(Looper.getMainLooper(), message -> {
 		if (webView == null) {
@@ -99,6 +111,22 @@ public class WebViewService extends Service {
 					} else {
 						message.getTarget().sendEmptyMessage(MESSAGE_HANDLE_FINISH);
 					}
+				}
+				return true;
+			}
+			case MESSAGE_DRAW_TO_FILE: {
+				if (captureImageFile != null && webView != null) {
+					Bitmap bitmap = Bitmap.createBitmap(webView.getLayoutParams().width,
+							webView.getLayoutParams().height, Bitmap.Config.ARGB_8888);
+					webView.draw(new Canvas(bitmap));
+					try (FileOutputStream output = new FileOutputStream(captureImageFile)) {
+						bitmap.compress(Bitmap.CompressFormat.PNG, 100, output);
+					} catch (IOException e) {
+						// Ignore exception
+					} finally {
+						bitmap.recycle();
+					}
+					message.getTarget().sendEmptyMessageDelayed(MESSAGE_DRAW_TO_FILE, DRAW_TO_FILE_INTERVAL);
 				}
 				return true;
 			}
@@ -254,6 +282,7 @@ public class WebViewService extends Service {
 					cookieRequest = cookieRequests.removeFirst();
 				}
 			}
+			handler.removeMessages(MESSAGE_DRAW_TO_FILE);
 			webView.stopLoading();
 			WebViewUtils.clearAll(webView);
 			CookieRequest cookieRequest = this.cookieRequest;
@@ -266,6 +295,9 @@ public class WebViewService extends Service {
 						webView.loadUrl(cookieRequest.uriString);
 					}
 				});
+				if (captureImageFile != null) {
+					handler.sendEmptyMessageDelayed(MESSAGE_DRAW_TO_FILE, DRAW_TO_FILE_INTERVAL);
+				}
 			} else {
 				webView.loadUrl("about:blank");
 			}
@@ -307,6 +339,17 @@ public class WebViewService extends Service {
 	public void onCreate() {
 		super.onCreate();
 
+		if (!captureImageFileInit) {
+			captureImageFileInit = true;
+			File file = new File(getExternalCacheDir().getParentFile(), "files/webview.png");
+			if (file.exists()) {
+				captureImageFile = file;
+				if (C.API_LOLLIPOP) {
+					WebView.enableSlowWholeDocumentDraw();
+				}
+			}
+		}
+
 		webView = new WebView(this);
 		webView.getSettings().setJavaScriptEnabled(true);
 		webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
@@ -326,10 +369,17 @@ public class WebViewService extends Service {
 			}
 		});
 		webView.setLayoutParams(new ViewGroup.LayoutParams(480, 270));
+		int initialScale = 25;
+		if (captureImageFile != null) {
+			int factor = 4;
+			webView.getLayoutParams().width *= factor;
+			webView.getLayoutParams().height *= factor;
+			initialScale *= factor;
+		}
 		int measureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
 		webView.measure(measureSpec, measureSpec);
 		webView.layout(0, 0, webView.getLayoutParams().width, webView.getLayoutParams().height);
-		webView.setInitialScale(25);
+		webView.setInitialScale(initialScale);
 	}
 
 	@Override

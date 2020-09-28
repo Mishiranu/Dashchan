@@ -43,8 +43,18 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 		public void onReadCaptchaError(ErrorItem errorItem);
 	}
 
+	public static class Result {
+		public final ChanPerformer.ReadCaptchaResult result;
+		public final Object challengeExtra;
+
+		public Result(ChanPerformer.ReadCaptchaResult result, Object challengeExtra) {
+			this.result = result;
+			this.challengeExtra = challengeExtra;
+		}
+	}
+
 	public interface CaptchaReader {
-		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
+		public Result onReadCaptcha(ChanPerformer.ReadCaptchaData data)
 				throws ExtensionException, HttpException, InvalidResponseException;
 	}
 
@@ -56,9 +66,13 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 		}
 
 		@Override
-		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
+		public Result onReadCaptcha(ChanPerformer.ReadCaptchaData data)
 				throws ExtensionException, HttpException, InvalidResponseException {
-			return ChanPerformer.get(chanName).safe().onReadCaptcha(data);
+			ChanPerformer.ReadCaptchaResult result = ChanPerformer.get(chanName).safe().onReadCaptcha(data);
+			if (result == null) {
+				throw new ExtensionException(new RuntimeException("Captcha result is null"));
+			}
+			return new Result(result, null);
 		}
 	}
 
@@ -82,7 +96,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 	@Override
 	protected Boolean doInBackground(HttpHolder holder, Void... params) {
 		Thread thread = Thread.currentThread();
-		ChanPerformer.ReadCaptchaResult result;
+		Result result;
 		try {
 			result = captchaReader.onReadCaptcha(new ChanPerformer.ReadCaptchaData(captchaType,
 					captchaPass, mayShowLoadButton, requirement, boardName, threadNumber, holder));
@@ -92,11 +106,11 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 		} finally {
 			ChanConfiguration.get(chanName).commit();
 		}
-		captchaState = result.captchaState;
-		captchaData = result.captchaData;
-		loadedCaptchaType = result.captchaType;
-		input = result.input;
-		validity = result.validity;
+		captchaState = result.result.captchaState;
+		captchaData = result.result.captchaData;
+		loadedCaptchaType = result.result.captchaType;
+		input = result.result.input;
+		validity = result.result.validity;
 		String captchaType = loadedCaptchaType != null ? loadedCaptchaType : this.captchaType;
 		boolean recaptcha2 = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(captchaType);
 		boolean recaptcha2Invisible = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE.equals(captchaType);
@@ -117,12 +131,17 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 			try {
 				RecaptchaReader recaptchaReader = RecaptchaReader.getInstance();
 				String response;
-				if (hcaptcha) {
-					response = recaptchaReader.getResponseHcaptcha(apiKey, referer);
-				} else {
-					response = recaptchaReader.getResponse2(holder, apiKey, recaptcha2Invisible, referer,
-							Preferences.isRecaptchaJavascript());
+				RecaptchaReader.ChallengeExtra challengeExtra = result.challengeExtra instanceof
+						RecaptchaReader.ChallengeExtra ? (RecaptchaReader.ChallengeExtra) result.challengeExtra : null;
+				if (challengeExtra == null) {
+					if (hcaptcha) {
+						challengeExtra = recaptchaReader.getChallengeHcaptcha(apiKey, referer, false);
+					} else {
+						challengeExtra = recaptchaReader.getChallenge2(holder, apiKey, recaptcha2Invisible, referer,
+								Preferences.isRecaptchaJavascript(), false);
+					}
 				}
+				response = challengeExtra.getResponse(holder);
 				captchaData.put(RECAPTCHA_SKIP_RESPONSE, response);
 				captchaState = ChanPerformer.CaptchaState.SKIP;
 				return true;
@@ -133,11 +152,11 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 				errorItem = e.getErrorItemAndHandle();
 				return false;
 			}
-		} else if (result.image != null) {
-			Bitmap image = result.image;
+		} else if (result.result.image != null) {
+			Bitmap image = result.result.image;
 			blackAndWhite = GraphicsUtils.isBlackAndWhiteCaptchaImage(image);
 			this.image = blackAndWhite ? GraphicsUtils.handleBlackAndWhiteCaptchaImage(image).first : image;
-			large = result.large;
+			large = result.result.large;
 			return true;
 		}
 		errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);

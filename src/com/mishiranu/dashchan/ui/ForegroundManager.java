@@ -826,8 +826,8 @@ public class ForegroundManager implements Handler.Callback {
 		public RecaptchaV2DialogFragment() {}
 
 		public RecaptchaV2DialogFragment(int pendingDataIndex, String referer, String apiKey,
-				boolean invisible, boolean hcaptcha) {
-			super(referer, apiKey, invisible, hcaptcha);
+				boolean invisible, boolean hcaptcha, RecaptchaReader.ChallengeExtra challengeExtra) {
+			super(referer, apiKey, invisible, hcaptcha, challengeExtra);
 			fillArguments(getArguments(), pendingDataIndex);
 		}
 
@@ -894,7 +894,8 @@ public class ForegroundManager implements Handler.Callback {
 							RecaptchaV2HandlerData recaptchaV2HandlerData = (RecaptchaV2HandlerData) handlerData;
 							new RecaptchaV2DialogFragment(handlerData.pendingDataIndex, recaptchaV2HandlerData.referer,
 									recaptchaV2HandlerData.apiKey, recaptchaV2HandlerData.invisible,
-									recaptchaV2HandlerData.hcaptcha).show(activity);
+									recaptchaV2HandlerData.hcaptcha, recaptchaV2HandlerData.challengeExtra)
+									.show(activity);
 						}
 					}
 				}
@@ -966,14 +967,16 @@ public class ForegroundManager implements Handler.Callback {
 		public final String apiKey;
 		public final boolean invisible;
 		public final boolean hcaptcha;
+		public final RecaptchaReader.ChallengeExtra challengeExtra;
 
 		private RecaptchaV2HandlerData(int pendingDataIndex, String referer, String apiKey,
-				boolean invisible, boolean hcaptcha) {
+				boolean invisible, boolean hcaptcha, RecaptchaReader.ChallengeExtra challengeExtra) {
 			super(pendingDataIndex);
 			this.referer = referer;
 			this.apiKey = apiKey;
 			this.invisible = invisible;
 			this.hcaptcha = hcaptcha;
+			this.challengeExtra = challengeExtra;
 		}
 	}
 
@@ -1133,12 +1136,12 @@ public class ForegroundManager implements Handler.Callback {
 	}
 
 	public String requireUserRecaptchaV2(String referer, String apiKey,
-			boolean invisible, boolean hcaptcha) throws HttpException {
+			boolean invisible, boolean hcaptcha, RecaptchaReader.ChallengeExtra challengeExtra) throws HttpException {
 		RecaptchaV2PendingData pendingData = new RecaptchaV2PendingData();
 		int pendingDataIndex = putPendingData(pendingData);
 		try {
 			RecaptchaV2HandlerData handlerData = new RecaptchaV2HandlerData(pendingDataIndex,
-					referer, apiKey, invisible, hcaptcha);
+					referer, apiKey, invisible, hcaptcha, challengeExtra);
 			handler.obtainMessage(MESSAGE_REQUIRE_USER_RECAPTCHA_V2, handlerData).sendToTarget();
 			if (!pendingData.await()) {
 				return null;

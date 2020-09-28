@@ -83,18 +83,119 @@ public class RelayBlockResolver {
 	private static class RelayBlockCaptchaReader implements ReadCaptchaTask.CaptchaReader {
 		private final String apiKey;
 		private final String referer;
+		private final Object challengeExtra;
 
-		public RelayBlockCaptchaReader(String apiKey, String referer) {
+		public RelayBlockCaptchaReader(String apiKey, String referer, Object challengeExtra) {
 			this.apiKey = apiKey;
 			this.referer = referer;
+			this.challengeExtra = challengeExtra;
 		}
 
 		@Override
-		public ChanPerformer.ReadCaptchaResult onReadCaptcha(ChanPerformer.ReadCaptchaData data) {
+		public ReadCaptchaTask.Result onReadCaptcha(ChanPerformer.ReadCaptchaData data) {
 			ChanPerformer.CaptchaData captchaData = new ChanPerformer.CaptchaData();
 			captchaData.put(ChanPerformer.CaptchaData.API_KEY, apiKey);
 			captchaData.put(ChanPerformer.CaptchaData.REFERER, referer);
-			return new ChanPerformer.ReadCaptchaResult(ChanPerformer.CaptchaState.CAPTCHA, captchaData);
+			return new ReadCaptchaTask.Result(new ChanPerformer.ReadCaptchaResult
+					(ChanPerformer.CaptchaState.CAPTCHA, captchaData), challengeExtra);
+		}
+	}
+
+	private static class RequestCallback extends IRequestCallback.Stub {
+		public final CheckHolder checkHolder;
+		public final Uri initialUri;
+		public final Runnable cancel;
+
+		private RequestCallback(CheckHolder checkHolder, Uri initialUri, Runnable cancel) {
+			this.checkHolder = checkHolder;
+			this.initialUri = initialUri;
+			this.cancel = cancel;
+		}
+
+		@Override
+		public boolean onPageFinished(String uriString, String cookie, String title) {
+			Map<String, String> cookies;
+			if (cookie != null && !cookie.isEmpty()) {
+				cookies = new HashMap<>();
+				String[] splitted = cookie.split(";\\s*");
+				for (String pair : splitted) {
+					int index = pair.indexOf('=');
+					if (index >= 0) {
+						String key = pair.substring(0, index);
+						String value = pair.substring(index + 1);
+						cookies.put(key, value);
+					}
+				}
+			} else {
+				cookies = Collections.emptyMap();
+			}
+			return checkHolder.client.onPageFinished(uriString, cookies, title);
+		}
+
+		@Override
+		public boolean onLoad(String uriString) {
+			return checkHolder.client.onLoad(initialUri, Uri.parse(uriString));
+		}
+
+		private boolean captchaRetry = false;
+
+		private String requireUserCaptcha(String captchaType, String apiKey, String referer,
+				Object challengeExtra) {
+			boolean retry = captchaRetry;
+			captchaRetry = true;
+			String description = MainApplication.getInstance().getLocalizedContext().getString
+					(R.string.relay_block__format_sentence, checkHolder.client.getName());
+			RelayBlockCaptchaReader reader = new RelayBlockCaptchaReader(apiKey, referer, challengeExtra);
+			ChanPerformer.CaptchaData captchaData = ForegroundManager.getInstance().requireUserCaptcha(reader,
+					captchaType, null, null, null, null, description, retry);
+			if (captchaData == null) {
+				cancel.run();
+			}
+			return captchaData != null ? captchaData.get(ChanPerformer.CaptchaData.INPUT) : null;
+		}
+
+		@Override
+		public String onRecaptchaV2(String apiKey, boolean invisible, String referer) {
+			String captchaType = invisible ? ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE
+					: ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2;
+			RecaptchaReader.ChallengeExtra challengeExtra;
+			try (HttpHolder holder = new HttpHolder()) {
+				challengeExtra = RecaptchaReader.getInstance().getChallenge2(holder, apiKey, invisible, referer,
+						Preferences.isRecaptchaJavascript(), true);
+			} catch (RecaptchaReader.CancelException | HttpException e) {
+				return null;
+			}
+			try {
+				if (challengeExtra != null && challengeExtra.response != null) {
+					return challengeExtra.response;
+				}
+				return requireUserCaptcha(captchaType, apiKey, referer, challengeExtra);
+			} finally {
+				if (challengeExtra != null) {
+					challengeExtra.cleanup();
+				}
+			}
+		}
+
+		@Override
+		public String onHcaptcha(String apiKey, String referer) {
+			RecaptchaReader.ChallengeExtra challengeExtra;
+			try {
+				challengeExtra = RecaptchaReader.getInstance().getChallengeHcaptcha(apiKey, referer, true);
+			} catch (RecaptchaReader.CancelException | HttpException e) {
+				return null;
+			}
+			try {
+				if (challengeExtra != null && challengeExtra.response != null) {
+					return challengeExtra.response;
+				}
+				return requireUserCaptcha(ChanConfiguration.CAPTCHA_TYPE_HCAPTCHA,
+						apiKey, referer, challengeExtra);
+			} finally {
+				if (challengeExtra != null) {
+					challengeExtra.cleanup();
+				}
+			}
 		}
 	}
 
@@ -170,67 +271,15 @@ public class RelayBlockResolver {
 					boolean finished = false;
 					Uri initialUri = uri.buildUpon().clearQuery().encodedFragment(null).build();
 					try {
-						CheckHolder checkHolderFinal = checkHolder;
-						IRequestCallback requestCallback = new IRequestCallback.Stub() {
-							@Override
-							public boolean onPageFinished(String uriString, String cookie, String title) {
-								Map<String, String> cookies;
-								if (cookie != null && !cookie.isEmpty()) {
-									cookies = new HashMap<>();
-									String[] splitted = cookie.split(";\\s*");
-									for (String pair : splitted) {
-										int index = pair.indexOf('=');
-										if (index >= 0) {
-											String key = pair.substring(0, index);
-											String value = pair.substring(index + 1);
-											cookies.put(key, value);
-										}
-									}
-								} else {
-									cookies = Collections.emptyMap();
-								}
-								return checkHolderFinal.client.onPageFinished(uriString, cookies, title);
-							}
-
-							@Override
-							public boolean onLoad(String uriString) {
-								return checkHolderFinal.client.onLoad(initialUri, Uri.parse(uriString));
-							}
-
-							private boolean captchaRetry = false;
-
-							private String requireUserCaptcha(String captchaType, String apiKey, String referer) {
-								boolean retry = captchaRetry;
-								captchaRetry = true;
-								String description = MainApplication.getInstance().getLocalizedContext().getString
-										(R.string.relay_block__format_sentence, checkHolderFinal.client.getName());
-								ChanPerformer.CaptchaData captchaData = ForegroundManager.getInstance()
-										.requireUserCaptcha(new RelayBlockCaptchaReader(apiKey, referer),
-												captchaType, null, null, null, null, description, retry);
-								if (captchaData == null) {
-									status.cancel = true;
-								}
-								return captchaData != null ? captchaData.get(ChanPerformer.CaptchaData.INPUT) : null;
-							}
-
-							@Override
-							public String onRecaptchaV2(String apiKey, boolean invisible, String referer) {
-								String captchaType = invisible ? ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE
-										: ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2;
-								return requireUserCaptcha(captchaType, apiKey, referer);
-							}
-
-							@Override
-							public String onHcaptcha(String apiKey, String referer) {
-								return requireUserCaptcha(ChanConfiguration.CAPTCHA_TYPE_HCAPTCHA, apiKey, referer);
-							}
-						};
 						ChanLocator locator = ChanLocator.get(chanName);
+						String userAgent = AdvancedPreferences.getUserAgent(chanName);
 						HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(chanName);
-						finished = service.loadWithCookieResult(initialUri.toString(),
-								AdvancedPreferences.getUserAgent(chanName), proxyData != null && proxyData.socks,
-								proxyData != null ? proxyData.host : null, proxyData != null ? proxyData.port : 0,
-								locator.isUseHttps() && Preferences.isVerifyCertificate(), WEB_VIEW_TIMEOUT,
+						boolean verifyCertificate = locator.isUseHttps() && Preferences.isVerifyCertificate();
+						IRequestCallback requestCallback = new RequestCallback(checkHolder,
+								initialUri, () -> status.cancel = true);
+						finished = service.loadWithCookieResult(initialUri.toString(), userAgent,
+								proxyData != null && proxyData.socks, proxyData != null ? proxyData.host : null,
+								proxyData != null ? proxyData.port : 0, verifyCertificate, WEB_VIEW_TIMEOUT,
 								checkHolder.client.getExtra(), requestCallback);
 					} catch (RemoteException e) {
 						e.printStackTrace();
