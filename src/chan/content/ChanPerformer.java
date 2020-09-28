@@ -124,7 +124,7 @@ public class ChanPerformer implements ChanManager.Linked {
 	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected ReadContentResult onReadContent(ReadContentData data) throws HttpException, InvalidResponseException {
-		return new ReadContentResult(new HttpRequest(data.uri, data.holder, data).read());
+		return new ReadContentResult(new HttpRequest(data.uri, data).read());
 	}
 
 	@SuppressWarnings("RedundantThrows")

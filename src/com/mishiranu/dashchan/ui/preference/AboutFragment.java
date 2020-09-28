@@ -283,7 +283,7 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 		private String downloadChangelog(String suffix) throws HttpException {
 			Uri uri = ChanLocator.getDefault().buildPathWithHost("github.com",
 					"Mishiranu", "Dashchan", "wiki", "Changelog-" + suffix);
-			try {
+			try (HttpHolder holder = this.holder) {
 				String response = new HttpRequest(uri, holder).setSuccessOnly(false).read().getString();
 				Matcher matcher = PATTERN_TITLE.matcher(StringUtils.emptyIfNull(response));
 				if (matcher.find()) {
@@ -293,8 +293,6 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 					}
 				}
 				return null;
-			} finally {
-				holder.cleanup();
 			}
 		}
 
@@ -335,7 +333,7 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 				holder.disconnect();
 				return false;
 			} finally {
-				holder.cleanup();
+				holder.close();
 			}
 		}
 

@@ -422,7 +422,7 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 		@Override
 		protected Boolean doInBackground(Void... params) {
 			ArrayList<JSONObject> themes = new ArrayList<>();
-			try {
+			try (HttpHolder holder = this.holder) {
 				Uri uri = ChanLocator.getDefault().setScheme(Uri.parse(BuildConfig.URI_THEMES));
 				int redirects = 0;
 				while (redirects++ < 5) {
@@ -452,8 +452,6 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 			} catch (JSONException e) {
 				errorItem = new ErrorItem(ErrorItem.Type.INVALID_RESPONSE);
 				return false;
-			} finally {
-				holder.cleanup();
 			}
 		}
 
@@ -465,7 +463,7 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 		@Override
 		public void cancel() {
 			cancel(true);
-			holder.cleanup();
+			holder.interrupt();
 		}
 	}
 }

@@ -442,7 +442,7 @@ public class ChanFragment extends PreferenceFragment {
 
 		@Override
 		public Void doInBackground(Void... params) {
-			try {
+			try (HttpHolder holder = this.holder) {
 				ChanPerformer performer = ChanPerformer.get(chanName);
 				int type = -1;
 				switch (authorizationType) {
@@ -461,7 +461,6 @@ public class ChanFragment extends PreferenceFragment {
 			} catch (ExtensionException | HttpException | InvalidResponseException e) {
 				errorItem = e.getErrorItemAndHandle();
 			} finally {
-				holder.cleanup();
 				ChanConfiguration.get(chanName).commit();
 			}
 			return null;

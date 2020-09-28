@@ -109,13 +109,12 @@ public final class WebSocket {
 		public void onEvent(Event event);
 	}
 
-	@Public
-	public WebSocket(Uri uri, HttpHolder holder, HttpRequest.Preset preset) {
+	private WebSocket(Uri uri, HttpHolder holder, HttpRequest.Preset preset) {
 		if (holder == null && preset instanceof HttpRequest.HolderPreset) {
 			holder = ((HttpRequest.HolderPreset) preset).getHolder();
 		}
 		if (holder == null) {
-			holder = new HttpHolder();
+			throw new IllegalArgumentException("No HttpHolder provided");
 		}
 		this.uri = uri;
 		this.holder = holder;

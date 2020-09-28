@@ -464,7 +464,6 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 	}
 
 	private static class WatcherRunnable implements Callable<Result> {
-		private final HttpHolder holder = new HttpHolder();
 		private final Result result;
 
 		public WatcherRunnable(WatcherItem watcherItem) {
@@ -474,7 +473,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 		@Override
 		public Result call() {
 			WatcherItem watcherItem = result.watcherItem;
-			try {
+			try (HttpHolder holder = new HttpHolder()) {
 				ChanPerformer performer = ChanPerformer.get(watcherItem.chanName);
 				ChanPerformer.ReadPostsCountResult result = performer.safe()
 						.onReadPostsCount(new ChanPerformer.ReadPostsCountData(watcherItem.boardName,
@@ -503,8 +502,6 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 			} catch (ExtensionException | InvalidResponseException e) {
 				e.getErrorItemAndHandle();
 				result.error = true;
-			} finally {
-				holder.cleanup();
 			}
 			return result;
 		}
@@ -693,7 +690,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 		}
 
 		public interface Callback {
-			public void onWatcherUpdate(WatcherItem watcherItem, State state);
+			void onWatcherUpdate(WatcherItem watcherItem, State state);
 		}
 	}
 }

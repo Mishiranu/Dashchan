@@ -343,7 +343,7 @@ public class HttpClient {
 	@TargetApi(Build.VERSION_CODES.KITKAT)
 	private void executeInternal(HttpRequest request) throws HttpException {
 		HttpHolder holder = request.holder;
-		holder.cleanup();
+		holder.close();
 		try {
 			Uri requestedUri = request.holder.requestedUri;
 			if (!ChanLocator.getDefault().isWebScheme(requestedUri)) {

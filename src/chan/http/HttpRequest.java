@@ -13,34 +13,34 @@ public final class HttpRequest {
 	public interface Preset {}
 
 	public interface HolderPreset extends Preset {
-		public HttpHolder getHolder();
+		HttpHolder getHolder();
 	}
 
 	public interface TimeoutsPreset extends Preset {
-		public int getConnectTimeout();
-		public int getReadTimeout();
+		int getConnectTimeout();
+		int getReadTimeout();
 	}
 
 	public interface InputListenerPreset extends Preset {
-		public HttpHolder.InputListener getInputListener();
+		HttpHolder.InputListener getInputListener();
 	}
 
 	public interface OutputListenerPreset extends Preset {
-		public OutputListener getOutputListener();
+		OutputListener getOutputListener();
 	}
 
 	public interface OutputStreamPreset extends Preset {
-		public OutputStream getOutputStream();
+		OutputStream getOutputStream();
 	}
 
 	public interface OutputListener {
-		public void onOutputProgressChange(long progress, long progressMax);
+		void onOutputProgressChange(long progress, long progressMax);
 	}
 
 	@Public
 	public interface RedirectHandler {
 		@Public
-		public enum Action {
+		enum Action {
 			@Public CANCEL,
 			@Public GET,
 			@Public RETRANSMIT;
@@ -69,17 +69,17 @@ public final class HttpRequest {
 		}
 
 		@Public
-		public Action onRedirectReached(int responseCode, Uri requestedUri, Uri redirectedUri, HttpHolder holder)
+		Action onRedirectReached(int responseCode, Uri requestedUri, Uri redirectedUri, HttpHolder holder)
 				throws HttpException;
 
 		@Public
-		public static final RedirectHandler NONE = (responseCode, requestedUri, redirectedUri, holder) -> Action.CANCEL;
+		RedirectHandler NONE = (responseCode, requestedUri, redirectedUri, holder) -> Action.CANCEL;
 
 		@Public
-		public static final RedirectHandler BROWSER = (responseCode, requestedUri, redirectedUri, holder) -> Action.GET;
+		RedirectHandler BROWSER = (responseCode, requestedUri, redirectedUri, holder) -> Action.GET;
 
 		@Public
-		public static final RedirectHandler STRICT = (responseCode, requestedUri, redirectedUri, holder) -> {
+		RedirectHandler STRICT = (responseCode, requestedUri, redirectedUri, holder) -> {
 			switch (responseCode) {
 				case HttpURLConnection.HTTP_MOVED_PERM:
 				case HttpURLConnection.HTTP_MOVED_TEMP: {
@@ -122,13 +122,18 @@ public final class HttpRequest {
 
 	boolean checkRelayBlock = true;
 
-	@Public
+	// TODO CHAN
+	// Make this constructor private after updating
+	// allchan alphachan anonfm archiverbt arhivach chuckdfwk desustorage diochan exach fiftyfive fourchan fourplebs
+	// kropyvach kurisach nulltirech owlchan ponyach ponychan princessluna randomarchive sevenchan shanachan sharechan
+	// synch tiretirech tumbach uboachan wizardchan
+	// Added: 26.09.20 20:10
 	public HttpRequest(Uri uri, HttpHolder holder, Preset preset) {
 		if (holder == null && preset instanceof HolderPreset) {
 			holder = ((HolderPreset) preset).getHolder();
 		}
 		if (holder == null) {
-			holder = new HttpHolder();
+			throw new IllegalArgumentException("No HttpHolder provided");
 		}
 		this.uri = uri;
 		this.holder = holder;

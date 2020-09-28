@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @Public
-public final class HttpHolder {
+public final class HttpHolder implements Closeable {
 	Uri requestedUri;
 	Proxy proxy;
 	String chanName;
@@ -56,11 +56,11 @@ public final class HttpHolder {
 	OutputStream outputStream;
 
 	public interface InputListener {
-		public void onInputProgressChange(long progress, long progressMax);
+		void onInputProgressChange(long progress, long progressMax);
 	}
 
 	public interface Callback {
-		public void onDisconnectRequested();
+		void onDisconnectRequested();
 	}
 
 	public void interrupt() {
@@ -68,7 +68,8 @@ public final class HttpHolder {
 		disconnect();
 	}
 
-	public void cleanup() {
+	@Override
+	public void close() {
 		if (requestThread == Thread.currentThread() && hasUnreadBody) {
 			disconnectAndClear();
 			hasUnreadBody = false;
