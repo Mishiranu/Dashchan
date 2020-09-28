@@ -9,7 +9,6 @@ import chan.http.HttpException;
 import chan.http.HttpHolder;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.content.net.CaptchaServiceReader;
 import com.mishiranu.dashchan.content.net.RecaptchaReader;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
@@ -102,7 +101,6 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 		boolean recaptcha2 = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(captchaType);
 		boolean recaptcha2Invisible = ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE.equals(captchaType);
 		boolean hcaptcha = ChanConfiguration.CAPTCHA_TYPE_HCAPTCHA.equals(captchaType);
-		boolean mailru = ChanConfiguration.CAPTCHA_TYPE_MAILRU.equals(captchaType);
 		if (captchaState != ChanPerformer.CaptchaState.CAPTCHA) {
 			return true;
 		}
@@ -135,24 +133,6 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 				errorItem = e.getErrorItemAndHandle();
 				return false;
 			}
-		} else if (mailru) {
-			CaptchaServiceReader reader = CaptchaServiceReader.getInstance();
-			CaptchaServiceReader.Result captchaResult;
-			try {
-				if (mailru) {
-					captchaResult = reader.readMailru(holder, chanName, captchaData
-							.get(ChanPerformer.CaptchaData.API_KEY));
-				} else {
-					throw new RuntimeException();
-				}
-			} catch (HttpException | InvalidResponseException e) {
-				errorItem = e.getErrorItemAndHandle();
-				return false;
-			}
-			captchaData.put(ChanPerformer.CaptchaData.CHALLENGE, captchaResult.challenge);
-			image = captchaResult.image;
-			blackAndWhite = captchaResult.blackAndWhite;
-			return true;
 		} else if (result.image != null) {
 			Bitmap image = result.image;
 			blackAndWhite = GraphicsUtils.isBlackAndWhiteCaptchaImage(image);

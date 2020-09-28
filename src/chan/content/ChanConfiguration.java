@@ -91,7 +91,6 @@ public class ChanConfiguration implements ChanManager.Linked {
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_2 = "recaptcha_2";
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE = "recaptcha_2_invisible";
 	@Public public static final String CAPTCHA_TYPE_HCAPTCHA = "hcaptcha";
-	@Public public static final String CAPTCHA_TYPE_MAILRU = "mailru";
 
 	private static final String KEY_COOKIES = "cookies";
 	private static final String KEY_COOKIE_VALUE = "value";
@@ -661,12 +660,6 @@ public class ChanConfiguration implements ChanManager.Linked {
 			captcha.title = "hCaptcha";
 			captcha.input = Captcha.Input.ALL;
 			captcha.validity = Captcha.Validity.SHORT_LIFETIME;
-			return captcha;
-		} else if (CAPTCHA_TYPE_MAILRU.equals(captchaType)) {
-			Captcha captcha = new Captcha();
-			captcha.title = "Mail.Ru Nocaptcha";
-			captcha.input = Captcha.Input.LATIN;
-			captcha.validity = Captcha.Validity.LONG_LIFETIME;
 			return captcha;
 		} else if (captchaType != null) {
 			try {
