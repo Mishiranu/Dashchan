@@ -657,6 +657,23 @@ public class ThemeEngine {
 		return true;
 	}
 
+	public static Theme fastParseThemeFromText(Context context, String text) {
+		if (text.contains("\"base\"") && text.contains("\"name\"")) {
+			int start = text.indexOf("{");
+			int end = text.lastIndexOf("}") + 1;
+			if (start >= 0 && end > start) {
+				JSONObject jsonObject;
+				try {
+					jsonObject = new JSONObject(text.substring(start, end));
+				} catch (JSONException e) {
+					jsonObject = null;
+				}
+				return jsonObject != null ? ThemeEngine.parseTheme(context, jsonObject) : null;
+			}
+		}
+		return null;
+	}
+
 	public static Theme parseTheme(Context context, JSONObject jsonObject) {
 		try {
 			return parseThemeInternal(context, jsonObject, false);

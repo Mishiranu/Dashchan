@@ -69,6 +69,7 @@ import com.mishiranu.dashchan.ui.preference.ThemesFragment;
 import com.mishiranu.dashchan.ui.preference.UpdateFragment;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ConcatIterable;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.DrawerToggle;
 import com.mishiranu.dashchan.util.FlagUtils;
@@ -563,6 +564,16 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			currentGalleryOverlay.dismiss();
 		}
 		galleryOverlay.show(fragmentManager, tag);
+	}
+
+	@Override
+	public void navigateSetTheme(ThemeEngine.Theme theme) {
+		ConcurrentUtils.HANDLER.post(() -> {
+			if (ThemeEngine.addTheme(theme)) {
+				Preferences.setTheme(theme.name);
+				recreate();
+			}
+		});
 	}
 
 	@Override

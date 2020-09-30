@@ -13,6 +13,7 @@ import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
 import com.mishiranu.dashchan.widget.CommentTextView;
+import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -123,6 +124,7 @@ public class UiManager {
 				Replyable.ReplyData... data);
 		void navigateGallery(String chanName, GalleryItem.GallerySet gallerySet, int imageIndex,
 				View view, GalleryOverlay.NavigatePostMode navigatePostMode, boolean galleryMode);
+		void navigateSetTheme(ThemeEngine.Theme theme);
 	}
 
 	public enum Selection {DISABLED, NOT_SELECTED, SELECTED, THREADSHOT}

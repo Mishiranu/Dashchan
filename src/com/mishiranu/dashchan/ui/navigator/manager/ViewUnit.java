@@ -41,6 +41,7 @@ import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.text.style.LinkSpan;
 import com.mishiranu.dashchan.text.style.LinkSuffixSpan;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
+import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
@@ -63,6 +64,7 @@ import java.util.Locale;
 public class ViewUnit {
 	private final UiManager uiManager;
 	private final PostDateFormatter postDateFormatter;
+	private final List<CommentTextView.ExtraButton> extraButtons;
 
 	private final int thumbnailWidth;
 	private final int multipleAttachmentInfoWidth;
@@ -78,6 +80,42 @@ public class ViewUnit {
 		Context context = uiManager.getContext();
 		this.uiManager = uiManager;
 		postDateFormatter = new PostDateFormatter(context);
+
+		extraButtons = Arrays
+				.asList(new CommentTextView.ExtraButton(context.getString(R.string.quote__verb),
+						R.attr.iconActionPaste, (view, text, click) -> {
+					PostViewHolder holder = ListViewUtils.getViewHolder(view, PostViewHolder.class);
+					if (holder.configurationSet.replyable != null) {
+						if (click) {
+							holder.configurationSet.replyable.onRequestReply(new Replyable
+									.ReplyData(holder.postItem.getPostNumber(), text.toPreparedString(view)));
+						}
+						return true;
+					}
+					return false;
+				}), new CommentTextView.ExtraButton(context.getString(R.string.web_browser),
+						R.attr.iconActionForward, (view, text, click) -> {
+					Uri uri = extractUri(text.toString());
+					if (uri != null) {
+						if (click) {
+							PostViewHolder holder = ListViewUtils.getViewHolder(view, PostViewHolder.class);
+							(holder.configurationSet.linkListener != null ? holder.configurationSet.linkListener
+									: defaultLinkListener).onLinkClick(view, null, uri, true);
+						}
+						return true;
+					}
+					return false;
+				}), new CommentTextView.ExtraButton(context.getString(R.string.add_theme),
+						R.attr.iconActionAddRule, (view, text, click) -> {
+					ThemeEngine.Theme theme = ThemeEngine.fastParseThemeFromText(context, text.toString());
+					if (theme != null) {
+						if (click) {
+							uiManager.navigator().navigateSetTheme(theme);
+						}
+						return true;
+					}
+					return false;
+				}));
 
 		Configuration configuration = context.getResources().getConfiguration();
 		float density = ResourceUtils.obtainDensity(context);
@@ -106,6 +144,26 @@ public class ViewUnit {
 		multipleAttachmentInfoWidth = (int) (attachmentInfoWidthDp * density + 0.5f);
 	}
 
+	private static Uri extractUri(String text) {
+		String fixedText = StringUtils.fixParsedUriString(text);
+		if (text.equals(fixedText)) {
+			if (!text.matches("[a-z]+:.*")) {
+				text = "http://" + text.replaceAll("^/+", "");
+			}
+			Uri uri = Uri.parse(text);
+			if (uri != null) {
+				if (StringUtils.isEmpty(uri.getAuthority())) {
+					uri = uri.buildUpon().scheme("http").build();
+				}
+				String host = uri.getHost();
+				if (host != null && host.matches(".+\\..+") && ChanLocator.getDefault().isWebScheme(uri)) {
+					return uri;
+				}
+			}
+		}
+		return null;
+	}
+
 	private final CommentTextView.LinkListener defaultLinkListener = new CommentTextView.LinkListener() {
 		@Override
 		public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed) {
@@ -121,7 +179,7 @@ public class ViewUnit {
 
 	private final CommentTextView.CommentListener commentListener = new CommentTextView.CommentListener() {
 		@Override
-		public void onRequestSiblingsInvalidate(CommentTextView view) {
+		public void onSpanStateChanged(CommentTextView view) {
 			uiManager.sendPostItemMessage(view, UiManager.Message.INVALIDATE_COMMENT_VIEW);
 		}
 
@@ -329,7 +387,6 @@ public class ViewUnit {
 		holder.comment.setSpoilersEnabled(!Preferences.isShowSpoilers());
 		holder.comment.setSubjectAndComment(makeHighlightedText(demandSet.highlightText, subject),
 				makeHighlightedText(demandSet.highlightText, comment));
-		holder.comment.setReplyable(holder.configurationSet.replyable, postNumber);
 		holder.comment.setLinkListener(holder.configurationSet.linkListener != null
 				? holder.configurationSet.linkListener : defaultLinkListener, chanName, boardName, threadNumber);
 		holder.comment.setVisibility(subject.length() > 0 || comment.length() > 0 ? View.VISIBLE : View.GONE);
@@ -1044,6 +1101,7 @@ public class ViewUnit {
 			head.setOnTouchListener(uiManager.view().headContentTouchListener);
 			comment.setLimitListener(this);
 			comment.setCommentListener(uiManager.view().commentListener);
+			comment.setExtraButtons(uiManager.view().extraButtons);
 			thumbnail.setOnClickListener(thumbnailClickListener);
 			thumbnail.setOnLongClickListener(thumbnailLongClickListener);
 			bottomBarReplies.setOnClickListener(uiManager.view().repliesBlockClickListener);

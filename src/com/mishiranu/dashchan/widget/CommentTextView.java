@@ -28,15 +28,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.text.style.LinkSpan;
 import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
-import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,14 +63,12 @@ public class CommentTextView extends TextView {
 	private LimitListener limitListener;
 	private CommentListener commentListener;
 	private LinkListener linkListener;
+	private List<ExtraButton> extraButtons;
 	private boolean spoilersEnabled;
 
 	private String chanName;
 	private String boardName;
 	private String threadNumber;
-
-	private Replyable replyable;
-	private String postNumber;
 
 	private static final double[][] BASE_POINTS;
 	private static final int RING_RADIUS = 6;
@@ -138,13 +135,54 @@ public class CommentTextView extends TextView {
 	}
 
 	public interface CommentListener {
-		void onRequestSiblingsInvalidate(CommentTextView view);
+		void onSpanStateChanged(CommentTextView view);
 		String onPrepareToCopy(CommentTextView view, Spannable text, int start, int end);
 	}
 
 	public interface LinkListener {
 		void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed);
 		void onLinkLongClick(CommentTextView view, String chanName, Uri uri);
+	}
+
+	public static class ExtraButton {
+		public static class Text {
+			public final CharSequence text;
+			public final int start;
+			public final int end;
+
+			public Text(CharSequence text, int start, int end) {
+				this.text = text;
+				this.start = start;
+				this.end = end;
+			}
+
+			public String toPreparedString(CommentTextView view) {
+				if (text instanceof Spannable) {
+					return view.getPartialCommentString((Spannable) text, start, end);
+				} else {
+					return toString();
+				}
+			}
+
+			@Override
+			public String toString() {
+				return end > start ? text.toString().substring(start, end) : "";
+			}
+		}
+
+		public interface Callback {
+			boolean handle(CommentTextView view, Text text, boolean click);
+		}
+
+		private final String title;
+		private final int iconAttr;
+		private final Callback callback;
+
+		public ExtraButton(String title, int iconAttr, Callback callback) {
+			this.title = title;
+			this.iconAttr = iconAttr;
+			this.callback = callback;
+		}
 	}
 
 	public void setLimitListener(LimitListener listener) {
@@ -160,6 +198,10 @@ public class CommentTextView extends TextView {
 		this.chanName = chanName;
 		this.boardName = boardName;
 		this.threadNumber = threadNumber;
+	}
+
+	public void setExtraButtons(List<ExtraButton> extraButtons) {
+		this.extraButtons = extraButtons;
 	}
 
 	private LinkListener getLinkListener() {
@@ -366,11 +408,6 @@ public class CommentTextView extends TextView {
 		return selectionMode;
 	}
 
-	public void setReplyable(Replyable replyable, String postNumber) {
-		this.replyable = replyable;
-		this.postNumber = postNumber;
-	}
-
 	@Override
 	public void setCustomSelectionActionModeCallback(ActionMode.Callback actionModeCallback) {}
 
@@ -379,30 +416,7 @@ public class CommentTextView extends TextView {
 				: text.subSequence(start, end).toString();
 	}
 
-	private Uri extractSelectedUri() {
-		int start = getSelectionStart();
-		int end = getSelectionEnd();
-		if (end > start) {
-			String text = getText().toString().substring(start, end);
-			String fixedText = StringUtils.fixParsedUriString(text);
-			if (text.equals(fixedText)) {
-				if (!text.matches("[a-z]+:.*")) {
-					text = "http://" + text.replaceAll("^/+", "");
-				}
-				Uri uri = Uri.parse(text);
-				if (uri != null) {
-					if (StringUtils.isEmpty(uri.getAuthority())) {
-						uri = uri.buildUpon().scheme("http").build();
-					}
-					String host = uri.getHost();
-					if (host != null && host.matches(".+\\..+") && ChanLocator.getDefault().isWebScheme(uri)) {
-						return uri;
-					}
-				}
-			}
-		}
-		return null;
-	}
+	private static final int[] EXTRA_BUTTON_IDS = {android.R.id.button1, android.R.id.button2, android.R.id.button3};
 
 	private class CustomSelectionCallback implements ActionMode.Callback {
 		@TargetApi(Build.VERSION_CODES.M)
@@ -411,35 +425,46 @@ public class CommentTextView extends TextView {
 			currentActionMode = mode;
 			currentActionModeMenu = menu;
 			setSelectionMode(true);
+			int order = 0;
 			if (C.API_MARSHMALLOW && mode.getType() == ActionMode.TYPE_FLOATING) {
-				int order = 1; // Only "cut" menu item uses this order which doesn't present in non-editable TextView
-				if (replyable != null) {
-					menu.add(0, android.R.id.button1, order, R.string.quote__verb)
-							.setIcon(ResourceUtils.getDrawable(getContext(), R.attr.iconActionPaste, 0))
+				order = 1; // Only "cut" menu item uses this order which doesn't present in non-editable TextView
+			}
+			for (int i = 0; i < EXTRA_BUTTON_IDS.length; i++) {
+				ExtraButton extraButton = getExtraButton(i);
+				if (extraButton != null) {
+					menu.add(0, EXTRA_BUTTON_IDS[i], order, extraButton.title)
+							.setIcon(ResourceUtils.getDrawable(getContext(), extraButton.iconAttr, 0))
 							.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 				}
-				menu.add(0, android.R.id.button2, order, R.string.web_browser)
-						.setIcon(ResourceUtils.getDrawable(getContext(), R.attr.iconActionForward, 0))
-						.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-			} else {
-				if (replyable != null) {
-					menu.add(0, android.R.id.button1, 0, R.string.quote__verb)
-							.setIcon(ResourceUtils.getDrawable(getContext(), R.attr.iconActionPaste, 0))
-							.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
-				}
-				menu.add(0, android.R.id.button2, 0, R.string.web_browser)
-						.setIcon(ResourceUtils.getDrawable(getContext(), R.attr.iconActionForward, 0))
-						.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 			}
 			// Stop selection fixation after creating action mode
 			restoreSelectionRunnable = null;
 			return true;
 		}
 
+		private ExtraButton getExtraButton(int index) {
+			return extraButtons != null && index < extraButtons.size() && index < EXTRA_BUTTON_IDS.length
+					? extraButtons.get(index) : null;
+		}
+
+		private ExtraButton.Text getText() {
+			int start = getSelectionStart();
+			int end = getSelectionEnd();
+			int min = Math.max(0, Math.min(start, end));
+			int max = Math.max(0, Math.max(start, end));
+			return new ExtraButton.Text(CommentTextView.this.getText(), min, max);
+		}
+
 		@Override
 		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-			Uri uri = extractSelectedUri();
-			menu.findItem(android.R.id.button2).setVisible(uri != null);
+			ExtraButton.Text text = getText();
+			for (int i = 0; i < EXTRA_BUTTON_IDS.length; i++) {
+				ExtraButton extraButton = getExtraButton(i);
+				if (extraButton != null) {
+					menu.findItem(EXTRA_BUTTON_IDS[i]).setVisible(extraButton.callback
+							.handle(CommentTextView.this, text, false));
+				}
+			}
 			return true;
 		}
 
@@ -454,32 +479,25 @@ public class CommentTextView extends TextView {
 
 		@Override
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-			Spannable text = getText() instanceof Spannable ? (Spannable) getText() : null;
-			if (text != null) {
-				int selStart = getSelectionStart(), selEnd = getSelectionEnd();
-				int min = Math.max(0, Math.min(selStart, selEnd)), max = Math.max(0, Math.max(selStart, selEnd));
-				switch (item.getItemId()) {
-					case android.R.id.copy: {
-						StringUtils.copyToClipboard(getContext(), getPartialCommentString(text, min, max));
-						mode.finish();
-						return true;
+			ExtraButton.Text text = getText();
+			switch (item.getItemId()) {
+				case android.R.id.copy: {
+					if (text.text instanceof Spannable) {
+						StringUtils.copyToClipboard(getContext(),
+								getPartialCommentString((Spannable) text.text, text.start, text.end));
 					}
-					case android.R.id.button1: {
-						if (replyable != null) {
-							replyable.onRequestReply(new Replyable.ReplyData(postNumber,
-									getPartialCommentString(text, min, max)));
-						}
+					mode.finish();
+					return true;
+				}
+			}
+			for (int i = 0; i < EXTRA_BUTTON_IDS.length; i++) {
+				if (EXTRA_BUTTON_IDS[i] == item.getItemId()) {
+					ExtraButton extraButton = getExtraButton(i);
+					if (extraButton != null) {
+						extraButton.callback.handle(CommentTextView.this, text, true);
 						mode.finish();
-						return true;
 					}
-					case android.R.id.button2: {
-						Uri uri = extractSelectedUri();
-						if (uri != null) {
-							getLinkListener().onLinkClick(CommentTextView.this, null, uri, true);
-						}
-						mode.finish();
-						return true;
-					}
+					return true;
 				}
 			}
 			return false;
@@ -630,7 +648,7 @@ public class CommentTextView extends TextView {
 		} else if (spanToClick instanceof SpoilerSpan) {
 			SpoilerSpan spoilerSpan = ((SpoilerSpan) spanToClick);
 			spoilerSpan.setVisible(!spoilerSpan.isVisible());
-			post(() -> commentListener.onRequestSiblingsInvalidate(CommentTextView.this));
+			post(() -> commentListener.onSpanStateChanged(CommentTextView.this));
 		}
 	}
 
