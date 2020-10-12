@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import androidx.annotation.NonNull;
 import androidx.core.content.pm.PackageInfoCompat;
+import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
@@ -24,7 +25,7 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.graphics.ChanIconDrawable;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.util.AndroidUtils;
-import com.mishiranu.dashchan.util.IOUtils;
+import com.mishiranu.dashchan.util.Hasher;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.WeakObservable;
 import dalvik.system.PathClassLoader;
@@ -561,8 +562,8 @@ public class ChanManager {
 	}
 
 	public interface Linked {
-		public String getChanName();
-		public void init();
+		String getChanName();
+		void init();
 	}
 
 	public static final class Initializer {
@@ -819,7 +820,8 @@ public class ChanManager {
 		if (signaturesArray != null) {
 			for (android.content.pm.Signature signature : signaturesArray) {
 				if (signature != null) {
-					fingerprints.add(IOUtils.calculateSha256(signature.toByteArray()));
+					fingerprints.add(StringUtils.formatHex(Hasher
+							.getInstanceSha256().calculate(signature.toByteArray())));
 				}
 			}
 		}

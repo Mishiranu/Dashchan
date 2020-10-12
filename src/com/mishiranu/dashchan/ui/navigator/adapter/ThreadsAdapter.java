@@ -25,7 +25,6 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
-import com.mishiranu.dashchan.ui.navigator.manager.HidePerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
@@ -98,14 +97,14 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	private boolean headerExpanded;
 
 	public ThreadsAdapter(Context context, Callback callback, String chanName, String boardName, UiManager uiManager,
-			boolean headerExpanded, int catalogSortIndex) {
+			UiManager.PostStateProvider postStateProvider, boolean headerExpanded, int catalogSortIndex) {
 		this.context = context;
 		this.callback = callback;
 		this.chanName = chanName;
 		this.boardName = boardName;
 		this.uiManager = uiManager;
-		configurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(context),
-				new GalleryItem.GallerySet(false), uiManager.dialog().createStackInstance(), null, null,
+		configurationSet = new UiManager.ConfigurationSet(null, null, postStateProvider,
+				new GalleryItem.Set(false), uiManager.dialog().createStackInstance(), null,
 				false, true, false, false, false, null);
 		float density = ResourceUtils.obtainDensity(context);
 		FrameLayout frameLayout = new FrameLayout(context);
@@ -345,7 +344,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 			viewType = listItem.pageNumber > 0 ? ViewType.DIVIDER : ViewType.HEADER;
 		} else if (listItem.postItem != null) {
 			viewType = gridMode != null ? ViewType.THREAD_CELL
-					: listItem.postItem.isHidden(configurationSet.hidePerformer)
+					: configurationSet.postStateProvider.isHiddenResolve(listItem.postItem)
 					? ViewType.THREAD_HIDDEN : ViewType.THREAD;
 		} else {
 			throw new IllegalStateException();
@@ -429,7 +428,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	public void notifyNotModified() {
 		for (ListItem listItem : listItems) {
 			if (listItem.postItem != null) {
-				listItem.postItem.invalidateHidden();
+				listItem.postItem.setHidden(PostItem.HideState.UNDEFINED, null);
 			}
 		}
 		notifyDataSetChanged();
@@ -446,7 +445,8 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		}
 		if (postItems != null) {
 			for (PostItem postItem : postItems) {
-				if (Preferences.isDisplayHiddenThreads() || !postItem.isHidden(configurationSet.hidePerformer)) {
+				if (Preferences.isDisplayHiddenThreads() ||
+						!configurationSet.postStateProvider.isHiddenResolve(postItem)) {
 					listItems.add(new ListItem(null, null, postItem));
 				}
 			}

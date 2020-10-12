@@ -10,6 +10,7 @@ import chan.content.model.Board;
 import chan.content.model.BoardCategory;
 import chan.content.model.Post;
 import chan.content.model.Posts;
+import chan.content.model.SinglePost;
 import chan.content.model.ThreadSummary;
 import chan.http.ChanFileOpenable;
 import chan.http.HttpException;
@@ -21,6 +22,7 @@ import chan.http.MultipartEntity;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.model.FileHolder;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
@@ -28,6 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -197,18 +201,64 @@ public class ChanPerformer implements ChanManager.Linked {
 
 	@Public
 	public static final class ReadThreadsResult {
-		public final Posts[] threads;
+		public static class Thread {
+			public final List<com.mishiranu.dashchan.content.model.Post> posts;
+			public final String threadNumber;
+			public final int postsCount;
+			public final int filesCount;
+			public final int postsWithFilesCount;
+
+			public Thread(List<com.mishiranu.dashchan.content.model.Post> posts, String threadNumber,
+					int postsCount, int filesCount, int postsWithFilesCount) {
+				this.posts = posts;
+				this.threadNumber = threadNumber;
+				this.postsCount = postsCount;
+				this.filesCount = filesCount;
+				this.postsWithFilesCount = postsWithFilesCount;
+			}
+		}
+
+		public final List<Thread> threads;
+
 		public int boardSpeed;
 		public HttpValidator validator;
 
 		@Public
 		public ReadThreadsResult(Posts... threads) {
-			this.threads = CommonUtils.removeNullItems(threads, Posts.class);
+			this(threads != null ? Arrays.asList(threads) : null);
 		}
 
 		@Public
 		public ReadThreadsResult(Collection<Posts> threads) {
-			this(CommonUtils.toArray(threads, Posts.class));
+			List<Thread> list = Collections.emptyList();
+			if (threads != null) {
+				list = new ArrayList<>(threads.size());
+				for (Posts thread : threads) {
+					if (thread != null) {
+						Post[] postsArray = thread.getPosts();
+						if (postsArray != null) {
+							String threadNumber = null;
+							List<com.mishiranu.dashchan.content.model.Post> posts = new ArrayList<>();
+							for (Post post : postsArray) {
+								if (post != null) {
+									if (posts.isEmpty()) {
+										threadNumber = post.getThreadNumberOrOriginalPostNumber();
+									}
+									posts.add(post.build());
+								}
+							}
+							if (!posts.isEmpty()) {
+								if (StringUtils.isEmpty(threadNumber)) {
+									throw new IllegalArgumentException("Thread number is not defined");
+								}
+								list.add(new Thread(posts, threadNumber, thread.getPostsCount(),
+										thread.getFilesCount(), thread.getPostsWithFilesCount()));
+							}
+						}
+					}
+				}
+			}
+			this.threads = list;
 		}
 
 		@Public
@@ -234,13 +284,14 @@ public class ChanPerformer implements ChanManager.Linked {
 		@Public public final HttpHolder holder;
 		@Public public final HttpValidator validator;
 
-		public ReadPostsData(String boardName, String threadNumber, String lastPostNumber, boolean partialThreadLoading,
-				Posts cachedPosts, HttpHolder holder, HttpValidator validator) {
+		public ReadPostsData(String chanName, String boardName, String threadNumber,
+				String lastPostNumber, boolean partialThreadLoading,
+				boolean hasCachedPosts, HttpHolder holder, HttpValidator validator) {
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
 			this.lastPostNumber = lastPostNumber;
 			this.partialThreadLoading = partialThreadLoading;
-			this.cachedPosts = cachedPosts;
+			this.cachedPosts = hasCachedPosts ? new Posts(chanName, boardName, threadNumber) : null;
 			this.holder = holder;
 			this.validator = validator;
 		}
@@ -253,23 +304,40 @@ public class ChanPerformer implements ChanManager.Linked {
 
 	@Public
 	public static final class ReadPostsResult {
-		public final Posts posts;
+		public final List<com.mishiranu.dashchan.content.model.Post> posts;
+		public final Uri archivedThreadUri;
+		public final int uniquePosters;
+
 		public HttpValidator validator;
 		public boolean fullThread;
 
 		@Public
 		public ReadPostsResult(Posts posts) {
-			this.posts = posts;
+			this(posts != null && posts.getPosts() != null ? Arrays.asList(posts.getPosts()) : null,
+					posts != null ? posts.getArchivedThreadUri() : null, posts != null ? posts.getUniquePosters() : 0);
 		}
 
 		@Public
 		public ReadPostsResult(Post... posts) {
-			this((posts = CommonUtils.removeNullItems(posts, Post.class)) != null ? new Posts(posts) : null);
+			this(posts != null ? Arrays.asList(posts) : null, null, 0);
 		}
 
 		@Public
 		public ReadPostsResult(Collection<Post> posts) {
-			this(CommonUtils.toArray(posts, Post.class));
+			this(posts, null, 0);
+		}
+
+		private ReadPostsResult(Collection<Post> posts, Uri archivedThreadUri, int uniquePosters) {
+			List<com.mishiranu.dashchan.content.model.Post> list = Collections.emptyList();
+			if (posts != null) {
+				list = new ArrayList<>(posts.size());
+				for (Post post : posts) {
+					list.add(post.build());
+				}
+			}
+			this.posts = list;
+			this.archivedThreadUri = archivedThreadUri;
+			this.uniquePosters = uniquePosters;
 		}
 
 		@Public
@@ -305,11 +373,11 @@ public class ChanPerformer implements ChanManager.Linked {
 
 	@Public
 	public static final class ReadSinglePostResult {
-		public final Post post;
+		public final SinglePost post;
 
 		@Public
 		public ReadSinglePostResult(Post post) {
-			this.post = post;
+			this.post = post != null ? new SinglePost(post) : null;
 		}
 	}
 
@@ -335,16 +403,25 @@ public class ChanPerformer implements ChanManager.Linked {
 
 	@Public
 	public static final class ReadSearchPostsResult {
-		public final Post[] posts;
+		public final List<SinglePost> posts;
 
 		@Public
 		public ReadSearchPostsResult(Post... posts) {
-			this.posts = CommonUtils.removeNullItems(posts, Post.class);
+			this(posts != null ? Arrays.asList(posts) : null);
 		}
 
 		@Public
 		public ReadSearchPostsResult(Collection<Post> posts) {
-			this(CommonUtils.toArray(posts, Post.class));
+			List<SinglePost> list = Collections.emptyList();
+			if (posts != null) {
+				list = new ArrayList<>(posts.size());
+				for (Post post : posts) {
+					if (post != null) {
+						list.add(new SinglePost(post));
+					}
+				}
+			}
+			this.posts = list;
 		}
 	}
 
@@ -864,7 +941,7 @@ public class ChanPerformer implements ChanManager.Linked {
 				}
 				if (o instanceof Attachment) {
 					Attachment attachment = (Attachment) o;
-					return attachment.fileHolder.equals(fileHolder) && StringUtils.equals(attachment.rating, rating) &&
+					return attachment.fileHolder.equals(fileHolder) && CommonUtils.equals(attachment.rating, rating) &&
 							attachment.optionUniqueHash == optionUniqueHash && attachment.optionRemoveMetadata ==
 							optionRemoveMetadata && attachment.optionRemoveFileName == optionRemoveFileName &&
 							attachment.optionSpoiler == optionSpoiler;
@@ -932,12 +1009,13 @@ public class ChanPerformer implements ChanManager.Linked {
 	@Public
 	public static final class SendPostResult {
 		public final String threadNumber;
-		public final String postNumber;
+		public final PostNumber postNumber;
 
 		@Public
 		public SendPostResult(String threadNumber, String postNumber) {
 			this.threadNumber = threadNumber;
-			this.postNumber = postNumber;
+			this.postNumber = postNumber != null ? PostNumber.parseOrThrow(postNumber) : null;
+			PostNumber.validateThreadNumber(threadNumber, true);
 		}
 	}
 
@@ -1037,6 +1115,7 @@ public class ChanPerformer implements ChanManager.Linked {
 		public SendAddToArchiveResult(String boardName, String threadNumber) {
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
+			PostNumber.validateThreadNumber(threadNumber, true);
 		}
 	}
 

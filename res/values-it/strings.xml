@@ -26,8 +26,6 @@
     <string name="all_threads">Tutti i thread</string>
     <string name="allow_this_extension__sentence">Consentire a questa estensione di gestire l\'applicazione?</string>
     <string name="always">Sempre</string>
-    <string name="always_disabled">Sempre disabilitato</string>
-    <string name="always_enabled">Sempre abilitato</string>
     <string name="another">Un altro</string>
     <string name="appearance">Aspetto</string>
     <string name="application_name_update__format">%s aggiornamento</string>
@@ -419,7 +417,6 @@
     <string name="sending__ellipsis">Invio in corso…</string>
     <string name="sending_number_of_number__ellipsis_format">Invio: %1$d di %2$d…</string>
     <string name="sent_posts">Post inviati</string>
-    <string name="separate__adjective">Separato</string>
     <string name="services">Servizi</string>
     <string name="sfw_mode">Modalità SFW</string>
     <string name="share__ellipsis">Condividi…</string>

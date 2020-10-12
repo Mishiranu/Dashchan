@@ -4,7 +4,7 @@ import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
-import chan.util.StringUtils;
+import chan.util.CommonUtils;
 import com.mishiranu.dashchan.R;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -149,9 +149,9 @@ public final class AsyncManager {
 	}
 
 	public interface Callback {
-		public Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra);
-		public void onFinishTaskExecution(String name, Holder holder);
-		public void onRequestTaskCancel(String name, Object task);
+		Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra);
+		void onFinishTaskExecution(String name, Holder holder);
+		void onRequestTaskCancel(String name, Object task);
 	}
 
 	public static class Holder {
@@ -202,7 +202,7 @@ public final class AsyncManager {
 
 	private void removeQueued(String name) {
 		for (int i = queued.size() - 1; i >= 0; i--) {
-			if (StringUtils.equals(name, queued.get(i).name)) {
+			if (CommonUtils.equals(name, queued.get(i).name)) {
 				queued.remove(i);
 			}
 		}

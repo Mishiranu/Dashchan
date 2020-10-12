@@ -413,7 +413,7 @@ public class RecaptchaReader {
 			}
 		}
 
-		@SuppressWarnings({"unused", "RedundantSuppression"})
+		@SuppressWarnings("unused")
 		private final Object javascriptInterface = new Object() {
 			@JavascriptInterface
 			public void onResponse(String response) {

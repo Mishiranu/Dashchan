@@ -15,7 +15,6 @@ import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.BackgroundColorSpan;
-import android.util.Pair;
 import android.util.SparseIntArray;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -36,7 +35,9 @@ import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
+import com.mishiranu.dashchan.content.model.Post;
 import com.mishiranu.dashchan.content.model.PostItem;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.text.style.LinkSpan;
 import com.mishiranu.dashchan.text.style.LinkSuffixSpan;
@@ -57,7 +58,6 @@ import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -249,7 +249,7 @@ public class ViewUnit {
 		holder.postItem = postItem;
 
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
-		boolean hidden = postItem.isHidden(holder.configurationSet.hidePerformer);
+		boolean hidden = postItem.getHideState().hidden;
 		((View) holder.threadContent.getParent()).setAlpha(hidden ? ALPHA_HIDDEN_POST : 1f);
 		String subject = postItem.getSubject();
 		if (!StringUtils.isEmptyOrWhitespace(subject) && !hidden) {
@@ -321,7 +321,7 @@ public class ViewUnit {
 		String chanName = postItem.getChanName();
 		String boardName = postItem.getBoardName();
 		String threadNumber = postItem.getThreadNumber();
-		String postNumber = postItem.getPostNumber();
+		PostNumber postNumber = postItem.getPostNumber();
 		boolean bumpLimitReached = false;
 		PostItem.BumpLimitState bumpLimitReachedState = postItem.getBumpLimitReachedState(0);
 		if (bumpLimitReachedState == PostItem.BumpLimitState.REACHED) {
@@ -337,7 +337,8 @@ public class ViewUnit {
 			bumpLimitReached = postItem.getBumpLimitReachedState(postsCount) == PostItem.BumpLimitState.REACHED;
 		}
 		holder.number.setText("#" + postNumber);
-		holder.states[0] = postItem.isUserPost() && Preferences.isShowMyPosts();
+		holder.states[0] = Preferences.isShowMyPosts() &&
+				holder.configurationSet.postStateProvider.isUserPost(postNumber);
 		holder.states[1] = postItem.isOriginalPoster();
 		holder.states[2] = postItem.isSage() || bumpLimitReached;
 		holder.states[3] = !StringUtils.isEmpty(postItem.getEmail());
@@ -357,28 +358,29 @@ public class ViewUnit {
 		holder.date.setText(postItem.getDateTime(postDateFormatter));
 
 		String subject = postItem.getSubject();
-		CharSequence comment = !StringUtils.isEmpty(holder.configurationSet.repliesToPost)
+		CharSequence comment = holder.configurationSet.repliesToPost != null
 				? postItem.getComment(holder.configurationSet.repliesToPost) : postItem.getComment();
 				colorScheme.apply(postItem.getCommentSpans());
 		LinkSuffixSpan[] linkSuffixSpans = postItem.getLinkSuffixSpansAfterComment();
-		if (linkSuffixSpans != null && holder.configurationSet.userPostNumbers != null) {
+		if (linkSuffixSpans != null) {
 			boolean showMyPosts = Preferences.isShowMyPosts();
 			for (LinkSuffixSpan span : linkSuffixSpans) {
 				span.setSuffix(LinkSuffixSpan.SUFFIX_USER_POST, showMyPosts &&
-						holder.configurationSet.userPostNumbers.contains(span.getPostNumber()));
+						holder.configurationSet.postStateProvider.isUserPost(span.getPostNumber()));
 			}
 		}
 		LinkSpan[] linkSpans = postItem.getLinkSpansAfterComment();
 		if (linkSpans != null) {
-			HashSet<String> referencesTo = postItem.getReferencesTo();
 			for (LinkSpan linkSpan : linkSpans) {
-				String linkPostNumber = linkSpan.getPostNumber();
+				PostNumber linkPostNumber = linkSpan.getPostNumber();
 				if (linkPostNumber != null) {
 					boolean hidden = false;
-					if (referencesTo != null && referencesTo.contains(linkPostNumber)
+					if (postItem.getReferencesTo().contains(linkPostNumber)
 							&& holder.configurationSet.postsProvider != null) {
 						PostItem linkPostItem = holder.configurationSet.postsProvider.findPostItem(linkPostNumber);
-						hidden = linkPostItem != null && linkPostItem.isHidden(holder.configurationSet.hidePerformer);
+						if (linkPostItem != null) {
+							hidden = holder.configurationSet.postStateProvider.isHiddenResolve(linkPostItem);
+						}
 					}
 					linkSpan.setHidden(hidden);
 				}
@@ -417,7 +419,8 @@ public class ViewUnit {
 			holder.bottomBarExpand.setVisibility(View.GONE);
 			holder.bottomBarOpenThread.setVisibility(demandSet.showOpenThreadButton ? View.VISIBLE : View.GONE);
 		}
-		if (holder.configurationSet.mayCollapse && commentMaxLines > 0 && !postItem.isExpanded()) {
+		if (holder.configurationSet.mayCollapse && commentMaxLines > 0 &&
+				!holder.configurationSet.postStateProvider.isExpanded(postNumber)) {
 			holder.comment.setLinesLimit(commentMaxLines, commentAdditionalHeight);
 		} else {
 			holder.comment.setLinesLimit(0, 0);
@@ -435,10 +438,11 @@ public class ViewUnit {
 		holder.bottomBarExpand.setClickable(viewsEnabled);
 		holder.bottomBarOpenThread.setEnabled(viewsEnabled);
 		holder.bottomBarOpenThread.setClickable(viewsEnabled);
-		if (viewsEnabled && postItem.isUnread()) {
+		if (viewsEnabled && !holder.configurationSet.postStateProvider.isRead(postNumber)) {
 			switch (Preferences.getHighlightUnreadMode()) {
 				case Preferences.HIGHLIGHT_UNREAD_AUTOMATICALLY: {
-					holder.newPostAnimation = new NewPostAnimation(holder.layout, postItem,
+					holder.newPostAnimation = new NewPostAnimation(holder.layout,
+							holder.configurationSet.postStateProvider, postNumber,
 							colorScheme.highlightBackgroundColor);
 					break;
 				}
@@ -478,7 +482,7 @@ public class ViewUnit {
 			description = postItem.getSubjectOrComment();
 		}
 		holder.comment.setText(description);
-		postItem.setUnread(false);
+		holder.configurationSet.postStateProvider.setRead(postItem.getPostNumber());
 	}
 
 	private static int getPostBackgroundColor(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
@@ -582,8 +586,8 @@ public class ViewUnit {
 		Context context = uiManager.getContext();
 		PostItem postItem = holder.postItem;
 		String chanName = postItem.getChanName();
-		List<Pair<Uri, String>> icons = postItem.getIcons();
-		if (icons != null && Preferences.isDisplayIcons()) {
+		List<Post.Icon> icons = postItem.getIcons();
+		if (!icons.isEmpty() && Preferences.isDisplayIcons()) {
 			if (holder.badgeImages == null) {
 				holder.badgeImages = new ArrayList<>();
 			}
@@ -607,7 +611,7 @@ public class ViewUnit {
 				ImageView imageView = holder.badgeImages.get(i);
 				if (i < icons.size()) {
 					imageView.setVisibility(View.VISIBLE);
-					Uri uri = icons.get(i).first;
+					Uri uri = icons.get(i).uri;
 					if (uri != null) {
 						uri = uri.isRelative() ? locator.convert(uri) : uri;
 						ImageLoader.getInstance().loadImage(chanName, uri, false, imageView);
@@ -659,18 +663,6 @@ public class ViewUnit {
 		if (holder instanceof PostViewHolder) {
 			((PostViewHolder) holder).notifyUnbind();
 		}
-	}
-
-	public int findImageIndex(ArrayList<GalleryItem> galleryItems, PostItem postItem) {
-		if (galleryItems != null && postItem.hasAttachments()) {
-			String postNumber = postItem.getPostNumber();
-			for (int i = 0; i < galleryItems.size(); i++) {
-				if (postNumber.equals(galleryItems.get(i).postNumber)) {
-					return i;
-				}
-			}
-		}
-		return -1;
 	}
 
 	boolean handlePostForDoubleClick(final View view) {
@@ -725,7 +717,7 @@ public class ViewUnit {
 		public void onClick(View v) {
 			PostViewHolder holder = ListViewUtils.getViewHolder(v, PostViewHolder.class);
 			PostItem postItem = holder.postItem;
-			String postNumber = postItem.getParentPostNumber() == null ? null : postItem.getPostNumber();
+			PostNumber postNumber = postItem.isOriginalPost() ? null : postItem.getPostNumber();
 			uiManager.navigator().navigatePosts(postItem.getChanName(), postItem.getBoardName(),
 					postItem.getThreadNumber(), postNumber, null, 0);
 		}
@@ -795,14 +787,14 @@ public class ViewUnit {
 							String emailToCopy = null;
 							switch (type) {
 								case TYPE_BADGES: {
-									List<Pair<Uri, String>> postIcons = holder.postItem.getIcons();
+									List<Post.Icon> postIcons = holder.postItem.getIcons();
 									ChanLocator locator = ChanLocator.get(holder.postItem.getChanName());
-									for (Pair<Uri, String> postIcon : postIcons) {
-										Uri uri = postIcon.first;
+									for (Post.Icon postIcon : postIcons) {
+										Uri uri = postIcon.uri;
 										if (uri != null) {
 											uri = uri.isRelative() ? locator.convert(uri) : uri;
 										}
-										icons.add(new DialogUnit.IconData(postIcon.second, uri));
+										icons.add(new DialogUnit.IconData(postIcon.title, uri));
 									}
 									break;
 								}
@@ -973,22 +965,25 @@ public class ViewUnit {
 		}
 
 		@Override
-		public GalleryItem.GallerySet getGallerySet() {
+		public GalleryItem.Set getGallerySet() {
 			return postItem.getThreadGallerySet();
 		}
 	}
 
 	private static class NewPostAnimation implements Runnable, ValueAnimator.AnimatorUpdateListener {
 		private final PostLinearLayout layout;
-		private final PostItem postItem;
+		private final UiManager.PostStateProvider postStateProvider;
+		private final PostNumber postNumber;
 		private final ColorDrawable drawable;
 
 		private ValueAnimator animator;
 		private boolean applied = false;
 
-		public NewPostAnimation(PostLinearLayout layout, PostItem postItem, int color) {
+		public NewPostAnimation(PostLinearLayout layout, UiManager.PostStateProvider postStateProvider,
+				PostNumber postNumber, int color) {
 			this.layout = layout;
-			this.postItem = postItem;
+			this.postStateProvider = postStateProvider;
+			this.postNumber = postNumber;
 			drawable = new ColorDrawable(color);
 			layout.setSecondaryBackground(drawable);
 			layout.postDelayed(this, 500);
@@ -1007,7 +1002,7 @@ public class ViewUnit {
 		public void onAnimationUpdate(ValueAnimator animation) {
 			if (!applied) {
 				applied = true;
-				postItem.setUnread(false);
+				postStateProvider.setRead(postNumber);
 			}
 			drawable.setColor((int) animation.getAnimatedValue());
 		}
@@ -1166,8 +1161,9 @@ public class ViewUnit {
 
 		@Override
 		public void onClick(View v) {
-			if (v == bottomBarExpand && postItem != null && !postItem.isExpanded()) {
-				postItem.setExpanded(true);
+			if (v == bottomBarExpand && postItem != null &&
+					!configurationSet.postStateProvider.isExpanded(postItem.getPostNumber())) {
+				configurationSet.postStateProvider.setExpanded(postItem.getPostNumber());
 				comment.setLinesLimit(0, 0);
 				bottomBarExpand.setVisibility(View.GONE);
 				int bottomBarHeight = bottomBar.getHeight();
@@ -1218,7 +1214,7 @@ public class ViewUnit {
 		}
 
 		@Override
-		public GalleryItem.GallerySet getGallerySet() {
+		public GalleryItem.Set getGallerySet() {
 			return configurationSet.gallerySet;
 		}
 
@@ -1278,7 +1274,7 @@ public class ViewUnit {
 		}
 
 		@Override
-		public GalleryItem.GallerySet getGallerySet() {
+		public GalleryItem.Set getGallerySet() {
 			throw new UnsupportedOperationException();
 		}
 	}

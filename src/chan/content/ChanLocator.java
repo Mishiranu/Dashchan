@@ -7,6 +7,7 @@ import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -40,11 +41,18 @@ public class ChanLocator implements ChanManager.Linked {
 		public final int target;
 		public final String boardName;
 		public final String threadNumber;
-		public final String postNumber;
+		public final PostNumber postNumber;
 		public final String searchQuery;
 
 		@Public
 		public NavigationData(int target, String boardName, String threadNumber, String postNumber,
+				String searchQuery) {
+			this(target, boardName, threadNumber, postNumber != null
+					? PostNumber.parseOrThrow(postNumber) : null, searchQuery);
+			PostNumber.validateThreadNumber(threadNumber, true);
+		}
+
+		public NavigationData(int target, String boardName, String threadNumber, PostNumber postNumber,
 				String searchQuery) {
 			this.target = target;
 			this.boardName = boardName;
@@ -188,7 +196,7 @@ public class ChanLocator implements ChanManager.Linked {
 			boolean webScheme = isWebScheme(uri);
 			Uri.Builder builder = null;
 			if (relative || webScheme && isConvertableChanHost(host)) {
-				if (!StringUtils.equals(host, preferredHost)) {
+				if (!CommonUtils.equals(host, preferredHost)) {
 					if (builder == null) {
 						builder = uri.buildUpon().scheme(preferredScheme);
 					}
@@ -225,6 +233,29 @@ public class ChanLocator implements ChanManager.Linked {
 			}
 		}
 		return uri;
+	}
+
+	public final Uri fixRelativeFileUri(Uri uri) {
+		if (uri == null) {
+			return null;
+		}
+		String uriString = uri.toString();
+		int index = uriString.indexOf("//");
+		if (index >= 0) {
+			index = uriString.indexOf('/', index + 2);
+			if (index >= 0) {
+				index++;
+			} else {
+				return uri;
+			}
+		}
+		if (index < 0) {
+			index = 0;
+		}
+		if (uriString.indexOf(':', index) >= 0) {
+			uriString = uriString.substring(0, index) + uriString.substring(index).replace(":", "%3A");
+		}
+		return Uri.parse(uriString);
 	}
 
 	@Extendable
@@ -299,11 +330,15 @@ public class ChanLocator implements ChanManager.Linked {
 	}
 
 	public final String createAttachmentFileName(Uri fileUri, String forcedName) {
-		String fileName = forcedName != null ? forcedName : fileUri.getLastPathSegment();
-		if (fileName != null) {
-			return StringUtils.escapeFile(fileName, false);
+		String fileName;
+		if (StringUtils.isEmpty(forcedName)) {
+			String fileUriString = fileUri.getPath();
+			int start = fileUriString.lastIndexOf('/') + 1;
+			fileName = fileUriString.substring(start);
+		} else {
+			fileName = forcedName;
 		}
-		return null;
+		return StringUtils.isEmpty(fileName) ? "" : StringUtils.emptyIfNull(StringUtils.escapeFile(fileName, false));
 	}
 
 	public final Uri validateClickedUriString(String uriString, String boardName, String threadNumber) {
@@ -518,16 +553,19 @@ public class ChanLocator implements ChanManager.Linked {
 
 		public String getThreadNumber(Uri uri) {
 			try {
-				return locator.getThreadNumber(uri);
+				String threadNumber = locator.getThreadNumber(uri);
+				PostNumber.validateThreadNumber(threadNumber, true);
+				return threadNumber;
 			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, showToastOnError);
 				return null;
 			}
 		}
 
-		public String getPostNumber(Uri uri) {
+		public PostNumber getPostNumber(Uri uri) {
 			try {
-				return locator.getPostNumber(uri);
+				String postNumber = locator.getPostNumber(uri);
+				return postNumber != null ? PostNumber.parseOrThrow(postNumber) : null;
 			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, showToastOnError);
 				return null;
@@ -552,9 +590,10 @@ public class ChanLocator implements ChanManager.Linked {
 			}
 		}
 
-		public Uri createPostUri(String boardName, String threadNumber, String postNumber) {
+		public Uri createPostUri(String boardName, String threadNumber, PostNumber postNumber) {
 			try {
-				return locator.createPostUri(boardName, threadNumber, postNumber);
+				return locator.createPostUri(boardName, threadNumber,
+						postNumber != null ? postNumber.toString() : null);
 			} catch (LinkageError | RuntimeException e) {
 				ExtensionException.logException(e, showToastOnError);
 				return null;

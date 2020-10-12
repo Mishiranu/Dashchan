@@ -35,10 +35,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.WatcherService;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.graphics.ChanIconDrawable;
@@ -137,17 +139,17 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 	}
 
 	public interface Callback {
-		public void onSelectChan(String chanName);
-		public void onSelectBoard(String chanName, String boardName, boolean fromCache);
-		public boolean onSelectThread(String chanName, String boardName, String threadNumber, String postNumber,
+		void onSelectChan(String chanName);
+		void onSelectBoard(String chanName, String boardName, boolean fromCache);
+		boolean onSelectThread(String chanName, String boardName, String threadNumber, PostNumber postNumber,
 				String threadTitle, boolean fromCache);
-		public void onClosePage(String chanName, String boardName, String threadNumber);
-		public void onCloseAllPages();
-		public int onEnterNumber(int number);
-		public void onSelectDrawerMenuItem(int item);
-		public void onDraggingStateChanged(boolean dragging);
-		public Collection<Page> obtainDrawerPages();
-		public void restartApplication();
+		void onClosePage(String chanName, String boardName, String threadNumber);
+		void onCloseAllPages();
+		int onEnterNumber(int number);
+		void onSelectDrawerMenuItem(int item);
+		void onDraggingStateChanged(boolean dragging);
+		Collection<Page> obtainDrawerPages();
+		void restartApplication();
 	}
 
 	public DrawerForm(Context context, Callback callback, ConfigurationLock configurationLock,
@@ -327,7 +329,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 	}
 
 	private void updateConfiguration(String chanName, boolean force) {
-		if (!StringUtils.equals(chanName, this.chanName) || force || menu.isEmpty()) {
+		if (!CommonUtils.equals(chanName, this.chanName) || force || menu.isEmpty()) {
 			this.chanName = chanName;
 			ChanConfiguration configuration = ChanConfiguration.get(chanName);
 			chanNameView.setText(configuration.getTitle());
@@ -512,7 +514,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 									.setNegativeButton(android.R.string.cancel, null)
 									.setPositiveButton(android.R.string.ok, (d, which) -> {
 										String newTitle = editText.getText().toString();
-										FavoritesStorage.getInstance().modifyTitle(listItem.chanName,
+										FavoritesStorage.getInstance().updateTitle(listItem.chanName,
 												listItem.boardName, listItem.threadNumber, newTitle, true);
 									}).create();
 							dialog.getWindow().setSoftInputMode(WindowManager
@@ -634,7 +636,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 				boolean success = false;
 				String boardName = null;
 				String threadNumber = null;
-				String postNumber = null;
+				PostNumber postNumber = null;
 				ChanLocator locator = ChanLocator.get(chanName);
 				if (locator.safe(false).isThreadUri(uri)) {
 					boardName = locator.safe(false).getBoardName(uri);
@@ -857,8 +859,8 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		}
 
 		public boolean compare(String chanName, String boardName, String threadNumber) {
-			return StringUtils.equals(this.chanName, chanName) && StringUtils.equals(this.boardName, boardName)
-					&& StringUtils.equals(this.threadNumber, threadNumber);
+			return CommonUtils.equals(this.chanName, chanName) && CommonUtils.equals(this.boardName, boardName)
+					&& CommonUtils.equals(this.threadNumber, threadNumber);
 		}
 	}
 
@@ -1582,7 +1584,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		DrawerForm.ListItem from = getItem(fromHolder.getAdapterPosition());
 		DrawerForm.ListItem to = getItem(toHolder.getAdapterPosition());
 		return from.type == to.type && (from.type == DrawerForm.ListItem.Type.CHAN ||
-				from.type == DrawerForm.ListItem.Type.FAVORITE && StringUtils.equals(from.chanName, to.chanName) &&
+				from.type == DrawerForm.ListItem.Type.FAVORITE && CommonUtils.equals(from.chanName, to.chanName) &&
 						(from.threadNumber == null) == (to.threadNumber == null));
 	}
 

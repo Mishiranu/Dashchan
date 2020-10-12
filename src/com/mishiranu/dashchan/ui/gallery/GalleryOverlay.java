@@ -30,6 +30,7 @@ import androidx.core.view.ViewCompat;
 import androidx.fragment.app.DialogFragment;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -84,7 +85,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 
 	private Pair<CharSequence, CharSequence> titleSubtitle;
 	private boolean screenOnFixed = false;
-	private int systemUiVisibilityFlags = GalleryInstance.FLAG_LOCKED_USER;
+	private int systemUiVisibilityFlags = GalleryInstance.Flags.LOCKED_USER;
 
 	private static final int ACTION_BAR_COLOR = 0xaa202020;
 	private static final int BACKGROUND_COLOR = 0xf0101010;
@@ -255,7 +256,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 				galleryMode = savedInstanceState.getBoolean(EXTRA_GALLERY_MODE);
 				galleryWindow = savedInstanceState.getBoolean(EXTRA_GALLERY_WINDOW);
 				switchMode(galleryMode, false);
-				modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_USER,
+				modifySystemUiVisibility(GalleryInstance.Flags.LOCKED_USER,
 						savedInstanceState.getBoolean(EXTRA_SYSTEM_UI_VISIBILITY));
 			} else if (newImagePosition != null) {
 				int imagePosition = newImagePosition;
@@ -434,8 +435,8 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 				boardName = galleryItem.boardName;
 				threadNumber = galleryItem.threadNumber;
 			} else if (boardName != null || threadNumber != null) {
-				if (!StringUtils.equals(boardName, galleryItem.boardName) ||
-						!StringUtils.equals(threadNumber, galleryItem.threadNumber)) {
+				if (!CommonUtils.equals(boardName, galleryItem.boardName) ||
+						!CommonUtils.equals(threadNumber, galleryItem.threadNumber)) {
 					// Images from different threads, so don't use them to mark files and folders
 					boardName = null;
 					threadNumber = null;
@@ -466,7 +467,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 		outState.putBoolean(EXTRA_GALLERY_WINDOW, galleryWindow);
 		outState.putBoolean(EXTRA_GALLERY_MODE, galleryMode);
 		outState.putBoolean(EXTRA_SYSTEM_UI_VISIBILITY,
-				FlagUtils.get(systemUiVisibilityFlags, GalleryInstance.FLAG_LOCKED_USER));
+				FlagUtils.get(systemUiVisibilityFlags, GalleryInstance.Flags.LOCKED_USER));
 	}
 
 	private static final int GALLERY_TRANSITION_DURATION = 150;
@@ -481,7 +482,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 					.getQuantityString(R.plurals.number_files__format, count, count));
 			titleSubtitle = null;
 		}
-		modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_GRID, galleryMode);
+		modifySystemUiVisibility(GalleryInstance.Flags.LOCKED_GRID, galleryMode);
 		this.galleryMode = galleryMode;
 		if (galleryMode) {
 			new CornerAnimator(0xa0, 0xc0);
@@ -560,9 +561,8 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 
 	private void setTitle(GalleryItem galleryItem, int position, int size) {
 		String fileName = galleryItem.getFileName(instance.locator);
-		String originalName = galleryItem.originalName;
-		if (originalName != null) {
-			fileName = originalName;
+		if (!StringUtils.isEmpty(galleryItem.originalName)) {
+			fileName = galleryItem.originalName;
 		}
 		int count = instance.galleryItems.size();
 		StringBuilder builder = new StringBuilder().append(position + 1).append('/').append(count);

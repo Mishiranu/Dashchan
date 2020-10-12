@@ -1,5 +1,6 @@
 package com.mishiranu.dashchan.util;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -7,12 +8,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
+import android.os.Handler;
 import androidx.annotation.RequiresApi;
 import com.mishiranu.dashchan.C;
 
 public class AndroidUtils {
 	public interface OnReceiveListener {
-		public void onReceive(BroadcastReceiver receiver, Context context, Intent intent);
+		void onReceive(BroadcastReceiver receiver, Context context, Intent intent);
 	}
 
 	public static BroadcastReceiver createReceiver(OnReceiveListener listener) {
@@ -50,5 +52,10 @@ public class AndroidUtils {
 		channel.setSound(null, null);
 		channel.setVibrationPattern(new long[] {0});
 		return channel;
+	}
+
+	@SuppressLint("NewApi")
+	public static boolean hasCallbacks(Handler handler, Runnable runnable) {
+		return handler.hasCallbacks(runnable);
 	}
 }

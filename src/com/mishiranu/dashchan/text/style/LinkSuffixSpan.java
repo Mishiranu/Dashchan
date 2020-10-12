@@ -1,32 +1,16 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.text.style;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.text.style.ReplacementSpan;
-
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
 public class LinkSuffixSpan extends ReplacementSpan implements ColorScheme.Span {
 	private int suffix;
-	private final String postNumber;
+	private final PostNumber postNumber;
 
 	public static final int SUFFIX_ORIGINAL_POSTER = 0x00000001;
 	public static final int SUFFIX_DIFFERENT_THREAD = 0x00000002;
@@ -34,7 +18,7 @@ public class LinkSuffixSpan extends ReplacementSpan implements ColorScheme.Span 
 
 	private int foregroundColor;
 
-	public LinkSuffixSpan(int suffix, String postNumber) {
+	public LinkSuffixSpan(int suffix, PostNumber postNumber) {
 		this.postNumber = postNumber;
 		this.suffix = suffix;
 	}
@@ -47,7 +31,7 @@ public class LinkSuffixSpan extends ReplacementSpan implements ColorScheme.Span 
 		this.suffix = FlagUtils.set(this.suffix, suffix, present);
 	}
 
-	public String getPostNumber() {
+	public PostNumber getPostNumber() {
 		return postNumber;
 	}
 
@@ -77,7 +61,7 @@ public class LinkSuffixSpan extends ReplacementSpan implements ColorScheme.Span 
 		}
 		char after = end >= text.length() ? '\n' : text.charAt(end);
 		boolean addSpace = after > ' ' && after != '.' && after != ',' && after != '!' && after != '?' && after != ')'
-				&& after != ']' && after != ']' && after != ':' && after != ';';
+				&& after != ']' && after != ':' && after != ';';
 		paint.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
 		return (int) paint.measureText(" " + suffixText + (addSpace ? " " : ""));
 	}

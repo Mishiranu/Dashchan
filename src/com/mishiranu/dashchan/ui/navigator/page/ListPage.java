@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.widget.ListPosition;
@@ -34,10 +35,10 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		private static final InitRequest EMPTY_REQUEST = new InitRequest(false, null, null);
 
 		public final boolean shouldLoad;
-		public final String postNumber;
+		public final PostNumber postNumber;
 		public final String threadTitle;
 
-		public InitRequest(boolean shouldLoad, String postNumber, String threadTitle) {
+		public InitRequest(boolean shouldLoad, PostNumber postNumber, String threadTitle) {
 			this.shouldLoad = shouldLoad;
 			this.postNumber = postNumber;
 			this.threadTitle = threadTitle;
@@ -133,10 +134,16 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		return recyclerView;
 	}
 
+	protected final ListPosition takeListPosition() {
+		ListPosition listPosition = this.listPosition;
+		this.listPosition = null;
+		return listPosition;
+	}
+
 	protected final void restoreListPosition() {
+		ListPosition listPosition = takeListPosition();
 		if (listPosition != null) {
 			listPosition.apply(recyclerView);
-			listPosition = null;
 		}
 	}
 
@@ -187,7 +194,8 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		callback.showScaleAnimation();
 	}
 
-	protected final void handleRedirect(String chanName, String boardName, String threadNumber, String postNumber) {
+	protected final void handleRedirect(String chanName,
+			String boardName, String threadNumber, PostNumber postNumber) {
 		callback.handleRedirect(chanName, boardName, threadNumber, postNumber);
 	}
 
@@ -219,7 +227,7 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 
 	protected void onHandleNewPostDataList() {}
 
-	protected void onScrollToPost(String postNumber) {}
+	protected void onScrollToPost(PostNumber postNumber) {}
 
 	protected void onRequestStoreExtra(boolean saveToStack) {}
 
@@ -252,7 +260,7 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		return 0;
 	}
 
-	public void updatePageConfiguration(String postNumber) {}
+	public void updatePageConfiguration(PostNumber postNumber) {}
 
 	public final boolean isRunning() {
 		return state == State.RESUMED || state == State.PAUSED;
@@ -297,14 +305,14 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		}
 	}
 
-	public final void handleScrollToPost(String postNumber) {
+	public final void handleScrollToPost(PostNumber postNumber) {
 		if (state == State.RESUMED) {
 			onScrollToPost(postNumber);
 		}
 	}
 
 	public final ListPosition getListPosition() {
-		return listPosition != null ? listPosition : ListPosition.obtain(recyclerView);
+		return listPosition != null ? listPosition : ListPosition.obtain(recyclerView, null);
 	}
 
 	public final Pair<Object, Parcelable> getExtraToStore(boolean saveToStack) {
@@ -319,6 +327,6 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		ActionMode startActionMode(ActionMode.Callback callback);
 		void switchView(ViewType viewType, String message);
 		void showScaleAnimation();
-		void handleRedirect(String chanName, String boardName, String threadNumber, String postNumber);
+		void handleRedirect(String chanName, String boardName, String threadNumber, PostNumber postNumber);
 	}
 }

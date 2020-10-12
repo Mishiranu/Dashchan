@@ -45,8 +45,8 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 		this.threadNumber = threadNumber;
 		this.threadTitle = threadTitle;
 		this.postItems = postItems;
-		UiManager.ConfigurationSet configurationSet = new UiManager.ConfigurationSet(null, null, null,
-				null, null, null, null, false, false, false, false, false, null);
+		UiManager.ConfigurationSet configurationSet = new UiManager.ConfigurationSet(null, null,
+				UiManager.PostStateProvider.DEFAULT, null, null, null, false, false, false, false, false, null);
 		holder = uiManager.view().createPostView(parent, configurationSet);
 		divider = ResourceUtils.getDrawable(parent.getContext(), android.R.attr.listDivider, 0);
 		width = parent.getWidth();

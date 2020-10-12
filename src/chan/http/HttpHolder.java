@@ -21,6 +21,7 @@ public final class HttpHolder implements Closeable {
 
 	private int attempt;
 	boolean forceGet = false;
+	boolean executed = false;
 
 	@Public
 	public HttpHolder() {}
@@ -50,8 +51,6 @@ public final class HttpHolder implements Closeable {
 	private volatile boolean disconnectRequested = false;
 	private volatile boolean interrupted = false;
 
-	private boolean hasUnreadBody = false;
-
 	InputListener inputListener;
 	OutputStream outputStream;
 
@@ -70,9 +69,8 @@ public final class HttpHolder implements Closeable {
 
 	@Override
 	public void close() {
-		if (requestThread == Thread.currentThread() && hasUnreadBody) {
+		if (requestThread == Thread.currentThread() && executed) {
 			disconnectAndClear();
-			hasUnreadBody = false;
 			response = null;
 		}
 	}
@@ -137,11 +135,6 @@ public final class HttpHolder implements Closeable {
 		}
 	}
 
-	void checkDisconnectedAndSetHasUnreadBody(boolean hasUnreadBody) throws HttpClient.DisconnectedIOException {
-		checkDisconnected();
-		this.hasUnreadBody = hasUnreadBody;
-	}
-
 	void disconnectAndClear() {
 		HttpURLConnection connection = this.connection;
 		this.connection = null;
@@ -149,6 +142,7 @@ public final class HttpHolder implements Closeable {
 		this.callback = null;
 		inputListener = null;
 		outputStream = null;
+		executed = false;
 		if (connection != null) {
 			connection.disconnect();
 			deadConnection = connection;

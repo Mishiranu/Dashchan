@@ -2,10 +2,6 @@ package com.mishiranu.dashchan.content.model;
 
 import android.net.Uri;
 import chan.content.ChanLocator;
-import chan.content.model.Attachment;
-import chan.content.model.EmbeddedAttachment;
-import chan.content.model.FileAttachment;
-import chan.content.model.Post;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.CacheManager;
@@ -14,14 +10,21 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.net.EmbeddedType;
 import com.mishiranu.dashchan.widget.AttachmentView;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 public abstract class AttachmentItem {
 	public enum Type {IMAGE, VIDEO, AUDIO, FILE}
 	public enum GeneralType {FILE, EMBEDDED, LINK}
 
-	private final Binder binder;
+	public interface Master {
+		String getChanName();
+		String getBoardName();
+		String getThreadNumber();
+		PostNumber getPostNumber();
+	}
+
+	private final Master master;
 
 	public abstract Uri getFileUri();
 	public abstract Uri getThumbnailUri();
@@ -39,36 +42,59 @@ public abstract class AttachmentItem {
 	public abstract String getDescription(AttachmentItem.FormatMode formatMode);
 
 	public String getChanName() {
-		return binder.getChanName();
+		return master.getChanName();
 	}
 
 	public String getBoardName() {
-		return binder.getBoardName();
+		return master.getBoardName();
 	}
 
 	public String getThreadNumber() {
-		return binder.getThreadNumber();
+		return master.getThreadNumber();
 	}
 
-	public String getPostNumber() {
-		return binder.getPostNumber();
+	public PostNumber getPostNumber() {
+		return master.getPostNumber();
 	}
 
 	private static class FileAttachmentItem extends AttachmentItem {
-		public Uri fileUri;
-		public Uri thumbnailUri;
+		public final Uri fileUri;
+		public final Uri thumbnailUri;
 
-		public String originalName;
-		public String displayedExtension;
-		public int size;
-		public int width;
-		public int height;
+		public final String originalName;
+		public final String displayedExtension;
+		public final Type type;
+		public final int size;
+		public final int width;
+		public final int height;
 
 		private String thumbnailKey;
-		private Type type = Type.IMAGE;
 
-		public FileAttachmentItem(Binder binder) {
-			super(binder);
+		public FileAttachmentItem(Master master, ChanLocator locator, Uri fileUri, Uri thumbnailUri,
+				String originalName, int size, int width, int height) {
+			super(master);
+			if (fileUri == null) {
+				fileUri = thumbnailUri;
+			}
+			String fileName = locator.createAttachmentFileName(fileUri);
+			String extension = StringUtils.getFileExtension(fileName);
+			this.fileUri = fileUri;
+			this.thumbnailUri = C.IMAGE_EXTENSIONS.contains(extension) ||
+					C.VIDEO_EXTENSIONS.contains(extension) ? thumbnailUri : null;
+			this.originalName = StringUtils.getNormalizedOriginalName(originalName, fileName);
+			displayedExtension = StringUtils.getNormalizedExtension(extension);
+			if (C.IMAGE_EXTENSIONS.contains(displayedExtension)) {
+				type = Type.IMAGE;
+			} else if (C.VIDEO_EXTENSIONS.contains(displayedExtension)) {
+				type = Type.VIDEO;
+			} else if (C.AUDIO_EXTENSIONS.contains(displayedExtension)) {
+				type = Type.AUDIO;
+			} else {
+				type = Type.FILE;
+			}
+			this.size = size;
+			this.width = width;
+			this.height = height;
 		}
 
 		private ChanLocator getLocator() {
@@ -95,7 +121,7 @@ public abstract class AttachmentItem {
 
 		@Override
 		public String getDialogTitle() {
-			return originalName != null ? originalName : getFileName();
+			return !StringUtils.isEmpty(originalName) ? originalName : getFileName();
 		}
 
 		@Override
@@ -185,38 +211,34 @@ public abstract class AttachmentItem {
 			}
 			return builder.toString();
 		}
-
-		public void setDisplayedExtension(String displayedExtension) {
-			this.displayedExtension = displayedExtension;
-			if (C.IMAGE_EXTENSIONS.contains(displayedExtension)) {
-				type = Type.IMAGE;
-			} else if (C.VIDEO_EXTENSIONS.contains(displayedExtension)) {
-				type = Type.VIDEO;
-			} else if (C.AUDIO_EXTENSIONS.contains(displayedExtension)) {
-				type = Type.AUDIO;
-			} else {
-				type = Type.FILE;
-			}
-		}
 	}
 
 	private static class EmbeddedAttachmentItem extends AttachmentItem {
-		public boolean isAudio;
-		public boolean isVideo;
+		public final boolean isAudio;
+		public final boolean isVideo;
 
-		public String embeddedType;
-		public boolean fromComment;
+		public final String embeddedType;
+		public final boolean fromComment;
 
-		public Uri fileUri;
-		public Uri thumbnailUri;
-		public boolean canDownload;
-		public String fileName;
-		public String title;
+		public final Uri fileUri;
+		public final Uri thumbnailUri;
+		public final boolean canDownload;
+		public final String fileName;
 
 		private String thumbnailKey;
 
-		public EmbeddedAttachmentItem(Binder binder) {
-			super(binder);
+		public EmbeddedAttachmentItem(Master master, Uri fileUri, Uri thumbnailUri,
+				String embeddedType, Post.Attachment.Embedded.ContentType contentType,
+				boolean canDownload, String fileName, boolean fromComment) {
+			super(master);
+			this.fileUri = fileUri;
+			this.thumbnailUri = thumbnailUri;
+			this.embeddedType = embeddedType;
+			isAudio = contentType == Post.Attachment.Embedded.ContentType.AUDIO;
+			isVideo = contentType == Post.Attachment.Embedded.ContentType.VIDEO;
+			this.canDownload = canDownload;
+			this.fileName = fileName;
+			this.fromComment = fromComment;
 		}
 
 		@Override
@@ -239,7 +261,7 @@ public abstract class AttachmentItem {
 
 		@Override
 		public String getDialogTitle() {
-			return title != null ? embeddedType + ": " + title : embeddedType;
+			return embeddedType;
 		}
 
 		@Override
@@ -301,36 +323,26 @@ public abstract class AttachmentItem {
 		}
 	}
 
-	public interface Binder {
-		public String getChanName();
-		public String getBoardName();
-		public String getThreadNumber();
-		public String getPostNumber();
+	protected AttachmentItem(Master master) {
+		this.master = master;
 	}
 
-	protected AttachmentItem(Binder binder) {
-		this.binder = binder;
-	}
-
-	public static ArrayList<AttachmentItem> obtain(PostItem postItem) {
+	public static ArrayList<AttachmentItem> obtain(Master master, Post post, ChanLocator locator) {
 		ArrayList<AttachmentItem> attachmentItems = new ArrayList<>();
-		ChanLocator locator = ChanLocator.get(postItem.getChanName());
-		Post post = postItem.getPost();
-		for (int i = 0, count = post.getAttachmentsCount(); i < count; i++) {
+		for (Post.Attachment attachment : post.attachments) {
 			AttachmentItem attachmentItem = null;
-			Attachment attachment = post.getAttachmentAt(i);
-			if (attachment instanceof FileAttachment) {
-				attachmentItem = obtainFileAttachmentItem(postItem, locator, (FileAttachment) attachment);
-			} else if (attachment instanceof EmbeddedAttachment) {
-				attachmentItem = obtainEmbeddedAttachmentItem(postItem, locator, (EmbeddedAttachment) attachment);
+			if (attachment instanceof Post.Attachment.File) {
+				attachmentItem = obtainFileAttachmentItem(master, locator, (Post.Attachment.File) attachment);
+			} else if (attachment instanceof Post.Attachment.Embedded) {
+				attachmentItem = obtainEmbeddedAttachmentItem(master, locator,
+						(Post.Attachment.Embedded) attachment, false);
 			}
 			if (attachmentItem != null) {
 				attachmentItems.add(attachmentItem);
 			}
 		}
-		String comment = postItem.getRawComment();
 		for (EmbeddedType embeddedType : EmbeddedType.values()) {
-			addCommentAttachmentItems(attachmentItems, postItem, locator, comment, embeddedType);
+			addCommentAttachmentItems(attachmentItems, master, locator, post.comment, embeddedType);
 		}
 		if (attachmentItems.size() > 0) {
 			attachmentItems.trimToSize();
@@ -339,82 +351,51 @@ public abstract class AttachmentItem {
 		return null;
 	}
 
-	private static ArrayList<String> getAllCodes(String... codes) {
-		if (codes != null && codes.length > 0) {
-			ArrayList<String> list = new ArrayList<>(codes.length);
-			Collections.addAll(list, codes);
-			return list;
-		}
-		return null;
-	}
-
 	public enum FormatMode {LONG, SIMPLE, TWO_LINES, THREE_LINES}
 
-	private static FileAttachmentItem obtainFileAttachmentItem(Binder binder, ChanLocator locator,
-			FileAttachment attachment) {
-		if (attachment == null) {
+	private static FileAttachmentItem obtainFileAttachmentItem(Master master, ChanLocator locator,
+			Post.Attachment.File file) {
+		if (file == null) {
 			return null;
 		}
-		FileAttachmentItem attachmentItem = new FileAttachmentItem(binder);
-		attachmentItem.size = attachment.getSize();
-		attachmentItem.width = attachment.getWidth();
-		attachmentItem.height = attachment.getHeight();
-		Uri fileUri = attachment.getRelativeFileUri();
-		Uri thumbnailUri = attachment.getRelativeThumbnailUri();
-		if (fileUri != null || thumbnailUri != null) {
-			if (fileUri == null) {
-				fileUri = thumbnailUri;
-			}
-			String fileName = locator.createAttachmentFileName(fileUri);
-			String extension = StringUtils.getFileExtension(fileName);
-			attachmentItem.fileUri = fileUri;
-			if (C.IMAGE_EXTENSIONS.contains(extension) || C.VIDEO_EXTENSIONS.contains(extension)) {
-				attachmentItem.thumbnailUri = thumbnailUri;
-			}
-			attachmentItem.setDisplayedExtension(FileAttachment.getNormalizedExtension(extension));
-			attachmentItem.originalName = attachment.getNormalizedOriginalName(fileName, extension);
-			return attachmentItem;
+		Uri fileUri = locator.convert(locator.fixRelativeFileUri(file.fileUri));
+		Uri thumbnailUri = locator.convert(locator.fixRelativeFileUri(file.thumbnailUri));
+		if (fileUri == null && thumbnailUri == null) {
+			return null;
 		}
-		return null;
+		return new FileAttachmentItem(master, locator, fileUri, thumbnailUri, file.originalName,
+				file.size, file.width, file.height);
 	}
 
-	private static EmbeddedAttachmentItem obtainEmbeddedAttachmentItem(Binder binder, ChanLocator locator,
-			EmbeddedAttachment attachment) {
-		if (attachment == null) {
+	private static EmbeddedAttachmentItem obtainEmbeddedAttachmentItem(Master master,
+			ChanLocator locator, Post.Attachment.Embedded embedded, boolean fromComment) {
+		if (embedded == null) {
 			return null;
 		}
-		Uri fileUri = attachment.getFileUri();
+		Uri fileUri = embedded.fileUri;
 		if (fileUri == null) {
 			return null;
 		}
-		EmbeddedAttachmentItem attachmentItem = new EmbeddedAttachmentItem(binder);
-		attachmentItem.fileUri = fileUri;
-		attachmentItem.thumbnailUri = attachment.getThumbnailUri();
-		attachmentItem.embeddedType = attachment.getEmbeddedType();
-		EmbeddedAttachment.ContentType contentType = attachment.getContentType();
-		attachmentItem.isAudio = contentType == EmbeddedAttachment.ContentType.AUDIO;
-		attachmentItem.isVideo = contentType == EmbeddedAttachment.ContentType.VIDEO;
-		attachmentItem.canDownload = attachment.isCanDownload();
-		attachmentItem.fileName = attachmentItem.canDownload ? locator.createAttachmentFileName(fileUri,
-				attachment.getNormalizedForcedName()) : null;
-		attachmentItem.title = attachment.getTitle();
-		return attachmentItem;
+		boolean canDownload = embedded.canDownload;
+		String fileName = "";
+		if (canDownload) {
+			String forcedName = StringUtils.escapeFile(embedded.forcedName, false);
+			fileName = locator.createAttachmentFileName(fileUri, forcedName);
+		}
+		return new EmbeddedAttachmentItem(master, fileUri, embedded.thumbnailUri, embedded.embeddedType,
+				embedded.contentType, canDownload, fileName, fromComment);
 	}
 
-	private static EmbeddedAttachmentItem obtainCommentAttachmentItem(Binder binder, ChanLocator locator,
-			EmbeddedType embeddedType, String embeddedCode) {
-		EmbeddedAttachmentItem attachmentItem = obtainEmbeddedAttachmentItem(binder, locator,
-				embeddedType.obtainAttachment(locator, embeddedCode));
-		attachmentItem.fromComment = true;
-		return attachmentItem;
-	}
-
-	private static void addCommentAttachmentItems(ArrayList<AttachmentItem> attachmentItems, Binder binder,
+	private static void addCommentAttachmentItems(List<AttachmentItem> attachmentItems, Master master,
 			ChanLocator locator, String comment, EmbeddedType embeddedType) {
-		ArrayList<String> embeddedCodes = getAllCodes(embeddedType.getAll(locator, comment));
-		if (embeddedCodes != null && embeddedCodes.size() > 0) {
+		String[] embeddedCodes = embeddedType.getAll(locator, comment);
+		if (embeddedCodes != null && embeddedCodes.length > 0) {
 			for (String embeddedCode : embeddedCodes) {
-				attachmentItems.add(obtainCommentAttachmentItem(binder, locator, embeddedType, embeddedCode));
+				AttachmentItem attachmentItem = obtainEmbeddedAttachmentItem(master, locator,
+						embeddedType.obtainAttachment(locator, embeddedCode), true);
+				if (attachmentItem != null) {
+					attachmentItems.add(attachmentItem);
+				}
 			}
 		}
 	}

@@ -28,8 +28,6 @@
 	<string name="all_threads">All threads</string>
 	<string name="allow_this_extension__sentence">Allow this extension to manage application?</string>
 	<string name="always">Always</string>
-	<string name="always_disabled">Always disabled</string>
-	<string name="always_enabled">Always enabled</string>
 	<string name="another">Another</string>
 	<string name="appearance">Appearance</string>
 	<string name="application_name_update__format">%s update</string>
@@ -417,7 +415,6 @@
 	<string name="sending__ellipsis">Sending…</string>
 	<string name="sending_number_of_number__ellipsis_format">Sending %1$d of %2$d…</string>
 	<string name="sent_posts">Sent posts</string>
-	<string name="separate__adjective">Separate</string>
 	<string name="services">Services</string>
 	<string name="sfw_mode">SFW mode</string>
 	<string name="share__ellipsis">Share…</string>

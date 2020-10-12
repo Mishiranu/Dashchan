@@ -63,6 +63,7 @@ import com.mishiranu.dashchan.content.async.ReadCaptchaTask;
 import com.mishiranu.dashchan.content.async.SendPostTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.PostingService;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.graphics.RoundedCornersDrawable;
@@ -131,9 +132,9 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 	}
 
 	public boolean check(String chanName, String boardName, String threadNumber) {
-		return StringUtils.equals(getChanName(), chanName) &&
-				StringUtils.equals(getBoardName(), boardName) &&
-				StringUtils.equals(getThreadNumber(), threadNumber);
+		return CommonUtils.equals(getChanName(), chanName) &&
+				CommonUtils.equals(getBoardName(), boardName) &&
+				CommonUtils.equals(getThreadNumber(), threadNumber);
 	}
 
 	private boolean allowPosting;
@@ -501,17 +502,17 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 						break;
 					}
 					case IN_THREAD: {
-						canLoadState = StringUtils.equals(getBoardName(), captchaDraft.boardName)
-								&& StringUtils.equals(getThreadNumber(), captchaDraft.threadNumber);
+						canLoadState = CommonUtils.equals(getBoardName(), captchaDraft.boardName)
+								&& CommonUtils.equals(getThreadNumber(), captchaDraft.threadNumber);
 						break;
 					}
 					case IN_BOARD_SEPARATELY: {
-						canLoadState = StringUtils.equals(getBoardName(), captchaDraft.boardName)
+						canLoadState = CommonUtils.equals(getBoardName(), captchaDraft.boardName)
 								&& ((getThreadNumber() == null) == (captchaDraft.threadNumber == null));
 						break;
 					}
 					case IN_BOARD: {
-						canLoadState = StringUtils.equals(getBoardName(), captchaDraft.boardName);
+						canLoadState = CommonUtils.equals(getBoardName(), captchaDraft.boardName);
 						break;
 					}
 					case LONG_LIFETIME: {
@@ -519,7 +520,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 						break;
 					}
 				}
-				if (canLoadState && StringUtils.equals(captchaType, captchaDraft.captchaType)) {
+				if (canLoadState && CommonUtils.equals(captchaType, captchaDraft.captchaType)) {
 					if (captchaDraft.captchaState == ChanPerformer.CaptchaState.CAPTCHA && captchaDraft.image != null) {
 						showCaptcha(ChanPerformer.CaptchaState.CAPTCHA, captchaDraft.captchaData, null,
 								captchaDraft.loadedInput, captchaDraft.loadedValidity,
@@ -549,9 +550,9 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 			for (int i = 0; i < replyDataList.size(); i++) {
 				boolean lastLink = i == replyDataList.size() - 1;
 				Replyable.ReplyData data = replyDataList.get(i);
-				String postNumber = data.postNumber;
+				PostNumber postNumber = data.postNumber;
 				String comment = data.comment;
-				if (!StringUtils.isEmpty(postNumber)) {
+				if (postNumber != null) {
 					String link = ">>" + postNumber;
 					// Check if user replies to the same post
 					int index = builder.lastIndexOf(link, commentCarriage);
@@ -775,7 +776,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 				for (int i = 0; i < userIconItems.size(); i++) {
 					Pair<String, String> iconItem = userIconItems.get(i);
 					items.add(iconItem.second);
-					if (StringUtils.equals(lastUserIcon, iconItem.first)) {
+					if (CommonUtils.equals(lastUserIcon, iconItem.first)) {
 						lastUserIconIndex = i;
 					}
 				}
@@ -829,8 +830,8 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 			return false;
 		}
 		for (int i = 0; i < first.size(); i++) {
-			if (!StringUtils.equals(first.get(i).first, first.get(i).second)
-					|| !StringUtils.equals(first.get(i).second, first.get(i).second)) {
+			if (!CommonUtils.equals(first.get(i).first, first.get(i).second)
+					|| !CommonUtils.equals(first.get(i).second, first.get(i).second)) {
 				return false;
 			}
 		}
@@ -850,7 +851,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 				|| oldPosting.optionSpoiler != newPosting.optionSpoiler
 				|| oldPosting.optionOriginalPoster != newPosting.optionOriginalPoster
 				|| oldPosting.maxCommentLength != newPosting.maxCommentLength
-				|| !StringUtils.equals(oldPosting.maxCommentLengthEncoding, newPosting.maxCommentLengthEncoding)
+				|| !CommonUtils.equals(oldPosting.maxCommentLengthEncoding, newPosting.maxCommentLengthEncoding)
 				|| !compareListOfPairs(oldPosting.userIcons, newPosting.userIcons);
 		boolean attachmentOptions = oldPosting.attachmentSpoiler != newPosting.attachmentSpoiler
 				|| !compareListOfPairs(oldPosting.attachmentRatings, newPosting.attachmentRatings);

@@ -50,7 +50,7 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 				break;
 			}
 		}
-		CharSequence text = HtmlParser.spanify(content, new Markup(), null, null);
+		CharSequence text = HtmlParser.spanify(content, new Markup(), null, null, null);
 		ThemeEngine.getColorScheme(requireContext()).apply(text);
 		float density = ResourceUtils.obtainDensity(this);
 		textView = new CommentTextView(requireActivity(), null, android.R.attr.textAppearanceLarge);

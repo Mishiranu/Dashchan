@@ -2,6 +2,7 @@ package com.mishiranu.dashchan.text;
 
 import android.graphics.Color;
 import chan.util.StringUtils;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import java.io.StringReader;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,41 +19,42 @@ import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
 public class HtmlParser implements ContentHandler {
-	public static CharSequence spanify(String source, Markup markup, String parentPostNumber, Object extra) {
-		return parse(source, markup, Mode.SPANIFY, parentPostNumber, extra);
+	public static CharSequence spanify(String source, Markup markup,
+			String threadNumber, PostNumber originalPostNumber, Object extra) {
+		return parse(source, markup, Mode.SPANIFY, threadNumber, originalPostNumber, extra);
 	}
 
 	public static String clear(String source) {
-		return parse(source, null, Mode.CLEAR, null, null).toString();
+		return parse(source, null, Mode.CLEAR, null, null, null).toString();
 	}
 
 	public static String unmark(String source, Markup markup, Object extra) {
-		return parse(source, markup, Mode.UNMARK, null, extra).toString();
+		return parse(source, markup, Mode.UNMARK, null, null, extra).toString();
 	}
 
-	private static CharSequence parse(String source, Markup markup, Mode parsingMode, String parentPostNumber,
-			Object extra) {
+	private static CharSequence parse(String source, Markup markup, Mode parsingMode,
+			String threadNumber, PostNumber originalPostNumber, Object extra) {
 		if (StringUtils.isEmpty(source)) {
 			return "";
 		}
-		return new HtmlParser(source, markup, parsingMode, parentPostNumber, extra).convert();
+		return new HtmlParser(source, markup, parsingMode, threadNumber, originalPostNumber, extra).convert();
 	}
 
 	public interface Markup {
-		public Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,
+		Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,
 				Attributes attributes, TagData tagData);
-		public void onTagStart(HtmlParser parser, StringBuilder builder, String tagName,
+		void onTagStart(HtmlParser parser, StringBuilder builder, String tagName,
 				Attributes attributes, Object object);
-		public void onTagEnd(HtmlParser parser, StringBuilder builder, String tagName);
+		void onTagEnd(HtmlParser parser, StringBuilder builder, String tagName);
 
-		public int onListLineStart(HtmlParser parser, StringBuilder builder, boolean ordered, int line);
-		public void onCutBlock(HtmlParser parser, StringBuilder builder);
+		int onListLineStart(HtmlParser parser, StringBuilder builder, boolean ordered, int line);
+		void onCutBlock(HtmlParser parser, StringBuilder builder);
 
-		public SpanProvider initSpanProvider(HtmlParser parser);
+		SpanProvider initSpanProvider(HtmlParser parser);
 	}
 
 	public interface SpanProvider {
-		public CharSequence transformBuilder(HtmlParser parser, StringBuilder builder);
+		CharSequence transformBuilder(HtmlParser parser, StringBuilder builder);
 	}
 
 	public static class TagData {
@@ -77,11 +79,13 @@ public class HtmlParser implements ContentHandler {
 	private final Mode parsingMode;
 	private final SpanProvider spanProvider;
 
-	private final String parentPostNumber;
+	private final String threadNumber;
+	private final PostNumber originalPostNumber;
 
 	private final Object extra;
 
-	private HtmlParser(String source, Markup markup, Mode parsingMode, String parentPostNumber, Object extra) {
+	private HtmlParser(String source, Markup markup, Mode parsingMode,
+			String threadNumber, PostNumber originalPostNumber, Object extra) {
 		if (markup == null) {
 			markup = IDLE_MARKUP;
 		}
@@ -89,7 +93,8 @@ public class HtmlParser implements ContentHandler {
 		this.source = source;
 		this.markup = markup;
 		this.parsingMode = parsingMode;
-		this.parentPostNumber = parentPostNumber;
+		this.threadNumber = threadNumber;
+		this.originalPostNumber = originalPostNumber;
 		this.extra = extra;
 		spanProvider = isSpanifyMode() || isUnmarkMode() ? markup.initSpanProvider(this) : null;
 	}
@@ -169,8 +174,12 @@ public class HtmlParser implements ContentHandler {
 		return builder;
 	}
 
-	public String getParentPostNumber() {
-		return parentPostNumber;
+	public String getThreadNumber() {
+		return threadNumber;
+	}
+
+	public PostNumber getOriginalPostNumber() {
+		return originalPostNumber;
 	}
 
 	@SuppressWarnings("unchecked")

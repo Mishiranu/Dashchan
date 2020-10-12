@@ -26,8 +26,6 @@
 	<string name="all_threads">Все треды</string>
 	<string name="allow_this_extension__sentence">Разрешить этому расширению управление приложением?</string>
 	<string name="always">Всегда</string>
-	<string name="always_disabled">Всегда выключено</string>
-	<string name="always_enabled">Всегда включено</string>
 	<string name="another">Другой</string>
 	<string name="appearance">Внешний вид</string>
 	<string name="application_name_update__format">Обновление %s</string>
@@ -432,7 +430,6 @@
 	<string name="sending__ellipsis">Отправка…</string>
 	<string name="sending_number_of_number__ellipsis_format">Отправка %1$d из %2$d…</string>
 	<string name="sent_posts">Отправленные сообщения</string>
-	<string name="separate__adjective">Раздельный</string>
 	<string name="services">Сервисы</string>
 	<string name="sfw_mode">SFW режим</string>
 	<string name="share__ellipsis">Отправить…</string>

@@ -8,7 +8,6 @@
 	<item type="id" name="menu_appearance" />
 	<item type="id" name="menu_archive" />
 	<item type="id" name="menu_attach" />
-	<item type="id" name="menu_auto_refresh" />
 	<item type="id" name="menu_catalog" />
 	<item type="id" name="menu_change_theme" />
 	<item type="id" name="menu_check_on_start" />

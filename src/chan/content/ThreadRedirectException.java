@@ -1,10 +1,11 @@
 package chan.content;
 
 import chan.annotation.Public;
+import com.mishiranu.dashchan.content.model.PostNumber;
 
 // TODO CHAN
 // Remove this class after updating
-// exach fourplebs
+// alphachan anonfm chuckdfwk diochan exach ponychan sharechan
 // Added: 13.10.16 14:55
 @Public
 public final class ThreadRedirectException extends Exception {
@@ -19,6 +20,7 @@ public final class ThreadRedirectException extends Exception {
 		this.boardName = boardName;
 		this.threadNumber = threadNumber;
 		this.postNumber = postNumber;
+		PostNumber.validateThreadNumber(threadNumber, false);
 	}
 
 	@Public

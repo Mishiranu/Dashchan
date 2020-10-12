@@ -10,7 +10,6 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
-import com.mishiranu.dashchan.ui.navigator.manager.HidePerformer;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -52,8 +51,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		this.context = context;
 		this.callback = callback;
 		this.uiManager = uiManager;
-		configurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(context),
-				new GalleryItem.GallerySet(false), uiManager.dialog().createStackInstance(), null, null,
+		configurationSet = new UiManager.ConfigurationSet(null, null, UiManager.PostStateProvider.DEFAULT,
+				new GalleryItem.Set(false), uiManager.dialog().createStackInstance(), null,
 				true, false, false, false, false, null);
 		demandSet.highlightText = Collections.singleton(searchQuery);
 	}
@@ -178,7 +177,8 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		for (int i = 0, count = getItemCount(); i < count; i++) {
 			ListItem listItem = getItem(i);
 			if (listItem.postItem != null) {
-				configurationSet.gallerySet.add(listItem.postItem.getAttachmentItems());
+				configurationSet.gallerySet.put(listItem.postItem.getPostNumber(),
+						listItem.postItem.getAttachmentItems());
 			}
 		}
 		notifyDataSetChanged();

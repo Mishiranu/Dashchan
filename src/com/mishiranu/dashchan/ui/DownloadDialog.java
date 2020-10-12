@@ -27,6 +27,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import chan.content.ChanConfiguration;
+import chan.util.CommonUtils;
 import chan.util.DataFile;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
@@ -430,7 +431,7 @@ public class DownloadDialog {
 				List<DialogDirectory> items;
 				synchronized (lastDirectoryLock) {
 					String directoryPath = buildPath(segments, 0);
-					if (lastDirectoryPath == null || !StringUtils.equals(lastDirectoryPath, directoryPath)) {
+					if (lastDirectoryPath == null || !CommonUtils.equals(lastDirectoryPath, directoryPath)) {
 						lastDirectoryPath = directoryPath;
 						lastDirectoryItems = Collections.emptyList();
 

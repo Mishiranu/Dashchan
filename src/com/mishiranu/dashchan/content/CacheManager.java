@@ -5,34 +5,23 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Pair;
-import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
-import chan.content.model.Posts;
 import chan.util.StringUtils;
-import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.util.AndroidUtils;
-import com.mishiranu.dashchan.util.ConcurrentUtils;
+import com.mishiranu.dashchan.util.Hasher;
 import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.LruCache;
 import com.mishiranu.dashchan.util.MimeTypes;
-import java.io.BufferedOutputStream;
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -40,15 +29,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class CacheManager implements Runnable {
-	private static final int MAX_THUMBNAILS_PART = 30;
-	private static final int MAX_MEDIA_PART = 60;
-	private static final int MAX_PAGES_PART = 30;
-
-	private static final long OLD_THREADS_THRESHOLD = 7 * 24 * 60 * 60 * 1000; // One week
+	private static final int MAX_THUMBNAILS_PART = 1;
+	private static final int MAX_MEDIA_PART = 2;
 
 	private static final float TRIM_FACTOR = 0.3f;
-
-	private static final String TEMP_PAGE_FILE_PREFIX = "temp_";
 
 	private static final CacheManager INSTANCE = new CacheManager();
 
@@ -89,10 +73,6 @@ public class CacheManager implements Runnable {
 					file = new File(getMediaDirectory(), cacheItem.name);
 					break;
 				}
-				case PAGES: {
-					file = new File(getPagesDirectory(), cacheItem.name);
-					break;
-				}
 			}
 			file.delete();
 		}
@@ -101,7 +81,7 @@ public class CacheManager implements Runnable {
 	private volatile CountDownLatch cacheBuildingLatch;
 
 	private static class CacheItem {
-		public enum Type {THUMBNAILS, MEDIA, PAGES}
+		public enum Type {THUMBNAILS, MEDIA}
 
 		public final String name;
 		public final String nameLc;
@@ -149,11 +129,9 @@ public class CacheManager implements Runnable {
 
 	private final LinkedHashMap<String, CacheItem> thumbnailsCache = new LinkedHashMap<>();
 	private final LinkedHashMap<String, CacheItem> mediaCache = new LinkedHashMap<>();
-	private final LinkedHashMap<String, CacheItem> pagesCache = new LinkedHashMap<>();
 
 	private long thumbnailsCacheSize;
 	private long mediaCacheSize;
-	private long pagesCacheSize;
 
 	private long fillCache(LinkedHashMap<String, CacheItem> cacheItems, File directory, CacheItem.Type type) {
 		cacheItems.clear();
@@ -164,14 +142,7 @@ public class CacheManager implements Runnable {
 		File[] files = directory.listFiles();
 		if (files != null) {
 			for (File file : files) {
-				CacheItem cacheItem = new CacheItem(file, type);
-				if (type == CacheItem.Type.PAGES && cacheItem.name.startsWith(TEMP_PAGE_FILE_PREFIX)) {
-					if (cacheItem.lastModified < System.currentTimeMillis() - OLD_THREADS_THRESHOLD) {
-						file.delete();
-					}
-					continue;
-				}
-				cacheItemsList.add(cacheItem);
+				cacheItemsList.add(new CacheItem(file, type));
 			}
 		}
 		Collections.sort(cacheItemsList, SORT_BY_DATE_COMPARATOR);
@@ -195,18 +166,15 @@ public class CacheManager implements Runnable {
 				synchronized (mediaCache) {
 					mediaCacheSize = fillCache(mediaCache, getMediaDirectory(), CacheItem.Type.MEDIA);
 				}
-				synchronized (pagesCache) {
-					pagesCacheSize = fillCache(pagesCache, getPagesDirectory(), CacheItem.Type.PAGES);
-				}
-				cleanupAsync(true, true, true);
+				cleanupAsync(true, true);
 			} finally {
 				latch.countDown();
 			}
 		}).start();
 	}
 
-	private void cleanupAsync(boolean thumbnails, boolean media, boolean pages) {
-		int maxCache = MAX_THUMBNAILS_PART + MAX_MEDIA_PART + MAX_PAGES_PART;
+	private void cleanupAsync(boolean thumbnails, boolean media) {
+		int maxCache = MAX_THUMBNAILS_PART + MAX_MEDIA_PART;
 		long maxCacheSize = Preferences.getCacheSize() * 1000L * 1000L;
 		ArrayList<CacheItem> cleanupCacheItems = null;
 		if (thumbnails) {
@@ -230,18 +198,6 @@ public class CacheManager implements Runnable {
 					}
 					mediaCacheSize = obtainCacheItemsToCleanup(cleanupCacheItems, mediaCache,
 							mediaCacheSize, maxSize, null);
-				}
-			}
-		}
-		if (pages) {
-			synchronized (pagesCache) {
-				long maxSize = MAX_PAGES_PART * maxCacheSize / maxCache;
-				if (pagesCacheSize > maxSize) {
-					if (cleanupCacheItems == null) {
-						cleanupCacheItems = new ArrayList<>();
-					}
-					pagesCacheSize = obtainCacheItemsToCleanup(cleanupCacheItems, pagesCache,
-							pagesCacheSize, maxSize, new PagesCacheDeleteCondition());
 				}
 			}
 		}
@@ -269,27 +225,7 @@ public class CacheManager implements Runnable {
 	}
 
 	private interface DeleteCondition {
-		public boolean allowDeleteCacheItem(CacheItem cacheItem);
-	}
-
-	private class PagesCacheDeleteCondition implements DeleteCondition {
-		private final long olderThan = System.currentTimeMillis() - OLD_THREADS_THRESHOLD;
-		private final ArrayList<String> favoriteFiles = new ArrayList<>();
-
-		public PagesCacheDeleteCondition() {
-			for (FavoritesStorage.FavoriteItem favoriteItem : ConcurrentUtils
-					.mainGet(() -> FavoritesStorage.getInstance().getThreads(null))) {
-				if (ChanManager.getInstance().isExistingChanName(favoriteItem.chanName)) {
-					favoriteFiles.add(getPostsFileName(favoriteItem.chanName, favoriteItem.boardName,
-							favoriteItem.threadNumber).toLowerCase(Locale.US));
-				}
-			}
-		}
-
-		@Override
-		public boolean allowDeleteCacheItem(CacheItem cacheItem) {
-			return cacheItem.lastModified < olderThan && !favoriteFiles.contains(cacheItem.nameLc);
-		}
+		boolean allowDeleteCacheItem(CacheItem cacheItem);
 	}
 
 	private boolean waitCacheSync() {
@@ -313,9 +249,6 @@ public class CacheManager implements Runnable {
 			case MEDIA: {
 				return mediaCache;
 			}
-			case PAGES: {
-				return pagesCache;
-			}
 		}
 		throw new RuntimeException("Unknown cache type");
 	}
@@ -328,10 +261,6 @@ public class CacheManager implements Runnable {
 			}
 			case MEDIA: {
 				mediaCacheSize += lengthDelta;
-				break;
-			}
-			case PAGES: {
-				pagesCacheSize += lengthDelta;
 				break;
 			}
 		}
@@ -392,8 +321,7 @@ public class CacheManager implements Runnable {
 			}
 			modifyCacheSize(type, lengthDelta);
 			if (success) {
-				cleanupAsync(type == CacheItem.Type.THUMBNAILS, type == CacheItem.Type.MEDIA,
-						type == CacheItem.Type.PAGES);
+				cleanupAsync(type == CacheItem.Type.THUMBNAILS, type == CacheItem.Type.MEDIA);
 			}
 		}
 	}
@@ -406,7 +334,7 @@ public class CacheManager implements Runnable {
 		if (waitCacheSync()) {
 			return 0L;
 		}
-		return thumbnailsCacheSize + mediaCacheSize + pagesCacheSize;
+		return thumbnailsCacheSize + mediaCacheSize;
 	}
 
 	private File getThumbnailsDirectory() {
@@ -417,16 +345,12 @@ public class CacheManager implements Runnable {
 		return getCacheDirectory("media");
 	}
 
-	private File getPagesDirectory() {
-		return getCacheDirectory("pages");
-	}
-
-	private File getCacheDirectory(String subFolder) {
+	private File getCacheDirectory(String name) {
 		File directory = getExternalCacheDirectory();
 		if (directory == null) {
 			return null;
 		}
-		File file = new File(directory, subFolder);
+		File file = new File(directory, name);
 		if (isCacheAvailable() && !file.exists()) {
 			file.mkdirs();
 		}
@@ -484,18 +408,6 @@ public class CacheManager implements Runnable {
 		}
 	}
 
-	public void erasePagesCache(boolean onlyOld) throws InterruptedException {
-		synchronized (pagesCache) {
-			if (onlyOld) {
-				long deleted = eraseCache(pagesCache, getPagesDirectory(), new PagesCacheDeleteCondition());
-				pagesCacheSize -= deleted;
-			} else {
-				eraseCache(pagesCache, getPagesDirectory(), null);
-				pagesCacheSize = 0L;
-			}
-		}
-	}
-
 	private final LruCache<String, String> cachedFileKeys = new LruCache<>(1000);
 
 	public String getCachedFileKey(Uri uri) {
@@ -533,7 +445,7 @@ public class CacheManager implements Runnable {
 					return hash;
 				}
 			}
-			String hash = IOUtils.calculateSha256(data);
+			String hash = StringUtils.formatHex(Hasher.getInstanceSha256().calculate(data));
 			synchronized (cachedFileKeys) {
 				cachedFileKeys.put(data, hash);
 			}
@@ -558,8 +470,6 @@ public class CacheManager implements Runnable {
 				type = CacheItem.Type.THUMBNAILS;
 			} else if (directory.equals(getMediaDirectory())) {
 				type = CacheItem.Type.MEDIA;
-			} else if (directory.equals(getPagesDirectory())) {
-				type = CacheItem.Type.PAGES;
 			}
 			if (type != null) {
 				validateNewCachedFile(file, file.getName(), type, success);
@@ -625,260 +535,6 @@ public class CacheManager implements Runnable {
 			IOUtils.close(outputStream);
 			validateNewCachedFile(file, thumbnailKey, CacheItem.Type.THUMBNAILS, success);
 		}
-	}
-
-	private final Object serializationQueueLock = new Object();
-	private int serializationQueueSize = 0;
-
-	public void waitSerializationFinished() throws InterruptedException {
-		synchronized (serializationQueueLock) {
-			while (serializationQueueSize > 0) {
-				serializationQueueLock.wait();
-			}
-		}
-	}
-
-	private void handleSerializationQueue(boolean release) {
-		synchronized (serializationQueueLock) {
-			if (release) {
-				serializationQueueSize--;
-			} else {
-				serializationQueueSize++;
-			}
-			serializationQueueLock.notifyAll();
-		}
-	}
-
-	public static class SerializationHolder {
-		private boolean cancelled = false;
-		private Closeable closeable;
-
-		private void setCloseable(Closeable closeable) throws IOException {
-			synchronized (this) {
-				if (cancelled) {
-					throw new IOException();
-				}
-				this.closeable = closeable;
-			}
-		}
-
-		public void cancel() {
-			synchronized (this) {
-				cancelled = true;
-				IOUtils.close(closeable);
-			}
-		}
-	}
-
-	private final HashMap<String, SerializePageCallback> serializePageCallbacks = new HashMap<>();
-
-	private void serializePage(String fileName, Object object) {
-		if (!isCacheAvailable()) {
-			return;
-		}
-		File file = getPagesFile(fileName);
-		if (file == null) {
-			return;
-		}
-		File tempFile = getPagesFile(TEMP_PAGE_FILE_PREFIX + fileName);
-		SerializePageCallback callback;
-		synchronized (serializePageCallbacks) {
-			callback = serializePageCallbacks.get(fileName);
-		}
-		if (callback != null) {
-			callback.cancel();
-		}
-		callback = new SerializePageCallback(file, tempFile, fileName, object);
-		synchronized (serializePageCallbacks) {
-			serializePageCallbacks.put(fileName, callback);
-		}
-		AsyncTask.THREAD_POOL_EXECUTOR.execute(callback);
-		handleSerializationQueue(false);
-	}
-
-	private Object deserializePage(String fileName, SerializationHolder holder) {
-		if (!isCacheAvailable()) {
-			return null;
-		}
-		File file = getPagesFile(fileName);
-		if (file == null) {
-			return null;
-		}
-		synchronized (serializePageCallbacks) {
-			SerializePageCallback callback = serializePageCallbacks.get(fileName);
-			if (callback != null) {
-				return callback.object;
-			}
-		}
-		synchronized (obtainPageFileLock(fileName)) {
-			File tempFile = getPagesFile(TEMP_PAGE_FILE_PREFIX + fileName);
-			if (tempFile.exists()) {
-				if ((!file.exists() || !file.delete()) && !tempFile.renameTo(file)) {
-					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
-							"Can't restore backup file", tempFile.getName());
-				} else {
-					validateNewCachedFile(file, fileName, CacheItem.Type.PAGES, true);
-				}
-			}
-			ObjectInputStream objectInputStream = null;
-			try {
-				FileInputStream fileInputStream = new FileInputStream(file);
-				holder.setCloseable(fileInputStream);
-				objectInputStream = new ObjectInputStream(fileInputStream);
-				Object result = objectInputStream.readObject();
-				updateCachedFileLastModified(file, fileName, CacheItem.Type.PAGES);
-				return result;
-			} catch (FileNotFoundException e) {
-				// File not exist, ignore exception
-			} catch (Exception e) {
-				if (!holder.cancelled) {
-					Log.persistent().stack(e);
-				}
-			} finally {
-				IOUtils.close(objectInputStream);
-			}
-			return null;
-		}
-	}
-
-	private final HashMap<String, Object> pageFileLocks = new HashMap<>();
-
-	private Object obtainPageFileLock(String fileName) {
-		synchronized (pageFileLocks) {
-			Object object = pageFileLocks.get(fileName);
-			if (object == null) {
-				object = new Object();
-				pageFileLocks.put(fileName, object);
-			}
-			return object;
-		}
-	}
-
-	private class SerializePageCallback implements Runnable {
-		private final File file;
-		private final File tempFile;
-		private final String fileName;
-		private final Object object;
-		private final SerializationHolder holder = new SerializationHolder();
-
-		public SerializePageCallback(File file, File tempFile, String fileName, Object object) {
-			this.file = file;
-			this.tempFile = tempFile;
-			this.fileName = fileName;
-			this.object = object;
-		}
-
-		@Override
-		public void run() {
-			synchronized (obtainPageFileLock(fileName)) {
-				if (holder.cancelled) {
-					return;
-				}
-				if (file.exists() && (!tempFile.exists() || !tempFile.delete()) && !file.renameTo(tempFile)) {
-					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
-							"Can't create backup of", file.getName());
-					return;
-				}
-				boolean success = false;
-				FileOutputStream outputStream = null;
-				try {
-					outputStream = new FileOutputStream(file);
-					ObjectOutputStream objectOutputStream = new ObjectOutputStream
-							(new BufferedOutputStream(outputStream));
-					holder.setCloseable(objectOutputStream);
-					objectOutputStream.writeObject(object);
-					objectOutputStream.flush();
-					outputStream.getFD().sync();
-					success = true;
-				} catch (IOException e) {
-					Log.persistent().write(e);
-				} finally {
-					success &= IOUtils.close(outputStream);
-					if (success) {
-						if (tempFile.exists() && !tempFile.delete()) {
-							Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
-									"Can't delete temp file", tempFile.getName());
-						}
-						validateNewCachedFile(file, fileName, CacheItem.Type.PAGES, true);
-					} else {
-						file.delete();
-						tempFile.renameTo(file);
-					}
-					synchronized (serializePageCallbacks) {
-						serializePageCallbacks.remove(fileName);
-					}
-					handleSerializationQueue(true);
-				}
-			}
-		}
-
-		public void cancel() {
-			holder.cancel();
-			synchronized (obtainPageFileLock(fileName)) {
-				// Wait until run() over
-			}
-		}
-	}
-
-	public void movePostsPage(String chanName, String fromBoardName, String fromThreadNumber,
-			String toBoardName, String toThreadNumber) {
-		String fromFileName = getPostsFileName(chanName, fromBoardName, fromThreadNumber);
-		String toFileName = getPostsFileName(chanName, toBoardName, toThreadNumber);
-		File fromFile = getPagesFile(fromFileName);
-		File toFile = getPagesFile(toFileName);
-		File fromTempFile = getPagesFile(TEMP_PAGE_FILE_PREFIX + fromFileName);
-		File toTempFile = getPagesFile(TEMP_PAGE_FILE_PREFIX + toFileName);
-		if (fromFile == null || toFile == null || fromTempFile == null || toFileName == null) {
-			return;
-		}
-		synchronized (obtainPageFileLock(fromFile.getName())) {
-			synchronized (obtainPageFileLock(toFile.getName())) {
-				if (fromFile.exists() && !toFile.exists()) {
-					toTempFile.delete();
-					fromFile.renameTo(toFile);
-					fromTempFile.renameTo(toTempFile);
-					validateNewCachedFile(fromFile, fromFile.getName(), CacheItem.Type.PAGES, false);
-					validateNewCachedFile(toFile, toFile.getName(), CacheItem.Type.PAGES, true);
-				}
-			}
-		}
-	}
-
-	public boolean allowPagesCache(String chanName) {
-		return !ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_LOCAL_MODE);
-	}
-
-	public void serializePosts(String chanName, String boardName, String threadNumber, Object posts) {
-		if (allowPagesCache(chanName)) {
-			serializePage(getPostsFileName(chanName, boardName, threadNumber), posts);
-		}
-	}
-
-	public Posts deserializePosts(String chanName, String boardName, String threadNumber, SerializationHolder holder) {
-		if (allowPagesCache(chanName)) {
-			try {
-				return (Posts) deserializePage(getPostsFileName(chanName, boardName, threadNumber), holder);
-			} catch (ClassCastException e) {
-				return null;
-			}
-		} else {
-			return null;
-		}
-	}
-
-	private String getPostsFileName(String chanName, String boardName, String threadNumber) {
-		return "posts_" + chanName + "_" + boardName + "_" + threadNumber;
-	}
-
-	private File getPagesFile(String fileName) {
-		File directory = getPagesDirectory();
-		if (directory == null) {
-			return null;
-		}
-		if (!directory.exists()) {
-			directory.mkdirs();
-		}
-		return new File(directory, fileName);
 	}
 
 	private final Object directoryLocker = new Object();

@@ -34,7 +34,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
-import chan.content.model.Posts;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -47,7 +47,9 @@ import com.mishiranu.dashchan.content.async.SendMultifunctionalTask;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
+import com.mishiranu.dashchan.content.model.Post;
 import com.mishiranu.dashchan.content.model.PostItem;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
@@ -76,8 +78,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class DialogUnit {
 	private final UiManager uiManager;
@@ -87,10 +89,10 @@ public class DialogUnit {
 			public final List<AttachmentItem> attachmentItems;
 			public final int startImageIndex;
 			public final GalleryOverlay.NavigatePostMode navigatePostMode;
-			public final GalleryItem.GallerySet gallerySet;
+			public final GalleryItem.Set gallerySet;
 
 			private AttachmentDialog(List<AttachmentItem> attachmentItems, int startImageIndex,
-					GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
+					GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.Set gallerySet) {
 				this.attachmentItems = attachmentItems;
 				this.startImageIndex = startImageIndex;
 				this.navigatePostMode = navigatePostMode;
@@ -199,7 +201,7 @@ public class DialogUnit {
 
 		public void saveState(View view) {
 			DialogHolder holder = (DialogHolder) view.getTag();
-			factory.listPosition = ListPosition.obtain(holder.recyclerView);
+			factory.listPosition = ListPosition.obtain(holder.recyclerView, null);
 		}
 	}
 
@@ -232,13 +234,10 @@ public class DialogUnit {
 					boolean notify = adapter.postItems.contains(postItem);
 					if (!notify) {
 						// Must notify adapter to update links to shown/hidden posts
-						LinkedHashSet<String> referencesFrom = postItem.getReferencesFrom();
-						if (referencesFrom != null) {
-							for (String referenceFrom : referencesFrom) {
-								if (adapter.postNumbers.contains(referenceFrom)) {
-									notify = true;
-									break;
-								}
+						for (PostNumber referenceFrom : postItem.getReferencesFrom()) {
+							if (adapter.postNumbers.contains(referenceFrom)) {
+								notify = true;
+								break;
 							}
 						}
 					}
@@ -308,7 +307,7 @@ public class DialogUnit {
 	private enum State {LIST, LOADING, ERROR}
 
 	private interface StateListener {
-		public boolean onStateChanged(State state);
+		boolean onStateChanged(State state);
 	}
 
 	private static abstract class DialogProvider implements UiManager.Observer, Iterable<PostItem> {
@@ -412,8 +411,8 @@ public class DialogUnit {
 							postItem.getBoardName(), postItem.getThreadNumber(), data);
 				}
 				configurationSet = new UiManager.ConfigurationSet(replyable,
-						intermediate, new HidePerformer(uiManager.getContext()), new GalleryItem.GallerySet(false),
-						configurationSet.stackInstance, intermediate, null, false, true, false, false, false, null);
+						intermediate, UiManager.PostStateProvider.DEFAULT, new GalleryItem.Set(false),
+						configurationSet.stackInstance, intermediate, false, true, false, false, false, null);
 				return new ThreadDialogProvider(uiManager, configurationSet, intermediate, postItem);
 			}
 		}
@@ -428,7 +427,7 @@ public class DialogUnit {
 			}
 
 			@Override
-			public PostItem findPostItem(String postNumber) {
+			public PostItem findPostItem(PostNumber postNumber) {
 				return provider.get().findPostItem(postNumber);
 			}
 
@@ -457,32 +456,29 @@ public class DialogUnit {
 			postItem.setOrdinalIndex(0);
 			postItem.clearReferencesFrom();
 			postItems.add(postItem);
-			PostItem[] postItems = postItem.getThreadLastPosts();
-			if (postItems != null) {
-				for (int i = 0; i < postItems.length; i++) {
-					postItem = postItems[i];
-					this.postItems.add(postItem);
-					HashSet<String> referencesTo = postItem.getReferencesTo();
-					if (referencesTo != null) {
-						for (String postNumber : referencesTo) {
-							for (int j = 0; j < i + 1; j++) {
-								PostItem foundPostItem = this.postItems.get(j);
-								if (postNumber.equals(foundPostItem.getPostNumber())) {
-									foundPostItem.addReferenceFrom(postItem.getPostNumber());
-								}
+			List<PostItem> childPostItems = postItem.getThreadPosts();
+			if (!childPostItems.isEmpty()) {
+				for (int i = 0; i < childPostItems.size(); i++) {
+					PostItem childPostItem = childPostItems.get(i);
+					postItems.add(childPostItem);
+					for (PostNumber postNumber : childPostItem.getReferencesTo()) {
+						for (int j = 0; j < i + 1; j++) {
+							PostItem foundPostItem = postItems.get(j);
+							if (postNumber.equals(foundPostItem.getPostNumber())) {
+								foundPostItem.addReferenceFrom(childPostItem.getPostNumber());
 							}
 						}
 					}
 				}
 			}
 			configurationSet.gallerySet.setThreadTitle(this.postItems.get(0).getSubjectOrComment());
-			for (int i = 0; i < this.postItems.size(); i++) {
-				configurationSet.gallerySet.add(this.postItems.get(i).getAttachmentItems());
+			for (PostItem childPostItem : postItems) {
+				configurationSet.gallerySet.put(childPostItem.getPostNumber(), childPostItem.getAttachmentItems());
 			}
 		}
 
 		@Override
-		public PostItem findPostItem(String postNumber) {
+		public PostItem findPostItem(PostNumber postNumber) {
 			for (PostItem postItem : postItems) {
 				if (postNumber.equals(postItem.getPostNumber())) {
 					return postItem;
@@ -509,17 +505,19 @@ public class DialogUnit {
 			String threadNumber = originalPostItem.getThreadNumber();
 			ChanLocator locator = ChanLocator.get(chanName);
 			if (chanName != null && locator.safe(false).isThreadUri(uri)
-					&& StringUtils.equals(boardName, locator.safe(false).getBoardName(uri))
-					&& StringUtils.equals(threadNumber, locator.safe(false).getThreadNumber(uri))) {
-				String postNumber = locator.safe(false).getPostNumber(uri);
-				if (postNumber == null) {
-					postNumber = locator.safe(false).getThreadNumber(uri);
-				}
-				for (PostItem postItem : postItems) {
-					if (postNumber.equals(postItem.getPostNumber())) {
-						uiManager.dialog().displaySingle(configurationSet, postItem);
-						return;
+					&& CommonUtils.equals(boardName, locator.safe(false).getBoardName(uri))
+					&& CommonUtils.equals(threadNumber, locator.safe(false).getThreadNumber(uri))) {
+				PostNumber postNumber = locator.safe(false).getPostNumber(uri);
+				if (postNumber != null) {
+					for (PostItem postItem : postItems) {
+						if (postNumber.equals(postItem.getPostNumber())) {
+							uiManager.dialog().displaySingle(configurationSet, postItem);
+							return;
+						}
 					}
+				} else {
+					uiManager.dialog().displaySingle(configurationSet, originalPostItem);
+					return;
 				}
 			}
 			uiManager.interaction().handleLinkClick(configurationSet, chanName, uri, confirmed);
@@ -565,8 +563,8 @@ public class DialogUnit {
 		public void onRequestUpdate() {
 			super.onRequestUpdate();
 			postItems.clear();
-			LinkedHashSet<String> referencesFrom = postItem.getReferencesFrom();
-			if (referencesFrom != null) {
+			Set<PostNumber> referencesFrom = postItem.getReferencesFrom();
+			if (!referencesFrom.isEmpty()) {
 				for (PostItem postItem : configurationSet.postsProvider) {
 					if (referencesFrom.contains(postItem.getPostNumber())) {
 						postItems.add(postItem);
@@ -578,9 +576,9 @@ public class DialogUnit {
 
 	private static class ListDialogProvider extends DialogProvider {
 		public static class Factory extends DialogProvider.Factory {
-			private final HashSet<String> postNumbers;
+			private final HashSet<PostNumber> postNumbers;
 
-			public Factory(Collection<String> postNumbers) {
+			public Factory(Collection<PostNumber> postNumbers) {
 				this.postNumbers = new HashSet<>(postNumbers);
 			}
 
@@ -590,10 +588,10 @@ public class DialogUnit {
 			}
 		}
 
-		private final HashSet<String> postNumbers;
+		private final HashSet<PostNumber> postNumbers;
 		private final ArrayList<PostItem> postItems = new ArrayList<>();
 
-		private ListDialogProvider(UiManager.ConfigurationSet configurationSet, HashSet<String> postNumbers) {
+		private ListDialogProvider(UiManager.ConfigurationSet configurationSet, HashSet<PostNumber> postNumbers) {
 			super(configurationSet);
 			this.postNumbers = postNumbers;
 			onRequestUpdate();
@@ -622,11 +620,11 @@ public class DialogUnit {
 			private final String chanName;
 			private final String boardName;
 			private final String threadNumber;
-			private final String postNumber;
+			private final PostNumber postNumber;
 
 			private PostItem postItem;
 
-			public Factory(String chanName, String boardName, String threadNumber, String postNumber) {
+			public Factory(String chanName, String boardName, String threadNumber, PostNumber postNumber) {
 				this.chanName = chanName;
 				this.boardName = boardName;
 				this.threadNumber = threadNumber;
@@ -635,8 +633,8 @@ public class DialogUnit {
 
 			@Override
 			public DialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
-				configurationSet = new UiManager.ConfigurationSet(null, null, new HidePerformer(uiManager.getContext()),
-						new GalleryItem.GallerySet(false), configurationSet.stackInstance, null, null,
+				configurationSet = new UiManager.ConfigurationSet(null, null, UiManager.PostStateProvider.DEFAULT,
+						new GalleryItem.Set(false), configurationSet.stackInstance, null,
 						false, true, false, false, false, null);
 				return new AsyncDialogProvider(uiManager, configurationSet, this,
 						chanName, boardName, threadNumber, postNumber);
@@ -648,12 +646,12 @@ public class DialogUnit {
 		private final String chanName;
 		private final String boardName;
 		private final String threadNumber;
-		private final String postNumber;
+		private final PostNumber postNumber;
 
 		private ReadSinglePostTask readTask;
 
 		private AsyncDialogProvider(UiManager uiManager, UiManager.ConfigurationSet configurationSet, Factory factory,
-				String chanName, String boardName, String threadNumber, String postNumber) {
+				String chanName, String boardName, String threadNumber, PostNumber postNumber) {
 			super(configurationSet);
 			this.uiManager = uiManager;
 			this.factory = factory;
@@ -665,10 +663,7 @@ public class DialogUnit {
 				onReadSinglePostSuccess(factory.postItem);
 			} else {
 				switchState(State.LOADING, null);
-				if (StringUtils.isEmpty(postNumber)) {
-					postNumber = threadNumber;
-				}
-				readTask = new ReadSinglePostTask(this, chanName, boardName, postNumber);
+				readTask = new ReadSinglePostTask(this, chanName, boardName, threadNumber, postNumber);
 				readTask.executeOnExecutor(ReadSinglePostTask.THREAD_POOL_EXECUTOR);
 			}
 		}
@@ -704,10 +699,10 @@ public class DialogUnit {
 			factory.postItem = postItem;
 			List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 			if (attachmentItems != null) {
-				if (postItem.getParentPostNumber() == null) {
+				if (postItem.isOriginalPost()) {
 					configurationSet.gallerySet.setThreadTitle(postItem.getSubjectOrComment());
 				}
-				configurationSet.gallerySet.add(attachmentItems);
+				configurationSet.gallerySet.put(postItem.getPostNumber(), attachmentItems);
 			}
 			switchState(State.LIST, null);
 		}
@@ -720,21 +715,6 @@ public class DialogUnit {
 						context.getString(R.string.open_thread), false, () -> uiManager.navigator()
 						.navigatePosts(chanName, boardName, threadNumber, postNumber, null, 0));
 			});
-		}
-
-		@Override
-		public void onPostItemMessage(PostItem postItem, UiManager.Message message) {
-			if (factory.postItem == postItem) {
-				switch (message) {
-					case PERFORM_SWITCH_HIDE: {
-						if (postItem.isHiddenUnchecked()) {
-							postItem.setHidden(false);
-							uiManager.sendPostItemMessage(postItem, UiManager.Message.POST_INVALIDATE_ALL_VIEWS);
-						}
-						break;
-					}
-				}
-			}
 		}
 	}
 
@@ -772,12 +752,12 @@ public class DialogUnit {
 		display(configurationSet, new RepliesDialogProvider.Factory(postItem));
 	}
 
-	public void displayList(UiManager.ConfigurationSet configurationSet, Collection<String> postNumbers) {
+	public void displayList(UiManager.ConfigurationSet configurationSet, Collection<PostNumber> postNumbers) {
 		display(configurationSet, new ListDialogProvider.Factory(postNumbers));
 	}
 
 	public void displayReplyAsync(UiManager.ConfigurationSet configurationSet,
-			String chanName, String boardName, String threadNumber, String postNumber) {
+			String chanName, String boardName, String threadNumber, PostNumber postNumber) {
 		display(configurationSet, new AsyncDialogProvider.Factory(chanName, boardName, threadNumber, postNumber));
 	}
 
@@ -816,7 +796,7 @@ public class DialogUnit {
 		private final CommentTextView.RecyclerKeeper recyclerKeeper;
 
 		public final ArrayList<PostItem> postItems = new ArrayList<>();
-		public final HashSet<String> postNumbers = new HashSet<>();
+		public final HashSet<PostNumber> postNumbers = new HashSet<>();
 
 		public DialogPostsAdapter(UiManager uiManager, DialogProvider dialogProvider, RecyclerView recyclerView) {
 			this.uiManager = uiManager;
@@ -857,7 +837,8 @@ public class DialogUnit {
 
 		@Override
 		public int getItemViewType(int position) {
-			return (getItem(position).isHidden(dialogProvider.configurationSet.hidePerformer)
+			PostItem postItem = getItem(position);
+			return (dialogProvider.configurationSet.postStateProvider.isHiddenResolve(postItem)
 					? ViewType.POST_HIDDEN : ViewType.POST).ordinal();
 		}
 
@@ -868,12 +849,14 @@ public class DialogUnit {
 		@Override
 		public boolean onItemClick(RecyclerView.ViewHolder holder, int position, Void nothing, boolean longClick) {
 			PostItem postItem = postItems.get(position);
+			UiManager.ConfigurationSet configurationSet = dialogProvider.configurationSet;
 			if (longClick) {
-				UiManager.ConfigurationSet configurationSet = dialogProvider.configurationSet;
-				return uiManager.interaction().handlePostContextMenu(postItem, configurationSet.replyable,
+				boolean userPost = configurationSet.postStateProvider.isUserPost(postItem.getPostNumber());
+				return uiManager.interaction().handlePostContextMenu(postItem, configurationSet.replyable, userPost,
 						configurationSet.allowMyMarkEdit, configurationSet.allowHiding, configurationSet.allowGoToPost);
 			} else {
-				uiManager.interaction().handlePostClick(holder.itemView, postItem, postItems);
+				uiManager.interaction().handlePostClick(holder.itemView,
+						configurationSet.postStateProvider, postItem, postItems);
 				return true;
 			}
 		}
@@ -929,7 +912,7 @@ public class DialogUnit {
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private void showAttachmentsGrid(StackInstance stackInstance, List<AttachmentItem> attachmentItems,
-			int startImageIndex, GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
+			int startImageIndex, GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.Set gallerySet) {
 		if (stackInstance.attachmentDialog != null) {
 			stackInstance.attachmentDialog.second.dismiss();
 			stackInstance.attachmentDialog = null;
@@ -1047,7 +1030,7 @@ public class DialogUnit {
 
 	public void openAttachmentOrDialog(StackInstance stackInstance, View imageView,
 			List<AttachmentItem> attachmentItems, int imageIndex,
-			GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
+			GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.Set gallerySet) {
 		if (attachmentItems.size() > 1) {
 			showAttachmentsGrid(stackInstance, attachmentItems, imageIndex, navigatePostMode, gallerySet);
 		} else {
@@ -1056,7 +1039,7 @@ public class DialogUnit {
 	}
 
 	public void openAttachment(View imageView, List<AttachmentItem> attachmentItems, int index,
-			int imageIndex, GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.GallerySet gallerySet) {
+			int imageIndex, GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.Set gallerySet) {
 		Context context = uiManager.getContext();
 		AttachmentItem attachmentItem = attachmentItems.get(index);
 		boolean canDownload = attachmentItem.canDownloadToStorage();
@@ -1144,7 +1127,7 @@ public class DialogUnit {
 	}
 
 	public void performSendDeletePosts(String chanName, String boardName, String threadNumber,
-			List<String> postNumbers) {
+			List<PostNumber> postNumbers) {
 		ChanConfiguration.Deleting deleting = ChanConfiguration.get(chanName).safe().obtainDeleting(boardName);
 		if (deleting == null) {
 			return;
@@ -1163,7 +1146,7 @@ public class DialogUnit {
 	}
 
 	public void performSendReportPosts(String chanName, String boardName, String threadNumber,
-			List<String> postNumbers) {
+			List<PostNumber> postNumbers) {
 		ChanConfiguration.Reporting reporting = ChanConfiguration.get(chanName).safe().obtainReporting(boardName);
 		if (reporting == null) {
 			return;
@@ -1175,13 +1158,13 @@ public class DialogUnit {
 		showPerformSendDialog(state, null, null, null, null, true);
 	}
 
-	public void performSendArchiveThread(String chanName, String boardName, String threadNumber, String threadTitle,
-			final Posts posts) {
+	public void performSendArchiveThread(String chanName, String boardName, String threadNumber,
+			String threadTitle, Collection<Post> posts) {
 		Context context = uiManager.getContext();
-		final boolean canArchiveLocal = !ChanConfiguration.get(chanName)
+		boolean canArchiveLocal = !ChanConfiguration.get(chanName)
 				.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
-		final List<String> archiveChanNames = ChanManager.getInstance().getArchiveChanNames(chanName);
-		final SendMultifunctionalTask.State state = new SendMultifunctionalTask.State(SendMultifunctionalTask
+		List<String> archiveChanNames = ChanManager.getInstance().getArchiveChanNames(chanName);
+		SendMultifunctionalTask.State state = new SendMultifunctionalTask.State(SendMultifunctionalTask
 				.Operation.ARCHIVE, chanName, boardName, threadNumber, null, null, false);
 		state.archiveThreadTitle = threadTitle;
 		if (canArchiveLocal && archiveChanNames.size() > 0 || archiveChanNames.size() > 1) {
@@ -1207,7 +1190,7 @@ public class DialogUnit {
 	public static final String OPTION_FILES = "files";
 
 	private void performSendArchiveThreadInternal(SendMultifunctionalTask.State state, String archiveChanName,
-			Posts posts) {
+			Collection<Post> posts) {
 		Context context = uiManager.getContext();
 		ChanConfiguration.Archivation archivation;
 		if (archiveChanName == null) {
@@ -1227,9 +1210,8 @@ public class DialogUnit {
 
 	private CancellableTask<?, ?, ?> sendTask;
 
-	private void showPerformSendDialog(final SendMultifunctionalTask.State state,
-			String defaultType, String defaultText, ArrayList<String> defaultOptions,
-			final Posts posts, boolean firstTime) {
+	private void showPerformSendDialog(SendMultifunctionalTask.State state, String defaultType,
+			String defaultText, List<String> defaultOptions, Collection<Post> posts, boolean firstTime) {
 		Context context = uiManager.getContext();
 		final RadioGroup radioGroup;
 		if (state.types != null && state.types.size() > 0) {
@@ -1241,7 +1223,7 @@ public class DialogUnit {
 				ThemeEngine.applyStyle(button);
 				button.setText(pair.second);
 				button.setId(radioGroup.getChildCount());
-				if (StringUtils.equals(pair.first, defaultType)) {
+				if (CommonUtils.equals(pair.first, defaultType)) {
 					check = button.getId();
 				}
 				radioGroup.addView(button);
@@ -1363,12 +1345,12 @@ public class DialogUnit {
 				}
 			}
 			if (state.operation == SendMultifunctionalTask.Operation.ARCHIVE && state.archiveChanName == null) {
-				if (posts == null || posts.length() == 0) {
+				if (posts.isEmpty()) {
 					ToastUtils.show(uiManager.getContext(), R.string.cache_is_unavailable);
 				} else {
 					SendLocalArchiveTask task = new SendLocalArchiveTask(state.chanName, state.boardName,
 							state.threadNumber, posts, options.contains(OPTION_THUMBNAILS),
-							options.contains(OPTION_FILES), new PerformSendCallback(posts.length()));
+							options.contains(OPTION_FILES), new PerformSendCallback(posts.size()));
 					task.executeOnExecutor(SendMultifunctionalTask.THREAD_POOL_EXECUTOR);
 					sendTask = task;
 				}

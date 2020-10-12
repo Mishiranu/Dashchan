@@ -10,8 +10,8 @@ import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.OpenableColumns;
 import androidx.annotation.NonNull;
+import chan.util.CommonUtils;
 import com.mishiranu.dashchan.C;
-import chan.util.StringUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 
@@ -187,7 +187,7 @@ public class FileProvider extends ContentProvider {
 				}
 				OUTER: for (String column : projection) {
 					for (String allowedColumn : PROJECTION) {
-						if (StringUtils.equals(column, allowedColumn)) {
+						if (CommonUtils.equals(column, allowedColumn)) {
 							continue OUTER;
 						}
 					}

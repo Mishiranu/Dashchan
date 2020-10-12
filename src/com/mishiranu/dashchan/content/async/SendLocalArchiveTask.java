@@ -10,13 +10,10 @@ import android.text.style.UnderlineSpan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanMarkup;
-import chan.content.model.Attachment;
-import chan.content.model.FileAttachment;
-import chan.content.model.Icon;
-import chan.content.model.Post;
-import chan.content.model.Posts;
 import chan.util.DataFile;
 import chan.util.StringUtils;
+import com.mishiranu.dashchan.content.model.Post;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.WakabaLikeHtmlBuilder;
@@ -32,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -43,19 +41,19 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 	private final String chanName;
 	private final String boardName;
 	private final String threadNumber;
-	private final Posts posts;
+	private final Collection<Post> posts;
 	private final boolean saveThumbnails;
 	private final boolean saveFiles;
 	private final Callback callback;
 
 	public interface Callback {
-		public DownloadService.Binder getDownloadBinder();
-		public void onLocalArchivationProgressUpdate(int handledPostsCount);
-		public void onLocalArchivationComplete(boolean success);
+		DownloadService.Binder getDownloadBinder();
+		void onLocalArchivationProgressUpdate(int handledPostsCount);
+		void onLocalArchivationComplete(boolean success);
 	}
 
 	public SendLocalArchiveTask(String chanName, String boardName, String threadNumber,
-			Posts posts, boolean saveThumbnails, boolean saveFiles, Callback callback) {
+			Collection<Post> posts, boolean saveThumbnails, boolean saveFiles, Callback callback) {
 		this.chanName = chanName;
 		this.boardName = boardName;
 		this.threadNumber = threadNumber;
@@ -93,7 +91,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		String chanName = this.chanName;
 		String boardName = this.boardName;
 		String threadNumber = this.threadNumber;
-		Post[] posts = this.posts.getPosts();
+		Collection<Post> posts = this.posts;
 		Object[] decodeTo = new Object[2];
 		ArrayList<SpanItem> spanItems = new ArrayList<>();
 		ChanConfiguration configuration = ChanConfiguration.get(chanName);
@@ -104,34 +102,32 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		ArrayList<String> existFilesLc = new ArrayList<>();
 		ArrayList<String> existThumbnailsLc = new ArrayList<>();
 		for (Post post : posts) {
-			totalFilesCount += post.getAttachmentsCount();
+			totalFilesCount += post.attachments.size();
 		}
 		String defaultName = configuration.getDefaultName(boardName);
-		WakabaLikeHtmlBuilder htmlBuilder = new WakabaLikeHtmlBuilder(posts[0].getSubject(), chanName, boardName,
-				configuration .getBoardTitle(boardName), configuration.getTitle(),
-				locator.safe(false).createThreadUri(boardName, threadNumber), posts.length, totalFilesCount);
+		WakabaLikeHtmlBuilder htmlBuilder = new WakabaLikeHtmlBuilder(posts.iterator().next().subject,
+				chanName, boardName, configuration.getBoardTitle(boardName), configuration.getTitle(),
+				locator.safe(false).createThreadUri(boardName, threadNumber), posts.size(), totalFilesCount);
 		ArrayList<DownloadService.DownloadItem> filesToDownload = new ArrayList<>();
 		ArrayList<DownloadService.DownloadItem> thumbnailsToDownload = new ArrayList<>();
 		for (Post post : posts) {
-			String number = post.getPostNumber();
-			String name = StringUtils.emptyIfNull(post.getName()).trim();
-			String identifier = post.getIdentifier();
-			String tripcode = post.getTripcode();
-			String capcode = post.getCapcode();
-			String email = post.getEmail();
-			String subject = post.getSubject();
-			String comment = post.getWorkComment();
-			long timestamp = post.getTimestamp();
+			PostNumber number = post.number;
+			String name = StringUtils.emptyIfNull(post.name).trim();
+			String identifier = post.identifier;
+			String tripcode = post.tripcode;
+			String capcode = post.capcode;
+			String email = post.email;
+			String subject = post.subject;
+			String comment = post.comment;
+			long timestamp = post.timestamp;
 			boolean sage = post.isSage();
 			boolean originalPoster = post.isOriginalPoster();
-			boolean deleted = post.isDeleted();
+			boolean deleted = post.deleted;
 			boolean useDefaultName = name.equals(defaultName) || name.isEmpty();
 			if (name.isEmpty()) {
 				name = defaultName;
 			}
-			int attachmentsCount = post.getAttachmentsCount();
-			int iconsCount = post.getIconsCount();
-			CharSequence charSequence = HtmlParser.spanify(comment, markup, null, this);
+			CharSequence charSequence = HtmlParser.spanify(comment, markup, null, null, this);
 			spanItems.clear();
 			SpannableStringBuilder spannable = new SpannableStringBuilder(charSequence);
 			replaceSpannable(spannable, '<', "&lt;");
@@ -149,11 +145,9 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 						if (text.startsWith("&gt;&gt;")) {
 							Uri uri = locator.validateClickedUriString((String) decodeTo[1], boardName, threadNumber);
 							if (threadNumber.equals(locator.safe(false).getThreadNumber(uri))) {
-								String postNumber = locator.safe(false).getPostNumber(uri);
-								if (postNumber == null) {
-									postNumber = threadNumber;
-								}
-								extra = "#" + postNumber;
+								PostNumber postNumber = locator.safe(false).getPostNumber(uri);
+								String postNumberString = postNumber == null ? threadNumber : postNumber.toString();
+								extra = "#" + postNumberString;
 							} else {
 								extra = uri.toString();
 							}
@@ -192,23 +186,18 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 				}
 			}
 			comment = builder.toString().replaceAll("\r", "").replaceAll("\n", "<br />");
-			htmlBuilder.addPost(number, subject, name, identifier, tripcode, capcode, email,
+			htmlBuilder.addPost(number.toString(), subject, name, identifier, tripcode, capcode, email,
 					sage, originalPoster, timestamp, deleted, useDefaultName, comment);
-			if (iconsCount > 0) {
-				for (int i = 0; i < iconsCount; i++) {
-					Icon icon = post.getIconAt(i);
-					Uri uri = icon.getUri(locator);
-					if (uri != null) {
-						htmlBuilder.addIcon(locator.convert(uri), icon.getTitle());
-					}
+			for (Post.Icon icon : post.icons) {
+				if (icon.uri != null && !StringUtils.isEmpty(icon.title)) {
+					htmlBuilder.addIcon(locator.convert(icon.uri), icon.title);
 				}
 			}
-			for (int i = 0; i < attachmentsCount; i++) {
-				Attachment attachment = post.getAttachmentAt(i);
-				if (attachment instanceof FileAttachment) {
-					FileAttachment fileAttachment = (FileAttachment) attachment;
-					Uri fileUri = fileAttachment.getFileUri(locator);
-					Uri thumbnailUri = fileAttachment.getThumbnailUri(locator);
+			for (Post.Attachment attachment : post.attachments) {
+				if (attachment instanceof Post.Attachment.File) {
+					Post.Attachment.File file = (Post.Attachment.File) attachment;
+					Uri fileUri = locator.convert(locator.fixRelativeFileUri(file.fileUri));
+					Uri thumbnailUri = locator.convert(locator.fixRelativeFileUri(file.thumbnailUri));
 					if (fileUri == null) {
 						fileUri = thumbnailUri;
 					}
@@ -223,9 +212,9 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 							thumbnailName = chooseFileName(existThumbnailsLc, thumbnailName);
 							thumbnailPath = archiveName + "/" + DIRECTORY_THUMBNAILS + "/" + thumbnailName;
 						}
-						String originalName = fileAttachment.getNormalizedOriginalName(fileName);
-						htmlBuilder.addFile(filePath, thumbnailPath, originalName, fileAttachment.getSize(),
-								fileAttachment.getWidth(), fileAttachment.getHeight());
+						String originalName = StringUtils.getNormalizedOriginalName(file.originalName, fileName);
+						htmlBuilder.addFile(filePath, thumbnailPath, originalName, file.size,
+								file.width, file.height);
 						if (saveFiles) {
 							filesToDownload.add(new DownloadService.DownloadItem(chanName,
 									fileUri, fileName));

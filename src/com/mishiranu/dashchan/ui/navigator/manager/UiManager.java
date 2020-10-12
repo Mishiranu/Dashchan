@@ -6,6 +6,7 @@ import chan.content.ChanLocator;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
@@ -16,7 +17,6 @@ import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 
 public class UiManager {
 	private final Context context;
@@ -83,7 +83,7 @@ public class UiManager {
 	}
 
 	public interface Observer {
-		public void onPostItemMessage(PostItem postItem, Message message);
+		void onPostItemMessage(PostItem postItem, Message message);
 	}
 
 	public void sendPostItemMessage(View view, Message message) {
@@ -102,7 +102,31 @@ public class UiManager {
 	}
 
 	public interface PostsProvider extends Iterable<PostItem> {
-		PostItem findPostItem(String postNumber);
+		PostItem findPostItem(PostNumber postNumber);
+	}
+
+	public interface PostStateProvider {
+		PostStateProvider DEFAULT = new PostStateProvider() {};
+
+		default boolean isHiddenResolve(PostItem postItem) {
+			return postItem.getHideState().hidden;
+		}
+
+		default boolean isUserPost(PostNumber postNumber) {
+			return false;
+		}
+
+		default boolean isExpanded(PostNumber postNumber) {
+			return true;
+		}
+
+		default void setExpanded(PostNumber postNumber) {}
+
+		default boolean isRead(PostNumber postNumber) {
+			return true;
+		}
+
+		default void setRead(PostNumber postNumber) {}
 	}
 
 	public interface DownloadProvider {
@@ -115,14 +139,14 @@ public class UiManager {
 
 	public interface LocalNavigator {
 		void navigateBoardsOrThreads(String chanName, String boardName, int flags);
-		void navigatePosts(String chanName, String boardName, String threadNumber, String postNumber,
+		void navigatePosts(String chanName, String boardName, String threadNumber, PostNumber postNumber,
 				String threadTitle, int flags);
 		void navigateSearch(String chanName, String boardName, String searchQuery, int flags);
 		void navigateArchive(String chanName, String boardName, int flags);
 		void navigateTarget(String chanName, ChanLocator.NavigationData data, int flags);
 		void navigatePosting(String chanName, String boardName, String threadNumber,
 				Replyable.ReplyData... data);
-		void navigateGallery(String chanName, GalleryItem.GallerySet gallerySet, int imageIndex,
+		void navigateGallery(String chanName, GalleryItem.Set gallerySet, int imageIndex,
 				View view, GalleryOverlay.NavigatePostMode navigatePostMode, boolean galleryMode);
 		void navigateSetTheme(ThemeEngine.Theme theme);
 	}
@@ -139,31 +163,29 @@ public class UiManager {
 	public static class ConfigurationSet {
 		public final Replyable replyable;
 		public final PostsProvider postsProvider;
-		public final HidePerformer hidePerformer;
-		public final GalleryItem.GallerySet gallerySet;
+		public final PostStateProvider postStateProvider;
+		public final GalleryItem.Set gallerySet;
 		public final DialogUnit.StackInstance stackInstance;
 		public final CommentTextView.LinkListener linkListener;
-		public final HashSet<String> userPostNumbers;
 
 		public final boolean mayCollapse;
 		public final boolean isDialog;
 		public final boolean allowMyMarkEdit;
 		public final boolean allowHiding;
 		public final boolean allowGoToPost;
-		public final String repliesToPost;
+		public final PostNumber repliesToPost;
 
-		public ConfigurationSet(Replyable replyable, PostsProvider postsProvider, HidePerformer hidePerformer,
-				GalleryItem.GallerySet gallerySet, DialogUnit.StackInstance stackInstance,
-				CommentTextView.LinkListener linkListener, HashSet<String> userPostNumbers,
+		public ConfigurationSet(Replyable replyable, PostsProvider postsProvider,
+				PostStateProvider postStateProvider, GalleryItem.Set gallerySet,
+				DialogUnit.StackInstance stackInstance, CommentTextView.LinkListener linkListener,
 				boolean mayCollapse, boolean isDialog, boolean allowMyMarkEdit,
-				boolean allowHiding, boolean allowGoToPost, String repliesToPost) {
+				boolean allowHiding, boolean allowGoToPost, PostNumber repliesToPost) {
 			this.replyable = replyable;
 			this.postsProvider = postsProvider;
-			this.hidePerformer = hidePerformer;
+			this.postStateProvider = postStateProvider;
 			this.gallerySet = gallerySet;
 			this.stackInstance = stackInstance;
 			this.linkListener = linkListener;
-			this.userPostNumbers = userPostNumbers;
 
 			this.mayCollapse = mayCollapse;
 			this.isDialog = isDialog;
@@ -173,25 +195,24 @@ public class UiManager {
 			this.repliesToPost = repliesToPost;
 		}
 
-		public ConfigurationSet copy(boolean mayCollapse, boolean isDialog, String repliesToPost) {
-			return new ConfigurationSet(replyable, postsProvider, hidePerformer,
-					gallerySet, stackInstance, linkListener, userPostNumbers, mayCollapse, isDialog,
-					allowMyMarkEdit, allowHiding, allowGoToPost, repliesToPost);
+		public ConfigurationSet copy(boolean mayCollapse, boolean isDialog, PostNumber repliesToPost) {
+			return new ConfigurationSet(replyable, postsProvider, postStateProvider, gallerySet, stackInstance,
+					linkListener, mayCollapse, isDialog, allowMyMarkEdit, allowHiding, allowGoToPost, repliesToPost);
 		}
 	}
 
 	public interface ThumbnailClickListener extends View.OnClickListener {
-		public void update(int index, boolean mayShowDialog, GalleryOverlay.NavigatePostMode navigatePostMode);
+		void update(int index, boolean mayShowDialog, GalleryOverlay.NavigatePostMode navigatePostMode);
 	}
 
 	public interface ThumbnailLongClickListener extends View.OnLongClickListener {
-		public void update(AttachmentItem attachmentItem);
+		void update(AttachmentItem attachmentItem);
 	}
 
 	public interface Holder {
 		PostItem getPostItem();
 		ConfigurationSet getConfigurationSet();
-		GalleryItem.GallerySet getGallerySet();
+		GalleryItem.Set getGallerySet();
 	}
 
 	public void onFinish() {

@@ -23,6 +23,7 @@ import android.util.DisplayMetrics;
 import android.util.Pair;
 import androidx.core.app.NotificationCompat;
 import chan.content.ChanLocator;
+import chan.util.CommonUtils;
 import chan.util.DataFile;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
@@ -686,7 +687,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 				if (isFileNameModifyingAllowed(chanName, requestItem.uri)) {
 					modifyingAllowed = true;
 				}
-				if (requestItem.originalName != null) {
+				if (!StringUtils.isEmpty(requestItem.originalName)) {
 					hasOriginalNames = true;
 				}
 			}
@@ -1198,7 +1199,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 	private static String getDesiredFileName(Uri uri, String fileName, String originalName, boolean detailName,
 			String chanName, String boardName, String threadNumber) {
 		if (isFileNameModifyingAllowed(chanName, uri)) {
-			if (originalName != null && Preferences.isDownloadOriginalName()) {
+			if (!StringUtils.isEmpty(originalName) && Preferences.isDownloadOriginalName()) {
 				fileName = originalName;
 			}
 			if (detailName) {
@@ -1423,7 +1424,6 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 			}
 		};
 
-		@SuppressWarnings("EqualsReplaceableByObjectsCall")
 		@Override
 		public boolean equals(Object o) {
 			if (o == this) {
@@ -1431,8 +1431,8 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 			}
 			if (o instanceof DownloadItem) {
 				DownloadItem co = (DownloadItem) o;
-				return (uri == co.uri || uri != null && uri.equals(co.uri)) &&
-						StringUtils.equals(name, co.name);
+				return (CommonUtils.equals(uri, co.uri)) &&
+						CommonUtils.equals(name, co.name);
 			}
 			return false;
 		}

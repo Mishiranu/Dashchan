@@ -12,6 +12,12 @@ import org.json.JSONObject;
 
 @Public
 public class CommonUtils {
+	@SuppressWarnings("EqualsReplaceableByObjectsCall")
+	@Public
+	public static boolean equals(Object first, Object second) {
+		return first == second || first != null && first.equals(second);
+	}
+
 	@Public
 	public static boolean sleepMaxRealtime(long startRealtime, long interval) {
 		long time = interval - (SystemClock.elapsedRealtime() - startRealtime);
@@ -110,12 +116,11 @@ public class CommonUtils {
 						if (replaceTag) {
 							builder.replace(index1, index4 + 4, email.toString());
 							index = index1 + email.length();
-							continue;
 						} else {
 							builder.replace(index, index5, "mailto:" + email.toString());
 							index = builder.indexOf(">", index) + 1;
-							continue;
 						}
+						continue;
 					}
 				}
 				if (index4 == -1) {

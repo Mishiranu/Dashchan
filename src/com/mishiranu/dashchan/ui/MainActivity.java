@@ -40,7 +40,7 @@ import androidx.fragment.app.FragmentManager;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
-import chan.util.StringUtils;
+import chan.util.CommonUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
@@ -49,11 +49,11 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.content.service.PostingService;
 import com.mishiranu.dashchan.content.service.WatcherService;
-import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.navigator.Page;
@@ -95,6 +95,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
 
 public class MainActivity extends StateActivity implements DrawerForm.Callback,
@@ -497,7 +498,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
-	public void navigatePosts(String chanName, String boardName, String threadNumber, String postNumber,
+	public void navigatePosts(String chanName, String boardName, String threadNumber, PostNumber postNumber,
 			String threadTitle, int flags) {
 		flags = flags & (NavigationUtils.FLAG_FROM_CACHE | NavigationUtils.FLAG_RETURNABLE);
 		navigateIntentData(chanName, boardName, threadNumber, postNumber, threadTitle, null, flags);
@@ -543,9 +544,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
-	public void navigateGallery(String chanName, GalleryItem.GallerySet gallerySet, int imageIndex,
+	public void navigateGallery(String chanName, GalleryItem.Set gallerySet, int imageIndex,
 			View view, GalleryOverlay.NavigatePostMode navigatePostMode, boolean galleryMode) {
-		ArrayList<GalleryItem> galleryItems = gallerySet.getItems();
+		List<GalleryItem> galleryItems = gallerySet.createList();
 		navigatePostMode = gallerySet.isNavigatePostSupported() ? navigatePostMode
 				: GalleryOverlay.NavigatePostMode.DISABLED;
 		navigateGallery(new GalleryOverlay(chanName, galleryItems, imageIndex, gallerySet.getThreadTitle(),
@@ -577,12 +578,12 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
-	public void scrollToPost(String chanName, String boardName, String threadNumber, String postNumber) {
+	public void scrollToPost(String chanName, String boardName, String threadNumber, PostNumber postNumber) {
 		Fragment fragment = getCurrentFragment();
 		if (fragment instanceof PageFragment) {
 			Page page = ((PageFragment) fragment).getPage();
 			if (page.content == Page.Content.POSTS && page.chanName.equals(chanName) &&
-					StringUtils.equals(page.boardName, boardName) && page.threadNumber.equals(threadNumber)) {
+					CommonUtils.equals(page.boardName, boardName) && page.threadNumber.equals(threadNumber)) {
 				((PageFragment) fragment).scrollToPost(postNumber);
 			}
 		}
@@ -646,7 +647,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
 				String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
 				String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
-				String postNumber = intent.getStringExtra(C.EXTRA_POST_NUMBER);
+				PostNumber postNumber = PostNumber.parseNullable(intent.getStringExtra(C.EXTRA_POST_NUMBER));
 				String searchQuery = intent.getStringExtra(C.EXTRA_SEARCH_QUERY);
 				int flags = intent.getIntExtra(C.EXTRA_NAVIGATION_FLAGS, 0);
 				navigateIntentData(chanName, boardName, threadNumber, postNumber, null, searchQuery, flags);
@@ -662,7 +663,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			boolean threadUri = locator.safe(false).isThreadUri(uri);
 			String boardName = boardUri || threadUri ? locator.safe(false).getBoardName(uri) : null;
 			String threadNumber = threadUri ? locator.safe(false).getThreadNumber(uri) : null;
-			String postNumber = threadUri ? locator.safe(false).getPostNumber(uri) : null;
+			PostNumber postNumber = threadUri ? locator.safe(false).getPostNumber(uri) : null;
 			if (boardUri) {
 				navigateIntentData(chanName, boardName, null, null, null, null,
 						NavigationUtils.FLAG_RETURNABLE);
@@ -767,7 +768,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 	}
 
-	private void navigateIntentData(String chanName, String boardName, String threadNumber, String postNumber,
+	private void navigateIntentData(String chanName, String boardName, String threadNumber, PostNumber postNumber,
 			String threadTitle, String searchQuery, int flags) {
 		if (chanName == null) {
 			return;
@@ -847,7 +848,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	private void navigatePage(Page.Content content, String chanName, String boardName,
-			String threadNumber, String postNumber, String threadTitle, String searchQuery,
+			String threadNumber, PostNumber postNumber, String threadTitle, String searchQuery,
 			boolean fromCache, boolean returnable, boolean resetScroll) {
 		Fragment currentFragment = getCurrentFragment();
 		Page currentPage = currentFragment instanceof PageFragment
@@ -1309,7 +1310,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 					if (page.content == Page.Content.THREADS) {
 						// Up button must navigate to main page in threads list
 						newBoardName = Preferences.getDefaultBoardName(page.chanName);
-						if (Preferences.isMergeChans() && StringUtils.equals(page.boardName, newBoardName)) {
+						if (Preferences.isMergeChans() && CommonUtils.equals(page.boardName, newBoardName)) {
 							newChanName = ChanManager.getInstance().getDefaultChanName();
 							newBoardName = Preferences.getDefaultBoardName(newChanName);
 						}
@@ -1454,7 +1455,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
-	public boolean onSelectThread(String chanName, String boardName, String threadNumber, String postNumber,
+	public boolean onSelectThread(String chanName, String boardName, String threadNumber, PostNumber postNumber,
 			String threadTitle, boolean fromCache) {
 		Fragment currentFragment = getCurrentFragment();
 		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
@@ -1923,17 +1924,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
-	public void handleRedirect(Page page, String chanName, String boardName, String threadNumber, String postNumber) {
+	public void handleRedirect(Page page, String chanName,
+			String boardName, String threadNumber, PostNumber postNumber) {
 		if (page.isThreadsOrPosts()) {
-			if (page.content == Page.Content.POSTS) {
-				FavoritesStorage.getInstance().move(page.chanName,
-						page.boardName, page.threadNumber, boardName, threadNumber);
-				CacheManager.getInstance().movePostsPage(page.chanName,
-						page.boardName, page.threadNumber, boardName, threadNumber);
-				DraftsStorage.getInstance().movePostDraft(page.chanName,
-						page.boardName, page.threadNumber, boardName, threadNumber);
-				drawerForm.invalidateItems(true, false);
-			}
 			currentPageItem = null;
 			if (threadNumber == null) {
 				navigateBoardsOrThreads(chanName, boardName, 0);

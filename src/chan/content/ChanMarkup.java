@@ -11,6 +11,7 @@ import chan.annotation.Extendable;
 import chan.annotation.Public;
 import chan.text.CommentEditor;
 import chan.util.StringUtils;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.style.GainedColorSpan;
 import com.mishiranu.dashchan.text.style.HeadingSpan;
@@ -418,7 +419,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 		}
 	}
 
-	private final class NotImplementedException extends Exception {}
+	private static final class NotImplementedException extends Exception {}
 
 	@Extendable
 	protected Pair<String, String> obtainPostLinkThreadPostNumbers(String uriString) throws NotImplementedException {
@@ -481,12 +482,12 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 
 	private static class LinkHolder {
 		public String uriString;
-		public String postNumber;
+		public PostNumber postNumber;
 	}
 
 	private static class LinkSuffixHolder {
 		public int suffix;
-		public String postNumber;
+		public PostNumber postNumber;
 	}
 
 	private static class StyledItem {
@@ -548,14 +549,15 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 		}
 
 		private void modifyLink(HtmlParser parser, int start, int end, LinkHolder linkHolder) {
-			String parentPostNumber = parser.getParentPostNumber();
-			if (linkHolder.uriString != null && parentPostNumber != null) {
+			String processThreadNumber = parser.getThreadNumber();
+			PostNumber processOriginalPostNumber = parser.getOriginalPostNumber();
+			if (linkHolder.uriString != null && processThreadNumber != null && processOriginalPostNumber != null) {
 				StringBuilder builder = parser.getBuilder();
 				String string = builder.substring(start, end);
 				if (string.length() < 3) {
 					return;
 				}
-				// Faster match >>\d+
+				// Fast match >>\d+
 				for (int i = 0; i < string.length(); i++) {
 					char c = string.charAt(i);
 					if (!(i < 2 && c == '>' || i >= 2 && c >= '0' && c <= '9')) {
@@ -564,10 +566,9 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 				}
 				String uriString = linkHolder.uriString;
 				String threadNumber = null;
-				String postNumber = null;
-				boolean success = false;
+				PostNumber postNumber = null;
 				try {
-					Pair<String,String> numbers = null;
+					Pair<String, String> numbers = null;
 					try {
 						numbers = obtainPostLinkThreadPostNumbers(uriString);
 					} catch (LinkageError | RuntimeException e) {
@@ -575,8 +576,9 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 					}
 					if (numbers != null) {
 						threadNumber = numbers.first;
-						postNumber = numbers.second;
-						success = true;
+						if (!StringUtils.isEmpty(numbers.second)) {
+							postNumber = PostNumber.parseNullable(numbers.second);
+						}
 					}
 				} catch (NotImplementedException e) {
 					MarkupExtra extra = parser.getExtra();
@@ -586,16 +588,15 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 								extra.getThreadNumber());
 						threadNumber = locator.safe(false).getThreadNumber(uri);
 						postNumber = locator.safe(false).getPostNumber(uri);
-						success = threadNumber != null || postNumber != null;
 					}
 				}
-				if (success) {
+				if (threadNumber != null || postNumber != null) {
 					LinkSuffixHolder linkSuffixHolder = new LinkSuffixHolder();
 					linkSuffixHolder.postNumber = postNumber;
-					linkHolder.postNumber = StringUtils.isEmpty(postNumber) ? threadNumber : postNumber;
-					if (!StringUtils.isEmpty(threadNumber) && !parentPostNumber.equals(threadNumber)) {
+					linkHolder.postNumber = postNumber == null ? processOriginalPostNumber : postNumber;
+					if (!StringUtils.isEmpty(threadNumber) && !processThreadNumber.equals(threadNumber)) {
 						linkSuffixHolder.suffix |= LinkSuffixSpan.SUFFIX_DIFFERENT_THREAD;
-					} else if (StringUtils.isEmpty(postNumber) || parentPostNumber.equals(postNumber)) {
+					} else if (postNumber == null || processOriginalPostNumber.equals(postNumber)) {
 						linkSuffixHolder.suffix |= LinkSuffixSpan.SUFFIX_ORIGINAL_POSTER;
 					}
 					builder.append('\u00a0');
@@ -661,7 +662,9 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 							break;
 						}
 						case TAG_OVERLINE: {
-							span = new OverlineSpan();
+							@SuppressWarnings("InstantiationOfUtilityClass")
+							OverlineSpan result = new OverlineSpan();
+							span = result;
 							break;
 						}
 						case TAG_STRIKE: {
@@ -715,8 +718,8 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 	}
 
 	public interface MarkupExtra {
-		public String getBoardName();
-		public String getThreadNumber();
+		String getBoardName();
+		String getThreadNumber();
 	}
 
 	public static final class Safe {

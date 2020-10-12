@@ -15,12 +15,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
-import chan.util.StringUtils;
+import chan.util.CommonUtils;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.async.ReadPostsTask;
+import com.mishiranu.dashchan.content.HidePerformer;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
-import com.mishiranu.dashchan.ui.navigator.manager.HidePerformer;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.ListViewUtils;
@@ -32,14 +32,13 @@ import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
-		implements CommentTextView.LinkListener, UiManager.PostsProvider {
+		implements CommentTextView.LinkListener, UiManager.PostsProvider, HidePerformer.PostsProvider {
 	public interface Callback extends ListViewUtils.ClickCallback<PostItem, RecyclerView.ViewHolder> {
 		void onItemClick(View view, PostItem postItem);
 		boolean onItemLongClick(PostItem postItem);
@@ -67,24 +66,34 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	private final CommentTextView.RecyclerKeeper recyclerKeeper;
 	private final int bumpLimit;
 
-	private final ArrayList<PostItem> postItems = new ArrayList<>();
-	private final HashMap<String, PostItem> postItemsMap = new HashMap<>();
-	private final HashSet<String> selected = new HashSet<>();
+	private final ArrayList<PostNumber> postNumbers = new ArrayList<>();
+	private final Map<PostNumber, PostItem> postItemsMap;
+	private final HashSet<PostNumber> selected = new HashSet<>();
 
-	private int bumpLimitOrdinalIndex = -1;
+	private int bumpLimitOrdinalIndex = PostItem.ORDINAL_INDEX_NONE;
 	private boolean selection = false;
 
 	public PostsAdapter(Callback callback, String chanName, String boardName, UiManager uiManager,
-			Replyable replyable, HidePerformer hidePerformer, HashSet<String> userPostNumbers,
-			RecyclerView recyclerView) {
+			Replyable replyable, UiManager.PostStateProvider postStateProvider, RecyclerView recyclerView,
+			Map<PostNumber, PostItem> postItemsMap) {
 		this.callback = callback;
 		this.uiManager = uiManager;
-		configurationSet = new UiManager.ConfigurationSet(replyable, this, hidePerformer,
-				new GalleryItem.GallerySet(true), uiManager.dialog().createStackInstance(), this, userPostNumbers,
+		configurationSet = new UiManager.ConfigurationSet(replyable, this, postStateProvider,
+				new GalleryItem.Set(true), uiManager.dialog().createStackInstance(), this,
 				true, false, true, true, true, null);
 		recyclerKeeper = new CommentTextView.RecyclerKeeper(recyclerView);
 		super.registerAdapterDataObserver(recyclerKeeper);
 		bumpLimit = ChanConfiguration.get(chanName).getBumpLimitWithMode(boardName);
+		this.postItemsMap = postItemsMap;
+		postNumbers.addAll(postItemsMap.keySet());
+		Collections.sort(postNumbers);
+		preloadPosts(0);
+		for (PostItem postItem : postItemsMap.values()) {
+			if (postItem.isOriginalPost()) {
+				configurationSet.gallerySet.setThreadTitle(postItem.getSubjectOrComment());
+			}
+			configurationSet.gallerySet.put(postItem.getPostNumber(), postItem.getAttachmentItems());
+		}
 	}
 
 	public RecyclerView.ItemDecoration createPostItemDecoration(Context context, int dividerPadding) {
@@ -102,13 +111,14 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 	@Override
 	public int getItemCount() {
-		return postItems.size();
+		return postNumbers.size();
 	}
 
 	@Override
 	public int getItemViewType(int position) {
 		PostItem postItem = getItem(position);
-		return (postItem.isHidden(configurationSet.hidePerformer) ? ViewType.POST_HIDDEN : ViewType.POST).ordinal();
+		return (configurationSet.postStateProvider.isHiddenResolve(postItem)
+				? ViewType.POST_HIDDEN : ViewType.POST).ordinal();
 	}
 
 	@NonNull
@@ -159,14 +169,14 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	}
 
 	public PostItem getItem(int position) {
-		return postItems.get(position);
+		return postItemsMap.get(postNumbers.get(position));
 	}
 
-	public int positionOf(PostItem postItem) {
-		return postItems.indexOf(postItem);
+	public int positionOfPostNumber(PostNumber postNumber) {
+		return Collections.binarySearch(postNumbers, postNumber);
 	}
 
-	public int findPositionByOrdinalIndex(int ordinalIndex) {
+	public int positionOfOrdinalIndex(int ordinalIndex) {
 		for (int i = 0; i < getItemCount(); i++) {
 			PostItem postItem = getItem(i);
 			if (postItem.getOrdinalIndex() == ordinalIndex) {
@@ -176,18 +186,8 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		return -1;
 	}
 
-	public int findPositionByPostNumber(String postNumber) {
-		for (int i = 0; i < getItemCount(); i++) {
-			PostItem postItem = getItem(i);
-			if (postItem.getPostNumber().equals(postNumber)) {
-				return i;
-			}
-		}
-		return -1;
-	}
-
 	@Override
-	public PostItem findPostItem(String postNumber) {
+	public PostItem findPostItem(PostNumber postNumber) {
 		return postItemsMap.get(postNumber);
 	}
 
@@ -208,16 +208,6 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		return 0;
 	}
 
-	public String getLastPostNumber() {
-		for (int i = getItemCount() - 1; i >= 0; i--) {
-			PostItem postItem = getItem(i);
-			if (!postItem.isDeleted()) {
-				return postItem.getPostNumber();
-			}
-		}
-		return null;
-	}
-
 	public UiManager.ConfigurationSet getConfigurationSet() {
 		return configurationSet;
 	}
@@ -229,11 +219,11 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		String boardName = originalPostItem.getBoardName();
 		String threadNumber = originalPostItem.getThreadNumber();
 		if (chanName != null && locator.safe(false).isThreadUri(uri)
-				&& StringUtils.equals(boardName, locator.safe(false).getBoardName(uri))
-				&& StringUtils.equals(threadNumber, locator.safe(false).getThreadNumber(uri))) {
-			String postNumber = locator.safe(false).getPostNumber(uri);
-			int position = StringUtils.isEmpty(postNumber) ? 0 : findPositionByPostNumber(postNumber);
-			if (position == -1) {
+				&& CommonUtils.equals(boardName, locator.safe(false).getBoardName(uri))
+				&& CommonUtils.equals(threadNumber, locator.safe(false).getThreadNumber(uri))) {
+			PostNumber postNumber = locator.safe(false).getPostNumber(uri);
+			int position = postNumber == null ? 0 : positionOfPostNumber(postNumber);
+			if (position < 0) {
 				ToastUtils.show(view.getContext(), R.string.post_is_not_found);
 				return;
 			}
@@ -248,110 +238,65 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		uiManager.interaction().handleLinkLongClick(uri);
 	}
 
-	public void setItems(ArrayList<ReadPostsTask.Patch> patches, boolean maySkipHandlingReferences) {
-		postItems.clear();
-		postItemsMap.clear();
-		configurationSet.gallerySet.clear();
-		insertItemsInternal(patches, maySkipHandlingReferences);
+	private void removeOldReferences(Collection<PostNumber> changedOrRemoved) {
+		for (PostNumber postNumber : changedOrRemoved) {
+			PostItem oldPostItem = postItemsMap.get(postNumber);
+			if (oldPostItem != null) {
+				configurationSet.gallerySet.remove(oldPostItem.getPostNumber());
+				for (PostNumber referenceTo : oldPostItem.getReferencesTo()) {
+					PostItem referenced = postItemsMap.get(referenceTo);
+					if (referenced != null) {
+						referenced.removeReferenceFrom(oldPostItem.getPostNumber());
+					}
+				}
+			}
+		}
 	}
 
-	public void mergeItems(ArrayList<ReadPostsTask.Patch> patches) {
-		insertItemsInternal(patches, false);
-	}
-
-	private void insertItemsInternal(ArrayList<ReadPostsTask.Patch> patches, boolean maySkipHandlingReferences) {
+	public void insertItems(Map<PostNumber, PostItem> changed, Collection<PostNumber> removed) {
 		cancelPreloading();
-		boolean invalidateImages = false;
-		boolean invalidateReferences = false;
-		int startAppendIndex = -1;
 
-		for (ReadPostsTask.Patch patch : patches) {
-			PostItem postItem = patch.postItem;
-			int index = patch.index;
-			if (!patch.replaceAtIndex) {
-				boolean append = index == postItems.size();
-				postItems.add(index, postItem);
-				postItemsMap.put(postItem.getPostNumber(), postItem);
-				if (append) {
-					if (startAppendIndex == -1) {
-						startAppendIndex = index;
-						if (maySkipHandlingReferences && startAppendIndex != 0) {
-							invalidateReferences = true;
-							maySkipHandlingReferences = false;
-						}
-					}
-				} else {
-					invalidateImages = true;
-					invalidateReferences = true;
-				}
-			} else {
-				PostItem existingPostItem = postItems.get(index);
-				postItems.set(index, postItem);
-				postItemsMap.put(postItem.getPostNumber(), postItem);
-				postItem.setExpanded(existingPostItem.isExpanded());
-				invalidateImages = true;
-				if (!invalidateReferences && !StringUtils.equals(postItem.getRawComment(),
-						existingPostItem.getRawComment())) {
-					// Invalidate all references if comment was changed
-					invalidateReferences = true;
-				} else {
-					LinkedHashSet<String> referencesFrom = existingPostItem.getReferencesFrom();
-					if (referencesFrom != null) {
-						for (String postNumber : referencesFrom) {
-							postItem.addReferenceFrom(postNumber);
-						}
+		removeOldReferences(changed.keySet());
+		removeOldReferences(removed);
+		for (PostItem postItem : changed.values()) {
+			PostItem oldPostItem = postItemsMap.get(postItem.getPostNumber());
+			if (oldPostItem != null) {
+				for (PostNumber postNumber : oldPostItem.getReferencesFrom()) {
+					if (!changed.containsKey(postNumber)) {
+						postItem.addReferenceFrom(postNumber);
 					}
 				}
 			}
 		}
 
-		int imagesStartHandlingIndex = startAppendIndex;
-		if (invalidateImages) {
-			configurationSet.gallerySet.clear();
-			imagesStartHandlingIndex = 0;
-		}
-		if (imagesStartHandlingIndex >= 0) {
-			for (int i = imagesStartHandlingIndex; i < postItems.size(); i++) {
-				PostItem postItem = postItems.get(i);
-				if (i == 0) {
-					configurationSet.gallerySet.setThreadTitle(postItem.getSubjectOrComment());
-				}
-				configurationSet.gallerySet.add(postItem.getAttachmentItems());
-			}
-		}
+		postItemsMap.putAll(changed);
+		postItemsMap.keySet().removeAll(removed);
+		postNumbers.clear();
+		postNumbers.addAll(postItemsMap.keySet());
+		Collections.sort(postNumbers);
 
-		int referencesStartHandleIndex = startAppendIndex;
-		if (invalidateReferences) {
-			for (PostItem postItem : postItems) {
-				postItem.clearReferencesFrom();
+		for (PostItem postItem : changed.values()) {
+			if (postItem.isOriginalPost()) {
+				configurationSet.gallerySet.setThreadTitle(postItem.getSubjectOrComment());
 			}
-			referencesStartHandleIndex = 0;
-		}
-		if (referencesStartHandleIndex >= 0 && !maySkipHandlingReferences) {
-			for (int i = referencesStartHandleIndex; i < postItems.size(); i++) {
-				PostItem postItem = postItems.get(i);
-				HashSet<String> referencesTo = postItem.getReferencesTo();
-				if (referencesTo != null) {
-					for (String postNumber : referencesTo) {
-						PostItem foundPostItem = postItemsMap.get(postNumber);
-						if (foundPostItem != null) {
-							foundPostItem.addReferenceFrom(postItem.getPostNumber());
-						}
-					}
+			configurationSet.gallerySet.put(postItem.getPostNumber(), postItem.getAttachmentItems());
+			for (PostNumber referenceTo : postItem.getReferencesTo()) {
+				PostItem referenced = postItemsMap.get(referenceTo);
+				if (referenced != null) {
+					referenced.addReferenceFrom(postItem.getPostNumber());
 				}
 			}
 		}
 
 		int ordinalIndex = 0;
-		bumpLimitOrdinalIndex = -1;
-		for (int i = 0; i < postItems.size(); i++) {
-			PostItem postItem = postItems.get(i);
+		bumpLimitOrdinalIndex = PostItem.ORDINAL_INDEX_NONE;
+		for (PostItem postItem : iterate(true, 0)) {
 			if (postItem.isDeleted()) {
 				postItem.setOrdinalIndex(PostItem.ORDINAL_INDEX_DELETED);
 			} else {
 				postItem.setOrdinalIndex(ordinalIndex++);
-				if (ordinalIndex == bumpLimit && postItems.get(0).getBumpLimitReachedState(ordinalIndex)
-						== PostItem.BumpLimitState.REACHED) {
+				if (ordinalIndex == bumpLimit &&
+						getItem(0).getBumpLimitReachedState(ordinalIndex) == PostItem.BumpLimitState.REACHED) {
 					bumpLimitOrdinalIndex = ordinalIndex;
 				}
 			}
@@ -365,45 +310,37 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		notifyItemChanged(position, PAYLOAD_INVALIDATE_COMMENT);
 	}
 
-	public ArrayList<PostItem> clearDeletedPosts() {
-		ArrayList<PostItem> deletedPostItems = null;
-		for (int i = postItems.size() - 1; i >= 0; i--) {
-			PostItem postItem = postItems.get(i);
+	public boolean clearDeletedPosts() {
+		boolean removed = false;
+		Iterator<PostItem> iterator = postItemsMap.values().iterator();
+		while (iterator.hasNext()) {
+			PostItem postItem = iterator.next();
 			if (postItem.isDeleted()) {
-				HashSet<String> referencesTo = postItem.getReferencesTo();
-				if (referencesTo != null) {
-					for (String postNumber : referencesTo) {
-						PostItem foundPostItem = postItemsMap.get(postNumber);
-						if (foundPostItem != null) {
-							foundPostItem.removeReferenceFrom(postItem.getPostNumber());
-						}
+				if (!removed) {
+					removed = true;
+					cancelPreloading();
+				}
+				for (PostNumber referenceTo : postItem.getReferencesTo()) {
+					PostItem referenced = postItemsMap.get(referenceTo);
+					if (referenced != null) {
+						referenced.removeReferenceFrom(postItem.getPostNumber());
 					}
 				}
-				postItems.remove(i);
-				postItemsMap.remove(postItem.getPostNumber());
-				if (deletedPostItems == null) {
-					deletedPostItems = new ArrayList<>();
-				}
-				deletedPostItems.add(postItem);
+				configurationSet.gallerySet.remove(postItem.getPostNumber());
+				iterator.remove();
 			}
 		}
-		if (deletedPostItems != null) {
-			configurationSet.gallerySet.clear();
-			boolean originalPost = true;
-			for (PostItem postItem : this) {
-				if (originalPost) {
-					configurationSet.gallerySet.setThreadTitle(postItem.getSubjectOrComment());
-					originalPost = false;
-				}
-				configurationSet.gallerySet.add(postItem.getAttachmentItems());
-			}
+		if (removed) {
+			postNumbers.clear();
+			postNumbers.addAll(postItemsMap.keySet());
+			Collections.sort(postNumbers);
 			notifyDataSetChanged();
 		}
-		return deletedPostItems;
+		return removed;
 	}
 
 	public boolean hasDeletedPosts() {
-		for (PostItem postItem : postItems) {
+		for (PostItem postItem : this) {
 			if (postItem.isDeleted()) {
 				return true;
 			}
@@ -420,21 +357,23 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	}
 
 	public void toggleItemSelected(PostItem postItem) {
-		String postNumber = postItem.getPostNumber();
+		PostNumber postNumber = postItem.getPostNumber();
 		if (selected.contains(postNumber)) {
 			selected.remove(postNumber);
-		} else if (!postItem.isHiddenUnchecked()) {
-			selected.add(postNumber);
+		} else {
+			if (!configurationSet.postStateProvider.isHiddenResolve(postItem)) {
+				selected.add(postNumber);
+			}
 		}
-		int position = positionOf(postItem);
+		int position = positionOfPostNumber(postNumber);
 		notifyItemChanged(position, SimpleViewHolder.EMPTY_PAYLOAD);
 	}
 
 	public ArrayList<PostItem> getSelectedItems() {
 		ArrayList<PostItem> selected = new ArrayList<>(this.selected.size());
-		for (String postNumber : this.selected) {
+		for (PostNumber postNumber : this.selected) {
 			PostItem postItem = postItemsMap.get(postNumber);
-			if (postNumber != null) {
+			if (postItem != null) {
 				selected.add(postItem);
 			}
 		}
@@ -450,56 +389,72 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		preloadHandler.removeMessages(0);
 	}
 
-	public void preloadPosts(int from) {
-		ArrayList<PostItem> preloadPostItems = new ArrayList<>();
-		ArrayList<PostItem> postItems = this.postItems;
-		int size = postItems.size();
-		from = Math.max(0, Math.min(size, from));
-		preloadPostItems.ensureCapacity(size);
-		// Ordered preloading
-		preloadPostItems.addAll(postItems.subList(from, size));
-		preloadPostItems.addAll(postItems.subList(0, from));
-		cancelPreloading();
-		preloadHandler.obtainMessage(0, 0, 0, preloadPostItems).sendToTarget();
-	}
+	private static class PreloadIterator implements Iterator<PostItem> {
+		private final Iterator<PostItem> ascending;
+		private final Iterator<PostItem> descending;
 
-	public void preloadPosts(Collection<PostItem> postItems, PreloadFinishCallback callback) {
-		if (postItems != null && !postItems.isEmpty()) {
-			new Handler(Looper.getMainLooper(), new PreloadCallback(callback))
-					.obtainMessage(0, 0, 0, postItems).sendToTarget();
-		}
-	}
+		private boolean lastAscending;
 
-	private final Handler preloadHandler = new Handler(Looper.getMainLooper(), new PreloadCallback(null));
-
-	public interface PreloadFinishCallback {
-		public void onFinish();
-	}
-
-	private class PreloadCallback implements Handler.Callback {
-		private final PreloadFinishCallback callback;
-
-		public PreloadCallback(PreloadFinishCallback callback) {
-			this.callback = callback;
+		public PreloadIterator(Iterator<PostItem> ascending, Iterator<PostItem> descending) {
+			this.ascending = ascending;
+			this.descending = descending;
 		}
 
 		@Override
+		public boolean hasNext() {
+			return ascending.hasNext() || descending.hasNext();
+		}
+
+		@Override
+		public PostItem next() {
+			if (lastAscending) {
+				lastAscending = false;
+				return (descending.hasNext() ? descending : ascending).next();
+			} else {
+				lastAscending = true;
+				return (ascending.hasNext() ? ascending : descending).next();
+			}
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	public void preloadPosts(PostNumber fromPostNumber) {
+		int position = fromPostNumber != null ? positionOfPostNumber(fromPostNumber) : -1;
+		if (position >= 0) {
+			preloadPosts(position);
+		}
+	}
+
+	public void preloadPosts(int from) {
+		if (from >= 0 && from < getItemCount()) {
+			cancelPreloading();
+			// Preload to both sides
+			Iterator<PostItem> ascending = new PostsIterator(true, from);
+			Iterator<PostItem> descending = new PostsIterator(false, from);
+			preloadHandler.obtainMessage(0, 0, 0, new PreloadIterator(ascending, descending)).sendToTarget();
+		}
+	}
+
+	private final Handler preloadHandler = new Handler(Looper.getMainLooper(), new PreloadCallback());
+
+	private class PreloadCallback implements Handler.Callback {
+		@Override
 		public boolean handleMessage(Message msg) {
 			// Take only 8ms per frame for preloading in main thread
+			PreloadIterator iterator = (PreloadIterator) msg.obj;
 			final int ms = 8;
-			HidePerformer hidePerformer = configurationSet.hidePerformer;
-			@SuppressWarnings("unchecked") ArrayList<PostItem> preloadList = (ArrayList<PostItem>) msg.obj;
 			long time = SystemClock.elapsedRealtime();
-			int i = msg.arg1;
-			while (i < preloadList.size() && SystemClock.elapsedRealtime() - time < ms) {
-				PostItem postItem = preloadList.get(i++);
+			while (SystemClock.elapsedRealtime() - time < ms && iterator.hasNext()) {
+				PostItem postItem = iterator.next();
+				configurationSet.postStateProvider.isHiddenResolve(postItem);
 				postItem.getComment();
-				postItem.isHidden(hidePerformer);
 			}
-			if (i < preloadList.size()) {
-				msg.getTarget().obtainMessage(0, i, 0, preloadList).sendToTarget();
-			} else if (callback != null) {
-				callback.onFinish();
+			if (iterator.hasNext()) {
+				msg.getTarget().obtainMessage(0, 0, 0, iterator).sendToTarget();
 			}
 			return true;
 		}
@@ -508,12 +463,8 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	public void invalidateHidden() {
 		cancelPreloading();
 		for (PostItem postItem : this) {
-			postItem.invalidateHidden();
+			postItem.setHidden(PostItem.HideState.UNDEFINED, null);
 		}
-	}
-
-	public void cleanup() {
-		cancelPreloading();
 	}
 
 	public void setHighlightText(Collection<String> highlightText) {
@@ -532,7 +483,7 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 	private boolean needBumpLimitDividerAbove(int position) {
 		PostItem postItem = position >= 0 && position < getItemCount() ? getItem(position) : null;
-		return postItem != null && postItem.getOrdinalIndex() == bumpLimitOrdinalIndex;
+		return postItem != null && bumpLimitOrdinalIndex >= 0 && postItem.getOrdinalIndex() == bumpLimitOrdinalIndex;
 	}
 
 	private class BumpLimitItemDecorator extends RecyclerView.ItemDecoration {

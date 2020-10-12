@@ -10,9 +10,11 @@ import android.os.Process;
 import androidx.annotation.NonNull;
 import chan.content.ChanManager;
 import chan.http.HttpClient;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.content.storage.DatabaseHelper;
+import com.mishiranu.dashchan.content.database.CommonDatabase;
+import com.mishiranu.dashchan.content.database.PagesDatabase;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import java.io.File;
@@ -29,7 +31,7 @@ public class MainApplication extends Application {
 	}
 
 	private boolean checkProcess(String suffix) {
-		return StringUtils.equals(suffix, processSuffix);
+		return CommonUtils.equals(suffix, processSuffix);
 	}
 
 	public boolean isMainProcess() {
@@ -64,7 +66,8 @@ public class MainApplication extends Application {
 			// Init
 			ChanManager.getInstance();
 			HttpClient.getInstance();
-			DatabaseHelper.getInstance();
+			CommonDatabase.getInstance();
+			PagesDatabase.getInstance();
 			CacheManager.getInstance();
 			ChanManager.getInstance().loadLibraries();
 		} else if (checkProcess(PROCESS_WEB_VIEW)) {

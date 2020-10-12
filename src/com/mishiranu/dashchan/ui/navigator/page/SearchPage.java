@@ -10,6 +10,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.ReadSearchTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.adapter.SearchAdapter;
 import com.mishiranu.dashchan.ui.navigator.manager.DialogUnit;
@@ -144,7 +145,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 	@Override
 	public boolean onItemLongClick(PostItem postItem) {
 		return postItem != null && getUiManager().interaction()
-				.handlePostContextMenu(postItem, null, false, false, false);
+				.handlePostContextMenu(postItem, null, false, false, false, false);
 	}
 
 	@Override
@@ -255,7 +256,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 					showScaleAnimation();
 				}
 			} else {
-				HashSet<String> existingPostNumbers = new HashSet<>();
+				HashSet<PostNumber> existingPostNumbers = new HashSet<>();
 				for (PostItem postItem : retainExtra.postItems) {
 					existingPostNumbers.add(postItem.getPostNumber());
 				}

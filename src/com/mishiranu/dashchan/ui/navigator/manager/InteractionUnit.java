@@ -15,6 +15,7 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.text.style.LinkSuffixSpan;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
@@ -43,12 +44,12 @@ public class InteractionUnit {
 			ChanConfiguration configuration = ChanConfiguration.get(uriChanName);
 			if (locator.safe(false).isBoardUri(uri)) {
 				navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_THREADS,
-						locator.safe(false).getBoardName(uri), null, null, null);
+						locator.safe(false).getBoardName(uri), null, (PostNumber) null, null);
 				handled = true;
 			} else if (locator.safe(false).isThreadUri(uri)) {
 				String boardName = locator.safe(false).getBoardName(uri);
 				String threadNumber = locator.safe(false).getThreadNumber(uri);
-				String postNumber = locator.safe(false).getPostNumber(uri);
+				PostNumber postNumber = locator.safe(false).getPostNumber(uri);
 				if (threadNumber != null) {
 					if (sameChan && configuration.getOption(ChanConfiguration.OPTION_READ_SINGLE_POST)) {
 						uiManager.dialog().displayReplyAsync(configurationSet,
@@ -173,8 +174,8 @@ public class InteractionUnit {
 			UiManager.Holder holder = ListViewUtils.getViewHolder(v, UiManager.Holder.class);
 			List<AttachmentItem> attachmentItems = holder.getPostItem().getAttachmentItems();
 			if (attachmentItems != null) {
-				GalleryItem.GallerySet gallerySet = holder.getGallerySet();
-				int startImageIndex = uiManager.view().findImageIndex(gallerySet.getItems(), holder.getPostItem());
+				GalleryItem.Set gallerySet = holder.getGallerySet();
+				int startImageIndex = gallerySet.findIndex(holder.getPostItem());
 				if (mayShowDialog) {
 					uiManager.dialog().openAttachmentOrDialog(holder.getConfigurationSet().stackInstance, v,
 							attachmentItems, startImageIndex, navigatePostMode, gallerySet);
@@ -260,15 +261,16 @@ public class InteractionUnit {
 		showThumbnailLongClickDialog(uiManager, attachmentItem, attachmentView, hasViewHolder, threadTitle);
 	}
 
-	public boolean handlePostClick(View view, PostItem postItem, Iterable<PostItem> localPostItems) {
-		if (postItem.isHiddenUnchecked()) {
+	public boolean handlePostClick(View view, UiManager.PostStateProvider postStateProvider,
+			PostItem postItem, Iterable<PostItem> localPostItems) {
+		if (postItem.getHideState().hidden) {
 			uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_SWITCH_HIDE);
 			return true;
 		} else {
 			if (Preferences.getHighlightUnreadMode() == Preferences.HIGHLIGHT_UNREAD_MANUALLY) {
 				for (PostItem localPostItem : localPostItems) {
-					if (localPostItem.isUnread()) {
-						localPostItem.setUnread(false);
+					if (!postStateProvider.isRead(localPostItem.getPostNumber())) {
+						postStateProvider.setRead(localPostItem.getPostNumber());
 						uiManager.sendPostItemMessage(localPostItem, UiManager.Message.POST_INVALIDATE_ALL_VIEWS);
 					}
 					if (localPostItem == postItem) {
@@ -280,7 +282,7 @@ public class InteractionUnit {
 		}
 	}
 
-	public boolean handlePostContextMenu(final PostItem postItem, Replyable replyable,
+	public boolean handlePostContextMenu(final PostItem postItem, Replyable replyable, boolean userPost,
 			boolean allowMyMarkEdit, boolean allowHiding, boolean allowGoToPost) {
 		if (postItem != null) {
 			Context context = uiManager.getContext();
@@ -341,14 +343,14 @@ public class InteractionUnit {
 				}
 			}
 			if (allowMyMarkEdit) {
-				dialogMenu.add(R.string.my_post, postItem.isUserPost(), () -> uiManager
+				dialogMenu.add(R.string.my_post, userPost, () -> uiManager
 						.sendPostItemMessage(postItem, UiManager.Message.PERFORM_SWITCH_USER_MARK));
 			}
 			if (allowGoToPost) {
 				dialogMenu.add(R.string.go_to_post, () -> uiManager
 						.sendPostItemMessage(postItem, UiManager.Message.PERFORM_GO_TO_POST));
 			}
-			if (allowHiding && !postItem.isHiddenUnchecked()) {
+			if (allowHiding && !postItem.getHideState().hidden) {
 				dialogMenu.add(R.string.hide__ellipsis, () -> {
 					DialogMenu innerDialogMenu = new DialogMenu(context);
 					innerDialogMenu.add(R.string.this_post, () -> uiManager
@@ -387,8 +389,8 @@ public class InteractionUnit {
 				ChanLocator locator = ChanLocator.get(postItem.getChanName());
 				String boardName = postItem.getBoardName();
 				String threadNumber = postItem.getThreadNumber();
-				String postNumber = postItem.getPostNumber();
-				Uri uri = postItem.getParentPostNumber() == null
+				PostNumber postNumber = postItem.getPostNumber();
+				Uri uri = postItem.isOriginalPost()
 						? locator.safe(true).createThreadUri(boardName, threadNumber)
 						: locator.safe(true).createPostUri(boardName, threadNumber, postNumber);
 				if (uri != null) {

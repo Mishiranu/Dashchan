@@ -8,7 +8,6 @@ import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.style.TypefaceSpan;
 import android.view.View;
-import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import chan.util.DataFile;
@@ -18,12 +17,17 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.AsyncManager;
+import com.mishiranu.dashchan.content.database.PagesDatabase;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.ui.ActivityHandler;
+import com.mishiranu.dashchan.ui.DrawerForm;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.widget.ProgressDialog;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -121,19 +125,19 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 				getString(R.string.cache_size), "%d MB", 50, 750, 10, Preferences.MULTIPLIER_CACHE_SIZE);
 		clearCachePreference = addButton(getString(R.string.clear_cache), p -> {
 			long cacheSize = CacheManager.getInstance().getCacheSize();
-			return String.format(Locale.US, "%.2f", cacheSize / 1000f / 1000f) + " MB";
+			long pagesSize = PagesDatabase.getInstance().getSize();
+			return formatSize(cacheSize) + " + " + formatSize(pagesSize);
 		});
 		clearCachePreference.setOnClickListener(p -> {
-			ClearCacheFragment fragment = new ClearCacheFragment();
-			fragment.setTargetFragment(this, 0);
-			fragment.show(getParentFragmentManager(), ClearCacheFragment.class.getName());
+			ClearCacheDialog dialog = new ClearCacheDialog();
+			dialog.show(getChildFragmentManager(), ClearCacheDialog.class.getName());
 		});
 
 		addDependency(Preferences.KEY_AUTO_REFRESH_INTERVAL, Preferences.KEY_AUTO_REFRESH_MODE, true,
 				Preferences.VALUE_AUTO_REFRESH_MODE_ENABLED);
 		addDependency(Preferences.KEY_SUBDIR_PATTERN, Preferences.KEY_DOWNLOAD_SUBDIR, false,
 				Preferences.VALUE_DOWNLOAD_SUBDIR_DISABLED);
-		updateCacheSize();
+		clearCachePreference.invalidate();
 	}
 
 	@Override
@@ -164,6 +168,10 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		}
 	}
 
+	private static String formatSize(long size) {
+		return String.format(Locale.US, "%.2f", size / 1000f / 1000f) + " MB";
+	}
+
 	private CharSequence makeSubdirDescription() {
 		String[] formats = {"\\c", "\\d", "\\b", "\\t", "\\e", "<\u2026>"};
 		int[] descriptions = {R.string.forum_code, R.string.forum_title, R.string.board_code, R.string.thread_number,
@@ -180,14 +188,8 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		return builder;
 	}
 
-	private void updateCacheSize() {
-		long cacheSize = CacheManager.getInstance().getCacheSize();
-		clearCachePreference.setEnabled(cacheSize > 0L);
-		clearCachePreference.invalidate();
-	}
-
-	public static class ClearCacheFragment extends DialogFragment implements DialogInterface.OnMultiChoiceClickListener,
-			DialogInterface.OnClickListener, DialogInterface.OnShowListener {
+	public static class ClearCacheDialog extends DialogFragment
+			implements DialogInterface.OnMultiChoiceClickListener, DialogInterface.OnClickListener {
 		private static final String EXTRA_CHECKED_ITEMS = "checkedItems";
 
 		private boolean[] checkedItems;
@@ -206,7 +208,7 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 					.setMultiChoiceItems(items, checkedItems, this)
 					.setNegativeButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok, this)
 					.create();
-			dialog.setOnShowListener(this);
+			dialog.setOnShowListener(d -> dialog.getListView().getChildAt(2).setEnabled(!checkedItems[3]));
 			return dialog;
 		}
 
@@ -214,11 +216,6 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		public void onSaveInstanceState(@NonNull Bundle outState) {
 			super.onSaveInstanceState(outState);
 			outState.putBooleanArray(EXTRA_CHECKED_ITEMS, checkedItems);
-		}
-
-		@Override
-		public void onShow(DialogInterface dialog) {
-			((AlertDialog) dialog).getListView().getChildAt(2).setEnabled(!checkedItems[3]);
 		}
 
 		@Override
@@ -232,8 +229,7 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 					break;
 				}
 				case 3: {
-					ListView listView = ((AlertDialog) dialog).getListView();
-					listView.getChildAt(2).setEnabled(!isChecked);
+					((AlertDialog) dialog).getListView().getChildAt(2).setEnabled(!isChecked);
 					break;
 				}
 			}
@@ -244,8 +240,8 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		public void onClick(DialogInterface dialog, int which) {
 			ClearingDialog clearingDialog = new ClearingDialog(checkedItems[0], checkedItems[1],
 					checkedItems[2], checkedItems[3]);
-			clearingDialog.setTargetFragment(getTargetFragment(), 0);
-			clearingDialog.show(getTargetFragment().getParentFragmentManager(), ClearingDialog.class.getName());
+			clearingDialog.setTargetFragment(getParentFragment(), 0);
+			clearingDialog.show(getParentFragment().getParentFragmentManager(), ClearingDialog.class.getName());
 		}
 	}
 
@@ -283,7 +279,7 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		}
 
 		private void sendUpdateCacheSize() {
-			((ContentsFragment) getTargetFragment()).updateCacheSize();
+			((ContentsFragment) getTargetFragment()).clearCachePreference.invalidate();
 		}
 
 		@Override
@@ -296,8 +292,21 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		@Override
 		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
 			Bundle args = requireArguments();
-			ClearCacheTask task = new ClearCacheTask(args.getBoolean(EXTRA_THUMBNAILS), args.getBoolean(EXTRA_MEDIA),
-					args.getBoolean(EXTRA_OLD_PAGES), args.getBoolean(EXTRA_ALL_PAGES));
+			boolean thumbnails = args.getBoolean(EXTRA_THUMBNAILS);
+			boolean media = args.getBoolean(EXTRA_MEDIA);
+			boolean oldPages = args.getBoolean(EXTRA_OLD_PAGES);
+			boolean allPages = args.getBoolean(EXTRA_ALL_PAGES);
+			Collection<PagesDatabase.ThreadKey> openThreads = Collections.emptyList();
+			if (oldPages && !allPages) {
+				Collection<DrawerForm.Page> drawerPages = ((FragmentHandler) requireActivity()).obtainDrawerPages();
+				openThreads = new ArrayList<>(openThreads.size());
+				for (DrawerForm.Page page : drawerPages) {
+					if (page.threadNumber != null) {
+						openThreads.add(new PagesDatabase.ThreadKey(page.chanName, page.boardName, page.threadNumber));
+					}
+				}
+			}
+			ClearCacheTask task = new ClearCacheTask(thumbnails, media, oldPages, allPages, openThreads);
 			task.executeOnExecutor(ClearCacheTask.THREAD_POOL_EXECUTOR);
 			return task.getHolder();
 		}
@@ -319,29 +328,31 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		private final boolean media;
 		private final boolean oldPages;
 		private final boolean allPages;
+		private final Collection<PagesDatabase.ThreadKey> openThreads;
 
-		public ClearCacheTask(boolean thumbnails, boolean media, boolean oldPages, boolean allPages) {
+		public ClearCacheTask(boolean thumbnails, boolean media, boolean oldPages, boolean allPages,
+				Collection<PagesDatabase.ThreadKey> openThreads) {
 			this.thumbnails = thumbnails;
 			this.media = media;
 			this.oldPages = oldPages;
 			this.allPages = allPages;
+			this.openThreads = openThreads;
 		}
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			CacheManager cacheManager = CacheManager.getInstance();
 			try {
 				if (thumbnails) {
-					cacheManager.eraseThumbnailsCache();
+					CacheManager.getInstance().eraseThumbnailsCache();
 				}
 				if (media) {
-					cacheManager.eraseMediaCache();
+					CacheManager.getInstance().eraseMediaCache();
 				}
 				if (oldPages && !allPages) {
-					cacheManager.erasePagesCache(true);
+					PagesDatabase.getInstance().erase(openThreads);
 				}
 				if (allPages) {
-					cacheManager.erasePagesCache(false);
+					PagesDatabase.getInstance().eraseAll();
 				}
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();

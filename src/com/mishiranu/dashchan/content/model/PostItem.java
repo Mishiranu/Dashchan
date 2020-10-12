@@ -3,23 +3,18 @@ package com.mishiranu.dashchan.content.model;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
-import android.util.Pair;
 import androidx.annotation.NonNull;
 import chan.content.ChanConfiguration;
+import chan.content.ChanLocator;
 import chan.content.ChanMarkup;
-import chan.content.model.Icon;
-import chan.content.model.Post;
-import chan.content.model.Posts;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.storage.HiddenThreadsDatabase;
 import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.style.LinkSpan;
@@ -28,17 +23,70 @@ import com.mishiranu.dashchan.text.style.NameColorSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
 import com.mishiranu.dashchan.util.PostDateFormatter;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
-public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, Comparable<PostItem> {
+public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, Comparable<PostItem> {
+	public enum HideState {
+		UNDEFINED(false),
+		HIDDEN(true),
+		SHOWN(false);
+
+		public final boolean hidden;
+
+		HideState(boolean hidden) {
+			this.hidden = hidden;
+		}
+
+		public static class Map<T> {
+			private final HashMap<T, Boolean> map = new HashMap<>();
+
+			public HideState get(T key) {
+				Boolean hidden = map.get(key);
+				return hidden == null ? UNDEFINED : hidden ? HIDDEN : SHOWN;
+			}
+
+			public void set(T key, HideState hideState) {
+				switch (hideState) {
+					case HIDDEN: {
+						map.put(key, true);
+						break;
+					}
+					case SHOWN: {
+						map.put(key, false);
+						break;
+					}
+					default: {
+						map.remove(key);
+						break;
+					}
+				}
+			}
+
+			public void addAll(Map<T> map) {
+				this.map.putAll(map.map);
+			}
+
+			public void clear() {
+				map.clear();
+			}
+
+			public int size() {
+				return map.size();
+			}
+		}
+	}
+
 	private final Post post;
 	private final ThreadData threadData;
 	private final String chanName;
 	private final String boardName;
+	private final String threadNumber;
+	private final PostNumber originalPostNumber;
 	private final List<AttachmentItem> attachmentItems;
-	private final List<Pair<Uri, String>> icons;
 
 	public static final int ORDINAL_INDEX_NONE = -1;
 	public static final int ORDINAL_INDEX_DELETED = -2;
@@ -55,82 +103,85 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	private PostDateFormatter.Holder dateTimeHolder;
 	private boolean useDefaultName;
 
-	private HashSet<String> referencesTo;
-	private LinkedHashSet<String> referencesFrom;
-
-	private boolean expanded = false;
-
-	private static class ThreadData {
-		public int postsCount;
-		public int filesCount;
-		public int postsWithFilesCount;
-		public Post[] firstAndLastPosts;
-		public CharSequence commentShort;
-		public ColorScheme.Span[] commentShortSpans;
-		public GalleryItem.GallerySet gallerySet;
-	}
-
-	public enum HideState {UNDEFINED, HIDDEN, SHOWN}
+	private final Set<PostNumber> referencesTo;
+	private Set<PostNumber> referencesFrom;
 
 	private HideState hideState = HideState.UNDEFINED;
 	private String hideReason;
-	private boolean unread = false;
 
-	public static PostItem createPost(Post post, String chanName, String boardName) {
-		return new PostItem(post, null, chanName, boardName);
+	private static class ThreadData {
+		public static class Base {
+			public final int postsCount;
+			public final int filesCount;
+			public final int postsWithFilesCount;
+			public final List<Post> posts;
+
+			public Base(int postsCount, int filesCount, int postsWithFilesCount, List<Post> posts) {
+				this.postsCount = postsCount;
+				this.filesCount = filesCount;
+				this.postsWithFilesCount = postsWithFilesCount;
+				this.posts = posts;
+			}
+		}
+
+		public final Base base;
+		public final CharSequence commentShort;
+		public final ColorScheme.Span[] commentShortSpans;
+		public final GalleryItem.Set gallerySet;
+
+		public ThreadData(Base base, CharSequence commentShort, ColorScheme.Span[] commentShortSpans,
+				GalleryItem.Set gallerySet) {
+			this.base = base;
+			this.commentShort = commentShort;
+			this.commentShortSpans = commentShortSpans;
+			this.gallerySet = gallerySet;
+		}
 	}
 
-	public static PostItem createThread(Posts thread, String chanName, String boardName) {
-		Post[] posts = thread.getPosts();
-		Post post = posts[0];
-		ThreadData threadData = new ThreadData();
-		threadData.postsCount = thread.getPostsCount();
-		threadData.filesCount = thread.getFilesCount();
-		threadData.postsWithFilesCount = thread.getPostsWithFilesCount();
-		threadData.firstAndLastPosts = posts;
-		return new PostItem(post, threadData, chanName, boardName);
+	public static PostItem createPost(Post post, ChanLocator locator,
+			String chanName, String boardName, String threadNumber, PostNumber originalPostNumber) {
+		return new PostItem(post, null, locator, chanName, boardName, threadNumber, originalPostNumber);
 	}
 
-	private PostItem(Post post, ThreadData threadData, String chanName, String boardName) {
+	public static PostItem createThread(List<Post> posts, int postsCount, int filesCount, int postsWithFilesCount,
+			ChanLocator locator, String chanName, String boardName, String threadNumber) {
+		Post post = posts.get(0);
+		ThreadData.Base threadData = new ThreadData.Base(postsCount, filesCount, postsWithFilesCount, posts);
+		return new PostItem(post, threadData, locator, chanName, boardName, threadNumber, post.number);
+	}
+
+	private PostItem(Post post, ThreadData.Base threadDataBase, ChanLocator locator,
+			String chanName, String boardName, String threadNumber, PostNumber originalPostNumber) {
 		this.post = post;
-		this.threadData = threadData;
 		this.chanName = chanName;
 		this.boardName = boardName;
-		attachmentItems = AttachmentItem.obtain(this);
-		if (isThreadItem()) {
+		this.threadNumber = threadNumber;
+		this.originalPostNumber = originalPostNumber;
+		attachmentItems = AttachmentItem.obtain(this, post, locator);
+		if (threadDataBase != null) {
+			CharSequence commentShort = obtainThreadComment(post.comment, chanName, this);
+			ColorScheme.Span[] commentShortSpans = ColorScheme.getSpans(commentShort);
+			GalleryItem.Set gallerySet = null;
 			if (attachmentItems != null) {
-				threadData.gallerySet = new GalleryItem.GallerySet(false);
-				threadData.gallerySet.setThreadTitle(getSubjectOrComment());
-				threadData.gallerySet.add(attachmentItems);
+				gallerySet = new GalleryItem.Set(false);
+				gallerySet.setThreadTitle(getSubjectOrComment());
+				gallerySet.put(post.number, attachmentItems);
 			}
-			threadData.commentShort = obtainThreadComment(post.getWorkComment(), chanName, this);
-			threadData.commentShortSpans = ColorScheme.getSpans(threadData.commentShort);
+			threadData = new ThreadData(threadDataBase, commentShort, commentShortSpans, gallerySet);
+			referencesTo = Collections.emptySet();
 		} else {
-			String comment = post.getWorkComment();
-			referencesTo = parseReferencesTo(referencesTo, comment);
+			threadData = null;
+			Set<PostNumber> referencesTo = collectReferences(null, post.comment);
+			this.referencesTo = referencesTo != null ? referencesTo : Collections.emptySet();
 		}
-		ArrayList<Pair<Uri, String>> icons = null;
-		for (int i = 0, count = post.getIconsCount(); i < count; i++) {
-			Icon icon = post.getIconAt(i);
-			if (icon != null) {
-				if (icons == null) {
-					icons = new ArrayList<>();
-				}
-				icons.add(new Pair<>(icon.getRelativeUri(), icon.getTitle()));
-			}
-		}
-		this.icons = icons;
 	}
 
 	public Post getPost() {
 		return post;
 	}
 
-	public static HashSet<String> parseReferencesTo(HashSet<String> referencesTo, String comment) {
-		if (referencesTo != null) {
-			referencesTo.clear();
-		}
-		if (comment != null) {
+	public static Set<PostNumber> collectReferences(Set<PostNumber> references, String comment) {
+		if (!StringUtils.isEmpty(comment)) {
 			// Fast find <a.+?>(?:>>|&gt;&gt;)(\d+)</a>
 			int index1 = -1;
 			while (true) {
@@ -164,36 +215,17 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 						if (!number) {
 							continue;
 						}
-						if (referencesTo == null) {
-							referencesTo = new HashSet<>();
+						if (references == null) {
+							references = new TreeSet<>();
 						}
-						referencesTo.add(text.substring(start));
+						references.add(new PostNumber(Integer.parseInt(text.substring(start)), 0));
 					}
 				} else {
 					break;
 				}
 			}
 		}
-		return referencesTo;
-	}
-
-	public void addReferenceFrom(String postNumber) {
-		if (referencesFrom == null) {
-			referencesFrom = new LinkedHashSet<>();
-		}
-		referencesFrom.add(postNumber);
-	}
-
-	public void removeReferenceFrom(String postNumber) {
-		if (referencesFrom != null) {
-			referencesFrom.remove(postNumber);
-		}
-	}
-
-	public void clearReferencesFrom() {
-		if (referencesFrom != null) {
-			referencesFrom.clear();
-		}
+		return references;
 	}
 
 	public void setOrdinalIndex(int ordinalIndex) {
@@ -226,20 +258,20 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 
 	@Override
 	public String getThreadNumber() {
-		return post.getThreadNumberOrOriginalPostNumber();
+		return threadNumber;
 	}
 
 	@Override
-	public String getPostNumber() {
-		return post.getPostNumber();
+	public PostNumber getPostNumber() {
+		return post.number;
 	}
 
-	public String getOriginalPostNumber() {
-		return post.getOriginalPostNumber();
+	public PostNumber getOriginalPostNumber() {
+		return originalPostNumber;
 	}
 
-	public String getParentPostNumber() {
-		return post.getParentPostNumberOrNull();
+	public boolean isOriginalPost() {
+		return originalPostNumber.equals(post.number);
 	}
 
 	@Override
@@ -253,10 +285,10 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	private CharSequence makeFullName() {
-		String name = post.getName();
-		String identifier = post.getIdentifier();
-		String tripcode = post.getTripcode();
-		String capcode = post.getCapcode();
+		String name = post.name;
+		String identifier = post.identifier;
+		String tripcode = post.tripcode;
+		String capcode = post.capcode;
 		String defaultName = ChanConfiguration.get(getChanName()).getDefaultName(boardName);
 		if (StringUtils.isEmptyOrWhitespace(defaultName)) {
 			defaultName = "Anonymous";
@@ -321,27 +353,27 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public String getEmail() {
-		return post.getEmail();
+		return post.email;
 	}
 
 	public boolean isSage() {
-		return post.isSage() && getParentPostNumber() != null;
+		return post.isSage() && !isOriginalPost();
 	}
 
 	public boolean isSticky() {
-		return post.isSticky() && getParentPostNumber() == null;
+		return post.isSticky() && isOriginalPost();
 	}
 
 	public boolean isClosed() {
-		return (post.isClosed() || post.isArchived()) && getParentPostNumber() == null;
+		return (post.isClosed() || post.isArchived()) && isOriginalPost();
 	}
 
 	public boolean isCyclical() {
-		return post.isCyclical() && getParentPostNumber() == null;
+		return post.isCyclical() && isOriginalPost();
 	}
 
 	public boolean isOriginalPoster() {
-		return post.isOriginalPoster() || getParentPostNumber() == null;
+		return post.isOriginalPoster() || isOriginalPost();
 	}
 
 	public boolean isPosterWarned() {
@@ -355,14 +387,14 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	public enum BumpLimitState {NOT_REACHED, REACHED, NEED_COUNT}
 
 	public BumpLimitState getBumpLimitReachedState(int postsCount) {
-		if (getParentPostNumber() != null || isSticky() || isCyclical()) {
+		if (!isOriginalPost() || isSticky() || isCyclical()) {
 			return BumpLimitState.NOT_REACHED;
 		}
 		if (post.isBumpLimitReached()) {
 			return BumpLimitState.REACHED;
 		}
 		if (threadData != null) {
-			postsCount = threadData.postsCount;
+			postsCount = threadData.base.postsCount;
 		}
 		if (postsCount > 0) {
 			ChanConfiguration configuration = ChanConfiguration.get(getChanName());
@@ -375,15 +407,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public boolean isDeleted() {
-		return post.isDeleted();
-	}
-
-	public boolean isUserPost() {
-		return post.isUserPost();
-	}
-
-	public void setUserPost(boolean userPost) {
-		post.setUserPost(userPost);
+		return post.deleted;
 	}
 
 	@NonNull
@@ -392,14 +416,14 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		if (!StringUtils.isEmpty(subject)) {
 			return subject;
 		}
-		return StringUtils.cutIfLongerToLine(HtmlParser.clear(post.getWorkComment()), 50, true);
+		return StringUtils.cutIfLongerToLine(HtmlParser.clear(post.comment), 50, true);
 	}
 
 	@NonNull
 	public String getSubject() {
 		if (subject == null) {
-			String subject = post.getSubject();
-			if (subject != null) {
+			String subject = post.subject;
+			if (!StringUtils.isEmpty(subject)) {
 				subject = subject.replace("\r", "").replace("\n", " ").trim();
 				if (subject.length() == 1 && (subject.charAt(0) == '\u202d'
 						|| subject.charAt(0) == '\u202e')) {
@@ -413,15 +437,15 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		return subject;
 	}
 
-	private static CharSequence obtainComment(String comment, String chanName, String parentPostNumber,
-											  ChanMarkup.MarkupExtra extra) {
+	private static CharSequence obtainComment(String comment, String chanName,
+			String threadNumber, PostNumber originalPostNumber, ChanMarkup.MarkupExtra extra) {
 		return StringUtils.isEmpty(comment) ? "" : HtmlParser.spanify(comment, ChanMarkup.get(chanName),
-				StringUtils.emptyIfNull(parentPostNumber), extra);
+				threadNumber, originalPostNumber, extra);
 	}
 
 	private static CharSequence obtainThreadComment(String comment, String chanName, ChanMarkup.MarkupExtra extra) {
 		SpannableStringBuilder commentBuilder = new SpannableStringBuilder(obtainComment(comment,
-				chanName, null, extra));
+				chanName, null, null, extra));
 		int linebreaks = 0;
 		// Remove more than one linebreaks in sequence
 		for (int i = commentBuilder.length() - 1; i >= 0; i--) {
@@ -442,8 +466,8 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	@NonNull
 	public CharSequence getComment() {
 		if (comment == null) {
-			CharSequence comment = obtainComment(post.getWorkComment(), getChanName(),
-					getParentPostNumber(), this);
+			CharSequence comment = obtainComment(post.comment, getChanName(),
+					getThreadNumber(), getOriginalPostNumber(), this);
 			// Make empty lines take less space
 			SpannableStringBuilder builder = null;
 			int linebreaks = 0;
@@ -474,15 +498,15 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	@NonNull
-	public CharSequence getComment(String repliesToPost) {
+	public CharSequence getComment(PostNumber repliesToPost) {
 		SpannableString comment = new SpannableString(getComment());
 		LinkSpan[] spans = comment.getSpans(0, comment.length(), LinkSpan.class);
 		if (spans != null) {
 			String commentString = comment.toString();
-			repliesToPost = ">>" + repliesToPost;
+			String reference = ">>" + repliesToPost;
 			for (LinkSpan linkSpan : spans) {
 				int start = comment.getSpanStart(linkSpan);
-				if (commentString.indexOf(repliesToPost, start) == start) {
+				if (commentString.indexOf(reference, start) == start) {
 					int end = comment.getSpanEnd(linkSpan);
 					comment.setSpan(new StyleSpan(Typeface.BOLD), start, end, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
 				}
@@ -515,21 +539,14 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		return threadData.commentShortSpans;
 	}
 
-	public String getRawComment() {
-		return post.getWorkComment();
-	}
-
 	public String getCommentMarkup() {
-		String commentMarkup = post.getCommentMarkup();
-		String comment = post.getWorkComment();
-		if (StringUtils.isEmpty(commentMarkup)) {
-			if (!StringUtils.isEmpty(comment)) {
-				commentMarkup = HtmlParser.unmark(comment, ChanMarkup.get(chanName), this);
-			} else {
-				commentMarkup = "";
-			}
+		if (!StringUtils.isEmpty(post.commentMarkup)) {
+			return post.commentMarkup;
+		} else if (!StringUtils.isEmpty(post.comment)) {
+			return HtmlParser.unmark(post.comment, ChanMarkup.get(chanName), this);
+		} else {
+			return "";
 		}
-		return commentMarkup;
 	}
 
 	// Must be called only after getComment.
@@ -542,8 +559,8 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		return linkSpans;
 	}
 
-	public List<Pair<Uri, String>> getIcons() {
-		return icons;
+	public List<Post.Icon> getIcons() {
+		return post.icons;
 	}
 
 	public boolean hasAttachments() {
@@ -574,41 +591,59 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		}
 	}
 
+	public void addReferenceFrom(PostNumber postNumber) {
+		if (referencesFrom == null) {
+			referencesFrom = new TreeSet<>();
+		}
+		referencesFrom.add(postNumber);
+	}
+
+	public void removeReferenceFrom(PostNumber postNumber) {
+		if (referencesFrom != null) {
+			referencesFrom.remove(postNumber);
+		}
+	}
+
+	public void clearReferencesFrom() {
+		if (referencesFrom != null) {
+			referencesFrom.clear();
+		}
+	}
+
+	public Set<PostNumber> getReferencesTo() {
+		return referencesTo;
+	}
+
+	public Set<PostNumber> getReferencesFrom() {
+		return referencesFrom != null ? referencesFrom : Collections.emptySet();
+	}
+
 	public int getPostReplyCount() {
 		return referencesFrom != null ? referencesFrom.size() : 0;
 	}
 
-	// May return null set.
-	public HashSet<String> getReferencesTo() {
-		return referencesTo;
-	}
-
-	// May return null set.
-	public LinkedHashSet<String> getReferencesFrom() {
-		return referencesFrom;
-	}
-
-	public GalleryItem.GallerySet getThreadGallerySet() {
+	public GalleryItem.Set getThreadGallerySet() {
 		return threadData.gallerySet;
 	}
 
 	public int getThreadPostsCount() {
-		return threadData.postsCount;
+		return threadData.base.postsCount;
 	}
 
-	public PostItem[] getThreadLastPosts() {
-		Post[] posts = threadData.firstAndLastPosts;
-		if (posts != null && posts.length > 1) {
-			PostItem[] postItems = new PostItem[posts.length - 1];
-			int startIndex = threadData.postsCount - posts.length + 1;
-			for (int i = 0; i < postItems.length; i++) {
-				PostItem postItem = createPost(posts[i + 1], chanName, boardName);
-				postItem.setOrdinalIndex(startIndex > 0 ? startIndex + i : ORDINAL_INDEX_NONE);
-				postItems[i] = postItem;
+	public List<PostItem> getThreadPosts() {
+		int count = threadData.base.posts.size();
+		if (count >= 2) {
+			int startIndex = threadData.base.postsCount - count + 1;
+			ArrayList<PostItem> postItems = new ArrayList<>(count - 1);
+			for (Post post : threadData.base.posts.subList(1, count)) {
+				PostItem postItem = createPost(post, ChanLocator.get(chanName),
+						chanName, boardName, threadNumber, originalPostNumber);
+				postItem.setOrdinalIndex(startIndex > 0 ? startIndex++ : ORDINAL_INDEX_NONE);
+				postItems.add(postItem);
 			}
 			return postItems;
 		}
-		return null;
+		return Collections.emptyList();
 	}
 
 	static final String CARD_DESCRIPTION_DIVIDER = "   ";
@@ -622,10 +657,10 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 
 	public String formatThreadCardDescription(Context context, boolean repliesOnly) {
 		StringBuilder builder = new StringBuilder();
-		int originalPostFiles = post.getAttachmentsCount();
-		int replies = threadData.postsCount - 1;
-		int files = threadData.filesCount - originalPostFiles;
-		int postsWithFiles = threadData.postsWithFilesCount - (originalPostFiles > 0 ? 1 : 0);
+		int originalPostFiles = post.attachments.size();
+		int replies = threadData.base.postsCount - 1;
+		int files = threadData.base.filesCount - originalPostFiles;
+		int postsWithFiles = threadData.base.postsWithFilesCount - (originalPostFiles > 0 ? 1 : 0);
 		boolean hasInformation = false;
 		Resources resources = context.getResources();
 		if (replies >= 0) {
@@ -672,7 +707,7 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 	}
 
 	public long getTimestamp() {
-		return post.getTimestamp();
+		return post.timestamp;
 	}
 
 	public String getDateTime(PostDateFormatter formatter) {
@@ -685,88 +720,20 @@ public class PostItem implements AttachmentItem.Binder, ChanMarkup.MarkupExtra, 
 		}
 	}
 
-	public boolean isExpanded() {
-		return expanded;
-	}
-
-	public void setExpanded(boolean expanded) {
-		this.expanded = expanded;
-	}
-
 	public boolean isThreadItem() {
 		return threadData != null;
 	}
 
-	private HideState getHiddenStateFromModel() {
-		if (post.isHidden()) {
-			return HideState.HIDDEN;
-		}
-		if (post.isShown()) {
-			return HideState.SHOWN;
-		}
-		return HideState.UNDEFINED;
-	}
-
-	public interface HidePerformer {
-		public String checkHidden(PostItem postItem);
-	}
-
-	public boolean isHidden(HidePerformer hidePerformer) {
-		HideState hideState = this.hideState;
-		if (hideState == HideState.UNDEFINED) {
-			String hideReason = null;
-			if (threadData == null) {
-				hideState = getHiddenStateFromModel();
-			} else {
-				hideState = HiddenThreadsDatabase.getInstance()
-						.check(getChanName(), boardName, getThreadNumber());
-			}
-			if (hideState == HideState.UNDEFINED) {
-				hideReason = hidePerformer.checkHidden(this);
-				if (hideReason != null) {
-					hideState = HideState.HIDDEN;
-				} else {
-					hideState = HideState.SHOWN;
-				}
-			}
-			this.hideState = hideState;
-			this.hideReason = hideReason;
-		}
-		return hideState == HideState.HIDDEN;
-	}
-
-	// Must be called only after isHidden.
-	public boolean isHiddenUnchecked() {
-		return hideState == HideState.HIDDEN;
+	public HideState getHideState() {
+		return hideState;
 	}
 
 	public String getHideReason() {
 		return hideReason;
 	}
 
-	public void setHidden(boolean hidden) {
-		this.hideState = hidden ? HideState.HIDDEN : HideState.SHOWN;
-		hideReason = null;
-		if (!isThreadItem()) {
-			post.setHidden(hidden);
-		}
-	}
-
-	public void invalidateHidden() {
-		hideState = HideState.UNDEFINED;
-		hideReason = null;
-	}
-
-	public void resetHidden() {
-		invalidateHidden();
-		post.resetHidden();
-	}
-
-	public void setUnread(boolean unread) {
-		this.unread = unread;
-	}
-
-	public boolean isUnread() {
-		return unread;
+	public void setHidden(HideState hideState, String hideReason) {
+		this.hideState = hideState;
+		this.hideReason = hideReason;
 	}
 }

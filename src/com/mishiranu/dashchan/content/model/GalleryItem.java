@@ -7,6 +7,8 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.TreeMap;
 
 public class GalleryItem implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -16,7 +18,7 @@ public class GalleryItem implements Serializable {
 
 	public final String boardName;
 	public final String threadNumber;
-	public final String postNumber;
+	public final PostNumber postNumber;
 
 	public final String originalName;
 
@@ -28,7 +30,7 @@ public class GalleryItem implements Serializable {
 	private transient Uri fileUri;
 	private transient Uri thumbnailUri;
 
-	public GalleryItem(Uri fileUri, Uri thumbnailUri, String boardName, String threadNumber, String postNumber,
+	public GalleryItem(Uri fileUri, Uri thumbnailUri, String boardName, String threadNumber, PostNumber postNumber,
 			String originalName, int width, int height, int size) {
 		fileUriString = fileUri != null ? fileUri.toString() : null;
 		thumbnailUriString = thumbnailUri != null ? thumbnailUri.toString() : null;
@@ -94,13 +96,13 @@ public class GalleryItem implements Serializable {
 				locator.getChanName(), boardName, threadNumber, threadTitle);
 	}
 
-	public static class GallerySet {
+	public static class Set {
 		private final boolean navigatePostSupported;
-		private final ArrayList<GalleryItem> galleryItems = new ArrayList<>();
+		private final TreeMap<PostNumber, List<GalleryItem>> galleryItems = new TreeMap<>();
 
 		private String threadTitle;
 
-		public GallerySet(boolean navigatePostSupported) {
+		public Set(boolean navigatePostSupported) {
 			this.navigatePostSupported = navigatePostSupported;
 		}
 
@@ -112,28 +114,48 @@ public class GalleryItem implements Serializable {
 			return threadTitle;
 		}
 
-		public void add(Collection<AttachmentItem> attachmentItems) {
+		public void put(PostNumber postNumber, Collection<AttachmentItem> attachmentItems) {
 			if (attachmentItems != null) {
+				ArrayList<GalleryItem> galleryItems = new ArrayList<>();
 				for (AttachmentItem attachmentItem : attachmentItems) {
 					if (attachmentItem.isShowInGallery() && attachmentItem.canDownloadToStorage()) {
-						add(attachmentItem.createGalleryItem());
+						galleryItems.add(attachmentItem.createGalleryItem());
 					}
+				}
+				if (!galleryItems.isEmpty()) {
+					this.galleryItems.put(postNumber, galleryItems);
 				}
 			}
 		}
 
-		public void add(GalleryItem galleryItem) {
-			if (galleryItem != null) {
-				galleryItems.add(galleryItem);
-			}
+		public void remove(PostNumber postNumber) {
+			galleryItems.remove(postNumber);
 		}
 
 		public void clear() {
 			galleryItems.clear();
 		}
 
-		public ArrayList<GalleryItem> getItems() {
-			return galleryItems.size() > 0 ? galleryItems : null;
+		public int findIndex(PostItem postItem) {
+			if (postItem.hasAttachments()) {
+				int index = 0;
+				PostNumber postNumber = postItem.getPostNumber();
+				for (TreeMap.Entry<PostNumber, List<GalleryItem>> entry : galleryItems.entrySet()) {
+					if (postNumber.equals(entry.getKey())) {
+						return index;
+					}
+					index += entry.getValue().size();
+				}
+			}
+			return -1;
+		}
+
+		public List<GalleryItem> createList() {
+			ArrayList<GalleryItem> galleryItems = new ArrayList<>();
+			for (List<GalleryItem> list : this.galleryItems.values()) {
+				galleryItems.addAll(list);
+			}
+			return galleryItems;
 		}
 
 		public boolean isNavigatePostSupported() {

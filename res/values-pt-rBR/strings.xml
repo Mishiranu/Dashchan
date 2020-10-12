@@ -13,8 +13,6 @@
 	<string name="all_posts">Todos os posts</string>
 	<string name="all_threads">Todos of fios</string>
 	<string name="always">Sempre</string>
-	<string name="always_disabled">Sempre disabilitado</string>
-	<string name="always_enabled">Sempre habilitado</string>
 	<string name="another">Outro</string>
 	<string name="appearance">Aparência</string>
 	<string name="application_name_update__format">%s atualizações</string>
@@ -315,7 +313,6 @@
 	<string name="send">Enviar</string>
 	<string name="sending__ellipsis">Enviando…</string>
 	<string name="sending_number_of_number__ellipsis_format">Enviando %1$d de %2$d…</string>
-	<string name="separate__adjective">Separado</string>
 	<string name="services">Serviços</string>
 	<string name="sfw_mode">Modo SFW</string>
 	<string name="share__ellipsis">Compartilhar…</string>

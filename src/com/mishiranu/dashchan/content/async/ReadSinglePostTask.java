@@ -2,34 +2,38 @@ package com.mishiranu.dashchan.content.async;
 
 import android.os.SystemClock;
 import chan.content.ChanConfiguration;
+import chan.content.ChanLocator;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
-import chan.content.model.Post;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.util.CommonUtils;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import java.net.HttpURLConnection;
 
 public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem> {
 	private final Callback callback;
 	private final String boardName;
 	private final String chanName;
-	private final String postNumber;
+	private final String threadNumber;
+	private final PostNumber postNumber;
 
 	private ErrorItem errorItem;
 
 	public interface Callback {
-		public void onReadSinglePostSuccess(PostItem postItem);
-		public void onReadSinglePostFail(ErrorItem errorItem);
+		void onReadSinglePostSuccess(PostItem postItem);
+		void onReadSinglePostFail(ErrorItem errorItem);
 	}
 
-	public ReadSinglePostTask(Callback callback, String chanName, String boardName, String postNumber) {
+	public ReadSinglePostTask(Callback callback, String chanName,
+			String boardName, String threadNumber, PostNumber postNumber) {
 		this.callback = callback;
 		this.boardName = boardName;
 		this.chanName = chanName;
+		this.threadNumber = threadNumber;
 		this.postNumber = postNumber;
 	}
 
@@ -38,11 +42,20 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem> {
 		long startTime = SystemClock.elapsedRealtime();
 		try {
 			ChanPerformer performer = ChanPerformer.get(chanName);
+			String postNumber;
+			if (this.postNumber != null) {
+				postNumber = this.postNumber.toString();
+			} else {
+				postNumber = threadNumber;
+			}
 			ChanPerformer.ReadSinglePostResult result = performer.safe().onReadSinglePost(new ChanPerformer
 					.ReadSinglePostData(boardName, postNumber, holder));
-			Post post = result != null ? result.post : null;
+			if (result == null || result.post == null) {
+				throw HttpException.createNotFoundException();
+			}
 			startTime = 0L;
-			return PostItem.createPost(post, chanName, boardName);
+			return PostItem.createPost(result.post.post, ChanLocator.get(chanName),
+					chanName, boardName, result.post.threadNumber, result.post.originalPostNumber);
 		} catch (HttpException e) {
 			errorItem = e.getErrorItemAndHandle();
 			if (errorItem.httpResponseCode == HttpURLConnection.HTTP_NOT_FOUND ||

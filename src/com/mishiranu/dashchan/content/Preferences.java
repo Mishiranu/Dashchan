@@ -48,7 +48,7 @@ public class Preferences {
 		}
 
 		public String bind(String chanName) {
-			return String.format(key, chanName);
+			return chanName + "_" + key;
 		}
 	}
 
@@ -156,37 +156,30 @@ public class Preferences {
 	}
 
 	public static final String KEY_AUTO_REFRESH_MODE = "auto_refresh_mode";
-	public static final String VALUE_AUTO_REFRESH_MODE_SEPARATE = "separate";
 	public static final String VALUE_AUTO_REFRESH_MODE_DISABLED = "disabled";
 	public static final String VALUE_AUTO_REFRESH_MODE_ENABLED = "enabled";
 	public static final String[] VALUES_AUTO_REFRESH_MODE = {
-			VALUE_AUTO_REFRESH_MODE_SEPARATE,
 			VALUE_AUTO_REFRESH_MODE_DISABLED,
 			VALUE_AUTO_REFRESH_MODE_ENABLED
 	};
 	public static final int[] ENTRIES_AUTO_REFRESH_MODE = {
-			R.string.separate__adjective,
-			R.string.always_disabled,
-			R.string.always_enabled
+			R.string.disabled,
+			R.string.enabled
 	};
-	public static final String DEFAULT_AUTO_REFRESH_MODE = VALUE_AUTO_REFRESH_MODE_SEPARATE;
+	public static final String DEFAULT_AUTO_REFRESH_MODE = VALUE_AUTO_REFRESH_MODE_DISABLED;
 
-	public static final int AUTO_REFRESH_MODE_SEPARATE = 0;
-	public static final int AUTO_REFRESH_MODE_DISABLED = 1;
-	public static final int AUTO_REFRESH_MODE_ENABLED = 2;
+	public static final int AUTO_REFRESH_MODE_DISABLED = 0;
+	public static final int AUTO_REFRESH_MODE_ENABLED = 1;
 
 	public static int getAutoRefreshMode() {
 		String value = PREFERENCES.getString(KEY_AUTO_REFRESH_MODE, DEFAULT_AUTO_REFRESH_MODE);
-		if (VALUE_AUTO_REFRESH_MODE_SEPARATE.equals(value)) {
-			return AUTO_REFRESH_MODE_SEPARATE;
-		}
 		if (VALUE_AUTO_REFRESH_MODE_DISABLED.equals(value)) {
 			return AUTO_REFRESH_MODE_DISABLED;
 		}
 		if (VALUE_AUTO_REFRESH_MODE_ENABLED.equals(value)) {
 			return AUTO_REFRESH_MODE_ENABLED;
 		}
-		return AUTO_REFRESH_MODE_SEPARATE;
+		return AUTO_REFRESH_MODE_DISABLED;
 	}
 
 	public static final String KEY_AUTO_REFRESH_INTERVAL = "auto_refresh_interval";
@@ -207,7 +200,7 @@ public class Preferences {
 		return (int) (PREFERENCES.getInt(KEY_CACHE_SIZE, DEFAULT_CACHE_SIZE) * MULTIPLIER_CACHE_SIZE);
 	}
 
-	public static final ChanKey KEY_CAPTCHA = new ChanKey("%s_captcha");
+	public static final ChanKey KEY_CAPTCHA = new ChanKey("captcha");
 	private static final String VALUE_CAPTCHA_START = "captcha_";
 
 	public static String getCaptchaTypeForChanConfiguration(String chanName) {
@@ -262,7 +255,7 @@ public class Preferences {
 		return VALUE_CAPTCHA_START + captchaType;
 	}
 
-	public static final ChanKey KEY_CAPTCHA_PASS = new ChanKey("%s_captcha_pass");
+	public static final ChanKey KEY_CAPTCHA_PASS = new ChanKey("captcha_pass");
 
 	public static String[] getCaptchaPass(String chanName) {
 		ChanConfiguration.Authorization authorization = ChanConfiguration.get(chanName).safe().obtainCaptchaPass();
@@ -326,7 +319,7 @@ public class Preferences {
 		return PREFERENCES.getBoolean(KEY_CUT_THUMBNAILS, DEFAULT_CUT_THUMBNAILS);
 	}
 
-	public static final ChanKey KEY_DEFAULT_BOARD_NAME = new ChanKey("%s_default_board_name");
+	public static final ChanKey KEY_DEFAULT_BOARD_NAME = new ChanKey("default_board_name");
 
 	public static String getDefaultBoardName(String chanName) {
 		ChanConfiguration configuration = ChanConfiguration.get(chanName);
@@ -440,7 +433,7 @@ public class Preferences {
 		return PREFERENCES.getBoolean(KEY_DISPLAY_ICONS, DEFAULT_DISPLAY_ICONS);
 	}
 
-	public static final ChanKey KEY_DOMAIN = new ChanKey("%s_domain");
+	public static final ChanKey KEY_DOMAIN = new ChanKey("domain");
 
 	public static String getDomainUnhandled(String chanName) {
 		return PREFERENCES.getString(KEY_DOMAIN.bind(chanName), "");
@@ -750,7 +743,7 @@ public class Preferences {
 		PREFERENCES.edit().putLong(KEY_LAST_UPDATE_CHECK, lastUpdateCheck).commit();
 	}
 
-	public static final ChanKey KEY_LOAD_CATALOG = new ChanKey("%s_load_catalog");
+	public static final ChanKey KEY_LOAD_CATALOG = new ChanKey("load_catalog");
 	public static final boolean DEFAULT_LOAD_CATALOG = false;
 
 	public static boolean isLoadCatalog(String chanName) {
@@ -849,7 +842,7 @@ public class Preferences {
 		return PAGES_LIST_MODE_PAGES_FIRST;
 	}
 
-	public static final ChanKey KEY_PARTIAL_THREAD_LOADING = new ChanKey("%s_partial_thread_loading");
+	public static final ChanKey KEY_PARTIAL_THREAD_LOADING = new ChanKey("partial_thread_loading");
 	public static final boolean DEFAULT_PARTIAL_THREAD_LOADING = true;
 
 	public static boolean isPartialThreadLoading(String chanName) {
@@ -861,7 +854,7 @@ public class Preferences {
 		}
 	}
 
-	public static final ChanKey KEY_PASSWORD = new ChanKey("%s_password");
+	public static final ChanKey KEY_PASSWORD = new ChanKey("password");
 
 	private static String generatePassword() {
 		StringBuilder password = new StringBuilder();
@@ -901,7 +894,7 @@ public class Preferences {
 		}
 	}
 
-	public static final ChanKey KEY_PROXY = new ChanKey("%s_proxy");
+	public static final ChanKey KEY_PROXY = new ChanKey("proxy");
 	public static final String VALUE_PROXY_2_HTTP = "http";
 	public static final String VALUE_PROXY_2_SOCKS = "socks";
 	public static final String[] ENTRIES_PROXY_2 = {"HTTP", "SOCKS"};
@@ -1048,7 +1041,7 @@ public class Preferences {
 		return PREFERENCES.getBoolean(KEY_USE_GMS_PROVIDER, DEFAULT_USE_GMS_PROVIDER);
 	}
 
-	public static final ChanKey KEY_USE_HTTPS = new ChanKey("%s_use_https");
+	public static final ChanKey KEY_USE_HTTPS = new ChanKey("use_https");
 	public static final String KEY_USE_HTTPS_GENERAL = KEY_USE_HTTPS.bind(SPECIAL_CHAN_NAME_GENERAL);
 	public static final boolean DEFAULT_USE_HTTPS = true;
 
@@ -1071,7 +1064,7 @@ public class Preferences {
 		return PREFERENCES.getBoolean(KEY_USE_VIDEO_PLAYER, DEFAULT_USE_VIDEO_PLAYER);
 	}
 
-	public static final ChanKey KEY_USER_AUTHORIZATION = new ChanKey("%s_user_authorization");
+	public static final ChanKey KEY_USER_AUTHORIZATION = new ChanKey("user_authorization");
 
 	public static String[] getUserAuthorizationData(String chanName) {
 		ChanConfiguration.Authorization authorization = ChanConfiguration.get(chanName)

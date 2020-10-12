@@ -11,6 +11,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.GraphicsUtils;
+import com.mishiranu.dashchan.util.Hasher;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.LruCache;
 import java.io.ByteArrayOutputStream;
@@ -18,7 +19,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -146,32 +146,6 @@ public class DraftsStorage extends StorageManager.Storage<List<DraftsStorage.Pos
 		}
 	}
 
-	public void movePostDraft(String chanName, String fromBoardName, String fromThreadNumber,
-			String toBoardName, String toThreadNumber) {
-		String fromKey = makeKey(chanName, fromBoardName, fromThreadNumber);
-		String toKey = makeKey(chanName, toBoardName, toThreadNumber);
-		PostDraft postDraft = postDrafts.get(fromKey);
-		if (postDraft != null) {
-			if (postDrafts.get(toKey) == null) {
-				ArrayList<PostDraft> postDrafts = new ArrayList<>(this.postDrafts.values());
-				int index = postDrafts.indexOf(postDraft);
-				postDrafts.remove(index);
-				postDraft = new PostDraft(chanName, toBoardName, toThreadNumber, postDraft.name, postDraft.email,
-						postDraft.password, postDraft.subject, postDraft.comment, postDraft.commentCarriage,
-						postDraft.attachmentDrafts, postDraft.optionSage, postDraft.optionSpoiler,
-						postDraft.optionOriginalPoster, postDraft.userIcon);
-				postDrafts.add(index, postDraft);
-				this.postDrafts.clear();
-				for (PostDraft addPostDraft : postDrafts) {
-					this.postDrafts.put(makeKey(addPostDraft), addPostDraft);
-				}
-			} else {
-				postDrafts.remove(fromKey);
-			}
-			serialize();
-		}
-	}
-
 	public void store(String chanName, CaptchaDraft captchaDraft) {
 		this.captchaChanName = chanName;
 		this.captchaDraft = captchaDraft;
@@ -213,14 +187,10 @@ public class DraftsStorage extends StorageManager.Storage<List<DraftsStorage.Pos
 
 	public String store(FileHolder fileHolder) {
 		String hash;
-		InputStream inputStream = null;
-		try {
-			inputStream = fileHolder.openInputStream();
-			hash = IOUtils.calculateSha256(inputStream);
+		try (InputStream input = fileHolder.openInputStream()) {
+			hash = StringUtils.formatHex(Hasher.getInstanceSha256().calculate(input));
 		} catch (IOException e) {
 			return null;
-		} finally {
-			IOUtils.close(inputStream);
 		}
 		File file = getAttachmentDraftFile(hash);
 		if (file == null) {
@@ -229,19 +199,14 @@ public class DraftsStorage extends StorageManager.Storage<List<DraftsStorage.Pos
 		if (file.isFile()) {
 			return hash;
 		}
-		OutputStream outputStream = null;
-		try {
-			inputStream = fileHolder.openInputStream();
-			outputStream = new FileOutputStream(file);
-			IOUtils.copyStream(inputStream, outputStream);
+		try (InputStream input = fileHolder.openInputStream();
+				FileOutputStream output = new FileOutputStream(file)) {
+			IOUtils.copyStream(input, output);
 			serialize();
 			return hash;
 		} catch (IOException e) {
 			file.delete();
 			return null;
-		} finally {
-			IOUtils.close(inputStream);
-			IOUtils.close(outputStream);
 		}
 	}
 

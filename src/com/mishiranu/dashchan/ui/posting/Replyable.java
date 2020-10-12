@@ -1,32 +1,17 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.ui.posting;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import com.mishiranu.dashchan.content.model.PostNumber;
 
 public interface Replyable {
-	public void onRequestReply(ReplyData... data);
+	void onRequestReply(ReplyData... data);
 
-	public static class ReplyData implements Parcelable {
-		public final String postNumber;
+	class ReplyData implements Parcelable {
+		public final PostNumber postNumber;
 		public final String comment;
 
-		public ReplyData(String postNumber, String comment) {
+		public ReplyData(PostNumber postNumber, String comment) {
 			this.postNumber = postNumber;
 			this.comment = comment;
 		}
@@ -38,14 +23,18 @@ public interface Replyable {
 
 		@Override
 		public void writeToParcel(Parcel dest, int flags) {
-			dest.writeString(postNumber);
+			dest.writeByte((byte) (postNumber != null ? 1 : 0));
+			if (postNumber != null) {
+				postNumber.writeToParcel(dest, flags);
+			}
 			dest.writeString(comment);
 		}
 
 		public static final Creator<ReplyData> CREATOR = new Creator<ReplyData>() {
 			@Override
 			public ReplyData createFromParcel(Parcel source) {
-				String postNumber = source.readString();
+				PostNumber postNumber = source.readByte() != 0
+						? PostNumber.CREATOR.createFromParcel(source) : null;
 				String comment = source.readString();
 				return new ReplyData(postNumber, comment);
 			}

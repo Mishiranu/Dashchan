@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
@@ -48,7 +49,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		void setPageTitle(String title);
 		void invalidateHomeUpState();
 		void setActionBarLocked(String locker, boolean locked);
-		void handleRedirect(Page page, String chanName, String boardName, String threadNumber, String postNumber);
+		void handleRedirect(Page page, String chanName, String boardName, String threadNumber, PostNumber postNumber);
 	}
 
 	public PageFragment() {}
@@ -315,7 +316,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		return listPage.onDrawerNumberEntered(number);
 	}
 
-	public void updatePageConfiguration(String postNumber) {
+	public void updatePageConfiguration(PostNumber postNumber) {
 		if (listPage != null) {
 			listPage.updatePageConfiguration(postNumber);
 		} else {
@@ -329,7 +330,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		listPage.handleNewPostDataListNow();
 	}
 
-	public void scrollToPost(String postNumber) {
+	public void scrollToPost(PostNumber postNumber) {
 		listPage.handleScrollToPost(postNumber);
 	}
 
@@ -446,7 +447,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 	}
 
 	@Override
-	public void handleRedirect(String chanName, String boardName, String threadNumber, String postNumber) {
+	public void handleRedirect(String chanName, String boardName, String threadNumber, PostNumber postNumber) {
 		if (isResumed()) {
 			getCallback().handleRedirect(getPage(), chanName, boardName, threadNumber, postNumber);
 		} else {

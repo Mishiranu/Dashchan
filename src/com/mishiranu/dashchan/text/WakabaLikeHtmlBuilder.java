@@ -228,12 +228,13 @@ public class WakabaLikeHtmlBuilder {
 		if (!StringUtils.isEmpty(subject)) {
 			builder.append("<span class=\"replytitle\" data-subject=\"true\">").append(subject).append("</span>\n");
 		}
-		if (name == null) {
-			name = "";
-		}
+		boolean hasName = !StringUtils.isEmpty(name);
 		boolean hasIdentifier = !StringUtils.isEmpty(identifier);
 		boolean hasEmail = !StringUtils.isEmpty(email);
-		builder.append("<span class=\"postername\" data-name=\"").append(escapeHtml(name)).append("\"");
+		builder.append("<span class=\"postername\" ");
+		if (hasName) {
+			builder.append("data-name=\"").append(escapeHtml(name)).append("\"");
+		}
 		if (hasIdentifier) {
 			builder.append(" data-identifier=\"").append(escapeHtml(identifier)).append("\"");
 		}
@@ -250,7 +251,9 @@ public class WakabaLikeHtmlBuilder {
 			}
 			builder.append("<a href=\"").append(email).append("\">");
 		}
-		builder.append(name);
+		if (hasName) {
+			builder.append(name);
+		}
 		if (hasEmail) {
 			builder.append("</a>");
 		}
@@ -330,7 +333,7 @@ public class WakabaLikeHtmlBuilder {
 		}
 		builder.append("<span class=\"filesize\" data-file=\"").append(fileItem.imageFile)
 				.append("\" data-thumbnail=\"").append(fileItem.thumbnailFile != null ? fileItem.thumbnailFile : "");
-		if (fileItem.originalName != null) {
+		if (!StringUtils.isEmpty(fileItem.originalName)) {
 			builder.append("\" data-original-name=\"").append(escapeHtml(fileItem.originalName));
 		}
 		builder.append("\" data-size=\"").append(fileItem.size).append("\" data-width=\"").append(fileItem.width)
@@ -354,12 +357,12 @@ public class WakabaLikeHtmlBuilder {
 			size = String.format(Locale.US, "%.2f", sizeFloat) + ' ' + dim;
 		}
 		boolean hasFileInfo = size != null || fileItem.width > 0 && fileItem.height > 0
-				|| fileItem.originalName != null;
+				|| !StringUtils.isEmpty(fileItem.originalName);
 		if (hasFileInfo) {
 			if (multiple) {
 				builder.append("<br />\n");
 			}
-			boolean hasTitleFileInfo = multiple && fileItem.originalName != null;
+			boolean hasTitleFileInfo = multiple && !StringUtils.isEmpty(fileItem.originalName);
 			builder.append("(<em");
 			if (hasTitleFileInfo) {
 				builder.append(" title=\"");
@@ -403,7 +406,7 @@ public class WakabaLikeHtmlBuilder {
 			}
 			builder.append(fileItem.width).append('×').append(fileItem.height);
 		}
-		if (fileItem.originalName != null) {
+		if (!StringUtils.isEmpty(fileItem.originalName)) {
 			if (divider) {
 				builder.append(", ");
 			} else {

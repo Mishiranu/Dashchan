@@ -214,7 +214,7 @@ public class HttpClient {
 			if (o instanceof ProxyData) {
 				ProxyData proxyData = (ProxyData) o;
 				return socks == proxyData.socks &&
-						StringUtils.equals(host, proxyData.host) &&
+						CommonUtils.equals(host, proxyData.host) &&
 						port == proxyData.port;
 			}
 			return false;
@@ -266,7 +266,6 @@ public class HttpClient {
 		return verifyCertificate ? HttpsURLConnection.getDefaultSSLSocketFactory() : UNSAFE_SSL_SOCKET_FACTORY;
 	}
 
-	@SuppressWarnings("EqualsReplaceableByObjectsCall")
 	void execute(HttpRequest request) throws HttpException {
 		String chanName = ChanManager.getInstance().getChanNameByHost(request.uri.getAuthority());
 		ChanLocator locator = ChanLocator.get(chanName);
@@ -274,7 +273,7 @@ public class HttpClient {
 		ProxyData proxyData = getProxyData(chanName);
 		synchronized (proxies) {
 			ProxyData lastProxyData = proxies.get(chanName);
-			if (proxyData == lastProxyData || proxyData != null && proxyData.equals(lastProxyData)) {
+			if (CommonUtils.equals(proxyData, lastProxyData)) {
 				// With initialized proxy object
 				proxyData = lastProxyData;
 			} else {
@@ -524,7 +523,8 @@ public class HttpClient {
 				checkResponseCode(holder);
 			}
 			holder.validator = HttpValidator.obtain(connection);
-			holder.checkDisconnectedAndSetHasUnreadBody(true);
+			holder.checkDisconnected();
+			holder.executed = true;
 		} catch (DisconnectedIOException e) {
 			holder.disconnectAndClear();
 			throw new HttpException(null, false, false, e);
@@ -577,18 +577,6 @@ public class HttpClient {
 				commonInput = new GZIPInputStream(commonInput);
 				contentLength = -1;
 			}
-			OutputStream output = forceDirect ? null : holder.outputStream;
-			ClientInputStream input = new ClientInputStream(commonInput, holder, holder.inputListener, contentLength);
-			ByteArrayOutputStream writeTo = output == null ? new ByteArrayOutputStream() : null;
-			if (output == null) {
-				output = writeTo;
-			}
-			try {
-				IOUtils.copyStream(input, output);
-			} finally {
-				IOUtils.close(input);
-				IOUtils.close(output);
-			}
 			String contentType = connection.getHeaderField("Content-Type");
 			String charsetName = null;
 			if (contentType != null) {
@@ -603,15 +591,24 @@ public class HttpClient {
 					}
 				}
 			}
-			holder.checkDisconnectedAndSetHasUnreadBody(false);
-			if (writeTo != null) {
-				HttpResponse httpResponse = new HttpResponse(writeTo.toByteArray());
-				if (charsetName != null) {
-					httpResponse.setEncoding(charsetName);
+			try (ClientInputStream input = new ClientInputStream(commonInput,
+					holder, holder.inputListener, contentLength)) {
+				if (forceDirect || holder.outputStream == null) {
+					ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+					IOUtils.copyStream(input, buffer);
+					HttpResponse httpResponse = new HttpResponse(buffer.toByteArray());
+					if (charsetName != null) {
+						httpResponse.setEncoding(charsetName);
+					}
+					return httpResponse;
+				} else {
+					try (OutputStream output = holder.outputStream) {
+						IOUtils.copyStream(input, output);
+						return null;
+					}
 				}
-				return httpResponse;
-			} else {
-				return null;
+			} finally {
+				holder.checkDisconnected();
 			}
 		} catch (DisconnectedIOException e) {
 			throw new HttpException(null, false, false, e);
@@ -619,6 +616,7 @@ public class HttpClient {
 			checkExceptionAndThrow(e);
 			throw new HttpException(ErrorItem.Type.DOWNLOAD, false, true, e);
 		} finally {
+			holder.executed = false;
 			holder.disconnectAndClear();
 		}
 	}

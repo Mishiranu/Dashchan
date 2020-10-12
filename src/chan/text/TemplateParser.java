@@ -3,7 +3,7 @@ package chan.text;
 import android.util.Pair;
 import chan.annotation.Extendable;
 import chan.annotation.Public;
-import chan.util.StringUtils;
+import chan.util.CommonUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -56,7 +56,7 @@ public final class TemplateParser<H> {
 			String value = attributes.get(attribute);
 			switch (method) {
 				case EQUALS: {
-					return StringUtils.equals(value, this.value);
+					return CommonUtils.equals(value, this.value);
 				}
 				case STARTS: {
 					return value != null && value.startsWith(this.value);

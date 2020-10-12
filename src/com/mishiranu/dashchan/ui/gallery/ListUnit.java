@@ -197,7 +197,7 @@ public class ListUnit implements ActionMode.Callback {
 		GalleryItem galleryItem = getAdapter().getItem(position);
 		Context context = instance.callback.getWindow().getContext();
 		DialogMenu dialogMenu = new DialogMenu(context);
-		dialogMenu.setTitle(galleryItem.originalName != null ? galleryItem.originalName
+		dialogMenu.setTitle(!StringUtils.isEmpty(galleryItem.originalName) ? galleryItem.originalName
 				: galleryItem.getFileName(instance.locator), true);
 		dialogMenu.add(R.string.download_file, () -> instance.callback.downloadGalleryItem(galleryItem));
 		if (galleryItem.getDisplayImageUri(instance.locator) != null) {

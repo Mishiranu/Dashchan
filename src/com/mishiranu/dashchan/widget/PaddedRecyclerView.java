@@ -108,7 +108,7 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 		}
 	}
 
-	@SuppressWarnings({"unused", "RedundantSuppression"}) // Overrides hidden Android API protected method
+	@SuppressWarnings("unused") // Overrides hidden Android API protected method
 	protected void onDrawVerticalScrollBar(Canvas canvas, Drawable scrollBar, int l, int t, int r, int b) {
 		if (!allowFastScrolling) {
 			if (b - t == getHeight()) {

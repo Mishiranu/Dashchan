@@ -23,6 +23,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -225,7 +226,7 @@ public class UpdateFragment extends BaseListFragment implements ActivityHandler,
 	private static boolean compareForUpdates(ReadUpdateTask.UpdateItem installedUpdateItem,
 			ReadUpdateTask.UpdateItem newUpdateItem) {
 		return newUpdateItem.code > installedUpdateItem.code ||
-				!StringUtils.equals(newUpdateItem.name, installedUpdateItem.name);
+				!CommonUtils.equals(newUpdateItem.name, installedUpdateItem.name);
 	}
 
 	private static ListItem handleAddListItem(Context context, List<ReadUpdateTask.UpdateItem> updateItems,

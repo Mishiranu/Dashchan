@@ -32,6 +32,7 @@ import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -213,7 +214,7 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 				ChanLocator.NavigationData navigationData;
 				if (locator.safe(true).isBoardUri(uri)) {
 					navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_THREADS,
-							locator.safe(true).getBoardName(uri), null, null, null);
+							locator.safe(true).getBoardName(uri), null, (PostNumber) null, null);
 				} else if (locator.safe(true).isThreadUri(uri)) {
 					navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_POSTS,
 							locator.safe(true).getBoardName(uri), locator.safe(true).getThreadNumber(uri),

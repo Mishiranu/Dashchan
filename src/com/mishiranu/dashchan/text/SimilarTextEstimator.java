@@ -1,23 +1,8 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.text;
 
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 public class SimilarTextEstimator {
 	private static final int MIN_WORDS_COUNT = 1;
@@ -30,13 +15,13 @@ public class SimilarTextEstimator {
 		this.removePostLinks = removePostLinks;
 	}
 
-	public boolean checkSimiliar(WordsData wordsData1, WordsData wordsData2) {
+	public <E> boolean checkSimiliar(WordsData<E> wordsData1, WordsData<E> wordsData2) {
 		if (wordsData1 != null && wordsData2 != null) {
 			int wdc = wordsData1.count;
 			int swdc = wordsData2.count;
 			if (wdc >= swdc / 2 && wdc <= swdc * 2) {
 				int similarity = 0;
-				HashSet<String> swords = wordsData2.words;
+				Set<String> swords = wordsData2.words;
 				for (String word : wordsData1.words) {
 					if (swords.contains(word)) {
 						similarity++;
@@ -45,15 +30,13 @@ public class SimilarTextEstimator {
 					}
 				}
 				// 2/3 similarity
-				if (similarity >= swords.size() / 3) {
-					return true;
-				}
+				return similarity >= swords.size() / 3;
 			}
 		}
 		return false;
 	}
 
-	public WordsData getWords(String text) {
+	public <E> WordsData<E> getWords(String text) {
 		if (text == null) {
 			return null;
 		}
@@ -116,15 +99,15 @@ public class SimilarTextEstimator {
 				}
 			}
 		}
-		return count >= MIN_WORDS_COUNT ? new WordsData(words, count) : null;
+		return count >= MIN_WORDS_COUNT ? new WordsData<>(words, count) : null;
 	}
 
-	public static class WordsData {
-		public final HashSet<String> words;
+	public static class WordsData<E> {
+		public final Set<String> words;
 		public final int count;
-		public String postNumber;
+		public E extra;
 
-		public WordsData(HashSet<String> words, int count) {
+		public WordsData(Set<String> words, int count) {
 			this.words = words;
 			this.count = count;
 		}

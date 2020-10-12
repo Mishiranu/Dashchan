@@ -16,22 +16,25 @@ public final class ListPosition implements Parcelable {
 		this.offset = offset;
 	}
 
-	public static ListPosition obtain(RecyclerView recyclerView) {
-		int position = 0;
-		int offset = 0;
+	public interface PositionTest {
+		boolean isPositionAllowed(int position);
+	}
+
+	public static ListPosition obtain(RecyclerView recyclerView, PositionTest positionTest) {
 		Rect rect = new Rect();
 		int paddingTop = recyclerView.getPaddingTop();
-		int paddingLeft = recyclerView.getPaddingLeft();
 		for (int i = 0, count = recyclerView.getChildCount(); i < count; i++) {
 			View view = recyclerView.getChildAt(i);
 			recyclerView.getDecoratedBoundsWithMargins(view, rect);
-			if (rect.contains(paddingLeft, paddingTop)) {
-				position = recyclerView.getChildAdapterPosition(view);
-				offset = rect.top - paddingTop;
-				break;
+			if (rect.bottom > paddingTop) {
+				int position = recyclerView.getChildAdapterPosition(view);
+				if (position >= 0 && (positionTest == null || positionTest.isPositionAllowed(position))) {
+					int offset = rect.top - paddingTop;
+					return new ListPosition(position, offset);
+				}
 			}
 		}
-		return new ListPosition(position, offset);
+		return null;
 	}
 
 	public void apply(RecyclerView recyclerView) {

@@ -2,6 +2,7 @@ package com.mishiranu.dashchan.content.storage;
 
 import chan.content.ChanManager;
 import chan.http.HttpValidator;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.util.WeakObservable;
@@ -112,7 +113,7 @@ public class FavoritesStorage extends StorageManager.Storage<List<FavoritesStora
 	public enum Action {ADD, REMOVE, MODIFY_TITLE, WATCHER_ENABLE, WATCHER_DISABLE, WATCHER_SYNCHRONIZE}
 
 	public interface Observer {
-		public void onFavoritesUpdate(FavoriteItem favoriteItem, Action action);
+		void onFavoritesUpdate(FavoriteItem favoriteItem, Action action);
 	}
 
 	public WeakObservable<Observer> getObservable() {
@@ -197,34 +198,6 @@ public class FavoritesStorage extends StorageManager.Storage<List<FavoritesStora
 		add(chanName, boardName, null, null, 0);
 	}
 
-	public void move(String chanName, String fromBoardName, String fromThreadNumber,
-			String toBoardName, String toThreadNumber) {
-		String fromKey = makeKey(chanName, fromBoardName, fromThreadNumber);
-		String toKey = makeKey(chanName, toBoardName, toThreadNumber);
-		FavoriteItem fromFavoriteItem = favoriteItemsMap.get(fromKey);
-		if (fromFavoriteItem != null) {
-			int fromIndex = favoriteItemsList.indexOf(fromFavoriteItem);
-			remove(chanName, fromBoardName, fromThreadNumber);
-			if (favoriteItemsMap.get(toKey) == null) {
-				FavoriteItem toFavoriteItem = new FavoriteItem();
-				toFavoriteItem.chanName = chanName;
-				toFavoriteItem.boardName = toBoardName;
-				toFavoriteItem.threadNumber = toThreadNumber;
-				toFavoriteItem.title = fromFavoriteItem.title;
-				toFavoriteItem.modifiedTitle = fromFavoriteItem.modifiedTitle;
-				toFavoriteItem.watcherEnabled = fromFavoriteItem.watcherEnabled
-						|| fromFavoriteItem.threadNumber != null && Preferences.isWatcherWatchInitially();
-				toFavoriteItem.postsCount = fromFavoriteItem.postsCount;
-				toFavoriteItem.newPostsCount = fromFavoriteItem.newPostsCount;
-				toFavoriteItem.hasNewPosts = fromFavoriteItem.hasNewPosts;
-				toFavoriteItem.watcherValidator = fromFavoriteItem.watcherValidator;
-				add(toFavoriteItem);
-				moveAfter(toFavoriteItem, fromIndex > 0 ? favoriteItemsList.get(fromIndex - 1) : null);
-			}
-			serialize();
-		}
-	}
-
 	public void moveAfter(FavoriteItem favoriteItem, FavoriteItem afterFavoriteItem) {
 		if (canSortManually() && favoriteItemsList.remove(favoriteItem)) {
 			int index = favoriteItemsList.indexOf(afterFavoriteItem) + 1;
@@ -233,7 +206,7 @@ public class FavoritesStorage extends StorageManager.Storage<List<FavoritesStora
 		}
 	}
 
-	public void modifyTitle(String chanName, String boardName, String threadNumber, String title, boolean fromUser) {
+	public void updateTitle(String chanName, String boardName, String threadNumber, String title, boolean fromUser) {
 		boolean empty = StringUtils.isEmpty(title);
 		if (!empty || fromUser) {
 			if (empty) {
@@ -241,7 +214,7 @@ public class FavoritesStorage extends StorageManager.Storage<List<FavoritesStora
 			}
 			FavoriteItem favoriteItem = getFavorite(chanName, boardName, threadNumber);
 			if (favoriteItem != null && (fromUser || !favoriteItem.modifiedTitle)) {
-				boolean titleChanged = !StringUtils.equals(favoriteItem.title, title);
+				boolean titleChanged = !CommonUtils.equals(favoriteItem.title, title);
 				boolean stateChanged = false;
 				if (titleChanged) {
 					favoriteItem.title = title;
@@ -422,8 +395,9 @@ public class FavoritesStorage extends StorageManager.Storage<List<FavoritesStora
 		}
 
 		public boolean equals(String chanName, String boardName, String threadNumber) {
-			return this.chanName.equals(chanName) && StringUtils.equals(this.boardName, boardName)
-					&& StringUtils.equals(this.threadNumber, threadNumber);
+			return this.chanName.equals(chanName) &&
+					CommonUtils.equals(this.boardName, boardName)
+					&& CommonUtils.equals(this.threadNumber, threadNumber);
 		}
 	}
 }

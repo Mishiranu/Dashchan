@@ -1,8 +1,6 @@
 package com.mishiranu.dashchan.util;
 
 import android.content.res.Resources;
-import chan.util.StringUtils;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
@@ -11,8 +9,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
 
 public class IOUtils {
@@ -133,54 +129,5 @@ public class IOUtils {
 			}
 		}
 		file.delete();
-	}
-
-	private static final MessageDigest DIGEST_SHA_256;
-	private static final byte[] DIGEST_BUFFER = new byte[8192];
-
-	static {
-		try {
-			DIGEST_SHA_256 = MessageDigest.getInstance("SHA-256");
-		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public static String calculateSha256(InputStream inputStream) throws IOException {
-		byte[] bytes;
-		MessageDigest digest = DIGEST_SHA_256;
-		synchronized (digest) {
-			digest.reset();
-			byte[] buffer = DIGEST_BUFFER;
-			int count;
-			while ((count = inputStream.read(buffer, 0, buffer.length)) >= 0) {
-				digest.update(buffer, 0, count);
-			}
-			bytes = digest.digest();
-		}
-		StringBuilder hashBuilder = new StringBuilder(bytes.length * 2);
-		for (byte b : bytes) {
-			if ((b & 0xf0) == 0) {
-				hashBuilder.append(0);
-			}
-			hashBuilder.append(Integer.toString(b & 0xff, 16));
-		}
-		return hashBuilder.toString();
-	}
-
-	public static String calculateSha256(String string) {
-		try {
-			return calculateSha256(new ByteArrayInputStream(StringUtils.emptyIfNull(string).getBytes()));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public static String calculateSha256(byte[] bytes) {
-		try {
-			return calculateSha256(new ByteArrayInputStream(bytes != null ? bytes : new byte[0]));
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
 	}
 }

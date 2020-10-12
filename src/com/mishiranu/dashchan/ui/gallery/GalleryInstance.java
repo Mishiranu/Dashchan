@@ -8,9 +8,11 @@ import com.mishiranu.dashchan.util.ConfigurationLock;
 import java.util.List;
 
 public class GalleryInstance {
-	public static final int FLAG_LOCKED_USER = 0x00000001;
-	public static final int FLAG_LOCKED_GRID = 0x00000002;
-	public static final int FLAG_LOCKED_ERROR = 0x00000004;
+	public interface Flags {
+		int LOCKED_USER = 0x00000001;
+		int LOCKED_GRID = 0x00000002;
+		int LOCKED_ERROR = 0x00000004;
+	}
 
 	public final Context context;
 	public final Callback callback;

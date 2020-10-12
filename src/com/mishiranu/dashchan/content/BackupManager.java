@@ -5,9 +5,9 @@ import android.text.format.DateFormat;
 import android.util.Pair;
 import chan.util.DataFile;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.database.CommonDatabase;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
-import com.mishiranu.dashchan.content.storage.DatabaseHelper;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.content.storage.ThemesStorage;
@@ -19,12 +19,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,6 +38,71 @@ public class BackupManager {
 	private static final Pattern NAME_PATTERN = Pattern.compile("backup-(\\d+)\\.zip");
 	private static final Comparator<Pair<DataFile, String>> COMPARATOR =
 			(lhs, rhs) -> rhs.second.compareTo(lhs.second);
+
+	private interface Writer {
+		boolean write(OutputStream output) throws IOException;
+	}
+
+	private interface Reader {
+		void read(InputStream input) throws IOException;
+	}
+
+	private static class FileWriter implements Writer {
+		private final File file;
+
+		public FileWriter(File file) {
+			this.file = file;
+		}
+
+		@Override
+		public boolean write(OutputStream output) throws IOException {
+			if (file.exists()) {
+				try (FileInputStream input = new FileInputStream(file)) {
+					IOUtils.copyStream(input, output);
+					return true;
+				}
+			} else {
+				return false;
+			}
+		}
+	}
+
+	private static class FileReader implements Reader {
+		private final File file;
+
+		public FileReader(File file) {
+			this.file = file;
+		}
+
+		@Override
+		public void read(InputStream input) throws IOException {
+			try (FileOutputStream output = new FileOutputStream(file)) {
+				IOUtils.copyStream(input, output);
+			}
+		}
+	}
+
+	private static class BackupData {
+		public final String name;
+		public final boolean required;
+		public final Writer writer;
+		public final Reader reader;
+
+		public BackupData(boolean required, File file) {
+			this(file.getName(), required, file);
+		}
+
+		public BackupData(String name, boolean required, File file) {
+			this(name, required, new FileWriter(file), new FileReader(file));
+		}
+
+		public BackupData(String name, boolean required, Writer writer, Reader reader) {
+			this.name = name;
+			this.required = required;
+			this.writer = writer;
+			this.reader = reader;
+		}
+	}
 
 	public static LinkedHashMap<DataFile, String> getAvailableBackups(Context context) {
 		DataFile root = DataFile.obtain(context, DataFile.Target.DOWNLOADS, null);
@@ -62,40 +129,63 @@ public class BackupManager {
 		return backups;
 	}
 
-	private static void addFileToMap(LinkedHashMap<String, Pair<File, Boolean>> files, File file, boolean mustExist) {
-		files.put(file.getName(), new Pair<>(file, mustExist));
+	private static final Map<String, BackupData> BACKUP_DATA_MAP;
+	private static final String BACKUP_VERSION = "dashchan:1";
+
+	private static void add(Map<String, BackupData> map, BackupData backupData) {
+		map.put(backupData.name, backupData);
 	}
 
-	private static LinkedHashMap<String, Pair<File, Boolean>> obtainBackupFiles() {
-		LinkedHashMap<String, Pair<File, Boolean>> files = new LinkedHashMap<>();
-		addFileToMap(files, Preferences.getPreferencesFile(), true);
-		addFileToMap(files, DatabaseHelper.getDatabaseFile(), true);
-		addFileToMap(files, FavoritesStorage.getInstance().getFile(), false);
-		addFileToMap(files, AutohideStorage.getInstance().getFile(), false);
-		addFileToMap(files, StatisticsStorage.getInstance().getFile(), false);
-		addFileToMap(files, ThemesStorage.getInstance().getFile(), false);
-		return files;
+	static {
+		LinkedHashMap<String, BackupData> backupDataMap = new LinkedHashMap<>();
+		add(backupDataMap, new BackupData("version", true, output -> {
+			output.write((BACKUP_VERSION + "\n").getBytes());
+			return true;
+		}, input -> {
+			byte[] data = new byte[1024];
+			int count = input.read(data);
+			if (count <= 0 || count == data.length) {
+				throw new IOException("Invalid version file");
+			}
+			String version = new String(data).trim();
+			if (!BACKUP_VERSION.equals(version)) {
+				throw new IOException("Unsupported version");
+			}
+		}));
+		add(backupDataMap, new BackupData("preferences.xml", true, Preferences.getPreferencesFile()));
+		add(backupDataMap, new BackupData("common.db", true,
+				CommonDatabase.getInstance()::writeBackup, CommonDatabase.getInstance()::readBackup));
+		add(backupDataMap, new BackupData(false, FavoritesStorage.getInstance().getFile()));
+		add(backupDataMap, new BackupData(false, AutohideStorage.getInstance().getFile()));
+		add(backupDataMap, new BackupData(false, StatisticsStorage.getInstance().getFile()));
+		add(backupDataMap, new BackupData(false, ThemesStorage.getInstance().getFile()));
+		BACKUP_DATA_MAP = Collections.unmodifiableMap(backupDataMap);
 	}
 
 	public static void makeBackup(DownloadService.Binder binder, Context context) {
 		File backupFile = new File(context.getCacheDir(), "backup-" + UUID.randomUUID());
 		boolean success = true;
 		try (ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(backupFile))) {
-			LinkedHashMap<String, Pair<File, Boolean>> files = obtainBackupFiles();
-			for (Pair<File, Boolean> pair : files.values()) {
-				if (pair.first.exists()) {
-					try (FileInputStream input = new FileInputStream(pair.first)) {
-						zip.putNextEntry(new ZipEntry(pair.first.getName()));
-						IOUtils.copyStream(input, zip);
+			for (BackupData backupData : BACKUP_DATA_MAP.values()) {
+				boolean exists;
+				try {
+					zip.putNextEntry(new ZipEntry(backupData.name));
+					try {
+						exists = backupData.writer.write(zip);
+					} finally {
 						zip.closeEntry();
 					}
-				} else if (pair.second) {
+				} catch (IOException e) {
+					success = false;
+					break;
+				}
+				if (backupData.required && !exists) {
 					success = false;
 					break;
 				}
 			}
 		} catch (IOException e) {
-			Log.persistent().write(e);
+			Log.persistent().stack(e);
 			success = false;
 		} finally {
 			if (!success) {
@@ -107,7 +197,7 @@ public class BackupManager {
 			try {
 				input = new FileInputStream(backupFile);
 			} catch (IOException e) {
-				Log.persistent().write(e);
+				Log.persistent().stack(e);
 			}
 		}
 		// FileInputStream holds a file descriptor
@@ -121,36 +211,34 @@ public class BackupManager {
 	}
 
 	public static void loadBackup(Context context, DataFile file) {
-		LinkedHashMap<String, Pair<File, Boolean>> files = obtainBackupFiles();
-		ZipInputStream zip = null;
-		boolean success = true;
-		try {
-			zip = new ZipInputStream(file.openInputStream());
+		boolean success = false;
+		try (ZipInputStream zip = new ZipInputStream(file.openInputStream())) {
 			ZipEntry entry;
+			boolean first = true;
 			while ((entry = zip.getNextEntry()) != null) {
 				String name = entry.getName();
-				Pair<File, Boolean> pair = files.get(name);
-				if (pair != null) {
-					OutputStream output = null;
-					try {
-						output = new FileOutputStream(pair.first);
-						IOUtils.copyStream(zip, output);
-						zip.closeEntry();
-					} finally {
-						IOUtils.close(output);
+				if (first && !"version".equals(name)) {
+					throw new IOException("Version file should be the first ZIP entry");
+				}
+				first = false;
+				try {
+					BackupData backupData = BACKUP_DATA_MAP.get(name);
+					if (backupData != null) {
+						backupData.reader.read(zip);
+						success = true;
 					}
+				} finally {
+					zip.closeEntry();
 				}
 			}
 		} catch (IOException e) {
 			Log.persistent().stack(e);
 			success = false;
-		} finally {
-			IOUtils.close(zip);
 		}
 		if (success) {
 			NavigationUtils.restartApplication(context);
 		} else {
-			ToastUtils.show(context, R.string.no_access);
+			ToastUtils.show(context, R.string.unknown_error);
 		}
 	}
 }

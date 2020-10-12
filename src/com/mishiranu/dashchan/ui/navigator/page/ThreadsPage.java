@@ -17,15 +17,17 @@ import chan.content.ChanLocator;
 import chan.content.ChanPerformer;
 import chan.content.RedirectException;
 import chan.http.HttpValidator;
+import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.HidePerformer;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadThreadsTask;
+import com.mishiranu.dashchan.content.database.CommonDatabase;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.service.PostingService;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
-import com.mishiranu.dashchan.content.storage.HiddenThreadsDatabase;
 import com.mishiranu.dashchan.ui.DrawerForm;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.adapter.ThreadsAdapter;
@@ -49,6 +51,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
 
 		public final ArrayList<ArrayList<PostItem>> cachedPostItems = new ArrayList<>();
+		public final PostItem.HideState.Map<String> hiddenThreads = new PostItem.HideState.Map<>();
 		public int startPageNumber;
 		public int boardSpeed;
 		public HttpValidator validator;
@@ -89,7 +92,30 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		};
 	}
 
+	private HidePerformer hidePerformer;
+
 	private ReadThreadsTask readTask;
+
+	private final UiManager.PostStateProvider postStateProvider = new UiManager.PostStateProvider() {
+		@Override
+		public boolean isHiddenResolve(PostItem postItem) {
+			if (postItem.getHideState() == PostItem.HideState.UNDEFINED) {
+				RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+				PostItem.HideState hideState = retainExtra.hiddenThreads.get(postItem.getThreadNumber());
+				if (hideState != PostItem.HideState.UNDEFINED) {
+					postItem.setHidden(hideState, null);
+				} else {
+					String hideReason = hidePerformer.checkHidden(postItem);
+					if (hideReason != null) {
+						postItem.setHidden(PostItem.HideState.HIDDEN, hideReason);
+					} else {
+						postItem.setHidden(PostItem.HideState.SHOWN, null);
+					}
+				}
+			}
+			return postItem.getHideState().hidden;
+		}
+	};
 
 	private ThreadsAdapter getAdapter() {
 		return (ThreadsAdapter) getRecyclerView().getAdapter();
@@ -102,11 +128,12 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		GridLayoutManager gridLayoutManager = new GridLayoutManager(recyclerView.getContext(), 1);
 		recyclerView.setLayoutManager(gridLayoutManager);
 		Page page = getPage();
+		hidePerformer = new HidePerformer(context);
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		UiManager uiManager = getUiManager();
 		ThreadsAdapter adapter = new ThreadsAdapter(context, this, page.chanName, page.boardName, uiManager,
-				parcelableExtra.headerExpanded, parcelableExtra.catalogSortIndex);
+				postStateProvider, parcelableExtra.headerExpanded, parcelableExtra.catalogSortIndex);
 		recyclerView.setAdapter(adapter);
 		gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
 			@Override
@@ -161,11 +188,11 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	@Override
 	protected void onHandleNewPostDataList() {
 		Page page = getPage();
-		PostingService.NewPostData newPostData = PostingService.obtainNewThreadData(getContext(),
+		PostingService.NewPostData newPostData = PostingService.consumeNewThreadData(getContext(),
 				page.chanName, page.boardName);
 		if (newPostData != null) {
-			getUiManager().navigator().navigatePosts(newPostData.chanName, newPostData.boardName,
-					newPostData.threadNumber, newPostData.postNumber, null, 0);
+			getUiManager().navigator().navigatePosts(newPostData.key.chanName, newPostData.key.boardName,
+					newPostData.key.threadNumber, null, null, 0);
 		}
 	}
 
@@ -190,10 +217,8 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	public void onItemClick(PostItem postItem) {
 		if (postItem != null) {
 			Page page = getPage();
-			if (postItem.isHiddenUnchecked()) {
-				HiddenThreadsDatabase.getInstance().set(page.chanName, page.boardName,
-						postItem.getThreadNumber(), false);
-				postItem.invalidateHidden();
+			if (postItem.getHideState().hidden) {
+				setThreadHideState(postItem, PostItem.HideState.SHOWN);
 				getAdapter().notifyDataSetChanged();
 			} else {
 				getUiManager().navigator().navigatePosts(page.chanName, page.boardName,
@@ -222,11 +247,9 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 				}
 				NavigationUtils.shareLink(getContext(), subject, uri);
 			});
-			if (!postItem.isHiddenUnchecked()) {
+			if (!postItem.getHideState().hidden) {
 				dialogMenu.add(R.string.hide, () -> {
-					HiddenThreadsDatabase.getInstance().set(page.chanName, page.boardName,
-							postItem.getThreadNumber(), true);
-					postItem.invalidateHidden();
+					setThreadHideState(postItem, PostItem.HideState.HIDDEN);
 					getAdapter().notifyDataSetChanged();
 				});
 			}
@@ -234,6 +257,14 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			return true;
 		}
 		return false;
+	}
+
+	private void setThreadHideState(PostItem postItem, PostItem.HideState hideState) {
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		retainExtra.hiddenThreads.set(postItem.getThreadNumber(), hideState);
+		CommonDatabase.getInstance().getThreads().setFlagsAsync(postItem.getChanName(),
+				postItem.getBoardName(), postItem.getThreadNumber(), hideState);
+		postItem.setHidden(hideState, null);
 	}
 
 	private boolean allowSearch = false;
@@ -286,7 +317,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		menu.findItem(R.id.menu_star_icon).setVisible(iconFavorite && !isFavorite && !singleBoardMode);
 		menu.findItem(R.id.menu_unstar_icon).setVisible(iconFavorite && isFavorite);
 		menu.findItem(R.id.menu_make_home_page).setVisible(!singleBoardMode &&
-				!StringUtils.equals(page.boardName, Preferences.getDefaultBoardName(page.chanName)));
+				!CommonUtils.equals(page.boardName, Preferences.getDefaultBoardName(page.chanName)));
 	}
 
 	@Override
@@ -475,7 +506,8 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 
 	@Override
 	public void onReadThreadsSuccess(ArrayList<PostItem> postItems, int pageNumber,
-			int boardSpeed, boolean append, boolean checkModified, HttpValidator validator) {
+			int boardSpeed, boolean append, boolean checkModified, HttpValidator validator,
+			PostItem.HideState.Map<String> hiddenThreads) {
 		readTask = null;
 		PullableRecyclerView recyclerView = getRecyclerView();
 		recyclerView.getWrapper().cancelBusyState();
@@ -487,11 +519,17 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		if (retainExtra.cachedPostItems.isEmpty()) {
 			append = false;
 		}
+		if (hiddenThreads != null) {
+			if (!append) {
+				retainExtra.hiddenThreads.clear();
+			}
+			retainExtra.hiddenThreads.addAll(hiddenThreads);
+		}
 		if (postItems != null && append) {
 			HashSet<String> threadNumbers = new HashSet<>();
 			for (ArrayList<PostItem> pagePostItems : retainExtra.cachedPostItems) {
 				for (PostItem postItem : pagePostItems) {
-					threadNumbers.add(postItem.getPostNumber());
+					threadNumbers.add(postItem.getThreadNumber());
 				}
 			}
 			for (int i = postItems.size() - 1; i >= 0; i--) {
@@ -548,7 +586,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	public void onReadThreadsRedirect(RedirectException.Target target) {
 		readTask = null;
 		getRecyclerView().getWrapper().cancelBusyState();
-		if (!StringUtils.equals(target.chanName, getPage().chanName)) {
+		if (!CommonUtils.equals(target.chanName, getPage().chanName)) {
 			if (getAdapter().isRealEmpty()) {
 				switchView(ViewType.ERROR, R.string.empty_response);
 			}

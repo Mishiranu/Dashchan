@@ -6,6 +6,7 @@ import android.content.Context;
 import android.text.SpannableStringBuilder;
 import chan.annotation.Extendable;
 import chan.annotation.Public;
+import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.text.HtmlParser;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -46,7 +47,12 @@ public class StringUtils {
 		return isEmpty(string) ? null : string;
 	}
 
+	// TODO CHAN
+	// Remove this method after updating
+	// archiverbt arhivach bunbunmaru cirno dangeru desustorage erlach fourchan nowere nulldvachin yakujimoe
+	// Added: 05.10.20 18:45
 	@SuppressWarnings({"StringEquality", "EqualsReplaceableByObjectsCall"})
+	@Deprecated
 	@Public
 	public static boolean equals(String first, String second) {
 		return first == second || first != null && first.equals(second);
@@ -97,7 +103,7 @@ public class StringUtils {
 	@Extendable
 	public interface ReplacementCallback {
 		@Extendable
-		public String getReplacement(Matcher matcher);
+		String getReplacement(Matcher matcher);
 	}
 
 	@Public
@@ -134,6 +140,20 @@ public class StringUtils {
 		return string;
 	}
 
+	public static String formatHex(byte[] bytes) {
+		if (bytes != null) {
+			StringBuilder builder = new StringBuilder(bytes.length * 2);
+			for (byte b : bytes) {
+				if ((b & 0xf0) == 0) {
+					builder.append(0);
+				}
+				builder.append(Integer.toString(b & 0xff, 16));
+			}
+			return builder.toString();
+		}
+		return null;
+	}
+
 	public static String formatFileSize(long size, boolean upperCase) {
 		size /= 1000;
 		return size >= 1000 ? String.format(Locale.US, "%.1f", size / 1000f) + " MB"
@@ -166,7 +186,24 @@ public class StringUtils {
 	}
 
 	public static String escapeFile(String string, boolean isPath) {
-		return string != null ? string.replaceAll(isPath ? "[:\\\\*?|<>]" : "[:\\\\/*?|<>]", "_") : null;
+		if (string != null) {
+			StringBuilder builder = null;
+			int length = string.length();
+			for (int i = 0; i < length; i++) {
+				char c = string.charAt(i);
+				if (c == '\\' || c == '/' && !isPath || c == ':' ||
+						c == '*' || c == '?' || c == '|' || c == '<' || c == '>') {
+					if (builder == null) {
+						builder = new StringBuilder(string);
+					}
+					builder.setCharAt(i, '_');
+				}
+			}
+			if (builder != null) {
+				return builder.toString();
+			}
+		}
+		return string;
 	}
 
 	private static int findLinkEnd(String string, int start) {
@@ -217,6 +254,39 @@ public class StringUtils {
 			}
 		}
 		return end;
+	}
+
+	public static String getNormalizedOriginalName(String originalName, String fileName) {
+		return getNormalizedOriginalName(originalName, fileName, getFileExtension(fileName));
+	}
+
+	private static String getNormalizedOriginalName(String originalName, String fileName, String fileExtension) {
+		if (!isEmpty(originalName)) {
+			originalName = escapeFile(originalName, false);
+			if (fileExtension == null) {
+				fileExtension = getFileExtension(fileName);
+			}
+			if (fileExtension != null) {
+				String normalizedOriginalExtension = getNormalizedExtension(getFileExtension(originalName));
+				String normalizedFileExtension = getNormalizedExtension(fileExtension);
+				if (!normalizedFileExtension.equals(normalizedOriginalExtension)) {
+					originalName += "." + fileExtension;
+				}
+				if (fileName.equals(originalName)) {
+					return null;
+				}
+			}
+			return originalName;
+		}
+		return null;
+	}
+
+	public static String getNormalizedExtension(String extension) {
+		String normalizedExtension = C.EXTENSION_TRANSFORMATION.get(extension);
+		if (normalizedExtension == null) {
+			normalizedExtension = extension;
+		}
+		return normalizedExtension;
 	}
 
 	@Public
@@ -305,7 +375,7 @@ public class StringUtils {
 	}
 
 	public static void copyToClipboard(Context context, String string) {
-		if (!StringUtils.isEmpty(string)) {
+		if (!isEmpty(string)) {
 			ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
 			clipboard.setPrimaryClip(ClipData.newPlainText(null, string));
 		}
@@ -324,7 +394,7 @@ public class StringUtils {
 	}
 
 	public static String getFileExtension(String path) {
-		if (path != null) {
+		if (!isEmpty(path)) {
 			int index1 = path.lastIndexOf('/');
 			int index2 = path.lastIndexOf('.');
 			if (index1 > index2 || index2 < 0) {
@@ -346,12 +416,78 @@ public class StringUtils {
 
 	@Public
 	public static String clearHtml(String string) {
-		return HtmlParser.clear(string);
+		if (string == null) {
+			return "";
+		}
+		int length = string.length();
+		if (length == 0) {
+			return "";
+		}
+		boolean checkHtmlTag = false;
+		boolean checkHtmlEntity = false;
+		boolean removeSpaces = false;
+		for (int i = 0; i < length; i++) {
+			char c = string.charAt(i);
+			switch (c) {
+				case '<': {
+					checkHtmlTag = true;
+					break;
+				}
+				case '>': {
+					if (checkHtmlTag) {
+						return HtmlParser.clear(string);
+					}
+					break;
+				}
+				case '&': {
+					checkHtmlEntity = true;
+					break;
+				}
+				case ';': {
+					if (checkHtmlEntity) {
+						return HtmlParser.clear(string);
+					}
+					break;
+				}
+				case ' ':
+				case '\n':
+				case '\r':
+				case '\t': {
+					removeSpaces = true;
+					break;
+				}
+			}
+		}
+		if (removeSpaces) {
+			StringBuilder builder = new StringBuilder();
+			boolean lastSpace = true;
+			for (int i = 0; i < length; i++) {
+				char c = string.charAt(i);
+				if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
+					if (!lastSpace) {
+						lastSpace = true;
+						builder.append(' ');
+					}
+				} else {
+					lastSpace = false;
+					builder.append(c);
+				}
+			}
+			if (lastSpace) {
+				int builderLength = builder.length();
+				if (builderLength > 0) {
+					builder.setLength(builderLength - 1);
+				}
+			}
+			return builder.toString();
+		} else {
+			return string;
+		}
 	}
 
 	@Public
 	public static String unescapeHtml(String string) {
-		if (StringUtils.isEmpty(string)) {
+		if (isEmpty(string)) {
 			return "";
 		}
 		StringBuilder builder = new StringBuilder(string.length());

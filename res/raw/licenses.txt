@@ -6,7 +6,8 @@ Licensed under the MIT License</pre>
 <h3>AndroidX</h3>
 <pre>Copyright 2012-2020 The Android Open Source Project
 Licensed under the Apache License, Version 2.0</pre>
-<a href="https://android.googlesource.com/platform/frameworks/support/+/androidx-master-dev">https://android.googlesource.com/platform/frameworks/support/+/androidx-master-dev</a>
+<a href="https://android.googlesource.com/platform/frameworks/support/+/androidx-master-dev">
+https://android.googlesource.com/platform/frameworks/support/+/androidx-master-dev</a>
 
 <h3>PhotoView</h3>
 <pre>Copyright 2011, 2012 Chris Banes.
@@ -28,6 +29,10 @@ Licensed under the BSD 3-Clause License</pre>
 Licensed under the MIT License</pre>
 <a href="http://giflib.sourceforge.net">http://giflib.sourceforge.net</a>
 
+<h3>Jackson</h3>
+<pre>Licensed under the Apache License, Version 2.0</pre>
+<a href="https://github.com/FasterXML/jackson">https://github.com/FasterXML/jackson</a>
+
 <h3>Material Design Icons</h3>
-<pre>Licensed under the CC-BY 4.0</pre>
+<pre>Licensed under the Apache License, Version 2.0</pre>
 <a href="https://github.com/google/material-design-icons">https://github.com/google/material-design-icons</a>

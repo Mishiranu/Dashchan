@@ -264,7 +264,7 @@ public class PagerUnit implements PagerInstance.Callback {
 			showError(holder, galleryInstance.context.getString(R.string.cache_is_unavailable));
 			return;
 		}
-		galleryInstance.callback.modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_ERROR, false);
+		galleryInstance.callback.modifySystemUiVisibility(GalleryInstance.Flags.LOCKED_ERROR, false);
 		holder.errorView.setVisibility(View.GONE);
 		boolean thumbnailReady = holder.photoViewThumbnail;
 		if (!thumbnailReady) {
@@ -359,7 +359,7 @@ public class PagerUnit implements PagerInstance.Callback {
 	@Override
 	public void showError(PagerInstance.ViewHolder holder, String message) {
 		if (holder == pagerInstance.currentHolder) {
-			galleryInstance.callback.modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_ERROR, true);
+			galleryInstance.callback.modifySystemUiVisibility(GalleryInstance.Flags.LOCKED_ERROR, true);
 			holder.photoView.clearInitialScaleAnimationData();
 			holder.recyclePhotoView();
 			interrupt(false);
@@ -393,7 +393,7 @@ public class PagerUnit implements PagerInstance.Callback {
 				}
 			}
 			if (image) {
-				galleryInstance.callback.toggleSystemUIVisibility(GalleryInstance.FLAG_LOCKED_USER);
+				galleryInstance.callback.toggleSystemUIVisibility(GalleryInstance.Flags.LOCKED_USER);
 			} else {
 				galleryInstance.callback.navigateGalleryOrFinish(false);
 			}
@@ -546,7 +546,7 @@ public class PagerUnit implements PagerInstance.Callback {
 				waitBeforeVideo = 0;
 			} else {
 				galleryInstance.callback.invalidateOptionsMenu();
-				galleryInstance.callback.modifySystemUiVisibility(GalleryInstance.FLAG_LOCKED_ERROR, false);
+				galleryInstance.callback.modifySystemUiVisibility(GalleryInstance.Flags.LOCKED_ERROR, false);
 			}
 			if (galleryItem.size <= 0) {
 				Uri uri = galleryItem.getFileUri(galleryInstance.locator);
@@ -583,7 +583,7 @@ public class PagerUnit implements PagerInstance.Callback {
 		if (capabilities != null && capabilities.available) {
 			Context context = galleryInstance.callback.getWindow().getContext();
 			DialogMenu dialogMenu = new DialogMenu(context);
-			dialogMenu.setTitle(galleryItem.originalName != null ? galleryItem.originalName
+			dialogMenu.setTitle(!StringUtils.isEmpty(galleryItem.originalName) ? galleryItem.originalName
 					: galleryItem.getFileName(galleryInstance.locator), true);
 			if (!galleryInstance.callback.isSystemUiVisible()) {
 				if (capabilities.save) {

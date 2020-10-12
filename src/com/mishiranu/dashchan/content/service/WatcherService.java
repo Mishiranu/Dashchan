@@ -18,7 +18,7 @@ import chan.content.InvalidResponseException;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpValidator;
-import chan.util.StringUtils;
+import chan.util.CommonUtils;
 import com.mishiranu.dashchan.content.NetworkObserver;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
@@ -102,7 +102,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 		}
 
 		public boolean compare(String chanName, String boardName, String threadNumber) {
-			return this.chanName.equals(chanName) && StringUtils.equals(this.boardName, boardName) &&
+			return this.chanName.equals(chanName) && CommonUtils.equals(this.boardName, boardName) &&
 					this.threadNumber.equals(threadNumber);
 		}
 
@@ -179,7 +179,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 
 		public void setActiveChanName(Client client, String chanName) {
 			if (!destroyed) {
-				boolean success = !StringUtils.equals(chanName, clients.put(client, chanName));
+				boolean success = !CommonUtils.equals(chanName, clients.put(client, chanName));
 				if (success) {
 					onUpdateConfiguration();
 				}

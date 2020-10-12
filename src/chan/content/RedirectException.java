@@ -1,24 +1,8 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package chan.content;
 
 import android.net.Uri;
-
 import chan.annotation.Public;
+import com.mishiranu.dashchan.content.model.PostNumber;
 
 @Public
 public final class RedirectException extends Exception {
@@ -27,9 +11,9 @@ public final class RedirectException extends Exception {
 	private final Uri uri;
 	private final String boardName;
 	private final String threadNumber;
-	private final String postNumber;
+	private final PostNumber postNumber;
 
-	private RedirectException(String boardName, String threadNumber, String postNumber) {
+	private RedirectException(String boardName, String threadNumber, PostNumber postNumber) {
 		this.uri = null;
 		this.boardName = boardName;
 		this.threadNumber = threadNumber;
@@ -58,9 +42,11 @@ public final class RedirectException extends Exception {
 
 	@Public
 	public static RedirectException toThread(String boardName, String threadNumber, String postNumber) {
-		if (threadNumber == null) {
-			throw new NullPointerException("threadNumber must not be null");
-		}
+		return toThread(boardName, threadNumber, postNumber != null ? PostNumber.parseOrThrow(postNumber) : null);
+	}
+
+	public static RedirectException toThread(String boardName, String threadNumber, PostNumber postNumber) {
+		PostNumber.validateThreadNumber(threadNumber, false);
 		return new RedirectException(boardName, threadNumber, postNumber);
 	}
 
@@ -68,9 +54,9 @@ public final class RedirectException extends Exception {
 		public final String chanName;
 		public final String boardName;
 		public final String threadNumber;
-		public final String postNumber;
+		public final PostNumber postNumber;
 
-		private Target(String chanName, String boardName, String threadNumber, String postNumber) {
+		private Target(String chanName, String boardName, String threadNumber, PostNumber postNumber) {
 			this.chanName = chanName;
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
@@ -90,7 +76,12 @@ public final class RedirectException extends Exception {
 					} else if (locator.isThreadUri(uri)) {
 						String boardName = locator.getBoardName(uri);
 						String threadNumber = locator.getThreadNumber(uri);
-						String postNumber = locator.getPostNumber(uri);
+						String postNumberString = locator.getPostNumber(uri);
+						PostNumber.validateThreadNumber(threadNumber, false);
+						PostNumber postNumber = null;
+						if (postNumberString != null) {
+							postNumber = PostNumber.parseOrThrow(postNumberString);
+						}
 						return new Target(chanName, boardName, threadNumber, postNumber);
 					} else {
 						return null;

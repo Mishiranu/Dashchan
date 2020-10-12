@@ -7,16 +7,17 @@ import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.content.RedirectException;
-import chan.content.model.Post;
-import chan.content.model.Posts;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.MultipartEntity;
 import chan.text.CommentEditor;
 import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.content.model.Post;
+import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 	private final Key key;
@@ -61,12 +62,12 @@ public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 	};
 
 	public interface Callback<Key> {
-		public void onSendPostChangeProgressState(Key key, ProgressState progressState,
+		void onSendPostChangeProgressState(Key key, ProgressState progressState,
 				int attachmentIndex, int attachmentsCount);
-		public void onSendPostChangeProgressValue(Key key, long progress, long progressMax);
-		public void onSendPostSuccess(Key key, ChanPerformer.SendPostData data,
-				String chanName, String threadNumber, String postNumber);
-		public void onSendPostFail(Key key, ChanPerformer.SendPostData data, String chanName, ErrorItem errorItem,
+		void onSendPostChangeProgressValue(Key key, long progress, long progressMax);
+		void onSendPostSuccess(Key key, ChanPerformer.SendPostData data,
+				String chanName, String threadNumber, PostNumber postNumber);
+		void onSendPostFail(Key key, ChanPerformer.SendPostData data, String chanName, ErrorItem errorItem,
 				ApiException.Extra extra, boolean captchaError, boolean keepCaptcha);
 	}
 
@@ -138,26 +139,24 @@ public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 				} catch (RedirectException e) {
 					readThreadsResult = null;
 				}
-				Posts[] threads = readThreadsResult != null ? readThreadsResult.threads : null;
-				if (threads != null && threads.length > 0) {
+				List<ChanPerformer.ReadThreadsResult.Thread> threads = readThreadsResult != null
+						? readThreadsResult.threads : null;
+				if (threads != null && !threads.isEmpty()) {
 					String postComment = data.comment;
 					CommentEditor commentEditor = ChanMarkup.get(chanName).safe().obtainCommentEditor(data.boardName);
 					if (commentEditor != null && postComment != null) {
 						postComment = commentEditor.removeTags(postComment);
 					}
 					SimilarTextEstimator estimator = new SimilarTextEstimator(Integer.MAX_VALUE, true);
-					SimilarTextEstimator.WordsData wordsData1 = estimator.getWords(postComment);
-					for (Posts thread : threads) {
-						Post[] posts = thread.getPosts();
-						if (posts != null && posts.length > 0) {
-							Post post = posts[0];
-							String comment = HtmlParser.clear(post.getComment());
-							SimilarTextEstimator.WordsData wordsData2 = estimator.getWords(comment);
-							if (estimator.checkSimiliar(wordsData1, wordsData2)
-									|| wordsData1 == null && wordsData2 == null) {
-								result = new ChanPerformer.SendPostResult(thread.getThreadNumber(), null);
-								break;
-							}
+					SimilarTextEstimator.WordsData<Void> wordsData1 = estimator.getWords(postComment);
+					for (ChanPerformer.ReadThreadsResult.Thread thread : threads) {
+						Post post = thread.posts.get(0);
+						String comment = HtmlParser.clear(post.comment);
+						SimilarTextEstimator.WordsData<Void> wordsData2 = estimator.getWords(comment);
+						if (estimator.checkSimiliar(wordsData1, wordsData2)
+								|| wordsData1 == null && wordsData2 == null) {
+							result = new ChanPerformer.SendPostResult(thread.threadNumber, null);
+							break;
 						}
 					}
 				}

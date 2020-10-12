@@ -237,7 +237,7 @@ public class WebViewService extends Service {
 		}
 	}
 
-	@SuppressWarnings({"unused", "RedundantSuppression"})
+	@SuppressWarnings("unused")
 	private final Object javascriptInterface = new Object() {
 		@JavascriptInterface
 		public void onRequestRecaptcha(String apiKey) {
