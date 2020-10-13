@@ -25,18 +25,18 @@ public class UiManager {
 	private final InteractionUnit interactionUnit;
 	private final WeakObservable<Observer> observable = new WeakObservable<>();
 
+	private final Callback callback;
 	private final LocalNavigator localNavigator;
-	private final DownloadProvider downloadProvider;
 	private final ConfigurationLock configurationLock;
 
-	public UiManager(Context context, LocalNavigator localNavigator,
-			DownloadProvider downloadProvider, ConfigurationLock configurationLock) {
+	public UiManager(Context context, Callback callback,
+			LocalNavigator localNavigator, ConfigurationLock configurationLock) {
 		this.context = context;
 		viewUnit = new ViewUnit(this);
 		dialogUnit = new DialogUnit(this);
 		interactionUnit = new InteractionUnit(this);
+		this.callback = callback;
 		this.localNavigator = localNavigator;
-		this.downloadProvider = downloadProvider;
 		this.configurationLock = configurationLock;
 	}
 
@@ -60,15 +60,12 @@ public class UiManager {
 		return interactionUnit;
 	}
 
-	public LocalNavigator navigator() {
-		return localNavigator;
+	public Callback callback() {
+		return callback;
 	}
 
-	public void download(DownloadCallback callback) {
-		DownloadService.Binder binder = downloadProvider.getBinder();
-		if (binder != null) {
-			callback.callback(binder);
-		}
+	public LocalNavigator navigator() {
+		return localNavigator;
 	}
 
 	public enum Message {
@@ -129,12 +126,9 @@ public class UiManager {
 		default void setRead(PostNumber postNumber) {}
 	}
 
-	public interface DownloadProvider {
-		DownloadService.Binder getBinder();
-	}
-
-	public interface DownloadCallback {
-		void callback(DownloadService.Binder binder);
+	public interface Callback {
+		void onDialogStackOpen();
+		DownloadService.Binder getDownloadBinder();
 	}
 
 	public interface LocalNavigator {

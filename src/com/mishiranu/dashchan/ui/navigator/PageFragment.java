@@ -48,7 +48,6 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		ActionBar getActionBar();
 		void setPageTitle(String title);
 		void invalidateHomeUpState();
-		void setActionBarLocked(String locker, boolean locked);
 		void handleRedirect(Page page, String chanName, String boardName, String threadNumber, PostNumber postNumber);
 	}
 
@@ -134,7 +133,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		recyclerView.setSaveEnabled(false);
 		recyclerView.setFastScrollerEnabled(Preferences.isActiveScrollbar());
 		recyclerView.getWrapper().setOnPullListener(listPage);
-		recyclerView.getWrapper().setPullStateListener((wrapper, busy) -> getCallback()
+		recyclerView.getWrapper().setPullStateListener((wrapper, busy) -> ((FragmentHandler) requireActivity())
 				.setActionBarLocked(actionBarLockerPull, busy));
 	}
 
@@ -142,8 +141,9 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 	public void onDestroyView() {
 		super.onDestroyView();
 
-		getCallback().setActionBarLocked(actionBarLockerPull, false);
-		getCallback().setActionBarLocked(actionBarLockerSearch, false);
+		FragmentHandler fragmentHandler = (FragmentHandler) requireActivity();
+		fragmentHandler.setActionBarLocked(actionBarLockerPull, false);
+		fragmentHandler.setActionBarLocked(actionBarLockerSearch, false);
 
 		listPage.cleanup();
 		getCallback().getUiManager().view().notifyUnbindListView(recyclerView);
@@ -217,7 +217,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		outState.putParcelable(EXTRA_PARCELABLE_EXTRA, parcelableExtra);
 		outState.putString(EXTRA_SEARCH_CURRENT_QUERY, searchCurrentQuery);
 		outState.putString(EXTRA_SEARCH_SUBMIT_QUERY, searchSubmitQuery);
-		outState.putBoolean(EXTRA_SEARCH_FOCUSED, searchFocused);
+		outState.putBoolean(EXTRA_SEARCH_FOCUSED, searchFocused && !saveToStack);
 	}
 
 	@Override
@@ -278,7 +278,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 				listPage.onSearchCancel();
 			}
 			updateOptionsMenu();
-			getCallback().setActionBarLocked(actionBarLockerSearch, search);
+			((FragmentHandler) requireActivity()).setActionBarLocked(actionBarLockerSearch, search);
 			getCallback().invalidateHomeUpState();
 			if (toggle) {
 				if (search) {

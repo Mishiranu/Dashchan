@@ -39,12 +39,12 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.WebViewUtils;
 import com.mishiranu.dashchan.widget.ThemeEngine;
+import java.util.UUID;
 
 public class BrowserFragment extends Fragment implements ActivityHandler, DownloadListener {
 	private static final String EXTRA_URI = "uri";
 
-	public BrowserFragment() {
-	}
+	public BrowserFragment() {}
 
 	public BrowserFragment(Uri uri) {
 		Bundle args = new Bundle();
@@ -54,6 +54,8 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 
 	private WebView webView;
 	private ProgressView progressView;
+
+	private String navigationDrawerLocker;
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -72,6 +74,9 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 	@Override
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+
+		navigationDrawerLocker = "browser-" + UUID.randomUUID();
+		((FragmentHandler) requireActivity()).setNavigationAreaLocked(navigationDrawerLocker, true);
 
 		WebSettings settings = webView.getSettings();
 		settings.setBuiltInZoomControls(true);
@@ -108,6 +113,7 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 	public void onDestroyView() {
 		super.onDestroyView();
 
+		((FragmentHandler) requireActivity()).setNavigationAreaLocked(navigationDrawerLocker, false);
 		webView.stopLoading();
 		webView.destroy();
 		webView = null;

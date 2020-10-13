@@ -764,6 +764,7 @@ public class DialogUnit {
 	private void display(UiManager.ConfigurationSet configurationSet, DialogProvider.Factory factory) {
 		DialogProvider provider = factory.create(uiManager, configurationSet);
 		configurationSet.stackInstance.dialogStack.push(new DialogFactory(provider, factory));
+		uiManager.callback().onDialogStackOpen();
 	}
 
 	public void restoreState(UiManager.ConfigurationSet configurationSet, StackInstance.State state) {
@@ -775,6 +776,7 @@ public class DialogUnit {
 				configurationSet = provider.configurationSet;
 			}
 			configurationSet.stackInstance.dialogStack.addAll(dialogFactories);
+			uiManager.callback().onDialogStackOpen();
 		}
 		if (state.attachmentDialog != null) {
 			showAttachmentsGrid(configurationSet.stackInstance, state.attachmentDialog.attachmentItems,
@@ -1432,9 +1434,7 @@ public class DialogUnit {
 
 		@Override
 		public DownloadService.Binder getDownloadBinder() {
-			DownloadService.Binder[] result = {null};
-			uiManager.download(binder -> result[0] = binder);
-			return result[0];
+			return uiManager.callback().getDownloadBinder();
 		}
 
 		@Override

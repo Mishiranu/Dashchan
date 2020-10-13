@@ -25,4 +25,7 @@ public interface FragmentHandler {
 
 	void scrollToPost(String chanName, String boardName, String threadNumber, PostNumber postNumber);
 	Collection<DrawerForm.Page> obtainDrawerPages();
+
+	void setActionBarLocked(String locker, boolean locked);
+	void setNavigationAreaLocked(String locker, boolean locked);
 }

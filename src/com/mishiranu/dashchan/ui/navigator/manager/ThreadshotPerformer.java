@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import chan.util.CommonUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.model.PostItem;
+import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
@@ -124,9 +125,11 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 		protected void onPostExecute(InputStream result) {
 			dialog.dismiss();
 			if (result != null) {
-				uiManager.download(binder -> binder.downloadStorage(result,
-						chanName, boardName, threadNumber, threadTitle,
-						"threadshot-" + System.currentTimeMillis() + ".png", true, false));
+				DownloadService.Binder binder = uiManager.callback().getDownloadBinder();
+				if (binder != null) {
+					binder.downloadStorage(result, chanName, boardName, threadNumber, threadTitle,
+							"threadshot-" + System.currentTimeMillis() + ".png", true, false);
+				}
 			} else {
 				ToastUtils.show(parent.getContext(), R.string.unknown_error);
 			}

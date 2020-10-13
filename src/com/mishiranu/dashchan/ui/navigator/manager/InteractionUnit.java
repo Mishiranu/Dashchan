@@ -16,6 +16,7 @@ import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
+import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.text.style.LinkSuffixSpan;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
@@ -139,9 +140,13 @@ public class InteractionUnit {
 					NavigationUtils.BrowserType.INTERNAL));
 		}
 		if (isAttachment) {
-			dialogMenu.add(R.string.download_file, () -> uiManager
-					.download(binder -> binder.downloadStorage(uri, finalFileName, null,
-							finalChanName, finalBoardName, finalThreadNumber, null)));
+			dialogMenu.add(R.string.download_file, () -> {
+				DownloadService.Binder binder = uiManager.callback().getDownloadBinder();
+				if (binder != null) {
+					binder.downloadStorage(uri, finalFileName, null,
+							finalChanName, finalBoardName, finalThreadNumber, null);
+				}
+			});
 		}
 		if (threadNumber != null) {
 			dialogMenu.add(R.string.open_thread, () -> uiManager.navigator()
@@ -230,11 +235,14 @@ public class InteractionUnit {
 		DialogMenu dialogMenu = new DialogMenu(context);
 		dialogMenu.setTitle(attachmentItem.getDialogTitle(), true);
 		if (attachmentItem.canDownloadToStorage()) {
-			dialogMenu.add(R.string.download_file, () -> uiManager
-					.download(binder -> binder.downloadStorage(attachmentItem.getFileUri(),
-							attachmentItem.getFileName(), attachmentItem.getOriginalName(),
-							attachmentItem.getChanName(), attachmentItem.getBoardName(),
-							attachmentItem.getThreadNumber(), threadTitle)));
+			dialogMenu.add(R.string.download_file, () -> {
+				DownloadService.Binder binder = uiManager.callback().getDownloadBinder();
+				if (binder != null) {
+					binder.downloadStorage(attachmentItem.getFileUri(), attachmentItem.getFileName(),
+							attachmentItem.getOriginalName(), attachmentItem.getChanName(),
+							attachmentItem.getBoardName(), attachmentItem.getThreadNumber(), threadTitle);
+				}
+			});
 			if (attachmentItem.getType() == AttachmentItem.Type.IMAGE ||
 					attachmentItem.getThumbnailKey() != null) {
 				dialogMenu.add(R.string.search_image, () -> {

@@ -34,7 +34,6 @@ import android.widget.Toolbar;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import chan.content.ChanConfiguration;
@@ -79,6 +78,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
+import com.mishiranu.dashchan.widget.CustomDrawerLayout;
 import com.mishiranu.dashchan.widget.ExpandedScreen;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import com.mishiranu.dashchan.widget.ViewFactory;
@@ -88,6 +88,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -99,7 +100,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class MainActivity extends StateActivity implements DrawerForm.Callback,
-		FavoritesStorage.Observer, WatcherService.Client.Callback, UiManager.LocalNavigator,
+		FavoritesStorage.Observer, WatcherService.Client.Callback, UiManager.Callback, UiManager.LocalNavigator,
 		FragmentHandler, PageFragment.Callback, ReadUpdateTask.Callback {
 	private static final String EXTRA_FRAGMENTS = "fragments";
 	private static final String EXTRA_STACK_PAGE_ITEMS = "stackPageItems";
@@ -127,8 +128,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 	private DrawerForm drawerForm;
 	private FrameLayout drawerParent;
-	private DrawerLayout drawerLayout;
+	private CustomDrawerLayout drawerLayout;
 	private DrawerToggle drawerToggle;
+	private final HashSet<String> navigationAreaLockers = new HashSet<>();
 
 	private ExpandedScreen expandedScreen;
 	private ViewFactory.ToolbarHolder toolbarHolder;
@@ -144,6 +146,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 	private static final String LOCKER_DRAWER = "drawer";
 	private static final String LOCKER_NON_PAGE = "nonPage";
+	private static final String LOCKER_ACTION_MODE = "actionMode";
 
 	private final ClickableToast.Holder clickableToastHolder = new ClickableToast.Holder(this);
 
@@ -261,7 +264,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		expandedScreen = new ExpandedScreen(expandedScreenInit, drawerLayout, toolbarLayout, drawerInterlayer,
 				drawerParent, drawerForm.getContentView(), drawerForm.getHeaderView());
 		expandedScreen.setDrawerOverToolbarEnabled(!wideMode);
-		uiManager = new UiManager(this, this, () -> downloadBinder, configurationLock);
+		uiManager = new UiManager(this, this, this, configurationLock);
 		ViewGroup contentFragment = findViewById(R.id.content_fragment);
 		contentFragment.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
 			@Override
@@ -994,6 +997,13 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
+	public void onDialogStackOpen() {
+		if (!wideMode) {
+			drawerLayout.closeDrawers();
+		}
+	}
+
+	@Override
 	public DownloadService.Binder getDownloadBinder() {
 		return downloadBinder;
 	}
@@ -1069,8 +1079,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			if (!forced) {
 				expandedScreen.setDrawerOverToolbarEnabled(!wideMode);
 			}
-			drawerLayout.setDrawerLockMode(wideMode ? DrawerLayout.LOCK_MODE_LOCKED_CLOSED
-					: DrawerLayout.LOCK_MODE_UNLOCKED);
+			drawerLayout.setDrawerLockMode(wideMode ? CustomDrawerLayout.LOCK_MODE_LOCKED_CLOSED
+					: CustomDrawerLayout.LOCK_MODE_UNLOCKED);
 			drawerWide.setVisibility(wideMode ? View.VISIBLE : View.GONE);
 			ViewUtils.removeFromParent(drawerParent);
 			(wideMode ? drawerWide : drawerCommon).addView(drawerParent);
@@ -1233,14 +1243,26 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 	}
 
+	private WeakReference<ActionMode> currentActionMode;
+
 	@Override
 	public void onActionModeStarted(ActionMode mode) {
 		super.onActionModeStarted(mode);
 		expandedScreen.setActionModeState(true);
+		if (currentActionMode == null) {
+			setNavigationAreaLocked(LOCKER_ACTION_MODE, true);
+		}
+		currentActionMode = new WeakReference<>(mode);
 	}
 
 	@Override
 	public void onActionModeFinished(ActionMode mode) {
+		if (currentActionMode != null) {
+			if (currentActionMode.get() == mode) {
+				currentActionMode = null;
+				setNavigationAreaLocked(LOCKER_ACTION_MODE, false);
+			}
+		}
 		super.onActionModeFinished(mode);
 		expandedScreen.setActionModeState(false);
 	}
@@ -1654,8 +1676,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	@Override
 	public void onDraggingStateChanged(boolean dragging) {
 		if (!wideMode) {
-			drawerLayout.setDrawerLockMode(dragging ? DrawerLayout.LOCK_MODE_LOCKED_OPEN
-					: DrawerLayout.LOCK_MODE_UNLOCKED);
+			drawerLayout.setDrawerLockMode(dragging ? CustomDrawerLayout.LOCK_MODE_LOCKED_OPEN
+					: CustomDrawerLayout.LOCK_MODE_UNLOCKED);
 		}
 	}
 
@@ -1945,7 +1967,17 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 	}
 
-	private class ExpandedScreenDrawerLocker implements DrawerLayout.DrawerListener {
+	@Override
+	public void setNavigationAreaLocked(String locker, boolean locked) {
+		if (locked) {
+			navigationAreaLockers.add(locker);
+		} else {
+			navigationAreaLockers.remove(locker);
+		}
+		drawerLayout.setExpandableFromAnyPoint(navigationAreaLockers.isEmpty());
+	}
+
+	private class ExpandedScreenDrawerLocker implements CustomDrawerLayout.DrawerListener {
 		@Override
 		public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {}
 
