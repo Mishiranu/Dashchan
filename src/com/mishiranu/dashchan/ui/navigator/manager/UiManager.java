@@ -132,12 +132,12 @@ public class UiManager {
 	}
 
 	public interface LocalNavigator {
-		void navigateBoardsOrThreads(String chanName, String boardName, int flags);
-		void navigatePosts(String chanName, String boardName, String threadNumber, PostNumber postNumber,
-				String threadTitle, int flags);
-		void navigateSearch(String chanName, String boardName, String searchQuery, int flags);
-		void navigateArchive(String chanName, String boardName, int flags);
-		void navigateTarget(String chanName, ChanLocator.NavigationData data, int flags);
+		void navigateBoardsOrThreads(String chanName, String boardName);
+		void navigatePosts(String chanName, String boardName, String threadNumber,
+				PostNumber postNumber, String threadTitle);
+		void navigateSearch(String chanName, String boardName, String searchQuery);
+		void navigateArchive(String chanName, String boardName);
+		void navigateTargetAllowReturn(String chanName, ChanLocator.NavigationData data);
 		void navigatePosting(String chanName, String boardName, String threadNumber,
 				Replyable.ReplyData... data);
 		void navigateGallery(String chanName, GalleryItem.Set gallerySet, int imageIndex,

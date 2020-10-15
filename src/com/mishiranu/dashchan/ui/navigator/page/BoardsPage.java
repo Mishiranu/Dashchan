@@ -72,7 +72,7 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback, Read
 	@Override
 	public void onItemClick(String boardName) {
 		if (boardName != null) {
-			getUiManager().navigator().navigateBoardsOrThreads(getPage().chanName, boardName, 0);
+			getUiManager().navigator().navigateBoardsOrThreads(getPage().chanName, boardName);
 		}
 	}
 

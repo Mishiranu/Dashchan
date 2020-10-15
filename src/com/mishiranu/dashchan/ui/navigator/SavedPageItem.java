@@ -9,13 +9,13 @@ public class SavedPageItem implements Parcelable {
 	public final StackItem stackItem;
 	public final long createdRealtime;
 	public final String threadTitle;
-	public final boolean returnable;
+	public final boolean allowReturn;
 
-	public SavedPageItem(StackItem stackItem, long createdRealtime, String threadTitle, boolean returnable) {
+	public SavedPageItem(StackItem stackItem, long createdRealtime, String threadTitle, boolean allowReturn) {
 		this.stackItem = stackItem;
 		this.createdRealtime = createdRealtime;
 		this.threadTitle = threadTitle;
-		this.returnable = returnable;
+		this.allowReturn = allowReturn;
 	}
 
 	private Pair<PageFragment, PageItem> createInternal(Page page) {
@@ -24,7 +24,7 @@ public class SavedPageItem implements Parcelable {
 		PageItem pageItem = new PageItem();
 		pageItem.createdRealtime = createdRealtime;
 		pageItem.threadTitle = threadTitle;
-		pageItem.returnable = returnable;
+		pageItem.allowReturn = allowReturn;
 		return new Pair<>(fragment, pageItem);
 	}
 
@@ -52,7 +52,7 @@ public class SavedPageItem implements Parcelable {
 		}
 		dest.writeLong(createdRealtime);
 		dest.writeString(threadTitle);
-		dest.writeByte((byte) (returnable ? 1 : 0));
+		dest.writeByte((byte) (allowReturn ? 1 : 0));
 	}
 
 	public static final Creator<SavedPageItem> CREATOR = new Creator<SavedPageItem>() {
@@ -61,8 +61,8 @@ public class SavedPageItem implements Parcelable {
 			StackItem stackItem = in.readByte() != 0 ? StackItem.CREATOR.createFromParcel(in) : null;
 			long createdRealtime = in.readLong();
 			String threadTitle = in.readString();
-			boolean returnable = in.readByte() != 0;
-			return new SavedPageItem(stackItem, createdRealtime, threadTitle, returnable);
+			boolean allowReturn = in.readByte() != 0;
+			return new SavedPageItem(stackItem, createdRealtime, threadTitle, allowReturn);
 		}
 
 		@Override

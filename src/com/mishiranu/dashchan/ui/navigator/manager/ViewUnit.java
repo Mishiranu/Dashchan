@@ -719,7 +719,7 @@ public class ViewUnit {
 			PostItem postItem = holder.postItem;
 			PostNumber postNumber = postItem.isOriginalPost() ? null : postItem.getPostNumber();
 			uiManager.navigator().navigatePosts(postItem.getChanName(), postItem.getBoardName(),
-					postItem.getThreadNumber(), postNumber, null, 0);
+					postItem.getThreadNumber(), postNumber, null);
 		}
 	};
 

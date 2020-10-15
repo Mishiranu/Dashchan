@@ -32,7 +32,6 @@ import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -219,10 +218,10 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 				ChanLocator locator = ChanLocator.get(chanName);
 				ChanLocator.NavigationData navigationData;
 				if (locator.safe(true).isBoardUri(uri)) {
-					navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_THREADS,
-							locator.safe(true).getBoardName(uri), null, (PostNumber) null, null);
+					navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.Target.THREADS,
+							locator.safe(true).getBoardName(uri), null, null, null);
 				} else if (locator.safe(true).isThreadUri(uri)) {
-					navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_POSTS,
+					navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.Target.POSTS,
 							locator.safe(true).getBoardName(uri), locator.safe(true).getThreadNumber(uri),
 							locator.safe(true).getPostNumber(uri), null);
 				} else {
@@ -232,9 +231,8 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 					AlertDialog alertDialog = new AlertDialog.Builder(requireContext())
 							.setMessage(R.string.follow_the_link__sentence)
 							.setNegativeButton(android.R.string.cancel, null)
-							.setPositiveButton(android.R.string.ok, (dialog, which) -> startActivity(NavigationUtils
-									.obtainTargetIntent(requireContext(), chanName, navigationData,
-											NavigationUtils.FLAG_RETURNABLE)))
+							.setPositiveButton(android.R.string.ok, (dialog, which) -> ((FragmentHandler)
+									requireActivity()).navigateTargetAllowReturn(chanName, navigationData))
 							.show();
 					((FragmentHandler) requireActivity()).getConfigurationLock().lockConfiguration(alertDialog);
 					return true;

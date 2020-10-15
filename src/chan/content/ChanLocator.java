@@ -38,7 +38,9 @@ public class ChanLocator implements ChanManager.Linked {
 		@Public public static final int TARGET_POSTS = 1;
 		@Public public static final int TARGET_SEARCH = 2;
 
-		public final int target;
+		public enum Target {THREADS, POSTS, SEARCH}
+
+		public final Target target;
 		public final String boardName;
 		public final String threadNumber;
 		public final PostNumber postNumber;
@@ -47,20 +49,37 @@ public class ChanLocator implements ChanManager.Linked {
 		@Public
 		public NavigationData(int target, String boardName, String threadNumber, String postNumber,
 				String searchQuery) {
-			this(target, boardName, threadNumber, postNumber != null
+			this(transformTarget(target), boardName, threadNumber, postNumber != null
 					? PostNumber.parseOrThrow(postNumber) : null, searchQuery);
 			PostNumber.validateThreadNumber(threadNumber, true);
 		}
 
-		public NavigationData(int target, String boardName, String threadNumber, PostNumber postNumber,
+		public NavigationData(Target target, String boardName, String threadNumber, PostNumber postNumber,
 				String searchQuery) {
 			this.target = target;
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
 			this.postNumber = postNumber;
 			this.searchQuery = searchQuery;
-			if (target == TARGET_POSTS && StringUtils.isEmpty(threadNumber)) {
+			if (target == Target.POSTS && StringUtils.isEmpty(threadNumber)) {
 				throw new IllegalArgumentException("threadNumber must not be empty!");
+			}
+		}
+
+		private static Target transformTarget(int target) {
+			switch (target) {
+				case TARGET_THREADS: {
+					return Target.THREADS;
+				}
+				case TARGET_POSTS: {
+					return Target.POSTS;
+				}
+				case TARGET_SEARCH: {
+					return Target.SEARCH;
+				}
+				default: {
+					throw new IllegalArgumentException();
+				}
 			}
 		}
 	}

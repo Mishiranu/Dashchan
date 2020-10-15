@@ -23,7 +23,6 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.AdvancedPreferences;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
 import com.mishiranu.dashchan.media.VideoPlayer;
@@ -35,55 +34,6 @@ import java.util.List;
 import java.util.Map;
 
 public class NavigationUtils {
-	public static final int FLAG_FROM_CACHE = 0x00000001;
-	public static final int FLAG_RETURNABLE = 0x00000002;
-
-	private static Intent obtainMainIntent(Context context, int flags, int allowFlags) {
-		return new Intent().setComponent(new ComponentName(context, MainActivity.class))
-				.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
-				.putExtra(C.EXTRA_NAVIGATION_FLAGS, flags & allowFlags);
-	}
-
-	public static Intent obtainThreadsIntent(Context context, String chanName, String boardName, int flags) {
-		int allowFlags = FLAG_FROM_CACHE | FLAG_RETURNABLE;
-		return obtainMainIntent(context, flags, allowFlags).putExtra(C.EXTRA_CHAN_NAME, chanName)
-				.putExtra(C.EXTRA_BOARD_NAME, boardName);
-	}
-
-	public static Intent obtainPostsIntent(Context context, String chanName, String boardName, String threadNumber,
-			PostNumber postNumber, int flags) {
-		int allowFlags = FLAG_FROM_CACHE | FLAG_RETURNABLE;
-		return obtainMainIntent(context, flags, allowFlags).putExtra(C.EXTRA_CHAN_NAME, chanName)
-				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_THREAD_NUMBER, threadNumber)
-				.putExtra(C.EXTRA_POST_NUMBER, postNumber != null ? postNumber.toString() : null);
-	}
-
-	public static Intent obtainSearchIntent(Context context, String chanName, String boardName, String searchQuery,
-			int flags) {
-		@SuppressWarnings("UnnecessaryLocalVariable")
-		int allowFlags = FLAG_RETURNABLE;
-		return obtainMainIntent(context, flags, allowFlags).putExtra(C.EXTRA_CHAN_NAME, chanName)
-				.putExtra(C.EXTRA_BOARD_NAME, boardName).putExtra(C.EXTRA_SEARCH_QUERY, searchQuery);
-	}
-
-	public static Intent obtainTargetIntent(Context context, String chanName, ChanLocator.NavigationData data,
-			int flags) {
-		switch (data.target) {
-			case ChanLocator.NavigationData.TARGET_THREADS: {
-				return obtainThreadsIntent(context, chanName, data.boardName, flags);
-			}
-			case ChanLocator.NavigationData.TARGET_POSTS: {
-				return obtainPostsIntent(context, chanName, data.boardName, data.threadNumber, data.postNumber, flags);
-			}
-			case ChanLocator.NavigationData.TARGET_SEARCH: {
-				return obtainSearchIntent(context, chanName, data.boardName, data.searchQuery, flags);
-			}
-			default: {
-				throw new IllegalStateException();
-			}
-		}
-	}
-
 	public enum BrowserType {AUTO, INTERNAL, EXTERNAL}
 
 	public static void handleUri(Context context, String chanName, Uri uri, BrowserType browserType) {

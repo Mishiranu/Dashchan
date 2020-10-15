@@ -8,7 +8,7 @@ import com.mishiranu.dashchan.ui.StackItem;
 public class PageItem implements Parcelable {
 	public long createdRealtime;
 	public String threadTitle;
-	public boolean returnable;
+	public boolean allowReturn;
 
 	private static final StackItem.SaveFragment SAVE = (fragmentManager, fragment) -> {
 		PageFragment pageFragment = (PageFragment) fragment;
@@ -22,7 +22,7 @@ public class PageItem implements Parcelable {
 
 	public SavedPageItem toSaved(FragmentManager fragmentManager, PageFragment fragment) {
 		return new SavedPageItem(new StackItem(fragmentManager, fragment, SAVE),
-				createdRealtime, threadTitle, returnable);
+				createdRealtime, threadTitle, allowReturn);
 	}
 
 	@Override
@@ -34,7 +34,7 @@ public class PageItem implements Parcelable {
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeLong(createdRealtime);
 		dest.writeString(threadTitle);
-		dest.writeByte((byte) (returnable ? 1 : 0));
+		dest.writeByte((byte) (allowReturn ? 1 : 0));
 	}
 
 	public static final Creator<PageItem> CREATOR = new Creator<PageItem>() {
@@ -43,7 +43,7 @@ public class PageItem implements Parcelable {
 			PageItem pageItem = new PageItem();
 			pageItem.createdRealtime = in.readLong();
 			pageItem.threadTitle = in.readString();
-			pageItem.returnable = in.readByte() != 0;
+			pageItem.allowReturn = in.readByte() != 0;
 			return pageItem;
 		}
 

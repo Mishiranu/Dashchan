@@ -4,6 +4,7 @@ import android.graphics.drawable.Drawable;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import androidx.fragment.app.Fragment;
+import chan.content.ChanLocator;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.util.ConfigurationLock;
@@ -23,6 +24,7 @@ public interface FragmentHandler {
 	ConfigurationLock getConfigurationLock();
 	boolean requestStorage();
 
+	void navigateTargetAllowReturn(String chanName, ChanLocator.NavigationData navigationData);
 	void scrollToPost(String chanName, String boardName, String threadNumber, PostNumber postNumber);
 	Collection<DrawerForm.Page> obtainDrawerPages();
 

@@ -44,8 +44,8 @@ public class InteractionUnit {
 			ChanLocator locator = ChanLocator.get(uriChanName);
 			ChanConfiguration configuration = ChanConfiguration.get(uriChanName);
 			if (locator.safe(false).isBoardUri(uri)) {
-				navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_THREADS,
-						locator.safe(false).getBoardName(uri), null, (PostNumber) null, null);
+				navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.Target.THREADS,
+						locator.safe(false).getBoardName(uri), null, null, null);
 				handled = true;
 			} else if (locator.safe(false).isThreadUri(uri)) {
 				String boardName = locator.safe(false).getBoardName(uri);
@@ -56,7 +56,7 @@ public class InteractionUnit {
 						uiManager.dialog().displayReplyAsync(configurationSet,
 								uriChanName, boardName, threadNumber, postNumber);
 					} else {
-						navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.TARGET_POSTS,
+						navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.Target.POSTS,
 								boardName, threadNumber, postNumber, null);
 					}
 					handled = true;
@@ -69,22 +69,25 @@ public class InteractionUnit {
 			}
 			if (handled && navigationData != null) {
 				if (confirmed) {
-					uiManager.navigator().navigateTarget(uriChanName, navigationData, NavigationUtils.FLAG_RETURNABLE);
+					uiManager.navigator().navigateTargetAllowReturn(uriChanName, navigationData);
 				} else {
-					int messageId = 0;
+					int messageId;
 					if (sameChan) {
 						switch (navigationData.target) {
-							case ChanLocator.NavigationData.TARGET_THREADS: {
+							case THREADS: {
 								messageId = R.string.go_to_threads_list__sentence;
 								break;
 							}
-							case ChanLocator.NavigationData.TARGET_POSTS: {
+							case POSTS: {
 								messageId = R.string.open_thread__sentence;
 								break;
 							}
-							case ChanLocator.NavigationData.TARGET_SEARCH: {
+							case SEARCH: {
 								messageId = R.string.go_to_search__sentence;
 								break;
+							}
+							default: {
+								throw new IllegalArgumentException();
 							}
 						}
 					} else {
@@ -95,7 +98,7 @@ public class InteractionUnit {
 							.setMessage(messageId)
 							.setNegativeButton(android.R.string.cancel, null)
 							.setPositiveButton(android.R.string.ok, (d, which) -> uiManager.navigator()
-									.navigateTarget(uriChanName, navigationDataFinal, NavigationUtils.FLAG_RETURNABLE))
+									.navigateTargetAllowReturn(uriChanName, navigationDataFinal))
 							.show();
 					uiManager.getConfigurationLock().lockConfiguration(dialog);
 				}
@@ -150,8 +153,8 @@ public class InteractionUnit {
 		}
 		if (threadNumber != null) {
 			dialogMenu.add(R.string.open_thread, () -> uiManager.navigator()
-					.navigatePosts(finalChanName, finalBoardName, finalThreadNumber,
-							null, null, NavigationUtils.FLAG_RETURNABLE));
+					.navigateTargetAllowReturn(finalChanName, new ChanLocator.NavigationData
+							(ChanLocator.NavigationData.Target.POSTS, finalBoardName, finalThreadNumber, null, null)));
 		}
 		dialogMenu.show(uiManager.getConfigurationLock());
 	}

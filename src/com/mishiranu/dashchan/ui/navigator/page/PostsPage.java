@@ -609,8 +609,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				String threadNumber = locator.safe(true).getThreadNumber(uri);
 				if (threadNumber != null) {
 					String threadTitle = getAdapter().getItem(0).getSubjectOrComment();
-					getUiManager().navigator().navigatePosts(chanName, boardName, threadNumber, null,
-							threadTitle, 0);
+					getUiManager().navigator().navigatePosts(chanName, boardName, threadNumber, null, threadTitle);
 				}
 				return true;
 			}

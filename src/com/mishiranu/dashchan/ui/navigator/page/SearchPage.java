@@ -138,7 +138,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 		if (postItem != null) {
 			Page page = getPage();
 			getUiManager().navigator().navigatePosts(page.chanName, page.boardName,
-					postItem.getThreadNumber(), postItem.getPostNumber(), null, 0);
+					postItem.getThreadNumber(), postItem.getPostNumber(), null);
 		}
 	}
 
@@ -197,7 +197,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 		// Collapse search view
 		getRecyclerView().post(() -> {
 			Page page = getPage();
-			getUiManager().navigator().navigateSearch(page.chanName, page.boardName, query, 0);
+			getUiManager().navigator().navigateSearch(page.chanName, page.boardName, query);
 		});
 		return SearchSubmitResult.COLLAPSE;
 	}

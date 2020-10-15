@@ -73,7 +73,7 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback, Ge
 	public void onItemClick(HistoryDatabase.HistoryItem historyItem) {
 		if (historyItem != null) {
 			getUiManager().navigator().navigatePosts(historyItem.chanName, historyItem.boardName,
-					historyItem.threadNumber, null, null, 0);
+					historyItem.threadNumber, null, null);
 		}
 	}
 

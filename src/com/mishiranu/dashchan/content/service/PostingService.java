@@ -38,7 +38,6 @@ import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.ui.MainActivity;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.Hasher;
-import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.ArrayList;
@@ -503,8 +502,13 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 				builder.setContentTitle(getString(R.string.post_sent));
 				builder.setContentText(buildNotificationText(chanName, data.boardName, targetThreadNumber, postNumber));
 				String tag = newPostData.tag;
-				Intent intent = NavigationUtils.obtainPostsIntent(this, chanName, data.boardName, targetThreadNumber,
-						postNumber, 0);
+				Intent intent = new Intent(this, MainActivity.class)
+						.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
+						.putExtra(C.EXTRA_CHAN_NAME, chanName)
+						.putExtra(C.EXTRA_BOARD_NAME, data.boardName)
+						.putExtra(C.EXTRA_THREAD_NUMBER, targetThreadNumber)
+						.putExtra(C.EXTRA_POST_NUMBER, postNumber != null ? postNumber.toString() : null);
+				// TODO Avoid hashCode collisions
 				builder.setContentIntent(PendingIntent.getActivity(this, tag.hashCode(), intent,
 						PendingIntent.FLAG_UPDATE_CURRENT));
 				notificationManager.notify(tag, 0, builder.build());

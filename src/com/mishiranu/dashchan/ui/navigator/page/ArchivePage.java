@@ -83,7 +83,7 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 	public void onItemClick(String threadNumber) {
 		if (threadNumber != null) {
 			Page page = getPage();
-			getUiManager().navigator().navigatePosts(page.chanName, page.boardName, threadNumber, null, null, 0);
+			getUiManager().navigator().navigatePosts(page.chanName, page.boardName, threadNumber, null, null);
 		}
 	}
 

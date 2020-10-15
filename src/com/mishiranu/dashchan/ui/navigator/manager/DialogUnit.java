@@ -713,7 +713,7 @@ public class DialogUnit {
 				Context context = uiManager.getContext();
 				ClickableToast.show(context, errorItem.toString(),
 						context.getString(R.string.open_thread), false, () -> uiManager.navigator()
-						.navigatePosts(chanName, boardName, threadNumber, postNumber, null, 0));
+						.navigatePosts(chanName, boardName, threadNumber, postNumber, null));
 			});
 		}
 	}
@@ -1415,7 +1415,7 @@ public class DialogUnit {
 						ClickableToast.show(context, context.getString(R.string.completed),
 								context.getString(R.string.open_thread), false, () -> uiManager.navigator()
 										.navigatePosts(state.archiveChanName, archiveBoardName,
-												archiveThreadNumber, null, state.archiveThreadTitle, 0));
+												archiveThreadNumber, null, state.archiveThreadTitle));
 					} else {
 						ToastUtils.show(context, R.string.completed);
 					}

@@ -192,7 +192,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 				page.chanName, page.boardName);
 		if (newPostData != null) {
 			getUiManager().navigator().navigatePosts(newPostData.key.chanName, newPostData.key.boardName,
-					newPostData.key.threadNumber, null, null, 0);
+					newPostData.key.threadNumber, null, null);
 		}
 	}
 
@@ -222,7 +222,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 				getAdapter().notifyDataSetChanged();
 			} else {
 				getUiManager().navigator().navigatePosts(page.chanName, page.boardName,
-						postItem.getThreadNumber(), null, postItem.getSubjectOrComment(), 0);
+						postItem.getThreadNumber(), null, postItem.getSubjectOrComment());
 			}
 		}
 	}
@@ -337,7 +337,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 				return true;
 			}
 			case R.id.menu_archive: {
-				getUiManager().navigator().navigateArchive(page.chanName, page.boardName, 0);
+				getUiManager().navigator().navigateArchive(page.chanName, page.boardName);
 				return true;
 			}
 			case R.id.menu_new_thread: {
@@ -399,7 +399,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			// Collapse search view
 			getRecyclerView().post(() -> {
 				Page page = getPage();
-				getUiManager().navigator().navigateSearch(page.chanName, page.boardName, query, 0);
+				getUiManager().navigator().navigateSearch(page.chanName, page.boardName, query);
 			});
 			return SearchSubmitResult.COLLAPSE;
 		}
