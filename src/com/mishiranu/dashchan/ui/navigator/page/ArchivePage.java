@@ -180,7 +180,6 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 				getAdapter().setItems(threadSummaries);
 				retainExtra.threadSummaries = threadSummaries;
 				retainExtra.pageNumber = 0;
-				ListViewUtils.cancelListFling(recyclerView);
 				recyclerView.scrollToPosition(0);
 				if (showScale) {
 					showScaleAnimation();

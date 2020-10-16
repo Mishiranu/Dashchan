@@ -67,7 +67,6 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener,
 	private final HashSet<String> lockers = new HashSet<>();
 	private int stateFlags = STATE_SHOW;
 
-	private final int slopShiftSize;
 	private final int lastItemLimit;
 	private final int minItemsCount;
 
@@ -155,7 +154,6 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener,
 
 		Resources resources = activity.getResources();
 		float density = ResourceUtils.obtainDensity(resources);
-		slopShiftSize = (int) (6f * density);
 		lastItemLimit = (int) (72f * density);
 		minItemsCount = resources.getConfiguration().screenHeightDp / 48;
 		this.rootView = rootView;
@@ -516,7 +514,7 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener,
 		contentViews.put(view, recyclerView);
 		if (expandingEnabled) {
 			if (recyclerView != null) {
-				recyclerView.addOnScrollListener(recyclerScrollTracker);
+				recyclerScrollTracker.attach(recyclerView);
 			}
 		}
 		updatePaddings();
@@ -526,7 +524,7 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener,
 	public void removeContentView(View view) {
 		RecyclerView recyclerView = contentViews.remove(view);
 		if (recyclerView != null && expandingEnabled) {
-			recyclerView.removeOnScrollListener(recyclerScrollTracker);
+			recyclerScrollTracker.detach(recyclerView);
 		}
 	}
 
@@ -604,31 +602,26 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener,
 		}
 	}
 
-	private boolean scrollingDown;
-
 	@Override
-	public void onScroll(ViewGroup view, int scrollY, int totalItemCount, boolean first, boolean last) {
-		if (Math.abs(scrollY) > slopShiftSize) {
-			scrollingDown = scrollY > 0;
-		}
-		boolean hide = false;
+	public void onScroll(ViewGroup view, boolean scrollingDown, int totalItemCount, boolean first, boolean last) {
+		boolean show = true;
 		if (scrollingDown) {
-			if (totalItemCount > minItemsCount) {
-				// List can be overscrolled when it shows first item including list top padding
-				// top <= 0 means that list is not overscrolled
+			int childCount = view.getChildCount();
+			if (childCount > 0 && totalItemCount > minItemsCount) {
 				if (!first || view.getChildAt(0).getTop() <= 0) {
+					// List is scrolled above the top edge of the screen
 					if (last) {
-						View lastView = view.getChildAt(view.getChildCount() - 1);
+						View lastView = view.getChildAt(childCount - 1);
 						if (view.getHeight() - view.getPaddingBottom() - lastView.getBottom() + lastItemLimit < 0) {
-							hide = true;
+							show = false;
 						}
 					} else {
-						hide = true;
+						show = false;
 					}
 				}
 			}
 		}
-		setShowActionBar(!hide, true);
+		setShowActionBar(show, true);
 	}
 
 	public void setActionModeState(boolean actionMode) {

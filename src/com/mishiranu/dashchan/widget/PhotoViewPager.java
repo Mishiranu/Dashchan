@@ -1,22 +1,4 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.widget;
-
-import java.util.ArrayList;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -28,8 +10,8 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.EdgeEffect;
 import android.widget.OverScroller;
-
 import com.mishiranu.dashchan.util.ResourceUtils;
+import java.util.ArrayList;
 
 @SuppressLint("ViewConstructor")
 public class PhotoViewPager extends ViewGroup {
@@ -70,11 +52,11 @@ public class PhotoViewPager extends ViewGroup {
 	}
 
 	public interface Adapter {
-		public View onCreateView(ViewGroup parent);
-		public PhotoView getPhotoView(View view);
-		public void onPositionChange(PhotoViewPager view, int index, View centerView, View leftView, View rightView,
+		View onCreateView(ViewGroup parent);
+		PhotoView getPhotoView(View view);
+		void onPositionChange(PhotoViewPager view, int index, View centerView, View leftView, View rightView,
 				boolean manually);
-		public void onSwipingStateChange(PhotoViewPager view, boolean swiping);
+		void onSwipingStateChange(PhotoViewPager view, boolean swiping);
 	}
 
 	@Override
@@ -189,7 +171,7 @@ public class PhotoViewPager extends ViewGroup {
 
 	private VelocityTracker velocityTracker;
 
-	private Runnable longTapRunnable = () -> {
+	private final Runnable longTapRunnable = () -> {
 		longTapConfirmed = true;
 		PhotoView photoView = photoViews.get(currentIndex % 3);
 		photoView.dispatchSimpleClick(true, startX, startY);
@@ -200,6 +182,7 @@ public class PhotoViewPager extends ViewGroup {
 		return true;
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		if (!active) {
@@ -326,7 +309,7 @@ public class PhotoViewPager extends ViewGroup {
 				if (action == MotionEvent.ACTION_UP) {
 					int deltaX = (int) (startX - event.getX());
 					velocityTracker.computeCurrentVelocity(1000, maximumVelocity);
-                    velocity = (int) velocityTracker.getXVelocity(0);
+					velocity = (int) velocityTracker.getXVelocity(0);
 					index = determineTargetIndex(velocity, deltaX);
 					if (!allowMove && !longTapConfirmed) {
 						photoView.dispatchSimpleClick(false, event.getX(), event.getY());

@@ -7,15 +7,26 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.util.Xml;
 import android.view.MotionEvent;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import org.xmlpull.v1.XmlPullParser;
 
 public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandler.Shift {
+	private static class UnlimitedRecycledViewPool extends RecycledViewPool {
+		@Override
+		public void putRecycledView(ViewHolder scrap) {
+			setMaxRecycledViews(scrap.getItemViewType(), Integer.MAX_VALUE);
+			super.putRecycledView(scrap);
+		}
+	}
+
 	private static final long FAST_SCROLLER_TRANSITION_IN = 100;
 	private static final long FAST_SCROLLER_TRANSITION_OUT = 200;
 	private static final long FAST_SCROLLER_TRANSITION_OUT_DELAY = 1000;
@@ -38,8 +49,23 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 	private boolean fastScrollerEnabled;
 	private boolean disallowFastScrollerIntercept;
 
+	private static AttributeSet createDefaultAttributeSet(Context context) {
+		try {
+			XmlPullParser parser = context.getResources().getXml(R.xml.scrollbars);
+			parser.next();
+			parser.nextTag();
+			return Xml.asAttributeSet(parser);
+		} catch (RuntimeException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public PaddedRecyclerView(@NonNull Context context) {
-		super(context);
+		this(context, createDefaultAttributeSet(context));
+		setVerticalScrollBarEnabled(false);
+		setHorizontalScrollBarEnabled(false);
 	}
 
 	public PaddedRecyclerView(@NonNull Context context, AttributeSet attrs) {
@@ -67,6 +93,8 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 		trackDrawable = ResourceUtils.getDrawable(getContext(), android.R.attr.fastScrollTrackDrawable, 0);
 		minTrackSize = (int) (16f * density);
 
+		// Use unlimited pool size for immediate scrolls to improve performance
+		setRecycledViewPool(new UnlimitedRecycledViewPool());
 		addOnScrollListener(new OnScrollListener() {
 			@Override
 			public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -208,11 +236,10 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 	}
 
 	private void scroll(float offset) {
-		Adapter<?> adapter = getAdapter();
-		int count = adapter != null ? adapter.getItemCount() : 0;
+		LinearLayoutManager layoutManager = (LinearLayoutManager) getLayoutManager();
+		int count = layoutManager.getItemCount();
 		if (count > 0) {
 			if (offset < 1f) {
-				LinearLayoutManager layoutManager = (LinearLayoutManager) getLayoutManager();
 				int first = layoutManager.findFirstCompletelyVisibleItemPosition();
 				int last = layoutManager.findLastCompletelyVisibleItemPosition();
 				int childCount;

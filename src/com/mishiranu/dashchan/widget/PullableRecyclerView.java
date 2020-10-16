@@ -89,7 +89,7 @@ public class PullableRecyclerView extends PaddedRecyclerView implements Pullable
 		View view = getChildCount() > 0 ? getChildAt(0) : null;
 		if (view == null) {
 			return true;
-		} else if (getChildAdapterPosition(view) == 0) {
+		} else if (getChildLayoutPosition(view) == 0) {
 			getDecoratedBoundsWithMargins(view, bounds);
 			return bounds.top >= getPaddingTop();
 		} else {
@@ -102,10 +102,9 @@ public class PullableRecyclerView extends PaddedRecyclerView implements Pullable
 		Rect bounds = this.bounds;
 		int childCount = getChildCount();
 		View view = childCount > 0 ? getChildAt(childCount - 1) : null;
-		Adapter<?> adapter = getAdapter();
 		if (view == null) {
 			return true;
-		} else if (adapter != null && getChildAdapterPosition(view) == adapter.getItemCount() - 1) {
+		} else if (getChildLayoutPosition(view) == getLayoutManager().getItemCount() - 1) {
 			getDecoratedBoundsWithMargins(view, bounds);
 			return bounds.bottom <= getHeight() - getPaddingBottom();
 		} else {

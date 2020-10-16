@@ -27,7 +27,7 @@ public final class ListPosition implements Parcelable {
 			View view = recyclerView.getChildAt(i);
 			recyclerView.getDecoratedBoundsWithMargins(view, rect);
 			if (rect.bottom > paddingTop) {
-				int position = recyclerView.getChildAdapterPosition(view);
+				int position = recyclerView.getChildLayoutPosition(view);
 				if (position >= 0 && (positionTest == null || positionTest.isPositionAllowed(position))) {
 					int offset = rect.top - paddingTop;
 					return new ListPosition(position, offset);

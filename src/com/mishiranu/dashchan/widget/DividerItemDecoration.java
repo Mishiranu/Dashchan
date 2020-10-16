@@ -93,7 +93,7 @@ public class DividerItemDecoration extends RecyclerView.ItemDecoration {
 		int childCount = parent.getChildCount();
 		int left = parent.getPaddingLeft();
 		int right = parent.getWidth() - parent.getPaddingRight();
-		boolean rtl = ViewCompat.getLayoutDirection(parent) == View.LAYOUT_DIRECTION_RTL;
+		boolean rtl = ViewCompat.getLayoutDirection(parent) == ViewCompat.LAYOUT_DIRECTION_RTL;
 		for (int i = 0; i < childCount; i++) {
 			View view = parent.getChildAt(i);
 			int position = parent.getChildAdapterPosition(view);

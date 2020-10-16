@@ -3,7 +3,11 @@ package com.mishiranu.dashchan.ui.gallery;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.SparseIntArray;
 import android.view.ActionMode;
@@ -34,6 +38,7 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.AttachmentView;
+import com.mishiranu.dashchan.widget.EdgeEffectHandler;
 import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +58,7 @@ public class ListUnit implements ActionMode.Callback {
 		this.instance = instance;
 		float density = ResourceUtils.obtainDensity(instance.context);
 		int spacing = (int) (GRID_SPACING_DP * density);
-		recyclerView = new PaddedRecyclerView(instance.context);
+		recyclerView = new GalleryRecyclerView(instance.context, spacing);
 		recyclerView.setId(android.R.id.list);
 		recyclerView.setMotionEventSplittingEnabled(false);
 		recyclerView.setClipToPadding(false);
@@ -309,6 +314,57 @@ public class ListUnit implements ActionMode.Callback {
 			int height = typedArray.getDimensionPixelSize(0, 0);
 			typedArray.recycle();
 			recyclerView.setPadding(0, height, 0, 0);
+		}
+	}
+
+	private static class GalleryRecyclerView extends PaddedRecyclerView {
+		private final int spacing;
+
+		private final Rect rect = new Rect();
+		private final Paint paint = new Paint();
+
+		public GalleryRecyclerView(Context context, int spacing) {
+			super(context);
+			this.spacing = spacing;
+			setVerticalScrollBarEnabled(true);
+		}
+
+		@Override
+		protected void onDrawVerticalScrollBar(Canvas canvas, Drawable scrollBar, int l, int t, int r, int b) {
+			int spacing = this.spacing;
+			int thickness = (int) (spacing * 2f / 3f + 0.5f);
+			Rect rect = this.rect;
+			if (l == 0) {
+				rect.left = 0;
+				rect.right = thickness;
+			} else if (r == getWidth()) {
+				rect.left = r - thickness;
+				rect.right = r;
+			} else {
+				return;
+			}
+			if (b - t == getHeight()) {
+				t += getEdgeEffectShift(EdgeEffectHandler.Side.TOP);
+				b -= getEdgeEffectShift(EdgeEffectHandler.Side.BOTTOM);
+			}
+			t += spacing;
+			b -= spacing;
+			int range = computeVerticalScrollRange();
+			if (range > 0) {
+				int height = b - t;
+				int extent = computeVerticalScrollExtent();
+				int length = (int) (height * ((float) extent / range) + 0.5f);
+				length = Math.max(length, 2 * spacing);
+				int offset = (int) ((height - length) * ((float) computeVerticalScrollOffset() /
+						(range - extent)) + 0.5f);
+				if (length > 0) {
+					rect.top = t + offset;
+					rect.bottom = t + offset + length;
+					paint.setColor(Color.argb(0x7f * (C.API_KITKAT ? scrollBar.getAlpha() : 0xff) / 0xff,
+							0xff, 0xff, 0xff));
+					canvas.drawRect(rect, paint);
+				}
+			}
 		}
 	}
 

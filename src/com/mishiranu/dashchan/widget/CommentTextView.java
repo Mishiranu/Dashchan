@@ -849,7 +849,7 @@ public class CommentTextView extends TextView {
 				if (holder != null) {
 					CommentTextView textView = holder.getCommentTextView();
 					if (textView.isSelectionMode()) {
-						int position = recyclerView.getChildAdapterPosition(view);
+						int position = recyclerView.getChildLayoutPosition(view);
 						if (position >= 0) {
 							this.position = position;
 							text = textView.getText().toString();
@@ -872,7 +872,7 @@ public class CommentTextView extends TextView {
 			}
 			int childCount = recyclerView.getChildCount();
 			if (position >= 0 && childCount > 0) {
-				int index = position - recyclerView.getChildAdapterPosition(recyclerView.getChildAt(0));
+				int index = position - recyclerView.getChildLayoutPosition(recyclerView.getChildAt(0));
 				if (index >= 0 && index < childCount) {
 					View view = recyclerView.getChildAt(index);
 					Holder holder = ListViewUtils.getViewHolder(view, Holder.class);

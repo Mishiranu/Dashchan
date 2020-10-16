@@ -104,7 +104,7 @@ public class SortableHelper<VH extends RecyclerView.ViewHolder> extends ItemTouc
 			@NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY,
 			int actionState, boolean isCurrentlyActive) {
 		int position = viewHolder.getAdapterPosition();
-		int count = recyclerView.getAdapter().getItemCount();
+		int count = recyclerView.getLayoutManager().getItemCount();
 		if (position == 0) {
 			dY = Math.max(0f, dY);
 		}

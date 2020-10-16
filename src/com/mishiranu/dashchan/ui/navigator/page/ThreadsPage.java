@@ -125,8 +125,8 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	protected void onCreate() {
 		Context context = getContext();
 		PullableRecyclerView recyclerView = getRecyclerView();
-		GridLayoutManager gridLayoutManager = new GridLayoutManager(recyclerView.getContext(), 1);
-		recyclerView.setLayoutManager(gridLayoutManager);
+		GridLayoutManager layoutManager = new GridLayoutManager(recyclerView.getContext(), 1);
+		recyclerView.setLayoutManager(layoutManager);
 		Page page = getPage();
 		hidePerformer = new HidePerformer(context);
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
@@ -135,7 +135,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		ThreadsAdapter adapter = new ThreadsAdapter(context, this, page.chanName, page.boardName, uiManager,
 				postStateProvider, parcelableExtra.headerExpanded, parcelableExtra.catalogSortIndex);
 		recyclerView.setAdapter(adapter);
-		gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+		layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
 			@Override
 			public int getSpanSize(int position) {
 				return adapter.getSpanSize(position);
@@ -150,7 +150,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			}
 		});
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
-		gridLayoutManager.setSpanCount(adapter.setGridMode(Preferences.isThreadsGridMode()));
+		layoutManager.setSpanCount(adapter.setGridMode(Preferences.isThreadsGridMode()));
 		adapter.applyFilter(getInitSearch().currentQuery);
 		ChanConfiguration.Board board = getChanConfiguration().safe().obtainBoard(page.boardName);
 		InitRequest initRequest = getInitRequest();
@@ -556,7 +556,6 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			}
 			notifyTitleChanged();
 			if (!append) {
-				ListViewUtils.cancelListFling(recyclerView);
 				recyclerView.scrollToPosition(0);
 			} else if (needScroll) {
 				ListViewUtils.smoothScrollToPosition(recyclerView, oldCount);
@@ -573,7 +572,6 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			}
 		} else if (checkModified && postItems == null) {
 			adapter.notifyNotModified();
-			ListViewUtils.cancelListFling(recyclerView);
 			recyclerView.scrollToPosition(0);
 		} else if (adapter.isRealEmpty()) {
 			switchView(ViewType.ERROR, R.string.empty_response);

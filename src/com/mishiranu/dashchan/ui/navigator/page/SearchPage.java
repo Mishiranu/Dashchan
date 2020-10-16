@@ -250,7 +250,6 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 				retainExtra.postItems.clear();
 				retainExtra.postItems.addAll(postItems);
 				retainExtra.pageNumber = 0;
-				ListViewUtils.cancelListFling(recyclerView);
 				recyclerView.scrollToPosition(0);
 				if (showScale) {
 					showScaleAnimation();

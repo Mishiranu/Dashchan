@@ -19,9 +19,9 @@ public class ScriptSpan extends CharacterStyle implements UpdateAppearance, Para
 	@Override
 	public void updateDrawState(TextPaint paint) {
 		float oldSize = paint.getTextSize();
-        float newSize = oldSize * 3f / 4f;
-        paint.setTextSize((int) (newSize + 0.5f));
-        int shift = (int) (oldSize - newSize);
+		float newSize = oldSize * 3f / 4f;
+		paint.setTextSize((int) (newSize + 0.5f));
+		int shift = (int) (oldSize - newSize);
 		if (superscript) {
 			paint.baselineShift -= shift;
 		}

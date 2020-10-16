@@ -1,119 +1,101 @@
 package com.mishiranu.dashchan.widget;
 
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class RecyclerScrollTracker extends RecyclerView.OnScrollListener implements Runnable {
+public class RecyclerScrollTracker {
 	private final OnScrollListener listener;
 
 	public RecyclerScrollTracker(OnScrollListener listener) {
 		this.listener = listener;
 	}
 
+	public void attach(RecyclerView recyclerView) {
+		recyclerView.addOnScrollListener(scrollListener);
+		recyclerView.addOnLayoutChangeListener(layoutListener);
+	}
+
+	public void detach(RecyclerView recyclerView) {
+		recyclerView.removeOnScrollListener(scrollListener);
+		recyclerView.removeOnLayoutChangeListener(layoutListener);
+	}
+
 	private boolean scrollingDown = false;
-	private int lastTrackingItem = -1;
-	private int lastTrackingTop;
-	private int lastFirstItem = -1;
-	private int lastFirstTop;
+	private int firstPosition = -1;
+	private int firstTop = 0;
 
-	private boolean prevFirst, prevLast;
+	private int slopDelta = -1;
+	private int totalDelta = 0;
 
-	private void notifyScroll(ViewGroup view, int scrollY, int firstVisibleItem,
-			int visibleItemCount, int totalItemCount) {
-		boolean first = firstVisibleItem == 0;
-		boolean last = firstVisibleItem + visibleItemCount == totalItemCount;
-		boolean changedFirstLast = first != prevFirst || last != prevLast;
-		prevFirst = first;
-		prevLast = last;
-		if (scrollY != 0) {
-			scrollingDown = scrollY > 0;
+	private void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+		if (slopDelta == -1) {
+			slopDelta = ViewConfiguration.get(recyclerView.getContext()).getScaledTouchSlop();
 		}
-		if (scrollY != 0 || changedFirstLast) {
-			listener.onScroll(view, scrollY, totalItemCount, first, last);
-		}
-	}
-
-	public int calculateTrackingViewIndex(int visibleItemCount) {
-		if (visibleItemCount > 2) {
-			return visibleItemCount / 2;
-		} else if (visibleItemCount == 2) {
-			return scrollingDown ? 1 : 0;
+		LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+		int totalItemCount = layoutManager.getItemCount();
+		int firstPosition = layoutManager.findFirstVisibleItemPosition();
+		int lastPosition = layoutManager.findLastVisibleItemPosition();
+		boolean first;
+		boolean last;
+		if (firstPosition < 0 || lastPosition < 0 || recyclerView.getChildCount() == 0) {
+			first = false;
+			last = false;
+			scrollingDown = false;
+			this.firstPosition = -1;
+			firstTop = 0;
 		} else {
-			return 0;
-		}
-	}
-
-	@Override
-	public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-		RecyclerView.Adapter<?> adapter = recyclerView.getAdapter();
-		View first = recyclerView.getChildCount() > 0 ? recyclerView.getChildAt(0) : null;
-		int firstVisibleItem = first != null ? recyclerView.getChildViewHolder(first).getAdapterPosition() : 0;
-		int totalItemCount = adapter != null ? adapter.getItemCount() : 0;
-		onScrollInternal(recyclerView, firstVisibleItem, recyclerView.getChildCount(), totalItemCount);
-	}
-
-	private void onScrollInternal(ViewGroup view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-		if (visibleItemCount > 0) {
-			int trackingIndex = calculateTrackingViewIndex(visibleItemCount);
-			int trackingItem = firstVisibleItem + trackingIndex;
-			View tracking = view.getChildAt(trackingIndex);
-			if (tracking == null) {
-				return;
-			}
-			int trackingTop = tracking.getTop();
-			int firstVisibleTop = view.getChildAt(0).getTop();
-			// Detect child height-change animation
-			boolean standsStill = lastFirstItem == firstVisibleItem && lastFirstTop == firstVisibleTop;
-			lastFirstItem = firstVisibleItem;
-			lastFirstTop = firstVisibleTop;
-			if (lastTrackingItem == -1) {
-				lastTrackingItem = trackingItem;
-				notifyScroll(view, 0, firstVisibleItem, visibleItemCount, totalItemCount);
-			} else {
-				int scrollY = 0;
-				if (lastTrackingItem != trackingItem) {
-					int lastTrackingIndex = lastTrackingItem - firstVisibleItem;
-					// Check last tracking view is not recycled
-					if (lastTrackingIndex >= 0 && lastTrackingIndex < visibleItemCount) {
-						View lastTracking = view.getChildAt(lastTrackingIndex);
-						int lastTop = lastTracking.getTop();
-						scrollY = lastTrackingTop - lastTop;
-					}
-					lastTrackingItem = trackingItem;
-				} else {
-					scrollY = lastTrackingTop - trackingTop;
+			first = firstPosition == 0;
+			last = lastPosition == totalItemCount - 1;
+			int firstTop = recyclerView.getChildAt(0).getTop();
+			if (dx == 0 && dy == 0) {
+				// Layout changed
+				if (this.firstPosition != firstPosition || this.firstTop != firstTop) {
+					totalDelta = 0;
+					scrollingDown = this.firstPosition >= 0 && (firstPosition > this.firstPosition ||
+							firstPosition == this.firstPosition && firstTop > this.firstTop);
 				}
-				// 100% false scroll: it can be just a child's height animation, for example
-				if (standsStill) {
-					scrollY = 0;
+			} else if (dy != 0) {
+				totalDelta += dy;
+				if (Math.abs(totalDelta) > slopDelta) {
+					scrollingDown = totalDelta > 0;
+					totalDelta = 0;
 				}
-				notifyScroll(view, scrollY, firstVisibleItem, visibleItemCount, totalItemCount);
 			}
-			lastTrackingTop = trackingTop;
+			this.firstPosition = firstPosition;
+			this.firstTop = firstTop;
 		}
+		listener.onScroll(recyclerView, scrollingDown, totalItemCount, first, last);
 	}
 
-	@Override
-	public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-		onScrollStateChangedInternal(recyclerView, newState == RecyclerView.SCROLL_STATE_IDLE);
-	}
+	private boolean scrollHandled = false;
 
-	private void onScrollStateChangedInternal(ViewGroup view, boolean idle) {
-		if (idle) {
-			view.postDelayed(this, 500);
+	private final RecyclerView.OnScrollListener scrollListener = new RecyclerView.OnScrollListener() {
+		@Override
+		public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+			// May call with (dx, dy) == (0, 0) during layout (e.g. after scrollToPosition)
+			RecyclerScrollTracker.this.onScrolled(recyclerView, dx, dy);
+			scrollHandled = true;
+		}
+
+		@Override
+		public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {}
+	};
+
+	// RecyclerView won't call onScroll after scrollToPosition if first and last items weren't changed
+	private final View.OnLayoutChangeListener layoutListener = (v, left, top, right, bottom,
+			oldLeft, oldTop, oldRight, oldBottom) -> {
+		if (scrollHandled) {
+			scrollHandled = false;
 		} else {
-			view.removeCallbacks(this);
+			onScrolled((RecyclerView) v, 0, 0);
 		}
-	}
-
-	@Override
-	public void run() {
-		lastTrackingItem = -1;
-	}
+	};
 
 	public interface OnScrollListener {
-		public void onScroll(ViewGroup view, int scrollY, int totalItemCount, boolean first, boolean last);
+		void onScroll(ViewGroup view, boolean scrollingDown, int totalItemCount, boolean first, boolean last);
 	}
 }

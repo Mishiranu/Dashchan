@@ -23,7 +23,6 @@ import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
-import java.lang.reflect.Method;
 
 public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestureListener {
 	private enum ScrollEdge {NONE, START, END, BOTH}
@@ -45,7 +44,11 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 	private ValueAnimator initialScalingAnimator;
 	private Rect initialScaleClipRect;
 
-	private float minimumScale, maximumScale, doubleTapScale, initialScale;
+	private float minimumScale;
+	private float maximumScale;
+	private float doubleTapScale;
+	private float initialScale;
+
 	private final Matrix baseMatrix = new Matrix();
 	private final Matrix transformMatrix = new Matrix();
 	private final Matrix displayMatrix = new Matrix();
@@ -73,34 +76,12 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 	private final float touchSlop;
 	private final float minimumVelocity;
 
+	private boolean isDoubleTapDown;
+	private boolean isQuickScale;
+
 	private VelocityTracker velocityTracker;
 	private boolean isDragging;
 	private boolean isParentDragging;
-
-	private static final Method METHOD_IN_DOUBLE_TAP_MODE;
-	private static final Method METHOD_IN_ANCHORED_SCALE_MODE;
-
-	static {
-		Method inDoubleTapModeMethod;
-		Method inAnchoredScaleModeMethod;
-		try {
-			inDoubleTapModeMethod = ScaleGestureDetector.class.getDeclaredMethod("inDoubleTapMode");
-			inDoubleTapModeMethod.setAccessible(true);
-		} catch (Exception e) {
-			inDoubleTapModeMethod = null;
-		}
-		try {
-			// TODO Handle reflection
-			@SuppressLint("SoonBlockedPrivateApi")
-			Method method = ScaleGestureDetector.class.getDeclaredMethod("inAnchoredScaleMode");
-			inAnchoredScaleModeMethod = method;
-			inAnchoredScaleModeMethod.setAccessible(true);
-		} catch (Exception e) {
-			inAnchoredScaleModeMethod = null;
-		}
-		METHOD_IN_DOUBLE_TAP_MODE = inDoubleTapModeMethod;
-		METHOD_IN_ANCHORED_SCALE_MODE = inAnchoredScaleModeMethod;
-	}
 
 	public PhotoView(Context context, AttributeSet attr) {
 		super(context, attr);
@@ -143,10 +124,10 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 	}
 
 	public interface Listener {
-		public void onClick(PhotoView photoView, boolean image, float x, float y);
-		public void onLongClick(PhotoView photoView, float x, float y);
-		public void onVerticalSwipe(PhotoView photoView, boolean down, float value);
-		public boolean onClose(PhotoView photoView, boolean down);
+		void onClick(PhotoView photoView, boolean image, float x, float y);
+		void onLongClick(PhotoView photoView, float x, float y);
+		void onVerticalSwipe(PhotoView photoView, boolean down, float value);
+		boolean onClose(PhotoView photoView, boolean down);
 	}
 
 	public void setListener(Listener listener) {
@@ -260,8 +241,8 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 			if (C.API_LOLLIPOP) {
 				canvas.saveLayerAlpha(0, 0, getWidth(), getHeight(), workAlpha);
 			} else {
-				// noinspection deprecation
-				canvas.saveLayerAlpha(0, 0, getWidth(), getHeight(), workAlpha, Canvas.ALL_SAVE_FLAG);
+				@SuppressWarnings({"deprecation", "unused"})
+				int ignored = canvas.saveLayerAlpha(0, 0, getWidth(), getHeight(), workAlpha, Canvas.ALL_SAVE_FLAG);
 			}
 			restoreAlpha = true;
 		}
@@ -349,10 +330,15 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 
 	@Override
 	public boolean onScale(ScaleGestureDetector detector) {
-		float factor = detector.getScaleFactor();
-		// If factor <= 0, the image will be rotated, so let's apply only positive values
-		if (factor > 0f) {
-			onScale(factor, detector.getFocusX(), detector.getFocusY());
+		boolean isQuickScale = this.isQuickScale;
+		if (!isQuickScale || detector.getPreviousSpan() > 2 * touchSlop) {
+			float factor = detector.getScaleFactor();
+			if (factor > 0f) {
+				if (isQuickScale) {
+					factor = Math.max(0.75f, Math.min(factor, 1.25f));
+				}
+				onScale(factor, detector.getFocusX(), detector.getFocusY());
+			}
 		}
 		return true;
 	}
@@ -372,7 +358,9 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 	}
 
 	private boolean onDoubleTapEvent(MotionEvent e) {
-		if (e.getAction() == MotionEvent.ACTION_UP && !scaleGestureDetector.isInProgress()) {
+		if (e.getAction() == MotionEvent.ACTION_DOWN) {
+			isDoubleTapDown = true;
+		} else if (e.getAction() == MotionEvent.ACTION_UP && !scaleGestureDetector.isInProgress()) {
 			float scale = getScale();
 			float x = e.getX();
 			float y = e.getY();
@@ -440,8 +428,8 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 
 	public void dispatchSpecialTouchEvent(MotionEvent event) {
 		if (hasImage()) {
-			//dbg.Log.d("dispatch", event.getAction(), event.getX(), event.getY());
-			switch (event.getActionMasked()) {
+			int action = event.getActionMasked();
+			switch (action) {
 				case MotionEvent.ACTION_DOWN: {
 					isParentDragging = false;
 					touchMode = TouchMode.UNDEFINED;
@@ -459,19 +447,12 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 					break;
 				}
 			}
+			isDoubleTapDown = false;
 			gestureDetector.onTouchEvent(event);
 			scaleGestureDetector.onTouchEvent(event);
-			if (event.getAction() == MotionEvent.ACTION_DOWN &&
-					(METHOD_IN_DOUBLE_TAP_MODE != null || METHOD_IN_ANCHORED_SCALE_MODE != null)) {
-				boolean doubleTapScaling = false;
-				try {
-					doubleTapScaling = (boolean) (METHOD_IN_DOUBLE_TAP_MODE != null
-							? METHOD_IN_DOUBLE_TAP_MODE : METHOD_IN_ANCHORED_SCALE_MODE)
-							.invoke(scaleGestureDetector);
-				} catch (Exception e) {
-					// Reflective operation, ignore exception
-				}
-				if (doubleTapScaling) {
+			if (action == MotionEvent.ACTION_DOWN && C.API_KITKAT) {
+				isQuickScale = isDoubleTapDown && scaleGestureDetector.isQuickScaleEnabled();
+				if (isQuickScale) {
 					checkTouchMode();
 				}
 			}
@@ -573,7 +554,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 		int viewHeight = getHeight();
 		float deltaX = 0f;
 		float deltaY = 0f;
-		if (height <= viewHeight) {
+		if (height <= viewHeight + 0.5f) {
 			deltaY = (viewHeight - height) / 2 - rect.top;
 			scrollEdgeY = ScrollEdge.BOTH;
 		} else if (rect.top + 0.5f >= 0) {
