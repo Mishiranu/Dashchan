@@ -99,8 +99,9 @@ public class ViewUnit {
 					if (uri != null) {
 						if (click) {
 							PostViewHolder holder = ListViewUtils.getViewHolder(view, PostViewHolder.class);
-							(holder.configurationSet.linkListener != null ? holder.configurationSet.linkListener
-									: defaultLinkListener).onLinkClick(view, null, uri, true);
+							CommentTextView.LinkListener linkListener = holder.configurationSet.linkListener != null
+									? holder.configurationSet.linkListener : defaultLinkListener;
+							linkListener.onLinkClick(view, uri, CommentTextView.LinkListener.Extra.EMPTY, true);
 						}
 						return true;
 					}
@@ -166,13 +167,13 @@ public class ViewUnit {
 
 	private final CommentTextView.LinkListener defaultLinkListener = new CommentTextView.LinkListener() {
 		@Override
-		public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed) {
+		public void onLinkClick(CommentTextView view, Uri uri, Extra extra, boolean confirmed) {
 			UiManager.Holder holder = ListViewUtils.getViewHolder(view, UiManager.Holder.class);
-			uiManager.interaction().handleLinkClick(holder.getConfigurationSet(), chanName, uri, confirmed);
+			uiManager.interaction().handleLinkClick(holder.getConfigurationSet(), uri, extra, confirmed);
 		}
 
 		@Override
-		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri) {
+		public void onLinkLongClick(CommentTextView view, Uri uri, Extra extra) {
 			uiManager.interaction().handleLinkLongClick(uri);
 		}
 	};
@@ -372,12 +373,11 @@ public class ViewUnit {
 		LinkSpan[] linkSpans = postItem.getLinkSpansAfterComment();
 		if (linkSpans != null) {
 			for (LinkSpan linkSpan : linkSpans) {
-				PostNumber linkPostNumber = linkSpan.getPostNumber();
-				if (linkPostNumber != null) {
+				if (linkSpan.postNumber != null) {
 					boolean hidden = false;
-					if (postItem.getReferencesTo().contains(linkPostNumber)
+					if (postItem.getReferencesTo().contains(linkSpan.postNumber)
 							&& holder.configurationSet.postsProvider != null) {
-						PostItem linkPostItem = holder.configurationSet.postsProvider.findPostItem(linkPostNumber);
+						PostItem linkPostItem = holder.configurationSet.postsProvider.findPostItem(linkSpan.postNumber);
 						if (linkPostItem != null) {
 							hidden = holder.configurationSet.postStateProvider.isHiddenResolve(linkPostItem);
 						}

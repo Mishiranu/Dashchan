@@ -12,10 +12,11 @@ import com.mishiranu.dashchan.widget.CommentTextView;
 
 public class LinkSpan extends CharacterStyle implements UpdateAppearance, CommentTextView.ClickableSpan,
 		ColorScheme.Span {
-	private final String uriString;
-	private final PostNumber postNumber;
+	public final String uriString;
+	public final PostNumber postNumber;
 
-	private int foregroundColor, clickedColor;
+	private int foregroundColor;
+	private int clickedColor;
 
 	private boolean clicked;
 	private boolean hidden;
@@ -59,11 +60,9 @@ public class LinkSpan extends CharacterStyle implements UpdateAppearance, Commen
 		this.hidden = hidden;
 	}
 
-	public String getUriString() {
-		return uriString;
-	}
-
-	public PostNumber getPostNumber() {
-		return postNumber;
+	public boolean inBoardLink() {
+		// >>NUMBER links cannot refer to another board
+		// This check can be useful for threads moved to another board
+		return postNumber != null;
 	}
 }

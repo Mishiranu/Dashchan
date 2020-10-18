@@ -213,13 +213,13 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	}
 
 	@Override
-	public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed) {
+	public void onLinkClick(CommentTextView view, Uri uri, Extra extra, boolean confirmed) {
 		PostItem originalPostItem = getItem(0);
-		ChanLocator locator = ChanLocator.get(chanName);
+		ChanLocator locator = ChanLocator.get(extra.chanName);
 		String boardName = originalPostItem.getBoardName();
 		String threadNumber = originalPostItem.getThreadNumber();
-		if (chanName != null && locator.safe(false).isThreadUri(uri)
-				&& CommonUtils.equals(boardName, locator.safe(false).getBoardName(uri))
+		if (extra.chanName != null && locator.safe(false).isThreadUri(uri)
+				&& (extra.inBoardLink || CommonUtils.equals(boardName, locator.safe(false).getBoardName(uri)))
 				&& CommonUtils.equals(threadNumber, locator.safe(false).getThreadNumber(uri))) {
 			PostNumber postNumber = locator.safe(false).getPostNumber(uri);
 			int position = postNumber == null ? 0 : positionOfPostNumber(postNumber);
@@ -229,12 +229,12 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 			}
 			uiManager.dialog().displaySingle(configurationSet, getItem(position));
 		} else {
-			uiManager.interaction().handleLinkClick(configurationSet, chanName, uri, confirmed);
+			uiManager.interaction().handleLinkClick(configurationSet, uri, extra, confirmed);
 		}
 	}
 
 	@Override
-	public void onLinkLongClick(CommentTextView view, String chanName, Uri uri) {
+	public void onLinkLongClick(CommentTextView view, Uri uri, Extra extra) {
 		uiManager.interaction().handleLinkLongClick(uri);
 	}
 

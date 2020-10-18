@@ -89,12 +89,12 @@ public class CommentTextView extends TextView {
 
 	private static final LinkListener DEFAULT_LINK_LISTENER = new LinkListener() {
 		@Override
-		public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed) {
-			NavigationUtils.handleUri(view.getContext(), chanName, uri, NavigationUtils.BrowserType.AUTO);
+		public void onLinkClick(CommentTextView view, Uri uri, Extra extra, boolean confirmed) {
+			NavigationUtils.handleUri(view.getContext(), extra.chanName, uri, NavigationUtils.BrowserType.AUTO);
 		}
 
 		@Override
-		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri) {}
+		public void onLinkLongClick(CommentTextView view, Uri uri, Extra extra) {}
 	};
 
 	public CommentTextView(Context context, AttributeSet attrs) {
@@ -127,7 +127,7 @@ public class CommentTextView extends TextView {
 	}
 
 	public interface ClickableSpan {
-		public void setClicked(boolean clicked);
+		void setClicked(boolean clicked);
 	}
 
 	public interface LimitListener {
@@ -140,8 +140,20 @@ public class CommentTextView extends TextView {
 	}
 
 	public interface LinkListener {
-		void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed);
-		void onLinkLongClick(CommentTextView view, String chanName, Uri uri);
+		final class Extra {
+			public static final Extra EMPTY = new Extra(null, false);
+
+			public final String chanName;
+			public final boolean inBoardLink;
+
+			public Extra(String chanName, boolean inBoardLink) {
+				this.chanName = chanName;
+				this.inBoardLink = inBoardLink;
+			}
+		}
+
+		void onLinkClick(CommentTextView view, Uri uri, Extra extra, boolean confirmed);
+		void onLinkLongClick(CommentTextView view, Uri uri, Extra extra);
 	}
 
 	public static class ExtraButton {
@@ -631,19 +643,23 @@ public class CommentTextView extends TextView {
 
 	private final Runnable linkLongClickRunnable = () -> {
 		if (spanToClick instanceof LinkSpan) {
-			Uri uri = createUri(((LinkSpan) spanToClick).getUriString());
+			LinkSpan linkSpan = (LinkSpan) spanToClick;
+			Uri uri = createUri(linkSpan.uriString);
 			setSpanToClick(null, lastX, lastY);
 			if (uri != null) {
-				getLinkListener().onLinkLongClick(CommentTextView.this, chanName, uri);
+				LinkListener.Extra extra = new LinkListener.Extra(chanName, linkSpan.inBoardLink());
+				getLinkListener().onLinkLongClick(CommentTextView.this, uri, extra);
 			}
 		}
 	};
 
 	private void handleSpanClick() {
 		if (spanToClick instanceof LinkSpan) {
-			Uri uri = createUri(((LinkSpan) spanToClick).getUriString());
+			LinkSpan linkSpan = (LinkSpan) spanToClick;
+			Uri uri = createUri(linkSpan.uriString);
 			if (uri != null) {
-				getLinkListener().onLinkClick(this, chanName, uri, false);
+				LinkListener.Extra extra = new LinkListener.Extra(chanName, linkSpan.inBoardLink());
+				getLinkListener().onLinkClick(this, uri, extra, false);
 			}
 		} else if (spanToClick instanceof SpoilerSpan) {
 			SpoilerSpan spoilerSpan = ((SpoilerSpan) spanToClick);
@@ -826,7 +842,7 @@ public class CommentTextView extends TextView {
 
 	public static class RecyclerKeeper extends RecyclerView.AdapterDataObserver implements Runnable {
 		public interface Holder {
-			public CommentTextView getCommentTextView();
+			CommentTextView getCommentTextView();
 		}
 
 		private final RecyclerView recyclerView;

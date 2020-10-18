@@ -402,7 +402,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		result[1] = null;
 		if (span instanceof LinkSpan) {
 			result[0] = ChanMarkup.TAG_SPECIAL_LINK;
-			result[1] = ((LinkSpan) span).getUriString();
+			result[1] = ((LinkSpan) span).uriString;
 		} else if (span instanceof SpoilerSpan) {
 			result[0] = ChanMarkup.TAG_SPOILER;
 		} else if (span instanceof QuoteSpan) {

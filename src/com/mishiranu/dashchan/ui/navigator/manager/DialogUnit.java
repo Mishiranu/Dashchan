@@ -432,13 +432,13 @@ public class DialogUnit {
 			}
 
 			@Override
-			public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed) {
-				provider.get().onLinkClick(view, chanName, uri, confirmed);
+			public void onLinkClick(CommentTextView view, Uri uri, Extra extra, boolean confirmed) {
+				provider.get().onLinkClick(view, uri, extra, confirmed);
 			}
 
 			@Override
-			public void onLinkLongClick(CommentTextView view, String chanName, Uri uri) {
-				provider.get().onLinkLongClick(view, chanName, uri);
+			public void onLinkLongClick(CommentTextView view, Uri uri, Extra extra) {
+				provider.get().onLinkLongClick(view, uri, extra);
 			}
 		}
 
@@ -499,13 +499,13 @@ public class DialogUnit {
 		}
 
 		@Override
-		public void onLinkClick(CommentTextView view, String chanName, Uri uri, boolean confirmed) {
+		public void onLinkClick(CommentTextView view, Uri uri, Extra extra, boolean confirmed) {
 			PostItem originalPostItem = postItems.get(0);
 			String boardName = originalPostItem.getBoardName();
 			String threadNumber = originalPostItem.getThreadNumber();
-			ChanLocator locator = ChanLocator.get(chanName);
-			if (chanName != null && locator.safe(false).isThreadUri(uri)
-					&& CommonUtils.equals(boardName, locator.safe(false).getBoardName(uri))
+			ChanLocator locator = ChanLocator.get(extra.chanName);
+			if (extra.chanName != null && locator.safe(false).isThreadUri(uri)
+					&& (extra.inBoardLink || CommonUtils.equals(boardName, locator.safe(false).getBoardName(uri)))
 					&& CommonUtils.equals(threadNumber, locator.safe(false).getThreadNumber(uri))) {
 				PostNumber postNumber = locator.safe(false).getPostNumber(uri);
 				if (postNumber != null) {
@@ -520,11 +520,11 @@ public class DialogUnit {
 					return;
 				}
 			}
-			uiManager.interaction().handleLinkClick(configurationSet, chanName, uri, confirmed);
+			uiManager.interaction().handleLinkClick(configurationSet, uri, extra, confirmed);
 		}
 
 		@Override
-		public void onLinkLongClick(CommentTextView view, String chanName, Uri uri) {
+		public void onLinkLongClick(CommentTextView view, Uri uri, Extra extra) {
 			uiManager.interaction().handleLinkLongClick(uri);
 		}
 	}

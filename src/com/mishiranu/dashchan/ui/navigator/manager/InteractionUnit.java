@@ -24,6 +24,7 @@ import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.widget.AttachmentView;
+import com.mishiranu.dashchan.widget.CommentTextView;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,11 +36,11 @@ public class InteractionUnit {
 	}
 
 	public void handleLinkClick(UiManager.ConfigurationSet configurationSet,
-			String chanName, Uri uri, boolean confirmed) {
+			Uri uri, CommentTextView.LinkListener.Extra extra, boolean confirmed) {
 		boolean handled = false;
 		final String uriChanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
 		if (uriChanName != null) {
-			boolean sameChan = uriChanName.equals(chanName);
+			boolean sameChan = uriChanName.equals(extra.chanName);
 			ChanLocator.NavigationData navigationData = null;
 			ChanLocator locator = ChanLocator.get(uriChanName);
 			ChanConfiguration configuration = ChanConfiguration.get(uriChanName);
@@ -105,7 +106,7 @@ public class InteractionUnit {
 			}
 		}
 		if (!handled) {
-			NavigationUtils.handleUriInternal(uiManager.getContext(), chanName, uri);
+			NavigationUtils.handleUriInternal(uiManager.getContext(), extra.chanName, uri);
 		}
 	}
 
