@@ -37,10 +37,10 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 	private ErrorItem errorItem;
 
 	public interface Callback {
-		public void onReadCaptchaSuccess(ChanPerformer.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
+		void onReadCaptchaSuccess(ChanPerformer.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
 				String captchaType, ChanConfiguration.Captcha.Input input, ChanConfiguration.Captcha.Validity validity,
 				Bitmap image, boolean large, boolean blackAndWhite);
-		public void onReadCaptchaError(ErrorItem errorItem);
+		void onReadCaptchaError(ErrorItem errorItem);
 	}
 
 	public static class Result {
@@ -54,7 +54,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	public interface CaptchaReader {
-		public Result onReadCaptcha(ChanPerformer.ReadCaptchaData data)
+		Result onReadCaptcha(ChanPerformer.ReadCaptchaData data)
 				throws ExtensionException, HttpException, InvalidResponseException;
 	}
 
@@ -95,7 +95,6 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 
 	@Override
 	protected Boolean doInBackground(HttpHolder holder, Void... params) {
-		Thread thread = Thread.currentThread();
 		Result result;
 		try {
 			result = captchaReader.onReadCaptcha(new ChanPerformer.ReadCaptchaData(captchaType,
@@ -118,7 +117,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 		if (captchaState != ChanPerformer.CaptchaState.CAPTCHA) {
 			return true;
 		}
-		if (thread.isInterrupted()) {
+		if (isCancelled()) {
 			return null;
 		}
 		if (recaptcha2 || recaptcha2Invisible || hcaptcha) {

@@ -1312,7 +1312,7 @@ public class DialogUnit {
 			builder.setTitle(resId);
 			builder.setView(scrollView);
 		} else {
-			if (!firstTime){
+			if (!firstTime) {
 				return;
 			}
 			int resId = 0;

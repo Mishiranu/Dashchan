@@ -266,13 +266,19 @@ public final class AsyncManager {
 	}
 
 	@SuppressWarnings("UnusedParameters")
-	public static abstract class SimpleTask<Params, Progress, Result> extends
-			CancellableTask<Params, Progress, Result> {
+	public static abstract class SimpleTask<Result> extends CancellableTask<Void, Void, Result> {
 		private final Holder holder = new Holder().attach(this);
 
 		public final Holder getHolder() {
 			return holder;
 		}
+
+		@Override
+		protected final Result doInBackground(Void... params) {
+			return doInBackground();
+		}
+
+		protected abstract Result doInBackground();
 
 		@Override
 		protected final void onPostExecute(Result result) {

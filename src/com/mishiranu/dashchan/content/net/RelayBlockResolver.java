@@ -14,6 +14,7 @@ import chan.content.ChanPerformer;
 import chan.http.HttpClient;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
+import chan.http.HttpResponse;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.AdvancedPreferences;
 import com.mishiranu.dashchan.content.MainApplication;
@@ -38,9 +39,27 @@ public class RelayBlockResolver {
 
 	private RelayBlockResolver() {}
 
-	public interface Client {
+	public static class Session {
+		public final String chanName;
+		public final Uri uri;
+		public final HttpHolder holder;
+
+		private Session(String chanName, Uri uri, HttpHolder holder) {
+			this.chanName = chanName;
+			this.uri = uri;
+			this.holder = holder;
+		}
+	}
+
+	public interface Resolver {
+		boolean resolve(RelayBlockResolver resolver, Session session) throws CancelException, HttpException;
+	}
+
+	public static final class CancelException extends Exception {}
+
+	public interface WebViewClient<Result> {
 		String getName();
-		boolean handleResult(String chanName);
+		Result takeResult();
 
 		default boolean onPageFinished(String uriString, Map<String, String> cookies, String title) {
 			return true;
@@ -55,18 +74,18 @@ public class RelayBlockResolver {
 		}
 	}
 
-	public interface ClientFactory {
-		Client newClient();
+	public interface ResolverFactory {
+		Resolver newResolver();
 	}
 
 	private static class CheckHolder {
-		public final Client client;
+		public final Resolver resolver;
 
 		public boolean ready = false;
 		public boolean success = false;
 
-		private CheckHolder(Client client) {
-			this.client = client;
+		private CheckHolder(Resolver resolver) {
+			this.resolver = resolver;
 		}
 	}
 
@@ -101,13 +120,13 @@ public class RelayBlockResolver {
 		}
 	}
 
-	private static class RequestCallback extends IRequestCallback.Stub {
-		public final CheckHolder checkHolder;
+	private static class WebViewRequestCallback extends IRequestCallback.Stub {
+		public final WebViewClient<?> client;
 		public final Uri initialUri;
 		public final Runnable cancel;
 
-		private RequestCallback(CheckHolder checkHolder, Uri initialUri, Runnable cancel) {
-			this.checkHolder = checkHolder;
+		private WebViewRequestCallback(WebViewClient<?> client, Uri initialUri, Runnable cancel) {
+			this.client = client;
 			this.initialUri = initialUri;
 			this.cancel = cancel;
 		}
@@ -129,12 +148,12 @@ public class RelayBlockResolver {
 			} else {
 				cookies = Collections.emptyMap();
 			}
-			return checkHolder.client.onPageFinished(uriString, cookies, title);
+			return client.onPageFinished(uriString, cookies, title);
 		}
 
 		@Override
 		public boolean onLoad(String uriString) {
-			return checkHolder.client.onLoad(initialUri, Uri.parse(uriString));
+			return client.onLoad(initialUri, Uri.parse(uriString));
 		}
 
 		private boolean captchaRetry = false;
@@ -144,7 +163,7 @@ public class RelayBlockResolver {
 			boolean retry = captchaRetry;
 			captchaRetry = true;
 			String description = MainApplication.getInstance().getLocalizedContext().getString
-					(R.string.relay_block__format_sentence, checkHolder.client.getName());
+					(R.string.relay_block__format_sentence, client.getName());
 			RelayBlockCaptchaReader reader = new RelayBlockCaptchaReader(apiKey, referer, challengeExtra);
 			ChanPerformer.CaptchaData captchaData = ForegroundManager.getInstance().requireUserCaptcha(reader,
 					captchaType, null, null, null, null, description, retry);
@@ -159,7 +178,8 @@ public class RelayBlockResolver {
 			String captchaType = invisible ? ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE
 					: ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2;
 			RecaptchaReader.ChallengeExtra challengeExtra;
-			try (HttpHolder holder = new HttpHolder()) {
+			HttpHolder holder = new HttpHolder();
+			try (HttpHolder.Use ignored = holder.use()) {
 				challengeExtra = RecaptchaReader.getInstance().getChallenge2(holder, apiKey, invisible, referer,
 						Preferences.isRecaptchaJavascript(), true);
 			} catch (RecaptchaReader.CancelException | HttpException e) {
@@ -199,10 +219,92 @@ public class RelayBlockResolver {
 		}
 	}
 
+	public <T> T resolveWebView(Session session, WebViewClient<T> client) throws CancelException {
+		Context context = MainApplication.getInstance();
+		class Status {
+			boolean established;
+			IWebViewService service;
+			boolean cancel;
+		}
+		Status status = new Status();
+		ServiceConnection connection = new ServiceConnection() {
+			@Override
+			public void onServiceConnected(ComponentName componentName, IBinder binder) {
+				synchronized (status) {
+					status.established = true;
+					status.service = IWebViewService.Stub.asInterface(binder);
+					status.notifyAll();
+				}
+			}
+
+			@Override
+			public void onServiceDisconnected(ComponentName componentName) {
+				synchronized (status) {
+					status.established = true;
+					status.service = null;
+					status.notifyAll();
+				}
+			}
+		};
+
+		try {
+			context.bindService(new Intent(context, WebViewService.class), connection, Context.BIND_AUTO_CREATE);
+			IWebViewService service;
+			synchronized (status) {
+				long startTime = SystemClock.elapsedRealtime();
+				long waitTime = 10000;
+				while (!status.established) {
+					long time = waitTime - (SystemClock.elapsedRealtime() - startTime);
+					if (time <= 0) {
+						break;
+					}
+					try {
+						status.wait(time);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				}
+				service = status.service;
+			}
+			if (service != null) {
+				boolean finished = false;
+				Uri initialUri = session.uri.buildUpon().clearQuery().encodedFragment(null).build();
+				try {
+					ChanLocator locator = ChanLocator.get(session.chanName);
+					String userAgent = AdvancedPreferences.getUserAgent(session.chanName);
+					HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(session.chanName);
+					boolean verifyCertificate = locator.isUseHttps() && Preferences.isVerifyCertificate();
+					IRequestCallback requestCallback = new WebViewRequestCallback(client, initialUri,
+							() -> status.cancel = true);
+					finished = service.loadWithCookieResult(initialUri.toString(), userAgent,
+							proxyData != null && proxyData.socks, proxyData != null ? proxyData.host : null,
+							proxyData != null ? proxyData.port : 0, verifyCertificate, WEB_VIEW_TIMEOUT,
+							client.getExtra(), requestCallback);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+				if (!finished) {
+					return null;
+				}
+				T result = client.takeResult();
+				if (result != null) {
+					return result;
+				}
+				if (status.cancel) {
+					throw new CancelException();
+				}
+			}
+			return null;
+		} finally {
+			context.unbindService(connection);
+		}
+	}
+
 	private final HashMap<String, CheckHolder> checkHolders = new HashMap<>();
 	private final HashMap<String, Long> lastCheckCancel = new HashMap<>();
 
-	public boolean runWebView(String chanName, Uri uri, ClientFactory clientFactory) {
+	public boolean runExclusive(String chanName, Uri uri, HttpHolder holder,
+			ResolverFactory resolverFactory) throws HttpException {
 		CheckHolder checkHolder;
 		boolean handle = false;
 		synchronized (lastCheckCancel) {
@@ -214,93 +316,37 @@ public class RelayBlockResolver {
 		synchronized (checkHolders) {
 			checkHolder = checkHolders.get(chanName);
 			if (checkHolder == null) {
-				checkHolder = new CheckHolder(clientFactory.newClient());
+				checkHolder = new CheckHolder(resolverFactory.newResolver());
 				checkHolders.put(chanName, checkHolder);
 				handle = true;
 			}
 		}
 
 		if (handle) {
-			Context context = MainApplication.getInstance();
-			class Status {
-				boolean established;
-				IWebViewService service;
-				boolean cancel;
+			Session session = new Session(chanName, uri, holder);
+			boolean cancel = false;
+			HttpException httpException = null;
+			try (HttpHolder.Use ignored = holder.use()) {
+				checkHolder.success = checkHolder.resolver.resolve(this, session);
+			} catch (CancelException e) {
+				cancel = true;
+			} catch (HttpException e) {
+				httpException = e;
 			}
-			Status status = new Status();
-			ServiceConnection connection = new ServiceConnection() {
-				@Override
-				public void onServiceConnected(ComponentName componentName, IBinder binder) {
-					synchronized (status) {
-						status.established = true;
-						status.service = IWebViewService.Stub.asInterface(binder);
-						status.notifyAll();
-					}
-				}
-
-				@Override
-				public void onServiceDisconnected(ComponentName componentName) {
-					synchronized (status) {
-						status.established = true;
-						status.service = null;
-						status.notifyAll();
-					}
-				}
-			};
-
-			try {
-				context.bindService(new Intent(context, WebViewService.class), connection, Context.BIND_AUTO_CREATE);
-				IWebViewService service;
-				synchronized (status) {
-					long startTime = SystemClock.elapsedRealtime();
-					long waitTime = 10000;
-					while (!status.established) {
-						long time = waitTime - (SystemClock.elapsedRealtime() - startTime);
-						if (time <= 0) {
-							break;
-						}
-						try {
-							status.wait(time);
-						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt();
-						}
-					}
-					service = status.service;
-				}
-				if (service != null) {
-					boolean finished = false;
-					Uri initialUri = uri.buildUpon().clearQuery().encodedFragment(null).build();
-					try {
-						ChanLocator locator = ChanLocator.get(chanName);
-						String userAgent = AdvancedPreferences.getUserAgent(chanName);
-						HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(chanName);
-						boolean verifyCertificate = locator.isUseHttps() && Preferences.isVerifyCertificate();
-						IRequestCallback requestCallback = new RequestCallback(checkHolder,
-								initialUri, () -> status.cancel = true);
-						finished = service.loadWithCookieResult(initialUri.toString(), userAgent,
-								proxyData != null && proxyData.socks, proxyData != null ? proxyData.host : null,
-								proxyData != null ? proxyData.port : 0, verifyCertificate, WEB_VIEW_TIMEOUT,
-								checkHolder.client.getExtra(), requestCallback);
-					} catch (RemoteException e) {
-						e.printStackTrace();
-					}
-					checkHolder.success = finished && checkHolder.client.handleResult(chanName);
-				}
-			} finally {
-				context.unbindService(connection);
-			}
-
 			synchronized (checkHolder) {
 				checkHolder.ready = true;
 				checkHolder.notifyAll();
 			}
-			if (status.cancel) {
+			if (cancel) {
 				synchronized (lastCheckCancel) {
 					lastCheckCancel.put(chanName, SystemClock.elapsedRealtime());
 				}
 			}
 			synchronized (checkHolders) {
 				checkHolders.remove(chanName);
+			}
+			if (httpException != null) {
+				throw httpException;
 			}
 		} else {
 			synchronized (checkHolder) {
@@ -317,11 +363,14 @@ public class RelayBlockResolver {
 		return checkHolder.success;
 	}
 
-	public Result checkResponse(String chanName, Uri uri, HttpHolder holder) throws HttpException {
+	public Result checkResponse(String chanName, Uri uri,
+			HttpHolder holder, HttpResponse response, boolean resolve) throws HttpException {
 		if (ChanLocator.get(chanName).getChanHosts(false).contains(uri.getHost())) {
-			Result result = CloudFlareResolver.getInstance().checkResponse(this, chanName, uri, holder);
+			Result result = CloudFlareResolver.getInstance()
+					.checkResponse(this, chanName, uri, holder, response, resolve);
 			if (!result.blocked) {
-				result = StormWallResolver.getInstance().checkResponse(this, chanName, uri, holder);
+				result = StormWallResolver.getInstance()
+						.checkResponse(this, chanName, uri, holder, response, resolve);
 			}
 			return result;
 		}

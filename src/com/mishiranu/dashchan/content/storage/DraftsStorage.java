@@ -440,11 +440,14 @@ public class DraftsStorage extends StorageManager.Storage<List<DraftsStorage.Pos
 		@Override
 		public void writeToParcel(Parcel dest, int flags) {
 			dest.writeString(captchaType);
-			dest.writeSerializable(captchaState);
-			dest.writeSerializable(captchaData);
+			dest.writeString(captchaState != null ? captchaState.name() : null);
+			dest.writeByte((byte) (captchaData != null ? 1 : 0));
+			if (captchaData != null) {
+				captchaData.writeToParcel(dest, flags);
+			}
 			dest.writeString(loadedCaptchaType);
-			dest.writeSerializable(loadedInput);
-			dest.writeSerializable(loadedValidity);
+			dest.writeString(loadedInput != null ? loadedInput.name() : null);
+			dest.writeString(loadedValidity != null ? loadedValidity.name() : null);
 			dest.writeString(text);
 			byte[] imageBytes = null;
 			if (image != null && !image.isRecycled()) {
@@ -465,13 +468,18 @@ public class DraftsStorage extends StorageManager.Storage<List<DraftsStorage.Pos
 			@Override
 			public CaptchaDraft createFromParcel(Parcel source) {
 				String captchaType = source.readString();
-				ChanPerformer.CaptchaState captchaState = (ChanPerformer.CaptchaState) source.readSerializable();
-				ChanPerformer.CaptchaData captchaData = (ChanPerformer.CaptchaData) source.readSerializable();
+				String captchaStateString = source.readString();
+				ChanPerformer.CaptchaState captchaState = captchaStateString != null
+						? ChanPerformer.CaptchaState.valueOf(captchaStateString) : null;
+				ChanPerformer.CaptchaData captchaData = source.readByte() != 0
+						? ChanPerformer.CaptchaData.CREATOR.createFromParcel(source) : null;
 				String loadedCaptchaType = source.readString();
-				ChanConfiguration.Captcha.Input loadedInput = (ChanConfiguration.Captcha.Input)
-						source.readSerializable();
-				ChanConfiguration.Captcha.Validity loadedValidity = (ChanConfiguration.Captcha.Validity)
-						source.readSerializable();
+				String loadedInputString = source.readString();
+				ChanConfiguration.Captcha.Input loadedInput = loadedInputString != null
+						? ChanConfiguration.Captcha.Input.valueOf(loadedInputString) : null;
+				String loadedValidityString = source.readString();
+				ChanConfiguration.Captcha.Validity loadedValidity = loadedValidityString != null
+						? ChanConfiguration.Captcha.Validity.valueOf(loadedValidityString) : null;
 				String text = source.readString();
 				byte[] imageBytes = source.createByteArray();
 				Bitmap image = imageBytes != null ? BitmapFactory

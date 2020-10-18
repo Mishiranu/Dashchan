@@ -6,8 +6,6 @@ import com.mishiranu.dashchan.content.model.PostNumber;
 
 @Public
 public final class RedirectException extends Exception {
-	private static final long serialVersionUID = 1L;
-
 	private final Uri uri;
 	private final String boardName;
 	private final String threadNumber;

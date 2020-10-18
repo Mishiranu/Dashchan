@@ -140,7 +140,7 @@ public class RecaptchaReader {
 					.addCookie(AdvancedPreferences.getGoogleCookie())
 					.addHeader("Accept-Language", acceptLanguage)
 					.addHeader("Referer", refererFinal)
-					.read().getString();
+					.perform().readString();
 			if (initialResponseText == null) {
 				throw new HttpException(ErrorItem.Type.INVALID_RESPONSE, false, false);
 			}
@@ -166,7 +166,7 @@ public class RecaptchaReader {
 							.addCookie(AdvancedPreferences.getGoogleCookie())
 							.addHeader("Accept-Language", acceptLanguage)
 							.addHeader("Referer", refererFinal)
-							.read().getString();
+							.perform().readString();
 					response = parseResponse2(responseText);
 				} else {
 					consumed[0] = true;
@@ -197,7 +197,7 @@ public class RecaptchaReader {
 									.setRedirectHandler(HttpRequest.RedirectHandler.STRICT)
 									.addHeader("Accept-Language", acceptLanguage)
 									.addHeader("Referer", referer)
-									.read().getString();
+									.perform().readString();
 							Matcher matcher = RECAPTCHA_RESULT_PATTERN.matcher(responseText);
 							if (matcher.find()) {
 								return matcher.group(1);
@@ -242,7 +242,7 @@ public class RecaptchaReader {
 		ChanLocator locator = ChanLocator.getDefault();
 		Uri uri = locator.buildQueryWithHost("www.google.com", "recaptcha/api2/payload", "c", challenge, "k", apiKey,
 				"id", StringUtils.emptyIfNull(id));
-		Bitmap image = new HttpRequest(uri, holder).read().getBitmap();
+		Bitmap image = new HttpRequest(uri, holder).perform().readBitmap();
 		if (transformBlackAndWhite) {
 			transformBlackAndWhite = GraphicsUtils.isBlackAndWhiteCaptchaImage(image);
 		}

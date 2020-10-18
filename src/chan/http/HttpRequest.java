@@ -3,16 +3,14 @@ package chan.http;
 import android.net.Uri;
 import android.util.Pair;
 import chan.annotation.Public;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Objects;
 
 @Public
 public final class HttpRequest {
 	@Public
-	public interface Preset {}
-
-	public interface HolderPreset extends Preset {
+	public interface Preset {
 		HttpHolder getHolder();
 	}
 
@@ -21,40 +19,39 @@ public final class HttpRequest {
 		int getReadTimeout();
 	}
 
-	public interface InputListenerPreset extends Preset {
-		HttpHolder.InputListener getInputListener();
-	}
-
 	public interface OutputListenerPreset extends Preset {
 		OutputListener getOutputListener();
 	}
 
-	public interface OutputStreamPreset extends Preset {
-		OutputStream getOutputStream();
+	public interface RangePreset extends Preset {
+		long getRangeStart();
+		long getRangeEnd();
 	}
 
 	public interface OutputListener {
 		void onOutputProgressChange(long progress, long progressMax);
 	}
 
+	public enum CheckRelayBlock {RESOLVE, CHECK, SKIP}
+
 	@Public
 	public interface RedirectHandler {
+		// TODO CHAN
+		// Remove state and methods from this enum after updating
+		// candydollchan
+		// Added: 18.10.20 01:35
 		@Public
 		enum Action {
 			@Public CANCEL,
 			@Public GET,
 			@Public RETRANSMIT;
 
-			private Uri redirectedUri;
+			Uri redirectedUri;
 
 			@Public
 			public Action setRedirectedUri(Uri redirectedUri) {
 				this.redirectedUri = redirectedUri;
 				return this;
-			}
-
-			public Uri getRedirectedUri() {
-				return redirectedUri;
 			}
 
 			private void reset() {
@@ -69,39 +66,75 @@ public final class HttpRequest {
 		}
 
 		@Public
+		Action onRedirect(HttpResponse response) throws HttpException;
+
+		// TODO CHAN
+		// Remove this method and simplify default redirect handlers after updating
+		// alterchan arhivach bunbunmaru candydollchan chaosach cirno dvach haibane kurisach nowere onechanca owlchan
+		// synch tiretirech yakujimoe
+		// Added: 18.10.20 01:50
+		@Public
 		Action onRedirectReached(int responseCode, Uri requestedUri, Uri redirectedUri, HttpHolder holder)
 				throws HttpException;
 
 		@Public
-		RedirectHandler NONE = (responseCode, requestedUri, redirectedUri, holder) -> Action.CANCEL;
+		RedirectHandler NONE = new RedirectHandler() {
+			@Override
+			public Action onRedirect(HttpResponse response) {
+				return onRedirectReached(response.getResponseCode(),
+						response.getRequestedUri(), response.getRedirectedUri(), null);
+			}
+
+			@Override
+			public Action onRedirectReached(int responseCode, Uri requestedUri, Uri redirectedUri, HttpHolder holder) {
+				return Action.CANCEL;
+			}
+		};
 
 		@Public
-		RedirectHandler BROWSER = (responseCode, requestedUri, redirectedUri, holder) -> Action.GET;
+		RedirectHandler BROWSER = new RedirectHandler() {
+			@Override
+			public Action onRedirect(HttpResponse response) {
+				return onRedirectReached(response.getResponseCode(),
+						response.getRequestedUri(), response.getRedirectedUri(), null);
+			}
+
+			@Override
+			public Action onRedirectReached(int responseCode, Uri requestedUri, Uri redirectedUri, HttpHolder holder) {
+				return Action.GET;
+			}
+		};
 
 		@Public
-		RedirectHandler STRICT = (responseCode, requestedUri, redirectedUri, holder) -> {
-			switch (responseCode) {
-				case HttpURLConnection.HTTP_MOVED_PERM:
-				case HttpURLConnection.HTTP_MOVED_TEMP: {
-					return Action.RETRANSMIT;
-				}
-				default: {
-					return Action.GET;
+		RedirectHandler STRICT = new RedirectHandler() {
+			@Override
+			public Action onRedirect(HttpResponse response) {
+				return onRedirectReached(response.getResponseCode(),
+						response.getRequestedUri(), response.getRedirectedUri(), null);
+			}
+
+			@Override
+			public Action onRedirectReached(int responseCode, Uri requestedUri, Uri redirectedUri, HttpHolder holder) {
+				switch (responseCode) {
+					case HttpURLConnection.HTTP_MOVED_PERM:
+					case HttpURLConnection.HTTP_MOVED_TEMP: {
+						return Action.RETRANSMIT;
+					}
+					default: {
+						return Action.GET;
+					}
 				}
 			}
 		};
 	}
 
-	final HttpHolder holder;
 	final Uri uri;
+	final HttpHolder holder;
+	private final HttpClient client;
 
-	static final int REQUEST_METHOD_GET = 0;
-	static final int REQUEST_METHOD_HEAD = 1;
-	static final int REQUEST_METHOD_POST = 2;
-	static final int REQUEST_METHOD_PUT = 3;
-	static final int REQUEST_METHOD_DELETE = 4;
+	enum RequestMethod {GET, HEAD, POST, PUT, DELETE}
 
-	int requestMethod = REQUEST_METHOD_GET;
+	RequestMethod requestMethod = RequestMethod.GET;
 	RequestEntity requestEntity;
 
 	boolean successOnly = true;
@@ -109,9 +142,9 @@ public final class HttpRequest {
 	HttpValidator validator;
 	boolean keepAlive = true;
 
-	HttpHolder.InputListener inputListener;
 	OutputListener outputListener;
-	OutputStream outputStream;
+	long rangeStart = -1;
+	long rangeEnd = -1;
 
 	int connectTimeout = 15000;
 	int readTimeout = 15000;
@@ -120,37 +153,39 @@ public final class HttpRequest {
 	ArrayList<Pair<String, String>> headers;
 	CookieBuilder cookieBuilder;
 
-	boolean checkRelayBlock = true;
+	CheckRelayBlock checkRelayBlock = CheckRelayBlock.RESOLVE;
 
 	// TODO CHAN
-	// Make this constructor private after updating
+	// Remove this constructor after updating
 	// allchan alphachan anonfm archiverbt arhivach chuckdfwk desustorage diochan exach fiftyfive fourchan fourplebs
 	// kropyvach kurisach nulltirech owlchan ponyach ponychan princessluna randomarchive sevenchan shanachan sharechan
 	// synch tiretirech tumbach uboachan wizardchan
 	// Added: 26.09.20 20:10
 	public HttpRequest(Uri uri, HttpHolder holder, Preset preset) {
-		if (holder == null && preset instanceof HolderPreset) {
-			holder = ((HolderPreset) preset).getHolder();
+		if (holder == null && preset != null) {
+			holder = preset.getHolder();
 		}
-		if (holder == null) {
-			throw new IllegalArgumentException("No HttpHolder provided");
-		}
+		Objects.requireNonNull(holder);
 		this.uri = uri;
 		this.holder = holder;
+		client = HttpClient.getInstance();
 		if (preset instanceof TimeoutsPreset) {
 			setTimeouts(((TimeoutsPreset) preset).getConnectTimeout(), ((TimeoutsPreset) preset).getReadTimeout());
 		}
 		if (preset instanceof OutputListenerPreset) {
 			setOutputListener(((OutputListenerPreset) preset).getOutputListener());
 		}
-		if (preset instanceof InputListenerPreset) {
-			setInputListener(((InputListenerPreset) preset).getInputListener());
-		}
-		if (preset instanceof OutputStreamPreset) {
-			setOutputStream(((OutputStreamPreset) preset).getOutputStream());
+		if (preset instanceof RangePreset) {
+			RangePreset rangePreset = (RangePreset) preset;
+			setRange(rangePreset.getRangeStart(), rangePreset.getRangeEnd());
 		}
 	}
 
+	// TODO CHAN
+	// Remove this constructor after updating
+	// alphachan alterchan brchan chaosach dobrochan exach fiftyfive fourchan fourplebs haibane kropyvach lainchan
+	// nulltirech onechanca synch twentyseven uboachan wizardchan
+	// Added: 18.10.20 18:58
 	@Public
 	public HttpRequest(Uri uri, HttpHolder holder) {
 		this(uri, holder, null);
@@ -161,7 +196,7 @@ public final class HttpRequest {
 		this(uri, null, preset);
 	}
 
-	private HttpRequest setMethod(int method, RequestEntity entity) {
+	private HttpRequest setMethod(RequestMethod method, RequestEntity entity) {
 		requestMethod = method;
 		requestEntity = entity;
 		return this;
@@ -169,27 +204,27 @@ public final class HttpRequest {
 
 	@Public
 	public HttpRequest setGetMethod() {
-		return setMethod(REQUEST_METHOD_GET, null);
+		return setMethod(RequestMethod.GET, null);
 	}
 
 	@Public
 	public HttpRequest setHeadMethod() {
-		return setMethod(REQUEST_METHOD_HEAD, null);
+		return setMethod(RequestMethod.HEAD, null);
 	}
 
 	@Public
 	public HttpRequest setPostMethod(RequestEntity entity) {
-		return setMethod(REQUEST_METHOD_POST, entity);
+		return setMethod(RequestMethod.POST, entity);
 	}
 
 	@Public
 	public HttpRequest setPutMethod(RequestEntity entity) {
-		return setMethod(REQUEST_METHOD_PUT, entity);
+		return setMethod(RequestMethod.PUT, entity);
 	}
 
 	@Public
 	public HttpRequest setDeleteMethod(RequestEntity entity) {
-		return setMethod(REQUEST_METHOD_DELETE, entity);
+		return setMethod(RequestMethod.DELETE, entity);
 	}
 
 	@Public
@@ -236,19 +271,14 @@ public final class HttpRequest {
 		return this;
 	}
 
-	public HttpRequest setInputListener(HttpHolder.InputListener listener) {
-		inputListener = listener;
-		return this;
-	}
-
 	public HttpRequest setOutputListener(OutputListener listener) {
 		outputListener = listener;
 		return this;
 	}
 
-	@Public
-	public HttpRequest setOutputStream(OutputStream outputStream) {
-		this.outputStream = outputStream;
+	public HttpRequest setRange(long start, long end) {
+		this.rangeStart = start;
+		this.rangeEnd = end;
 		return this;
 	}
 
@@ -312,7 +342,7 @@ public final class HttpRequest {
 		return this;
 	}
 
-	public HttpRequest setCheckRelayBlock(boolean checkRelayBlock) {
+	public HttpRequest setCheckRelayBlock(CheckRelayBlock checkRelayBlock) {
 		this.checkRelayBlock = checkRelayBlock;
 		return this;
 	}
@@ -325,9 +355,7 @@ public final class HttpRequest {
 		request.setRedirectHandler(redirectHandler);
 		request.setValidator(validator);
 		request.setKeepAlive(keepAlive);
-		request.setInputListener(inputListener);
 		request.setOutputListener(outputListener);
-		request.setOutputStream(outputStream);
 		request.setTimeouts(connectTimeout, readTimeout);
 		request.setDelay(delay);
 		if (headers != null) {
@@ -339,27 +367,33 @@ public final class HttpRequest {
 	}
 
 	@Public
-	public HttpHolder execute() throws HttpException {
-		try {
-			HttpClient.getInstance().execute(this);
-			return holder;
-		} catch (HttpException e) {
-			holder.disconnect();
-			throw e;
-		}
+	public HttpResponse perform() throws HttpException {
+		return client.execute(this);
 	}
 
+	// TODO CHAN
+	// Remove this method after updating
+	// alterchan bunbunmaru candydollchan chiochan chuckdfwk cirno diochan dobrochan kurisach nowere nulltirech owlchan
+	// ponyach ponychan sevenchan shanachan sharechan taima valkyria yakujimoe
+	// Added: 18.10.20 18:58
+	@Deprecated
+	@Public
+	public HttpHolder execute() throws HttpException {
+		perform();
+		return holder;
+	}
+
+	// TODO CHAN
+	// Remove this method after updating
+	// allchan alphachan alterchan anonfm archiverbt arhivach brchan bunbunmaru candydollchan chaosach chiochan
+	// chuckdfwk cirno dangeru desustorage diochan dobrochan dvach endchan exach fiftyfive fourchan fourplebs haibane
+	// horochan kropyvach kurisach lainchan lolifox nowere nulldvachin nulltirech onechanca owlchan ponyach ponychan
+	// princessluna randomarchive sevenchan shanachan sharechan synch taima tiretirech tumbach twentyseven uboachan
+	// valkyria wizardchan yakujimoe
+	// Added: 18.10.20 18:58
+	@Deprecated
 	@Public
 	public HttpResponse read() throws HttpException {
-		execute();
-		try {
-			if (requestMethod == REQUEST_METHOD_HEAD) {
-				return null;
-			}
-			return holder.read();
-		} catch (HttpException e) {
-			holder.disconnect();
-			throw e;
-		}
+		return perform();
 	}
 }

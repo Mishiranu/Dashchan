@@ -2,61 +2,78 @@ package chan.http;
 
 import android.net.Uri;
 import chan.annotation.Public;
-import com.mishiranu.dashchan.util.IOUtils;
+import com.mishiranu.dashchan.content.model.ErrorItem;
 import java.io.Closeable;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.Proxy;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 @Public
-public final class HttpHolder implements Closeable {
-	Uri requestedUri;
-	Proxy proxy;
-	String chanName;
-	boolean verifyCertificate;
-	int delay;
+public final class HttpHolder {
+	public interface Use extends Closeable {
+		void close();
+	}
 
-	private int attempt;
-	boolean forceGet = false;
-	boolean executed = false;
+	private Thread thread;
+	HttpSession session;
+	private ArrayList<HttpSession> sessions;
 
-	@Public
 	public HttpHolder() {}
 
-	void initRequest(Uri uri, Proxy proxy, String chanName, boolean verifyCertificate, int delay, int maxAttempts) {
-		requestedUri = uri;
-		this.proxy = proxy;
-		this.chanName = chanName;
-		this.verifyCertificate = verifyCertificate;
-		this.delay = delay;
-		attempt = maxAttempts;
-		forceGet = false;
+	void checkThread() {
+		synchronized (this) {
+			if (thread != Thread.currentThread()) {
+				throw new IllegalStateException("This action is allowed from the initial thread only");
+			}
+		}
 	}
 
-	boolean nextAttempt() {
-		return attempt-- > 0;
+	public Use use() {
+		// Lock for concurrent "thread" variable access
+		synchronized (this) {
+			if (thread != null) {
+				checkThread();
+				if (sessions == null) {
+					sessions = new ArrayList<>();
+				}
+				sessions.add(session);
+				if (session != null) {
+					session.disconnectAndClear();
+				}
+				session = null;
+				return () -> {
+					releaseSession();
+					session = sessions.remove(sessions.size() - 1);
+				};
+			} else {
+				thread = Thread.currentThread();
+				return this::releaseSession;
+			}
+		}
 	}
 
-	Uri redirectedUri;
-	HttpValidator validator;
-	private HttpResponse response;
-
-	private volatile Thread requestThread;
-	private volatile HttpURLConnection connection;
-	private volatile HttpURLConnection deadConnection;
-	private volatile Callback callback;
-	private volatile boolean disconnectRequested = false;
-	private volatile boolean interrupted = false;
-
-	InputListener inputListener;
-	OutputStream outputStream;
-
-	public interface InputListener {
-		void onInputProgressChange(long progress, long progressMax);
+	void initSession(HttpClient client, Uri uri, Proxy proxy,
+			String chanName, boolean verifyCertificate, int delay, int maxAttempts) {
+		checkThread();
+		if (session != null) {
+			session.disconnectAndClear();
+		}
+		session = new HttpSession(this, client, proxy, chanName, verifyCertificate, delay);
+		session.requestedUri = uri;
+		session.attempt = maxAttempts;
+		session.forceGet = false;
 	}
+
+	private void releaseSession() {
+		checkThread();
+		if (session != null) {
+			session.disconnectAndClear();
+		}
+	}
+
+	volatile boolean interrupted = false;
 
 	public interface Callback {
 		void onDisconnectRequested();
@@ -64,190 +81,111 @@ public final class HttpHolder implements Closeable {
 
 	public void interrupt() {
 		interrupted = true;
-		disconnect();
 	}
 
-	@Override
-	public void close() {
-		if (requestThread == Thread.currentThread() && executed) {
-			disconnectAndClear();
-			response = null;
-		}
-	}
-
+	// TODO CHAN
+	// Remove this method after updating
+	// alterchan bunbunmaru candydollchan chiochan chuckdfwk cirno diochan dobrochan kurisach nowere nulltirech owlchan
+	// ponyach ponychan sevenchan shanachan sharechan taima valkyria yakujimoe
+	// Added: 18.10.20 19:08
+	@Deprecated
 	@Public
 	public void disconnect() {
-		disconnectRequested = true;
-		if (requestThread == Thread.currentThread()) {
-			disconnectAndClear();
-		}
-		response = null;
-	}
-
-	void setConnection(HttpURLConnection connection, Callback callback, boolean notifyClient,
-			InputListener inputListener, OutputStream outputStream) throws HttpClient.DisconnectedIOException {
-		disconnectRequested = false;
-		requestThread = Thread.currentThread();
-		this.connection = connection;
-		this.callback = callback;
-		this.inputListener = inputListener;
-		this.outputStream = outputStream;
-		redirectedUri = null;
-		validator = null;
-		response = null;
-		if (interrupted) {
-			this.connection = null;
-			this.callback = null;
-			this.inputListener = null;
-			this.outputStream = null;
-			throw new HttpClient.DisconnectedIOException();
-		}
-		if (notifyClient) {
-			HttpClient.getInstance().onConnect(chanName, connection, delay);
+		checkThread();
+		if (session != null) {
+			session.disconnectAndClear();
 		}
 	}
 
-	void setConnection(HttpURLConnection connection, InputListener inputListener, OutputStream outputStream)
-			throws HttpClient.DisconnectedIOException {
-		setConnection(connection, null, true, inputListener, outputStream);
-	}
-
-	void setCallback(Callback callback) throws HttpClient.DisconnectedIOException {
-		setConnection(null, callback, false, null, null);
-	}
-
-	HttpURLConnection getConnection() throws HttpClient.DisconnectedIOException {
-		HttpURLConnection connection = this.connection;
-		if (connection == null) {
-			throw new HttpClient.DisconnectedIOException();
-		}
-		return connection;
-	}
-
-	void checkDisconnected() throws HttpClient.DisconnectedIOException {
-		checkDisconnected(null);
-	}
-
-	void checkDisconnected(Closeable closeable) throws HttpClient.DisconnectedIOException {
-		if (disconnectRequested) {
-			IOUtils.close(closeable);
-			throw new HttpClient.DisconnectedIOException();
-		}
-	}
-
-	void disconnectAndClear() {
-		HttpURLConnection connection = this.connection;
-		this.connection = null;
-		Callback callback = this.callback;
-		this.callback = null;
-		inputListener = null;
-		outputStream = null;
-		executed = false;
-		if (connection != null) {
-			connection.disconnect();
-			deadConnection = connection;
-			HttpClient.getInstance().onDisconnect(connection);
-		}
-		if (callback != null) {
-			callback.onDisconnectRequested();
-		}
-	}
-
+	// TODO CHAN
+	// Remove this method after updating
+	// alterchan bunbunmaru candydollchan chiochan chuckdfwk cirno diochan dobrochan kurisach nowere nulltirech owlchan
+	// ponyach ponychan sevenchan shanachan sharechan taima valkyria yakujimoe
+	// Added: 18.10.20 19:08
+	@Deprecated
 	@Public
 	public HttpResponse read() throws HttpException {
-		return read(false);
-	}
-
-	public HttpResponse readDirect() throws HttpException {
-		return read(true);
-	}
-
-	private HttpResponse read(boolean direct) throws HttpException {
-		HttpResponse response = this.response;
-		if (response != null) {
-			return response;
+		checkThread();
+		if (session != null && session.response != null) {
+			return session.response;
 		}
-		response = HttpClient.getInstance().read(this, direct);
-		this.response = response;
-		return response;
+		throw new HttpException(ErrorItem.Type.DOWNLOAD, false, false);
 	}
 
+	// TODO CHAN
+	// Remove this method after updating
+	// archiverbt arhivach chiochan chuckdfwk desustorage exach fiftyfive fourplebs horochan nulltirech onechanca
+	// ponychan tiretirech
+	// Added: 18.10.20 19:08
+	@Deprecated
 	@Public
 	public void checkResponseCode() throws HttpException {
-		HttpClient.getInstance().checkResponseCode(this);
-	}
-
-	private HttpURLConnection getConnectionForHeaders() {
-		HttpURLConnection connection = this.connection;
-		if (connection == null) {
-			connection = deadConnection;
+		checkThread();
+		if (session != null) {
+			session.checkResponseCode();
 		}
-		return connection;
 	}
 
+	// TODO CHAN
+	// Remove this method after updating
+	// alphachan alterchan anonfm archiverbt arhivach bunbunmaru candydollchan chiochan chuckdfwk cirno desustorage
+	// diochan dobrochan exach fiftyfive fourplebs horochan kurisach nowere nulltirech onechanca owlchan ponyach
+	// ponychan sevenchan shanachan sharechan taima tiretirech valkyria yakujimoe
+	// Added: 18.10.20 19:08
+	@Deprecated
 	@Public
 	public int getResponseCode() {
-		HttpURLConnection connection = getConnectionForHeaders();
-		if (connection != null) {
-			try {
-				return connection.getResponseCode();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		return -1;
+		checkThread();
+		return session != null ? session.getResponseCode() : -1;
 	}
 
-	@Public
-	public String getResponseMessage() {
-		HttpURLConnection connection = getConnectionForHeaders();
-		if (connection != null) {
-			try {
-				return connection.getResponseMessage();
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		return null;
-	}
-
+	// TODO CHAN
+	// Remove this method after updating
+	// alphachan alterchan anonfm bunbunmaru candydollchan chiochan chuckdfwk cirno diochan dobrochan exach kurisach
+	// nowere onechanca owlchan ponyach ponychan sharechan yakujimoe
+	// Added: 18.10.20 19:08
+	@Deprecated
 	@Public
 	public Uri getRedirectedUri() {
-		return redirectedUri;
+		checkThread();
+		return session != null ? session.redirectedUri : null;
 	}
 
+	// TODO CHAN
+	// Remove this method after updating
+	// alterchan anonfm fourchan wizardchan
+	// Added: 18.10.20 19:08
+	@Deprecated
 	@Public
 	public Map<String, List<String>> getHeaderFields() {
-		HttpURLConnection connection = getConnectionForHeaders();
-		return connection != null ? connection.getHeaderFields() : null;
+		checkThread();
+		return session != null ? session.getHeaderFields() : Collections.emptyMap();
 	}
 
+	// TODO CHAN
+	// Remove this method after updating
+	// alphachan alterchan arhivach chaosach chiochan chuckdfwk dobrochan dvach endchan exach haibane kurisach lolifox
+	// onechanca ponyach
+	// Added: 18.10.20 19:08
+	@Deprecated
 	@Public
 	public String getCookieValue(String name) {
-		Map<String, List<String>> headers = getHeaderFields();
-		if (headers == null) {
-			return null;
-		}
-		String start = name + "=";
-		List<String> cookies = headers.get("Set-Cookie");
-		if (cookies != null) {
-			for (String cookie : cookies) {
-				if (cookie.startsWith(start)) {
-					int startIndex = start.length();
-					int endIndex = cookie.indexOf(';');
-					if (endIndex >= 0) {
-						return cookie.substring(startIndex, endIndex);
-					} else {
-						return cookie.substring(startIndex);
-					}
-				}
-			}
-		}
-		return null;
+		checkThread();
+		return session != null ? session.getCookieValue(name) : null;
 	}
 
+	// TODO CHAN
+	// Remove this method after updating
+	// fiftyfive fourchan
+	// Added: 18.10.20 19:08
+	@Deprecated
 	@Public
 	public HttpValidator getValidator() {
-		return validator;
+		return extractValidator();
+	}
+
+	public HttpValidator extractValidator() {
+		checkThread();
+		return session != null && session.response != null ? session.response.getValidator() : null;
 	}
 }

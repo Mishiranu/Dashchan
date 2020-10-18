@@ -181,7 +181,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 	}
 
 	public interface Callback {
-		public void onReadUpdateComplete(UpdateDataMap updateDataMap, ErrorItem errorItem);
+		void onReadUpdateComplete(UpdateDataMap updateDataMap, ErrorItem errorItem);
 	}
 
 	public ReadUpdateTask(Context context, Callback callback) {
@@ -264,8 +264,8 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 
 	private static class Response {
 		public Uri uri;
-		public JSONObject jsonObject;
-		public HashSet<String> extensionNames;
+		public final JSONObject jsonObject;
+		public final HashSet<String> extensionNames;
 
 		public Response(Uri uri, JSONObject jsonObject, HashSet<String> extensionNames) {
 			this.uri = uri;
@@ -323,10 +323,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 						response.extensionNames.addAll(entry.getValue());
 						break;
 					}
-					JSONObject jsonObject = new HttpRequest(uri, holder).read().getJsonObject();
-					if (jsonObject == null) {
-						throw new JSONException("Not a JSON object");
-					}
+					JSONObject jsonObject = new JSONObject(new HttpRequest(uri, holder).perform().readString());
 					String redirect = CommonUtils.optJsonString(jsonObject, "redirect");
 					if (redirect != null) {
 						uri = normalizeUri(Uri.parse(redirect), uri);

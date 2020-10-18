@@ -12,7 +12,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.media.CachingInputStream;
 import com.mishiranu.dashchan.util.IOUtils;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 
 public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
 	private static final int CONNECT_TIMEOUT = 15000;
@@ -26,9 +26,9 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
 	private ErrorItem errorItem;
 
 	public interface Callback {
-		public void onReadVideoProgressUpdate(long progress, long progressMax);
-		public void onReadVideoSuccess(CachingInputStream inputStream);
-		public void onReadVideoFail(ErrorItem errorItem);
+		void onReadVideoProgressUpdate(long progress, long progressMax);
+		void onReadVideoSuccess(CachingInputStream inputStream);
+		void onReadVideoFail(ErrorItem errorItem);
 	}
 
 	private final TimedProgressHandler progressHandler = new TimedProgressHandler() {
@@ -49,25 +49,22 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
 	protected Boolean doInBackground(HttpHolder holder, Void... params) {
 		try {
 			ChanPerformer.ReadContentResult result = ChanPerformer.get(chanName).safe()
-					.onReadContent(new ChanPerformer.ReadContentData(uri, CONNECT_TIMEOUT, READ_TIMEOUT, holder,
-					progressHandler, inputStream.getOutputStream()));
+					.onReadContent(new ChanPerformer.ReadContentData(uri,
+							CONNECT_TIMEOUT, READ_TIMEOUT, holder, -1, -1));
 			HttpResponse response = result != null ? result.response : null;
-			if (response != null) {
-				byte[] data = response.getBytes();
-				if (data == null) {
-					errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
-					return false;
-				}
-				OutputStream output = inputStream.getOutputStream();
-				try {
-					output.write(data);
-				} catch (IOException e) {
-					// Ignore exception
-				} finally {
-					IOUtils.close(output);
-				}
+			if (response == null) {
+				errorItem = new ErrorItem(ErrorItem.Type.DOWNLOAD);
+				return false;
 			}
-			return true;
+			progressHandler.setInputProgressMax(response.getLength());
+			try (InputStream input = response.open()) {
+				IOUtils.copyStream(input, inputStream.getOutputStream(), progressHandler);
+				return true;
+			} catch (IOException e) {
+				throw response.fail(e);
+			} finally {
+				response.cleanupAndDisconnect();
+			}
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {
 			errorItem = e.getErrorItemAndHandle();
 			return false;

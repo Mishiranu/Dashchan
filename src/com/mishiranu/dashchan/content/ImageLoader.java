@@ -17,9 +17,11 @@ import chan.content.ExtensionException;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
+import chan.http.HttpResponse;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.HttpHolderTask;
+import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -69,7 +71,7 @@ public class ImageLoader {
 		public final Uri uri;
 		public final String chanName;
 		public final String key;
-		public boolean fromCacheOnly;
+		public final boolean fromCacheOnly;
 
 		public final HashSet<TaskCallback> callbacks = new HashSet<>();
 		private final long created = SystemClock.elapsedRealtime();
@@ -149,6 +151,7 @@ public class ImageLoader {
 							}
 						}
 					} else {
+						HttpResponse response;
 						String chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
 						if (chanName == null) {
 							chanName = this.chanName;
@@ -158,15 +161,25 @@ public class ImageLoader {
 							try {
 								ChanPerformer.ReadContentResult result = performer.safe()
 										.onReadContent(new ChanPerformer.ReadContentData(uri,
-												CONNECT_TIMEOUT, READ_TIMEOUT, holder, null, null));
-								bitmap = result != null && result.response != null ? result.response.getBitmap() : null;
+												CONNECT_TIMEOUT, READ_TIMEOUT, holder, -1, -1));
+								response = result != null ? result.response : null;
 							} catch (ExtensionException e) {
 								e.getErrorItemAndHandle();
 								return null;
 							}
 						} else {
-							bitmap = new HttpRequest(uri, holder)
-									.setTimeouts(CONNECT_TIMEOUT, READ_TIMEOUT).read().getBitmap();
+							response = new HttpRequest(uri, holder)
+									.setTimeouts(CONNECT_TIMEOUT, READ_TIMEOUT).perform();
+						}
+						if (response != null) {
+							try {
+								bitmap = response.readBitmap();
+							} finally {
+								response.cleanupAndDisconnect();
+							}
+						}
+						if (bitmap == null) {
+							throw new HttpException(ErrorItem.Type.DOWNLOAD, false, false);
 						}
 					}
 					if (isCancelled()) {

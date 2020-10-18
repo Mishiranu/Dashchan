@@ -19,6 +19,10 @@ public class SSLSocketWrapper extends SSLSocket {
 		wrapped = socket;
 	}
 
+	public SSLSocket getRealSocket() {
+		return wrapped instanceof SSLSocketWrapper ? ((SSLSocketWrapper) wrapped).getRealSocket() : wrapped;
+	}
+
 	@Override
 	public void addHandshakeCompletedListener(HandshakeCompletedListener listener) {
 		wrapped.addHandshakeCompletedListener(listener);

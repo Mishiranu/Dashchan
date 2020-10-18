@@ -266,7 +266,7 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 		}
 	}
 
-	private static class ReadChangelogTask extends AsyncManager.SimpleTask<Void, Void, Boolean> {
+	private static class ReadChangelogTask extends AsyncManager.SimpleTask<Boolean> {
 		private static final Pattern PATTERN_TITLE = Pattern.compile("<h1.*?>Changelog (.*)</h1>");
 
 		private final HttpHolder holder = new HttpHolder();
@@ -280,43 +280,43 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 			configuration = context.getResources().getConfiguration();
 		}
 
-		private String downloadChangelog(String suffix) throws HttpException {
+		private static String downloadChangelog(HttpHolder holder, String suffix) throws HttpException {
 			Uri uri = ChanLocator.getDefault().buildPathWithHost("github.com",
 					"Mishiranu", "Dashchan", "wiki", "Changelog-" + suffix);
-			try (HttpHolder holder = this.holder) {
-				String response = new HttpRequest(uri, holder).setSuccessOnly(false).read().getString();
-				Matcher matcher = PATTERN_TITLE.matcher(StringUtils.emptyIfNull(response));
-				if (matcher.find()) {
-					String titleSuffix = matcher.group(1);
-					if (titleSuffix.replace(' ', '-').toLowerCase(Locale.US).equals(suffix.toLowerCase(Locale.US))) {
-						return response;
-					}
+			String response = new HttpRequest(uri, holder).setSuccessOnly(false).perform().readString();
+			Matcher matcher = PATTERN_TITLE.matcher(StringUtils.emptyIfNull(response));
+			if (matcher.find()) {
+				String titleSuffix = matcher.group(1);
+				if (titleSuffix.replace(' ', '-').toLowerCase(Locale.US).equals(suffix.toLowerCase(Locale.US))) {
+					return response;
 				}
-				return null;
 			}
+			return null;
 		}
 
 		@Override
-		public Boolean doInBackground(Void... params) {
+		public Boolean doInBackground() {
 			try {
 				String result = null;
-				for (Locale locale : LocaleManager.getInstance().getLocales(configuration)) {
-					String language = locale.getLanguage();
-					String country = locale.getCountry();
-					if (!StringUtils.isEmpty(country)) {
-						result = downloadChangelog(language.toUpperCase(Locale.US) +
-								"-" + country.toUpperCase(Locale.US));
+				try (HttpHolder.Use ignored = holder.use()) {
+					for (Locale locale : LocaleManager.getInstance().getLocales(configuration)) {
+						String language = locale.getLanguage();
+						String country = locale.getCountry();
+						if (!StringUtils.isEmpty(country)) {
+							result = downloadChangelog(holder, language.toUpperCase(Locale.US) +
+									"-" + country.toUpperCase(Locale.US));
+							if (result != null) {
+								break;
+							}
+						}
+						result = downloadChangelog(holder, language.toUpperCase(Locale.US));
 						if (result != null) {
 							break;
 						}
 					}
-					result = downloadChangelog(language.toUpperCase(Locale.US));
-					if (result != null) {
-						break;
+					if (result == null) {
+						result = downloadChangelog(holder, Locale.US.getLanguage().toUpperCase(Locale.US));
 					}
-				}
-				if (result == null) {
-					result = downloadChangelog(Locale.US.getLanguage().toUpperCase(Locale.US));
 				}
 				if (result != null) {
 					result = ChangelogGroupCallback.parse(result);
@@ -330,10 +330,7 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 				}
 			} catch (HttpException e) {
 				errorItem = e.getErrorItemAndHandle();
-				holder.disconnect();
 				return false;
-			} finally {
-				holder.close();
 			}
 		}
 

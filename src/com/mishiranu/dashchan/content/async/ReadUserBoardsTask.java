@@ -17,8 +17,8 @@ public class ReadUserBoardsTask extends HttpHolderTask<Void, Long, Boolean> {
 	private ErrorItem errorItem;
 
 	public interface Callback {
-		public void onReadUserBoardsSuccess(Board[] boards);
-		public void onReadUserBoardsFail(ErrorItem errorItem);
+		void onReadUserBoardsSuccess(Board[] boards);
+		void onReadUserBoardsFail(ErrorItem errorItem);
 	}
 
 	public ReadUserBoardsTask(String chanName, Callback callback) {

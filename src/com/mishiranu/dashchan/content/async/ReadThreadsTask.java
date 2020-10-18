@@ -87,7 +87,7 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
 			}
 			this.postItems = postItems;
 			this.boardSpeed = result.boardSpeed;
-			this.resultValidator = result.validator != null ? result.validator : holder.getValidator();
+			this.resultValidator = result.validator != null ? result.validator : holder.extractValidator();
 			hiddenThreads = CommonDatabase.getInstance().getThreads()
 					.getFlags(chanName, boardName, threadNumbers);
 			return true;

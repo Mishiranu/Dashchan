@@ -423,7 +423,7 @@ public class ChanFragment extends PreferenceFragment {
 		}
 	}
 
-	private static class CheckAuthorizationTask extends AsyncManager.SimpleTask<Void, Void, Void> {
+	private static class CheckAuthorizationTask extends AsyncManager.SimpleTask<Void> {
 		private final HttpHolder holder = new HttpHolder();
 
 		private final String chanName;
@@ -441,8 +441,8 @@ public class ChanFragment extends PreferenceFragment {
 		}
 
 		@Override
-		public Void doInBackground(Void... params) {
-			try (HttpHolder holder = this.holder) {
+		public Void doInBackground() {
+			try (HttpHolder.Use ignored = holder.use()) {
 				ChanPerformer performer = ChanPerformer.get(chanName);
 				int type = -1;
 				switch (authorizationType) {
@@ -455,8 +455,9 @@ public class ChanFragment extends PreferenceFragment {
 						break;
 					}
 				}
-				ChanPerformer.CheckAuthorizationResult result = performer.safe().onCheckAuthorization
-						(new ChanPerformer.CheckAuthorizationData(type, authorizationData, holder));
+				ChanPerformer.CheckAuthorizationResult result = performer.safe()
+						.onCheckAuthorization(new ChanPerformer
+								.CheckAuthorizationData(type, authorizationData, holder));
 				valid = result != null && result.success;
 			} catch (ExtensionException | HttpException | InvalidResponseException e) {
 				errorItem = e.getErrorItemAndHandle();

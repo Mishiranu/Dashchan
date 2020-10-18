@@ -2,6 +2,8 @@ package chan.content;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Pair;
 import androidx.annotation.NonNull;
 import chan.annotation.Extendable;
@@ -28,14 +30,13 @@ import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Extendable
 public class ChanPerformer implements ChanManager.Linked {
@@ -128,7 +129,7 @@ public class ChanPerformer implements ChanManager.Linked {
 	@SuppressWarnings("RedundantThrows")
 	@Extendable
 	protected ReadContentResult onReadContent(ReadContentData data) throws HttpException, InvalidResponseException {
-		return new ReadContentResult(new HttpRequest(data.uri, data).read());
+		return new ReadContentResult(new HttpRequest(data.uri, data.direct).perform());
 	}
 
 	@SuppressWarnings("RedundantThrows")
@@ -173,12 +174,12 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	@Public
-	public static class ReadThreadsData implements HttpRequest.HolderPreset {
+	public static class ReadThreadsData implements HttpRequest.Preset {
 		@Public public static final int PAGE_NUMBER_CATALOG = -1;
 
 		@Public public final String boardName;
 		@Public public final int pageNumber;
-		@Public public final HttpHolder holder;
+		public final HttpHolder holder;
 		@Public public final HttpValidator validator;
 
 		public ReadThreadsData(String boardName, int pageNumber, HttpHolder holder, HttpValidator validator) {
@@ -275,13 +276,13 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	@Public
-	public static class ReadPostsData implements HttpRequest.HolderPreset {
+	public static class ReadPostsData implements HttpRequest.Preset {
 		@Public public final String boardName;
 		@Public public final String threadNumber;
 		@Public public final String lastPostNumber;
 		@Public public final boolean partialThreadLoading;
 		@Public public final Posts cachedPosts;
-		@Public public final HttpHolder holder;
+		public final HttpHolder holder;
 		@Public public final HttpValidator validator;
 
 		public ReadPostsData(String chanName, String boardName, String threadNumber,
@@ -354,10 +355,10 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	@Public
-	public static class ReadSinglePostData implements HttpRequest.HolderPreset {
+	public static class ReadSinglePostData implements HttpRequest.Preset {
 		@Public public final String boardName;
 		@Public public final String postNumber;
-		@Public public final HttpHolder holder;
+		public final HttpHolder holder;
 
 		public ReadSinglePostData(String boardName, String postNumber, HttpHolder holder) {
 			this.boardName = boardName;
@@ -382,11 +383,11 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	@Public
-	public static class ReadSearchPostsData implements HttpRequest.HolderPreset {
+	public static class ReadSearchPostsData implements HttpRequest.Preset {
 		@Public public final String boardName;
 		@Public public final String searchQuery;
 		@Public public final int pageNumber;
-		@Public public final HttpHolder holder;
+		public final HttpHolder holder;
 
 		public ReadSearchPostsData(String boardName, String searchQuery, int pageNumber, HttpHolder holder) {
 			this.boardName = boardName;
@@ -426,8 +427,8 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	@Public
-	public static final class ReadBoardsData implements HttpRequest.HolderPreset {
-		@Public public final HttpHolder holder;
+	public static final class ReadBoardsData implements HttpRequest.Preset {
+		public final HttpHolder holder;
 
 		public ReadBoardsData(HttpHolder holder) {
 			this.holder = holder;
@@ -465,8 +466,8 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	@Public
-	public static class ReadUserBoardsData implements HttpRequest.HolderPreset {
-		@Public public final HttpHolder holder;
+	public static class ReadUserBoardsData implements HttpRequest.Preset {
+		public final HttpHolder holder;
 
 		public ReadUserBoardsData(HttpHolder holder) {
 			this.holder = holder;
@@ -494,13 +495,13 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	@Public
-	public static class ReadThreadSummariesData implements HttpRequest.HolderPreset {
+	public static class ReadThreadSummariesData implements HttpRequest.Preset {
 		@Public public static final int TYPE_ARCHIVED_THREADS = 0;
 
 		@Public public final String boardName;
 		@Public public final int pageNumber;
 		@Public public final int type;
-		@Public public final HttpHolder holder;
+		public final HttpHolder holder;
 
 		public ReadThreadSummariesData(String boardName, int pageNumber, int type, HttpHolder holder) {
 			this.boardName = boardName;
@@ -531,12 +532,12 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	@Public
-	public static class ReadPostsCountData implements HttpRequest.HolderPreset, HttpRequest.TimeoutsPreset {
+	public static class ReadPostsCountData implements HttpRequest.TimeoutsPreset {
 		@Public public final String boardName;
 		@Public public final String threadNumber;
 		public final int connectTimeout;
 		public final int readTimeout;
-		@Public public final HttpHolder holder;
+		public final HttpHolder holder;
 		@Public public final HttpValidator validator;
 
 		public ReadPostsCountData(String boardName, String threadNumber, int connectTimeout, int readTimeout,
@@ -582,24 +583,20 @@ public class ChanPerformer implements ChanManager.Linked {
 		}
 	}
 
-	@Public
-	public static class ReadContentData implements HttpRequest.HolderPreset, HttpRequest.TimeoutsPreset,
-			HttpRequest.InputListenerPreset, HttpRequest.OutputStreamPreset {
-		@Public public final Uri uri;
+	private static class ReadContentDirectPreset implements HttpRequest.TimeoutsPreset, HttpRequest.RangePreset {
 		public final int connectTimeout;
 		public final int readTimeout;
-		@Public public final HttpHolder holder;
-		public final HttpHolder.InputListener listener;
-		public final OutputStream outputStream;
+		public final HttpHolder holder;
+		public final long rangeStart;
+		public final long rangeEnd;
 
-		public ReadContentData(Uri uri, int connectTimeout, int readTimeout, HttpHolder holder,
-				HttpHolder.InputListener listener, OutputStream outputStream) {
-			this.uri = uri;
+		private ReadContentDirectPreset(int connectTimeout, int readTimeout, HttpHolder holder,
+				long rangeStart, long rangeEnd) {
+			this.holder = holder;
 			this.connectTimeout = connectTimeout;
 			this.readTimeout = readTimeout;
-			this.holder = holder;
-			this.listener = listener;
-			this.outputStream = outputStream;
+			this.rangeStart = rangeStart;
+			this.rangeEnd = rangeEnd;
 		}
 
 		@Override
@@ -618,13 +615,46 @@ public class ChanPerformer implements ChanManager.Linked {
 		}
 
 		@Override
-		public HttpHolder.InputListener getInputListener() {
-			return listener;
+		public long getRangeStart() {
+			return rangeStart;
 		}
 
 		@Override
-		public OutputStream getOutputStream() {
-			return outputStream;
+		public long getRangeEnd() {
+			return rangeEnd;
+		}
+	}
+
+	@Public
+	public static class ReadContentData implements HttpRequest.TimeoutsPreset {
+		@Public public final Uri uri;
+		// TODO CHAN
+		// Remove this field after updating
+		// arhivach fourchan fourplebs
+		// Added: 18.10.20 19:08
+		public final HttpHolder holder;
+		@Public public final HttpRequest.Preset direct;
+
+		public ReadContentData(Uri uri, int connectTimeout, int readTimeout, HttpHolder holder,
+				long rangeStart, long rangeEnd) {
+			this.uri = uri;
+			this.holder = holder;
+			direct = new ReadContentDirectPreset(connectTimeout, readTimeout, holder, rangeStart, rangeEnd);
+		}
+
+		@Override
+		public HttpHolder getHolder() {
+			return holder;
+		}
+
+		@Override
+		public int getConnectTimeout() {
+			return ((ReadContentDirectPreset) direct).getConnectTimeout();
+		}
+
+		@Override
+		public int getReadTimeout() {
+			return ((ReadContentDirectPreset) direct).getReadTimeout();
 		}
 	}
 
@@ -639,13 +669,13 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	@Public
-	public static class CheckAuthorizationData implements HttpRequest.HolderPreset {
+	public static class CheckAuthorizationData implements HttpRequest.Preset {
 		@Public public static final int TYPE_CAPTCHA_PASS = 0;
 		@Public public static final int TYPE_USER_AUTHORIZATION = 1;
 
 		@Public public final int type;
 		@Public public final String[] authorizationData;
-		@Public public final HttpHolder holder;
+		public final HttpHolder holder;
 
 		public CheckAuthorizationData(int type, String[] authorizationData, HttpHolder holder) {
 			this.type = type;
@@ -670,14 +700,14 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	@Public
-	public static class ReadCaptchaData implements HttpRequest.HolderPreset {
+	public static class ReadCaptchaData implements HttpRequest.Preset {
 		@Public public final String captchaType;
 		@Public public final String[] captchaPass;
 		@Public public final boolean mayShowLoadButton;
 		@Public public final String requirement;
 		@Public public final String boardName;
 		@Public public final String threadNumber;
-		@Public public final HttpHolder holder;
+		public final HttpHolder holder;
 
 		public ReadCaptchaData(String captchaType, String[] captchaPass, boolean mayShowLoadButton,
 				String requirement, String boardName, String threadNumber, HttpHolder holder) {
@@ -753,15 +783,22 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	@Public
-	public static class CaptchaData implements Serializable {
-		private static final long serialVersionUID = 1L;
-
+	public static class CaptchaData implements Parcelable {
 		@Public public static final String CHALLENGE = "challenge";
 		@Public public static final String INPUT = "input";
 		@Public public static final String API_KEY = "api_key";
 		@Public public static final String REFERER = "referer";
 
-		private final HashMap<String, String> data = new HashMap<>();
+		private final Map<String, String> data;
+
+		@Public
+		public CaptchaData() {
+			this(new HashMap<>());
+		}
+
+		private CaptchaData(Map<String, String> data) {
+			this.data = data;
+		}
 
 		@Public
 		public void put(String key, String value) {
@@ -772,11 +809,41 @@ public class ChanPerformer implements ChanManager.Linked {
 		public String get(String key) {
 			return data.get(key);
 		}
+
+		@Override
+		public int describeContents() {
+			return 0;
+		}
+
+		@Override
+		public void writeToParcel(Parcel dest, int flags) {
+			dest.writeInt(data.size());
+			for (HashMap.Entry<String, String> entry : data.entrySet()) {
+				dest.writeString(entry.getKey());
+				dest.writeString(entry.getValue());
+			}
+		}
+
+		public static final Creator<CaptchaData> CREATOR = new Creator<CaptchaData>() {
+			@Override
+			public CaptchaData createFromParcel(Parcel source) {
+				int count = source.readInt();
+				HashMap<String, String> data = new HashMap<>(count);
+				for (int i = 0; i < count; i++) {
+					data.put(source.readString(), source.readString());
+				}
+				return new CaptchaData(data);
+			}
+
+			@Override
+			public CaptchaData[] newArray(int size) {
+				return new CaptchaData[size];
+			}
+		};
 	}
 
 	@Public
-	public static class SendPostData implements HttpRequest.HolderPreset, HttpRequest.TimeoutsPreset,
-			HttpRequest.OutputListenerPreset {
+	public static class SendPostData implements HttpRequest.TimeoutsPreset, HttpRequest.OutputListenerPreset {
 		@Public public final String boardName;
 		@Public public final String threadNumber;
 
@@ -798,7 +865,7 @@ public class ChanPerformer implements ChanManager.Linked {
 
 		public final int connectTimeout;
 		public final int readTimeout;
-		@Public public HttpHolder holder;
+		public HttpHolder holder;
 		public HttpRequest.OutputListener listener;
 
 		@Public
@@ -1020,13 +1087,13 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	@Public
-	public static class SendDeletePostsData implements HttpRequest.HolderPreset {
+	public static class SendDeletePostsData implements HttpRequest.Preset {
 		@Public public final String boardName;
 		@Public public final String threadNumber;
 		@Public public final List<String> postNumbers;
 		@Public public final String password;
 		@Public public final boolean optionFilesOnly;
-		@Public public final HttpHolder holder;
+		public final HttpHolder holder;
 
 		public SendDeletePostsData(String boardName, String threadNumber, List<String> postNumbers, String password,
 				boolean optionFilesOnly, HttpHolder holder) {
@@ -1051,14 +1118,14 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	@Public
-	public static class SendReportPostsData implements HttpRequest.HolderPreset {
+	public static class SendReportPostsData implements HttpRequest.Preset {
 		@Public public final String boardName;
 		@Public public final String threadNumber;
 		@Public public final List<String> postNumbers;
 		@Public public final String type;
 		@Public public final List<String> options;
 		@Public public final String comment;
-		@Public public final HttpHolder holder;
+		public final HttpHolder holder;
 
 		public SendReportPostsData(String boardName, String threadNumber, List<String> postNumbers, String type,
 				List<String> options, String comment, HttpHolder holder) {
@@ -1084,12 +1151,12 @@ public class ChanPerformer implements ChanManager.Linked {
 	}
 
 	@Public
-	public static class SendAddToArchiveData implements HttpRequest.HolderPreset {
+	public static class SendAddToArchiveData implements HttpRequest.Preset {
 		@Public public final Uri uri;
 		@Public public final String boardName;
 		@Public public final String threadNumber;
 		@Public public final List<String> options;
-		@Public public final HttpHolder holder;
+		public final HttpHolder holder;
 
 		public SendAddToArchiveData(Uri uri, String boardName, String threadNumber, List<String> options,
 				HttpHolder holder) {

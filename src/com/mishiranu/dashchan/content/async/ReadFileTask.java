@@ -6,15 +6,15 @@ import chan.content.ChanManager;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
-import chan.http.HttpClient;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
+import chan.http.HttpResponse;
 import chan.util.DataFile;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.IOUtils;
-import java.io.ByteArrayInputStream;
+import com.mishiranu.dashchan.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -97,75 +97,85 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 
 	@Override
 	protected Boolean doInBackground(HttpHolder holder, String... params) {
+		boolean success = false;
 		try {
 			loadingStarted = true;
 			// noinspection StatementWithEmptyBody
 			if (!overwrite && toFile.exists()) {
 				// Do nothing
 			} else if (cachedMediaFile != null) {
-				InputStream input = null;
-				OutputStream output = null;
-				try {
-					input = HttpClient.wrapWithProgressListener(new FileInputStream(cachedMediaFile),
-							progressHandler, cachedMediaFile.length());
-					output = toFile.openOutputStream();
-					IOUtils.copyStream(input, output);
-				} finally {
-					IOUtils.close(input);
-					IOUtils.close(output);
+				progressHandler.setInputProgressMax(cachedMediaFile.length());
+				try (FileInputStream input = new FileInputStream(cachedMediaFile);
+						OutputStream output = toFile.openOutputStream()) {
+					IOUtils.copyStream(input, output, progressHandler);
+				} catch (IOException e) {
+					ErrorItem.Type type = getErrorTypeFromExceptionAndHandle(e);
+					errorItem = new ErrorItem(type != null ? type : ErrorItem.Type.UNKNOWN);
+					return false;
 				}
 			} else {
 				Uri uri = fromUri;
-				byte[] response;
+				HttpResponse response;
 				String chanName = this.chanName;
 				if (chanName == null) {
 					chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
 				}
 				if (chanName != null) {
 					ChanPerformer.ReadContentResult result = ChanPerformer.get(chanName).safe()
-							.onReadContent(new ChanPerformer.ReadContentData(uri, CONNECT_TIMEOUT, READ_TIMEOUT,
-							holder, progressHandler, null));
-					response = result.response.getBytes();
+							.onReadContent(new ChanPerformer.ReadContentData(uri,
+									CONNECT_TIMEOUT, READ_TIMEOUT, holder, -1, -1));
+					response = result != null ? result.response : null;
 				} else {
-					response = new HttpRequest(uri, holder).setTimeouts(CONNECT_TIMEOUT, READ_TIMEOUT)
-							.setInputListener(progressHandler).read().getBytes();
+					response = new HttpRequest(uri, holder).setTimeouts(CONNECT_TIMEOUT, READ_TIMEOUT).perform();
 				}
-				ByteArrayInputStream input = new ByteArrayInputStream(response);
-				OutputStream output = null;
-				boolean success = false;
-				try {
-					output = toFile.openOutputStream();
-					IOUtils.copyStream(input, output);
-					success = true;
-				} finally {
-					IOUtils.close(output);
-					File file = toFile.getFileOrUri().first;
-					if (file != null) {
-						CacheManager.getInstance().handleDownloadedFile(file, success);
+				if (response == null) {
+					errorItem = new ErrorItem(ErrorItem.Type.DOWNLOAD);
+					return false;
+				}
+				progressHandler.setInputProgressMax(response.getLength());
+				try (InputStream input = response.open();
+						OutputStream output = toFile.openOutputStream()) {
+					IOUtils.copyStream(input, output, progressHandler);
+				} catch (IOException e) {
+					ErrorItem.Type errorType = getErrorTypeFromExceptionAndHandle(e);
+					if (errorType != null) {
+						errorItem = new ErrorItem(errorType);
+						return false;
+					} else {
+						throw response.fail(e);
 					}
+				} finally {
+					response.cleanupAndDisconnect();
 				}
 			}
+			success = true;
 			return true;
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {
 			errorItem = e.getErrorItemAndHandle();
 			return false;
-		} catch (FileNotFoundException e) {
-			errorItem = new ErrorItem(ErrorItem.Type.NO_ACCESS_TO_MEMORY);
-			return false;
-		} catch (IOException e) {
-			String message = e.getMessage();
-			if (message != null && message.contains("ENOSPC")) {
+		} finally {
+			if (!success) {
 				toFile.delete();
-				File file = toFile.getFileOrUri().first;
-				if (file != null) {
-					CacheManager.getInstance().handleDownloadedFile(file, false);
-				}
-				errorItem = new ErrorItem(ErrorItem.Type.INSUFFICIENT_SPACE);
-			} else {
-				errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
 			}
-			return false;
+			File file = toFile.getFileOrUri().first;
+			if (file != null) {
+				CacheManager.getInstance().handleDownloadedFile(file, success);
+			}
 		}
+	}
+
+	private static ErrorItem.Type getErrorTypeFromExceptionAndHandle(IOException exception) {
+		if (exception instanceof FileNotFoundException) {
+			Log.persistent().stack(exception);
+			return ErrorItem.Type.NO_ACCESS_TO_MEMORY;
+		} else {
+			String message = exception.getMessage();
+			if (message != null && message.contains("ENOSPC")) {
+				Log.persistent().stack(exception);
+				return ErrorItem.Type.INSUFFICIENT_SPACE;
+			}
+		}
+		return null;
 	}
 
 	@Override

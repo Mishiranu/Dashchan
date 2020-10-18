@@ -473,15 +473,16 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 		@Override
 		public Result call() {
 			WatcherItem watcherItem = result.watcherItem;
-			try (HttpHolder holder = new HttpHolder()) {
+			HttpHolder holder = new HttpHolder();
+			try (HttpHolder.Use ignored = holder.use()) {
 				ChanPerformer performer = ChanPerformer.get(watcherItem.chanName);
 				ChanPerformer.ReadPostsCountResult result = performer.safe()
 						.onReadPostsCount(new ChanPerformer.ReadPostsCountData(watcherItem.boardName,
-						watcherItem.threadNumber, 5000, 5000, holder, watcherItem.validator));
+								watcherItem.threadNumber, 5000, 5000, holder, watcherItem.validator));
 				this.result.newPostsCount = result != null ? result.postsCount : 0;
 				HttpValidator validator = result != null ? result.validator : null;
 				if (validator == null) {
-					validator = holder.getValidator();
+					validator = holder.extractValidator();
 				}
 				this.result.validator = validator;
 			} catch (HttpException e) {

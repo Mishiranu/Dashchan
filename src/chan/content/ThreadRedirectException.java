@@ -9,8 +9,6 @@ import com.mishiranu.dashchan.content.model.PostNumber;
 // Added: 13.10.16 14:55
 @Public
 public final class ThreadRedirectException extends Exception {
-	private static final long serialVersionUID = 1L;
-
 	private final String boardName;
 	private final String threadNumber;
 	private final String postNumber;
@@ -28,7 +26,6 @@ public final class ThreadRedirectException extends Exception {
 		this(null, threadNumber, postNumber);
 	}
 
-	@SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 	public RedirectException.Target obtainTarget(String chanName, String boardName) throws ExtensionException {
 		return RedirectException.toThread(this.boardName != null ? this.boardName : boardName,
 				threadNumber, postNumber).obtainTarget(chanName);

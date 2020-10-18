@@ -8,7 +8,7 @@ public abstract class HttpHolderTask<Params, Progress, Result> extends Cancellab
 
 	@Override
 	protected final Result doInBackground(Params... params) {
-		try (HttpHolder holder = this.holder) {
+		try (HttpHolder.Use ignored = holder.use()) {
 			return doInBackground(holder, params);
 		}
 	}

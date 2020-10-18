@@ -323,7 +323,7 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		}
 	}
 
-	private static class ClearCacheTask extends AsyncManager.SimpleTask<Void, Void, Void> {
+	private static class ClearCacheTask extends AsyncManager.SimpleTask<Void> {
 		private final boolean thumbnails;
 		private final boolean media;
 		private final boolean oldPages;
@@ -340,7 +340,7 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		}
 
 		@Override
-		protected Void doInBackground(Void... params) {
+		protected Void doInBackground() {
 			try {
 				if (thumbnails) {
 					CacheManager.getInstance().eraseThumbnailsCache();

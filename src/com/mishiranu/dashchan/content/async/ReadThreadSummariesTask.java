@@ -1,24 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.async;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
@@ -28,8 +8,10 @@ import chan.content.model.ThreadSummary;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.util.CommonUtils;
-
 import com.mishiranu.dashchan.content.model.ErrorItem;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 
 public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSummary[]> {
 	private final String chanName;
@@ -41,8 +23,8 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSu
 	private ErrorItem errorItem;
 
 	public interface Callback {
-		public void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries, int pageNumber);
-		public void onReadThreadSummariesFail(ErrorItem errorItem);
+		void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries, int pageNumber);
+		void onReadThreadSummariesFail(ErrorItem errorItem);
 	}
 
 	public ReadThreadSummariesTask(String chanName, String boardName, int pageNumber, int type, Callback callback) {
@@ -57,8 +39,9 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSu
 	protected ThreadSummary[] doInBackground(HttpHolder holder, Void... params) {
 		try {
 			ChanPerformer performer = ChanPerformer.get(chanName);
-			ChanPerformer.ReadThreadSummariesResult result = performer.safe().onReadThreadSummaries(new ChanPerformer
-					.ReadThreadSummariesData(boardName, pageNumber, type, holder));
+			ChanPerformer.ReadThreadSummariesResult result = performer.safe()
+					.onReadThreadSummaries(new ChanPerformer
+							.ReadThreadSummariesData(boardName, pageNumber, type, holder));
 			ThreadSummary[] threadSummaries = result != null ? result.threadSummaries : null;
 			return threadSummaries != null && threadSummaries.length > 0 ? threadSummaries : null;
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {

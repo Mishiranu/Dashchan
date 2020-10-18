@@ -52,7 +52,7 @@ public class UserBoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 						.contains(text)) {
 					add = true;
 				}
-				if (add){
+				if (add) {
 					filteredListItems.add(listItem);
 				}
 			}

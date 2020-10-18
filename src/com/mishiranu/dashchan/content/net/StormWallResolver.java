@@ -5,11 +5,15 @@ import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
+import chan.http.HttpRequest;
+import chan.http.HttpResponse;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.Preferences;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class StormWallResolver {
 	private static final StormWallResolver INSTANCE = new StormWallResolver();
@@ -22,12 +26,21 @@ public class StormWallResolver {
 
 	private StormWallResolver() {}
 
-	private class Client implements RelayBlockResolver.Client {
+	private static class CookieResult {
+		public final String cookie;
+		public final String uriString;
+
+		public CookieResult(String cookie, String uriString) {
+			this.cookie = cookie;
+			this.uriString = uriString;
+		}
+	}
+
+	private static class WebViewClient implements RelayBlockResolver.WebViewClient<CookieResult> {
 		private volatile boolean wasChecked = false;
 		private volatile boolean wasReloaded = false;
 
-		private volatile String finishUriString;
-		private volatile String cookie;
+		private volatile CookieResult result;
 
 		@Override
 		public String getName() {
@@ -35,12 +48,8 @@ public class StormWallResolver {
 		}
 
 		@Override
-		public boolean handleResult(String chanName) {
-			if (cookie != null) {
-				storeCookie(chanName, cookie, finishUriString);
-				return true;
-			}
-			return false;
+		public CookieResult takeResult() {
+			return result;
 		}
 
 		@Override
@@ -49,8 +58,8 @@ public class StormWallResolver {
 				wasChecked = false;
 				wasReloaded = true;
 			} else if (wasReloaded) {
-				finishUriString = uriString;
-				cookie = cookies.get(COOKIE_STORMWALL);
+				String cookie = cookies.get(COOKIE_STORMWALL);
+				result = cookie != null ? new CookieResult(cookie, uriString) : null;
 				wasReloaded = false;
 				return true;
 			}
@@ -68,15 +77,85 @@ public class StormWallResolver {
 		}
 	}
 
-	public RelayBlockResolver.Result checkResponse(RelayBlockResolver resolver,
-			String chanName, Uri uri, HttpHolder holder) throws HttpException {
-		List<String> contentType = holder.getHeaderFields().get("Content-Type");
-		if (contentType != null && contentType.size() == 1 && contentType.get(0).startsWith("text/html")) {
-			String responseText = holder.readDirect().getString();
-			if (responseText.contains("<script src=\"https://static.stormwall.pro")) {
-				boolean success = resolver.runWebView(chanName, uri, Client::new);
-				return new RelayBlockResolver.Result(true, success);
+	private static final Pattern PATTERN_CE = Pattern.compile(" cE ?= ?(['\"])(.*?)\\1");
+	private static final Pattern PATTERN_CK = Pattern.compile(" cK ?= ?(?:(['\"])|)(.*?)(?:\\1|;)");
+
+	private static String calculateCookie(String ce, int ck) {
+		StringBuilder result = new StringBuilder();
+		String alphabet = "0123456789qwertyuiopasdfghjklzxcvbnm:?!";
+		int length = alphabet.length();
+		for (int i = 0; i < ce.length(); i++) {
+			char c = ce.charAt(i);
+			int index = alphabet.indexOf(c);
+			result.append(index >= 0 ? alphabet.charAt((index - ((ck + i) % length) + length) % length) : c);
+		}
+		return result.toString();
+	}
+
+	private class Resolver implements RelayBlockResolver.Resolver {
+		public final String responseText;
+
+		public Resolver(String responseText) {
+			this.responseText = responseText;
+		}
+
+		@Override
+		public boolean resolve(RelayBlockResolver resolver, RelayBlockResolver.Session session)
+				throws RelayBlockResolver.CancelException, HttpException {
+			Matcher ceMatcher = PATTERN_CE.matcher(responseText);
+			Matcher ckMatcher = PATTERN_CK.matcher(responseText);
+			if (ceMatcher.find() && ckMatcher.find()) {
+				String ce = StringUtils.emptyIfNull(ceMatcher.group(2));
+				String ckString = StringUtils.emptyIfNull(ckMatcher.group(2));
+				Integer ck = null;
+				try {
+					ck = Integer.parseInt(ckString);
+				} catch (NumberFormatException e) {
+					// Ignore
+				}
+				if (!ce.isEmpty() && ck != null) {
+					String calculatedCookie = calculateCookie(ce, ck);
+					HttpResponse response = new HttpRequest(session.uri, session.holder)
+							.setHeadMethod().setSuccessOnly(false)
+							.setCheckRelayBlock(HttpRequest.CheckRelayBlock.SKIP)
+							.addCookie(COOKIE_STORMWALL, calculatedCookie)
+							.perform();
+					try {
+						if (!isBlocked(response)) {
+							storeCookie(session.chanName, calculatedCookie, session.uri.toString());
+							return true;
+						}
+					} finally {
+						response.cleanupAndDisconnect();
+					}
+				}
 			}
+			CookieResult result = resolver.resolveWebView(session, new WebViewClient());
+			if (result != null) {
+				storeCookie(session.chanName, result.cookie, result.uriString);
+				return true;
+			}
+			return false;
+		}
+	}
+
+	private boolean isBlocked(HttpResponse response) {
+		List<String> headers = response.getHeaderFields().get("X-FireWall-Protection");
+		return headers != null && !headers.isEmpty();
+	}
+
+	public RelayBlockResolver.Result checkResponse(RelayBlockResolver resolver,
+			String chanName, Uri uri, HttpHolder holder, HttpResponse response, boolean resolve) throws HttpException {
+		if (isBlocked(response)) {
+			boolean success = false;
+			if (resolve) {
+				List<String> contentType = response.getHeaderFields().get("Content-Type");
+				if (contentType != null && contentType.size() == 1 && contentType.get(0).startsWith("text/html")) {
+					String responseText = response.readString();
+					success = resolver.runExclusive(chanName, uri, holder, () -> new Resolver(responseText));
+				}
+			}
+			return new RelayBlockResolver.Result(true, success);
 		}
 		return new RelayBlockResolver.Result(false, false);
 	}

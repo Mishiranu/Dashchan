@@ -413,20 +413,20 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 		}
 	}
 
-	private static class ReadThemesTask extends AsyncManager.SimpleTask<Void, Void, Boolean> {
+	private static class ReadThemesTask extends AsyncManager.SimpleTask<Boolean> {
 		private final HttpHolder holder = new HttpHolder();
 
 		private ArrayList<JSONObject> themes;
 		private ErrorItem errorItem;
 
 		@Override
-		protected Boolean doInBackground(Void... params) {
+		protected Boolean doInBackground() {
 			ArrayList<JSONObject> themes = new ArrayList<>();
-			try (HttpHolder holder = this.holder) {
+			try (HttpHolder.Use ignored = holder.use()) {
 				Uri uri = ChanLocator.getDefault().setScheme(Uri.parse(BuildConfig.URI_THEMES));
 				int redirects = 0;
 				while (redirects++ < 5) {
-					JSONObject jsonObject = new HttpRequest(uri, holder).read().getJsonObject();
+					JSONObject jsonObject = new JSONObject(new HttpRequest(uri, holder).perform().readString());
 					if (jsonObject == null) {
 						errorItem = new ErrorItem(ErrorItem.Type.INVALID_RESPONSE);
 						return false;
@@ -447,7 +447,6 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 				return false;
 			} catch (HttpException e) {
 				errorItem = e.getErrorItemAndHandle();
-				holder.disconnect();
 				return false;
 			} catch (JSONException e) {
 				errorItem = new ErrorItem(ErrorItem.Type.INVALID_RESPONSE);

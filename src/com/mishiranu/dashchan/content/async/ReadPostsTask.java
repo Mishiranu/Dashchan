@@ -118,7 +118,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 			}
 			HttpValidator validator = result != null ? result.validator : null;
 			if (validator == null) {
-				validator = holder.getValidator();
+				validator = holder.extractValidator();
 			}
 			if (validator == null) {
 				validator = useValidator;

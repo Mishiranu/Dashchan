@@ -84,27 +84,28 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 		try {
 			switch (state.operation) {
 				case DELETE: {
-					ChanPerformer.get(state.chanName).safe().onSendDeletePosts(new ChanPerformer.SendDeletePostsData
-							(state.boardName, state.threadNumber, createPostNumberList(state.postNumbers),
-							text, options != null && options.contains(OPTION_FILES_ONLY), holder));
+					ChanPerformer.get(state.chanName).safe().onSendDeletePosts(new ChanPerformer
+							.SendDeletePostsData(state.boardName, state.threadNumber,
+							createPostNumberList(state.postNumbers), text,
+							options != null && options.contains(OPTION_FILES_ONLY), holder));
 					break;
 				}
 				case REPORT: {
-					ChanPerformer.get(state.chanName).safe().onSendReportPosts(new ChanPerformer.SendReportPostsData
-							(state.boardName, state.threadNumber, createPostNumberList(state.postNumbers),
-							type, options, text, holder));
+					ChanPerformer.get(state.chanName).safe().onSendReportPosts(new ChanPerformer
+							.SendReportPostsData(state.boardName, state.threadNumber,
+							createPostNumberList(state.postNumbers), type, options, text, holder));
 					break;
 				}
 				case ARCHIVE: {
-					Uri uri = ChanLocator.get(state.chanName).safe(false).createThreadUri(state.boardName,
-							state.threadNumber);
+					Uri uri = ChanLocator.get(state.chanName).safe(false)
+							.createThreadUri(state.boardName, state.threadNumber);
 					if (uri == null) {
 						errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
 						return false;
 					}
 					ChanPerformer.SendAddToArchiveResult result = ChanPerformer.get(state.archiveChanName).safe()
 							.onSendAddToArchive(new ChanPerformer.SendAddToArchiveData(uri, state.boardName,
-							state.threadNumber, options, holder));
+									state.threadNumber, options, holder));
 					if (result != null && result.threadNumber != null) {
 						archiveBoardName = result.boardName;
 						archiveThreadNumber = result.threadNumber;
