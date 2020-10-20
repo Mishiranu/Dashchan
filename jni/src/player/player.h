@@ -1,20 +1,26 @@
 #ifndef PLAYER_H
 #define PLAYER_H
 
-jlong init(JNIEnv *, jobject, jboolean);
-void destroy(JNIEnv *, jlong);
+#include <jni.h>
 
-jint getErrorCode(JNIEnv *, jlong);
+jlong preInit(JNIEnv *, jint);
+void init(JNIEnv *, jlong, jobject, jboolean);
+void destroy(JNIEnv *, jlong, jboolean);
+
+jint getErrorCode(jlong);
 void getSummary(JNIEnv *, jlong, jintArray);
 
-jlong getDuration(JNIEnv *, jlong);
-jlong getPosition(JNIEnv *, jlong);
-
+jlong getDuration(jlong);
+jlong getPosition(jlong);
 void setPosition(JNIEnv *, jlong, jlong);
-void setPlaying(JNIEnv *, jlong, jboolean);
+
+void setRange(jlong, jlong, jlong, jlong);
+void setCancelSeek(jlong, jboolean);
+
+void setPlaying(jlong, jboolean);
 void setSurface(JNIEnv *, jlong, jobject);
 
-jintArray getCurrentFrame(JNIEnv *, jlong);
+jintArray getCurrentFrame(JNIEnv *, jlong, jintArray);
 jobjectArray getTechnicalInfo(JNIEnv *, jlong);
 
 void initLibs(JavaVM * javaVM);

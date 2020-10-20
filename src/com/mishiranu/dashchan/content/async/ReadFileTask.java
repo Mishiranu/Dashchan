@@ -164,7 +164,7 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 		}
 	}
 
-	private static ErrorItem.Type getErrorTypeFromExceptionAndHandle(IOException exception) {
+	public static ErrorItem.Type getErrorTypeFromExceptionAndHandle(IOException exception) {
 		if (exception instanceof FileNotFoundException) {
 			Log.persistent().stack(exception);
 			return ErrorItem.Type.NO_ACCESS_TO_MEMORY;

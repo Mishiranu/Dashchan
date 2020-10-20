@@ -29,7 +29,6 @@ android {
 
 		minSdkVersion 16
 		targetSdkVersion 29
-		ndk.abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86'
 
 		buildConfigField 'String', 'URI_UPDATES', '"//raw.githubusercontent.com/' +
 				'Mishiranu/Dashchan/master/update/data.json"'
@@ -46,7 +45,7 @@ android {
 		res.srcDirs = ['res']
 		assets.srcDirs = ['assets']
 		jni.srcDirs = []
-		jniLibs.srcDir 'libs'
+		jniLibs.srcDirs = []
 	}
 
 	def locales = sourceSets.main.res.srcDirs
@@ -58,40 +57,26 @@ android {
 		resConfigs locales
 	}
 
-	externalNativeBuild {
-		ndkBuild {
-			path 'jni/Android.mk'
-		}
-	}
+	defaultConfig.ndk.abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86'
+	externalNativeBuild.ndkBuild.path 'jni/Android.mk'
+	buildTypes.create('ndebug').debuggable true
 
 	if (file('keystore.properties').exists()) {
 		def keystoreProperties = new Properties()
 		keystoreProperties.load(new FileInputStream(file('keystore.properties')))
-
-		signingConfigs {
-			general {
-				storeFile file(keystoreProperties['store.file'])
-				storePassword keystoreProperties['store.password']
-				keyAlias keystoreProperties['key.alias']
-				keyPassword keystoreProperties['key.password']
-			}
+		signingConfigs.create('general') {
+			storeFile file(keystoreProperties['store.file'])
+			storePassword keystoreProperties['store.password']
+			keyAlias keystoreProperties['key.alias']
+			keyPassword keystoreProperties['key.password']
 		}
-
-		buildTypes.debug.signingConfig signingConfigs.general
-		buildTypes.release.signingConfig signingConfigs.general
+		buildTypes.all { signingConfig signingConfigs.general }
 	}
 
-	buildTypes {
-		debug {
-			minifyEnabled false
-		}
-		release {
-			minifyEnabled true
-		}
-		all {
-			crunchPngs false
-			proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-		}
+	buildTypes.all {
+		crunchPngs false
+		minifyEnabled !debuggable
+		proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 	}
 
 	packagingOptions {

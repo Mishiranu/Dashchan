@@ -373,6 +373,10 @@ public class CacheManager implements Runnable {
 		return getMediaFile(getCachedFileKey(uri), touch);
 	}
 
+	public File getPartialMediaFile(Uri uri) {
+		return getMediaFile(getCachedFileKey(uri) + ".part", false);
+	}
+
 	private long eraseCache(LinkedHashMap<String, CacheItem> cacheItems, File directory,
 			DeleteCondition deleteCondition) throws InterruptedException {
 		if (directory == null) {

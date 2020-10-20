@@ -1,6 +1,5 @@
 package com.mishiranu.dashchan.ui.gallery;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -14,7 +13,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -27,26 +25,24 @@ import androidx.annotation.NonNull;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.CacheManager;
+import com.mishiranu.dashchan.content.AdvancedPreferences;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.async.ReadFileTask;
 import com.mishiranu.dashchan.content.async.ReadVideoTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.media.CachingInputStream;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.AudioFocus;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
-import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.StringBlockBuilder;
 import com.mishiranu.dashchan.util.ViewUtils;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class VideoUnit {
 	private final PagerInstance instance;
@@ -69,7 +65,7 @@ public class VideoUnit {
 	private boolean trackingNow;
 	private boolean hideSurfaceOnInit;
 
-	private ReadVideoTask readVideoTask;
+	private ReadVideoCallback readVideoCallback;
 
 	public VideoUnit(PagerInstance instance) {
 		this.instance = instance;
@@ -149,9 +145,9 @@ public class VideoUnit {
 	}
 
 	public void interrupt() {
-		if (readVideoTask != null) {
-			readVideoTask.cancel();
-			readVideoTask = null;
+		if (readVideoCallback != null) {
+			readVideoCallback.cancel();
+			readVideoCallback = null;
 		}
 		if (initialized) {
 			audioFocus.release();
@@ -159,7 +155,7 @@ public class VideoUnit {
 		}
 		invalidateControlsVisibility();
 		if (player != null) {
-			player.free();
+			player.destroy();
 			player = null;
 			instance.currentHolder.progressBar.setVisible(false, false);
 		}
@@ -189,16 +185,16 @@ public class VideoUnit {
 		wasPlaying = true;
 		finishedPlayback = false;
 		hideSurfaceOnInit = false;
-		VideoPlayer player = new VideoPlayer(Preferences.isVideoSeekAnyFrame());
-		player.setListener(playerListener);
+		boolean seekAnyFrame = Preferences.isVideoSeekAnyFrame();
+		VideoPlayer player = new VideoPlayer(playerListener, seekAnyFrame);
 		boolean loadedFromFile = false;
 		if (!reload && file.exists()) {
 			try {
-				player.init(file);
+				player.init(file, null);
 				loadedFromFile = true;
 			} catch (IOException e) {
 				// Player was consumed, create a new one and try to download a new video file
-				player = new VideoPlayer(Preferences.isVideoSeekAnyFrame());
+				player = new VideoPlayer(playerListener, seekAnyFrame);
 			}
 		}
 		this.player = player;
@@ -208,55 +204,10 @@ public class VideoUnit {
 			instance.currentHolder.fullLoaded = true;
 			instance.galleryInstance.callback.invalidateOptionsMenu();
 		} else {
-			VideoPlayer finalPlayer = player;
-			PagerInstance.ViewHolder holder = instance.currentHolder;
-			holder.progressBar.setIndeterminate(true);
-			holder.progressBar.setVisible(true, false);
-			final CachingInputStream inputStream = new CachingInputStream();
-			new AsyncTask<Void, Void, Boolean>() {
-				@Override
-				protected Boolean doInBackground(Void... params) {
-					try {
-						finalPlayer.init(inputStream);
-						return true;
-					} catch (VideoPlayer.InitializationException e) {
-						Log.persistent().stack(e);
-						return false;
-					} catch (IOException e) {
-						return false;
-					}
-				}
-
-				@Override
-				protected void onPostExecute(Boolean result) {
-					if (VideoUnit.this.player != finalPlayer) {
-						return;
-					}
-					PagerInstance.ViewHolder holder = instance.currentHolder;
-					holder.progressBar.setVisible(false, false);
-					if (result) {
-						initializePlayer();
-						instance.galleryInstance.callback.invalidateOptionsMenu();
-						if (readVideoTask == null) {
-							seekBar.setSecondaryProgress(seekBar.getMax());
-						}
-					} else {
-						if (readVideoTask != null) {
-							if (!readVideoTask.isError()) {
-								readVideoTask.cancel();
-								readVideoTask = null;
-							} else {
-								return;
-							}
-						}
-						instance.callback.showError(holder, instance.galleryInstance.context
-								.getString(R.string.playback_error));
-					}
-				}
-			}.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
-			readVideoTask = new ReadVideoTask(instance.galleryInstance.chanName, uri, inputStream,
-					new ReadVideoCallback(player, holder));
-			readVideoTask.executeOnExecutor(ReadVideoTask.THREAD_POOL_EXECUTOR);
+			instance.currentHolder.progressBar.setIndeterminate(true);
+			instance.currentHolder.progressBar.setVisible(true, false);
+			readVideoCallback = new ReadVideoCallback(player, instance.currentHolder,
+					instance.galleryInstance.chanName, uri);
 		}
 	}
 
@@ -302,7 +253,6 @@ public class VideoUnit {
 		updatePlayState();
 	}
 
-	@SuppressLint("RtlHardcoded")
 	private void recreateVideoControls() {
 		Context context = instance.galleryInstance.context;
 		float density = ResourceUtils.obtainDensity(context);
@@ -321,7 +271,7 @@ public class VideoUnit {
 
 			configurationView = new LinearLayout(context);
 			configurationView.setOrientation(LinearLayout.HORIZONTAL);
-			configurationView.setGravity(Gravity.RIGHT);
+			configurationView.setGravity(Gravity.END);
 			configurationView.setPadding((int) (8f * density), 0, (int) (8f * density), 0);
 			controlsView.addView(configurationView, LinearLayout.LayoutParams.MATCH_PARENT,
 					LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -408,8 +358,9 @@ public class VideoUnit {
 				}
 				configurationView.addView(imageView, (int) (48f * density), (int) (48f * density));
 			}
-			totalTimeTextView.setText(formatVideoTime(player.getDuration()));
-			seekBar.setMax((int) player.getDuration());
+			long duration = player.getDuration();
+			totalTimeTextView.setText(formatVideoTime(duration));
+			seekBar.setMax((int) duration);
 		}
 		seekBar.removeCallbacks(progressRunnable);
 		seekBar.post(progressRunnable);
@@ -504,7 +455,7 @@ public class VideoUnit {
 
 	public void viewTechnicalInfo() {
 		if (initialized) {
-			HashMap<String, String> technicalInfo = player.getTechnicalInfo();
+			Map<String, String> technicalInfo = player.getTechnicalInfo();
 			StringBlockBuilder builder = new StringBlockBuilder();
 			String videoFormat = technicalInfo.get("video_format");
 			String width = technicalInfo.get("width");
@@ -512,7 +463,7 @@ public class VideoUnit {
 			String frameRate = technicalInfo.get("frame_rate");
 			String pixelFormat = technicalInfo.get("pixel_format");
 			String surfaceFormat = technicalInfo.get("surface_format");
-			String useLibyuv = technicalInfo.get("use_libyuv");
+			String frameConversion = technicalInfo.get("frame_conversion");
 			String audioFormat = technicalInfo.get("audio_format");
 			String channels = technicalInfo.get("channels");
 			String sampleRate = technicalInfo.get("sample_rate");
@@ -533,10 +484,8 @@ public class VideoUnit {
 			if (surfaceFormat != null) {
 				builder.appendLine("Surface: " + surfaceFormat);
 			}
-			if ("1".equals(useLibyuv)) {
-				builder.appendLine("Use libyuv: true");
-			} else if ("0".equals(useLibyuv)) {
-				builder.appendLine("Use libyuv: false");
+			if (frameConversion != null) {
+				builder.appendLine("Frame conversion: " + frameConversion);
 			}
 			builder.appendEmptyLine();
 			if (audioFormat != null) {
@@ -664,86 +613,152 @@ public class VideoUnit {
 		}
 	}
 
-	private class ReadVideoCallback implements ReadVideoTask.Callback {
+	private class ReadVideoCallback implements ReadVideoTask.Callback, VideoPlayer.RangeCallback {
 		private final VideoPlayer workPlayer;
 		private final PagerInstance.ViewHolder holder;
+		private final String chanName;
+		private final Uri uri;
 
-		public ReadVideoCallback(VideoPlayer player, PagerInstance.ViewHolder holder) {
+		private ReadVideoTask downloadTask;
+		private ReadVideoTask rangeTask;
+		private boolean allowRangeRequests;
+
+		public ReadVideoCallback(VideoPlayer player, PagerInstance.ViewHolder holder, String chanName, Uri uri) {
 			this.workPlayer = player;
 			this.holder = holder;
+			this.chanName = chanName;
+			this.uri = uri;
+			allowRangeRequests = !AdvancedPreferences.isSingleConnection(chanName);
+			downloadTask = new ReadVideoTask(chanName, uri, 0, this);
+			downloadTask.executeOnExecutor(ReadVideoTask.THREAD_POOL_EXECUTOR);
+		}
+
+		public void cancel() {
+			if (downloadTask != null) {
+				downloadTask.cancel();
+				downloadTask = null;
+			}
+			if (rangeTask != null) {
+				rangeTask.cancel();
+				rangeTask = null;
+			}
+		}
+
+		@Override
+		public void onReadVideoInit(File partialFile) {
+			if (workPlayer == player) {
+				new Thread(() -> {
+					boolean success;
+					try {
+						workPlayer.init(partialFile, ReadVideoCallback.this);
+						success = true;
+					} catch (VideoPlayer.InitializationException e) {
+						Log.persistent().stack(e);
+						success = false;
+					} catch (IOException e) {
+						success = false;
+					}
+					boolean successFinal = success;
+					ConcurrentUtils.HANDLER.post(() -> {
+						if (workPlayer == player) {
+							holder.progressBar.setVisible(false, false);
+							if (successFinal) {
+								initializePlayer();
+								instance.galleryInstance.callback.invalidateOptionsMenu();
+								if (downloadTask == null) {
+									seekBar.setSecondaryProgress(seekBar.getMax());
+								}
+							} else {
+								if (downloadTask != null) {
+									if (!downloadTask.isError()) {
+										downloadTask.cancel();
+										downloadTask = null;
+									} else {
+										return;
+									}
+								}
+								if (rangeTask != null) {
+									rangeTask.cancel();
+									rangeTask = null;
+								}
+								instance.callback.showError(holder, instance.galleryInstance.context
+										.getString(R.string.playback_error));
+							}
+						}
+					});
+				}).start();
+			}
 		}
 
 		@Override
 		public void onReadVideoProgressUpdate(long progress, long progressMax) {
-			if (initialized && workPlayer == player) {
-				int max = seekBar.getMax();
-				if (max > 0 && progressMax > 0) {
-					int newProgress = (int) (max * progress / progressMax);
-					seekBar.setSecondaryProgress(newProgress);
+			if (workPlayer == player) {
+				workPlayer.setDownloadRange(progress, progressMax);
+				if (initialized) {
+					int max = seekBar.getMax();
+					if (max > 0 && progressMax > 0) {
+						int newProgress = (int) (max * progress / progressMax);
+						seekBar.setSecondaryProgress(newProgress);
+					}
 				}
 			}
 		}
 
 		@Override
-		public void onReadVideoSuccess(final CachingInputStream inputStream) {
-			if (workPlayer != player) {
-				return;
+		public void onReadVideoRangeUpdate(long start, long end) {
+			if (workPlayer == player) {
+				workPlayer.setPartRange(start, end);
 			}
-			readVideoTask = null;
-			if (initialized) {
-				seekBar.setSecondaryProgress(seekBar.getMax());
-			}
-			new AsyncTask<Void, Void, Boolean>() {
-				private File file;
+		}
 
-				@Override
-				protected Boolean doInBackground(Void... params) {
-					file = CacheManager.getInstance().getMediaFile(holder.galleryItem
-							.getFileUri(instance.galleryInstance.locator), false);
-					if (file == null) {
-						return false;
-					}
-					boolean success;
-					FileOutputStream output = null;
-					try {
-						output = new FileOutputStream(file);
-						inputStream.writeTo(output);
-						success = true;
-					} catch (IOException e) {
-						success = false;
-						e.printStackTrace();
-					} finally {
-						IOUtils.close(output);
-					}
-					CacheManager.getInstance().handleDownloadedFile(file, success);
-					return success;
-				}
-
-				@Override
-				protected void onPostExecute(Boolean result) {
-					if (result && workPlayer == player) {
+		@Override
+		public void onReadVideoSuccess(boolean partial, File file) {
+			if (workPlayer == player) {
+				if (partial) {
+					rangeTask = null;
+				} else {
+					downloadTask = null;
+					long length = file.length();
+					workPlayer.setDownloadRange(length, length);
+					if (initialized) {
+						seekBar.setSecondaryProgress(seekBar.getMax());
 						holder.fullLoaded = true;
 						instance.galleryInstance.callback.invalidateOptionsMenu();
-						try {
-							player.replaceStream(file);
-						} catch (IOException e) {
-							// Ignore exception
-						}
 						if (holder.galleryItem.size <= 0) {
 							holder.galleryItem.size = (int) file.length();
 							instance.galleryInstance.callback.updateTitle();
 						}
 					}
 				}
-			}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+			}
 		}
 
 		@Override
-		public void onReadVideoFail(ErrorItem errorItem) {
-			readVideoTask = null;
-			holder.progressBar.setVisible(false, false);
-			instance.callback.showError(holder, errorItem.toString());
-			instance.galleryInstance.callback.invalidateOptionsMenu();
+		public void onReadVideoFail(boolean partial, ErrorItem errorItem, boolean disallowRangeRequests) {
+			if (workPlayer == player) {
+				if (partial) {
+					rangeTask = null;
+					if (disallowRangeRequests) {
+						allowRangeRequests = false;
+					}
+				} else {
+					holder.progressBar.setVisible(false, false);
+					instance.callback.showError(holder, errorItem.toString());
+					instance.galleryInstance.callback.invalidateOptionsMenu();
+				}
+			}
+		}
+
+		@Override
+		public void requestPartFromPosition(long start) {
+			if (rangeTask != null) {
+				rangeTask.cancel();
+				rangeTask = null;
+			}
+			if (allowRangeRequests && start > 0) {
+				rangeTask = new ReadVideoTask(chanName, uri, start, this);
+				rangeTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
+			}
 		}
 	}
 

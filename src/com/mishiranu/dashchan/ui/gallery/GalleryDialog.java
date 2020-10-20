@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.Dialog;
 import android.media.AudioManager;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
@@ -18,12 +19,15 @@ import com.mishiranu.dashchan.widget.ViewFactory;
 
 public class GalleryDialog extends Dialog {
 	private final Fragment fragment;
+	private final MenuInflater menuInflater;
+
 	private ViewFactory.ToolbarHolder toolbarHolder;
 	private View actionBar;
 
 	public GalleryDialog(Fragment fragment) {
 		super(fragment.requireContext(), R.style.Theme_Gallery);
 		this.fragment = fragment;
+		this.menuInflater = fragment.requireActivity().getMenuInflater();
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
 		WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
 		layoutParams.setTitle(getContext().getPackageName() + "/" + getClass().getName());
@@ -109,7 +113,7 @@ public class GalleryDialog extends Dialog {
 
 	@Override
 	public boolean onCreateOptionsMenu(@NonNull Menu menu) {
-		fragment.onCreateOptionsMenu(menu, fragment.requireActivity().getMenuInflater());
+		fragment.onCreateOptionsMenu(menu, menuInflater);
 		return true;
 	}
 

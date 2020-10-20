@@ -8,11 +8,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
-#define jlongCast(addr) (jlong) (long) addr
-#define pointerCast(addr) (void *) (long) addr
-
-#include <android/log.h>
-#define log(...) __android_log_print(ANDROID_LOG_DEBUG, "Dashchan", __VA_ARGS__)
+#define POINTER_CAST(addr) (void *) (long) addr
 
 typedef struct Decoder Decoder;
 typedef struct ImageData ImageData;
@@ -84,7 +80,7 @@ jlong init(JNIEnv * env, jstring fileName) {
 			}
 		}
 		decoder->duration = when;
-		if (file->SColorMap == NULL) {
+		if (!file->SColorMap) {
 			file->SColorMap = GifMakeMapObject(256, NULL);
 			for (int i = 0; i < 256; i++) {
 				file->SColorMap->Colors[i].Red = i;
@@ -94,31 +90,31 @@ jlong init(JNIEnv * env, jstring fileName) {
 		}
 	}
 	decoder->errorCode = status;
-	return jlongCast(decoder);
+	return (jlong) (long) decoder;
 }
 
-void destroy(JNIEnv * env, jlong pointer) {
-	Decoder * decoder = pointerCast(pointer);
+void destroy(jlong pointer) {
+	Decoder * decoder = POINTER_CAST(pointer);
 	int error;
-	if (decoder->file != NULL) {
+	if (decoder->file) {
 		DGifCloseFile(decoder->file, &error);
 	}
-	if (decoder->datas != NULL) {
+	if (decoder->datas) {
 		free(decoder->datas);
 	}
-	if (decoder->previousColors != NULL) {
+	if (decoder->previousColors) {
 		free(decoder->previousColors);
 	}
 	free(decoder);
 }
 
-jint getErrorCode(JNIEnv * env, jlong pointer) {
-	Decoder * decoder = pointerCast(pointer);
+jint getErrorCode(jlong pointer) {
+	Decoder * decoder = POINTER_CAST(pointer);
 	return decoder->errorCode;
 }
 
 void getSummary(JNIEnv * env, jlong pointer, jintArray output) {
-	Decoder * decoder = pointerCast(pointer);
+	Decoder * decoder = POINTER_CAST(pointer);
 	jint result[2];
 	result[0] = decoder->file->SWidth;
 	result[1] = decoder->file->SHeight;
@@ -153,7 +149,7 @@ static void drawImage(Decoder * decoder, int index, int * colors) {
 	SavedImage * image = &decoder->file->SavedImages[index];
 	if (data->disposalMethod == 3) {
 		if (!decoder->hasPrevious) {
-			if (decoder->previousColors == NULL) {
+			if (!decoder->previousColors) {
 				decoder->previousColors = malloc(4 * width * height);
 			}
 			memcpy(decoder->previousColors, colors, 4 * width * height);
@@ -163,7 +159,7 @@ static void drawImage(Decoder * decoder, int index, int * colors) {
 		decoder->hasPrevious = 0;
 	}
 	ColorMapObject * colorMap = image->ImageDesc.ColorMap;
-	if (colorMap == NULL) {
+	if (!colorMap) {
 		colorMap = decoder->file->SColorMap;
 	}
 	int colorCount = colorMap->ColorCount;
@@ -187,7 +183,7 @@ static void drawImage(Decoder * decoder, int index, int * colors) {
 }
 
 jint draw(JNIEnv * env, jlong pointer, jobject bitmap) {
-	Decoder * decoder = pointerCast(pointer);
+	Decoder * decoder = POINTER_CAST(pointer);
 	int position = 0;
 	if (decoder->duration > 0) {
 		int64_t time = getTime();
@@ -213,7 +209,7 @@ jint draw(JNIEnv * env, jlong pointer, jobject bitmap) {
 	if (decoder->lastIndex != index) {
 		int * colors = 0;
 		AndroidBitmap_lockPixels(env, bitmap, (void **) &colors);
-		if (colors != NULL) {
+		if (colors) {
 			if (index > decoder->lastIndex) {
 				for (int i = decoder->lastIndex + 1; i <= index; i++) {
 					drawImage(decoder, i, colors);

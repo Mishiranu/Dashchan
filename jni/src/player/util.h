@@ -1,12 +1,16 @@
 #ifndef PLAYER_UTIL_H
 #define PLAYER_UTIL_H
 
-#include <jni.h>
 #include <pthread.h>
-#include <stdarg.h>
 
+#define UNUSED __attribute__((unused))
+
+#ifdef DEBUG_VERBOSE
 #include <android/log.h>
-#define log(...) __android_log_print(ANDROID_LOG_DEBUG, "Dashchan", __VA_ARGS__)
+#define LOG(...) __android_log_print(ANDROID_LOG_DEBUG, "Dashchan", __VA_ARGS__)
+#else
+#define LOG(...)
+#endif
 
 typedef struct QueueItem QueueItem;
 typedef struct Queue Queue;
@@ -84,8 +88,9 @@ struct SparseArray {
 	int count;
 };
 
+typedef void (*SparseArrayDestroyCallback)(void *);
 void sparseArrayInit(SparseArray * sparseArray, int initialCapacity);
-void sparseArrayDestroy(SparseArray * sparseArray, void callback(void * data));
+void sparseArrayDestroy(SparseArray * sparseArray, SparseArrayDestroyCallback callback);
 void sparseArrayAdd(SparseArray * sparseArray, int index, void * data);
 void * sparseArrayGet(SparseArray * sparseArray, int index);
 
