@@ -485,19 +485,7 @@ public class HttpClient {
 			}
 			HttpValidator resultValidator = HttpValidator.obtain(connection);
 			String contentType = connection.getHeaderField("Content-Type");
-			String charsetName = null;
-			if (contentType != null) {
-				int index = contentType.indexOf("charset=");
-				if (index >= 0) {
-					int end = contentType.indexOf(';', index);
-					charsetName = contentType.substring(index + 8, end >= 0 ? end : contentType.length());
-					try {
-						Charset.forName(charsetName);
-					} catch (UnsupportedCharsetException e) {
-						charsetName = null;
-					}
-				}
-			}
+			String charsetName = extractCharsetName(contentType);
 			session.checkInterrupted();
 			HttpResponse response = new HttpResponse(session, resultValidator, charsetName);
 			session.response = response;
@@ -696,6 +684,27 @@ public class HttpClient {
 			redirectedUri = requestedUri;
 		}
 		return redirectedUri;
+	}
+
+	static String extractCharsetName(String contentType) {
+		if ("application/json".equals(contentType)) {
+			// Assume UTF-8 https://tools.ietf.org/html/rfc4627#section-3
+			return "UTF-8";
+		}
+		if (contentType != null) {
+			int index = contentType.indexOf("charset=");
+			if (index >= 0) {
+				int end = contentType.indexOf(';', index);
+				String charsetName = contentType.substring(index + 8, end >= 0 ? end : contentType.length());
+				try {
+					Charset.forName(charsetName);
+					return charsetName;
+				} catch (UnsupportedCharsetException e) {
+					// Ignore
+				}
+			}
+		}
+		return null;
 	}
 
 	static String transformResponseMessage(String originalMessage) {

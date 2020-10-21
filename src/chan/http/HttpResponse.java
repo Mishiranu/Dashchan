@@ -3,7 +3,9 @@ package chan.http;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.util.Pair;
 import chan.annotation.Public;
+import chan.text.GroupParser;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -11,10 +13,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.SequenceInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,6 +30,7 @@ public final class HttpResponse {
 	final HttpSession session;
 	private final HttpValidator validator;
 	private String charsetName;
+	private boolean extractCharsetFromHtml;
 
 	InputStream input;
 	private byte[] bytes;
@@ -34,6 +40,19 @@ public final class HttpResponse {
 		this.session = session;
 		this.validator = validator;
 		this.charsetName = charsetName;
+		List<String> contentTypes = getHeaderFields().get("Content-Type");
+		if (contentTypes != null && contentTypes.size() == 1) {
+			String contentType = contentTypes.get(0);
+			if ("text/html".equals(contentType)) {
+				extractCharsetFromHtml = true;
+			}
+		} else if (session != null) {
+			Uri uri = session.requestedUri;
+			String path = StringUtils.emptyIfNull(uri.getPath()).toLowerCase(Locale.US);
+			if (path.endsWith(".html")) {
+				extractCharsetFromHtml = true;
+			}
+		}
 	}
 
 	@Public
@@ -52,10 +71,14 @@ public final class HttpResponse {
 	public void setEncoding(String charsetName) {
 		this.string = null;
 		this.charsetName = charsetName;
+		extractCharsetFromHtml = false;
 	}
 
 	@Public
-	public String getEncoding() {
+	public String getEncoding() throws HttpException {
+		if (extractCharsetFromHtml) {
+			prepareOrGetInput();
+		}
 		return StringUtils.isEmpty(charsetName) ? "ISO-8859-1" : charsetName;
 	}
 
@@ -120,12 +143,91 @@ public final class HttpResponse {
 		}
 	}
 
+	private static Pair<InputStream, String> extractCharsetFromHtml(InputStream input) throws IOException {
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		@SuppressWarnings("CharsetObjectCanBeUsed")
+		InputStreamReader reader = new InputStreamReader(new InputStream() {
+			@Override
+			public int read() throws IOException {
+				int result = input.read();
+				if (result >= 0) {
+					output.write(result);
+				}
+				return result;
+			}
+
+			@Override
+			public int read(byte[] b, int off, int len) throws IOException {
+				int result = input.read(b, off, len);
+				if (result > 0) {
+					output.write(b, off, result);
+				}
+				return result;
+			}
+		}, "ISO-8859-1");
+		StringBuilder builder = new StringBuilder();
+		String headClose = "</head>";
+		boolean foundHeadClose = false;
+		char[] buffer = new char[1024];
+		int count;
+		while ((count = reader.read(buffer)) >= 0) {
+			for (int i = 0; i < count; i++) {
+				buffer[i] = Character.toLowerCase(buffer[i]);
+			}
+			int checkFrom = Math.max(0, builder.length() - headClose.length());
+			builder.append(buffer, 0, count);
+			int index = builder.indexOf(headClose, checkFrom);
+			if (index >= 0) {
+				builder.setLength(index + headClose.length());
+				foundHeadClose = true;
+				break;
+			}
+		}
+		ByteArrayInputStream headInput = new ByteArrayInputStream(output.toByteArray());
+		if (!foundHeadClose) {
+			try (InputStream ignored = input) {
+				return new Pair<>(headInput, null);
+			}
+		}
+		String charsetName = null;
+		int from = 0;
+		while (true) {
+			int start = builder.indexOf("<meta", from);
+			int end = builder.indexOf(">", start + 1);
+			if (start < 0 || end <= start) {
+				break;
+			}
+			String attrs = builder.substring(start + 5, end).toLowerCase(Locale.US);
+			if ("content-type".equals(GroupParser.getInstance().getAttr(attrs, "http-equiv"))) {
+				String contentType = GroupParser.getInstance().getAttr(attrs, "content");
+				charsetName = HttpClient.extractCharsetName(contentType);
+				break;
+			}
+			from = end + 1;
+		}
+		return new Pair<>(new SequenceInputStream(headInput, input), charsetName);
+	}
+
 	private InputStream prepareOrGetInput() throws HttpException {
 		if (input == null && session != null) {
 			session.checkThread();
 			if (session.connection != null) {
-				// Will set input (so this path will be unavailable anymore) or throw exception
-				input = session.client.open(this);
+				InputStream input = session.client.open(this);
+				// Set input to ensure client.open called only once
+				this.input = input;
+				if (extractCharsetFromHtml) {
+					try {
+						Pair<InputStream, String> pair = extractCharsetFromHtml(input);
+						this.input = pair.first;
+						if (pair.second != null) {
+							charsetName = pair.second;
+						}
+					} catch (IOException e) {
+						throw fail(e);
+					} finally {
+						extractCharsetFromHtml = false;
+					}
+				}
 			}
 		}
 		return input;
