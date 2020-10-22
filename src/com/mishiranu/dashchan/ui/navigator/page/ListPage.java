@@ -9,8 +9,7 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
@@ -122,12 +121,8 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		return uiManager;
 	}
 
-	protected final ChanLocator getChanLocator() {
-		return ChanLocator.get(page.chanName);
-	}
-
-	protected final ChanConfiguration getChanConfiguration() {
-		return ChanConfiguration.get(page.chanName);
+	protected final Chan getChan() {
+		return Chan.get(page.chanName);
 	}
 
 	protected final PullableRecyclerView getRecyclerView() {

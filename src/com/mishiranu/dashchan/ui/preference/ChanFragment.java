@@ -1,7 +1,6 @@
 package com.mishiranu.dashchan.ui.preference;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,8 +12,8 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
@@ -24,12 +23,12 @@ import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
-import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.RelayBlockResolver;
+import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.CheckPreference;
 import com.mishiranu.dashchan.ui.preference.core.MultipleEditTextPreference;
@@ -43,7 +42,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ChanFragment extends PreferenceFragment {
+public class ChanFragment extends PreferenceFragment implements ActivityHandler  {
 	private static final String EXTRA_CHAN_NAME = "chanName";
 
 	private Preference<String[]> captchaPassPreference;
@@ -75,14 +74,14 @@ public class ChanFragment extends PreferenceFragment {
 	@Override
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+
 		String chanName = getChanName();
+		Chan chan = Chan.get(chanName);
+		ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(null);
+		ChanConfiguration.Deleting deleting = board.allowDeleting
+				? chan.configuration.safe().obtainDeleting(null) : null;
 
-		ChanConfiguration configuration = ChanConfiguration.get(chanName);
-		ChanLocator locator = ChanLocator.get(chanName);
-		ChanConfiguration.Board board = configuration.safe().obtainBoard(null);
-		ChanConfiguration.Deleting deleting = board.allowDeleting ? configuration.safe().obtainDeleting(null) : null;
-
-		if (!configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE)) {
+		if (!chan.configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE)) {
 			addEdit(Preferences.KEY_DEFAULT_BOARD_NAME.bind(chanName), null,
 					R.string.default_starting_board, p -> {
 						String text = p.getValue();
@@ -90,7 +89,7 @@ public class ChanFragment extends PreferenceFragment {
 							String boardName = StringUtils.validateBoardName(text);
 							if (boardName != null) {
 								text = StringUtils.formatBoardTitle(chanName, boardName,
-										ChanConfiguration.get(chanName).getBoardTitle(boardName));
+										Chan.get(chanName).configuration.getBoardTitle(boardName));
 							} else {
 								text = null;
 							}
@@ -103,7 +102,7 @@ public class ChanFragment extends PreferenceFragment {
 					R.string.load_catalog, R.string.load_catalog__summary);
 		}
 		if (deleting != null && deleting.password) {
-			Preferences.getPassword(chanName); // Ensure password existence
+			Preferences.getPassword(chan); // Ensure password existence
 			addEdit(Preferences.KEY_PASSWORD.bind(chanName), null,
 					R.string.password_for_removal, R.string.password_for_removal__summary,
 					getString(R.string.password), InputType.TYPE_CLASS_TEXT |
@@ -111,20 +110,20 @@ public class ChanFragment extends PreferenceFragment {
 					.setOnAfterChangeListener(p -> {
 						String value = p.getValue();
 						if (StringUtils.isEmpty(value)) {
-							p.setValue(Preferences.getPassword(getChanName()));
+							p.setValue(Preferences.getPassword(Chan.get(chanName)));
 							ToastUtils.show(requireContext(), R.string.new_password_was_generated);
 						}
 					});
 		}
-		Collection<String> captchaTypes = configuration.getSupportedCaptchaTypes();
+		Collection<String> captchaTypes = chan.configuration.getSupportedCaptchaTypes();
 		if (captchaTypes != null && captchaTypes.size() > 1) {
 			String[] values = Preferences.getCaptchaTypeValues(captchaTypes);
 			addList(Preferences.KEY_CAPTCHA.bind(chanName), values,
-					Preferences.getCaptchaTypeDefaultValue(chanName), R.string.captcha_type,
-					Preferences.getCaptchaTypeEntries(chanName, captchaTypes));
+					Preferences.getCaptchaTypeDefaultValue(chan), R.string.captcha_type,
+					Preferences.getCaptchaTypeEntries(chan, captchaTypes));
 		}
-		if (configuration.getOption(ChanConfiguration.OPTION_ALLOW_CAPTCHA_PASS)) {
-			ChanConfiguration.Authorization authorization = configuration.safe().obtainCaptchaPass();
+		if (chan.configuration.getOption(ChanConfiguration.OPTION_ALLOW_CAPTCHA_PASS)) {
+			ChanConfiguration.Authorization authorization = chan.configuration.safe().obtainCaptchaPass();
 			if (authorization != null && authorization.fieldsCount > 0) {
 				captchaPassPreference = addMultipleEdit(Preferences.KEY_CAPTCHA_PASS.bind(chanName),
 						R.string.captcha_pass, R.string.captcha_pass__summary, authorization.hints,
@@ -138,8 +137,8 @@ public class ChanFragment extends PreferenceFragment {
 				});
 			}
 		}
-		if (configuration.getOption(ChanConfiguration.OPTION_ALLOW_USER_AUTHORIZATION)) {
-			ChanConfiguration.Authorization authorization = configuration.safe().obtainUserAuthorization();
+		if (chan.configuration.getOption(ChanConfiguration.OPTION_ALLOW_USER_AUTHORIZATION)) {
+			ChanConfiguration.Authorization authorization = chan.configuration.safe().obtainUserAuthorization();
 			if (authorization != null && authorization.fieldsCount > 0) {
 				userAuthorizationPreference = addMultipleEdit(Preferences.KEY_USER_AUTHORIZATION.bind(chanName),
 						R.string.user_authorization, 0, authorization.hints,
@@ -153,19 +152,21 @@ public class ChanFragment extends PreferenceFragment {
 				});
 			}
 		}
-		LinkedHashMap<String, Boolean> customPreferences = configuration.getCustomPreferences();
+		LinkedHashMap<String, Boolean> customPreferences = chan.configuration.getCustomPreferences();
 		if (customPreferences != null) {
 			for (LinkedHashMap.Entry<String, Boolean> preferenceHolder : customPreferences.entrySet()) {
 				String key = preferenceHolder.getKey();
 				boolean defaultValue = preferenceHolder.getValue();
-				ChanConfiguration.CustomPreference customPreference = configuration.safe().obtainCustomPreference(key);
+				ChanConfiguration.CustomPreference customPreference =
+						chan.configuration.safe().obtainCustomPreference(key);
 				if (customPreference != null && customPreference.title != null) {
 					CheckPreference preference = addCheck(false, key, defaultValue,
 							customPreference.title, customPreference.summary);
-					preference.setValue(configuration.get(null, key, defaultValue));
+					preference.setValue(chan.configuration.get(null, key, defaultValue));
 					preference.setOnAfterChangeListener(p -> {
-						configuration.set(null, preference.key, p.getValue());
-						configuration.commit();
+						Chan callbackChan = Chan.get(chanName);
+						callbackChan.configuration.set(null, preference.key, p.getValue());
+						callbackChan.configuration.commit();
 					});
 				}
 			}
@@ -174,15 +175,15 @@ public class ChanFragment extends PreferenceFragment {
 		cookiePreference.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 				.pushFragment(new CookiesFragment(chanName)));
 
-		ArrayList<String> domains = locator.getChanHosts(true);
-		boolean localMode = configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE) || domains.isEmpty();
-		boolean httpsConfigurable = locator.isHttpsConfigurable();
-		boolean canReadThreadPartially = configuration.getOption(ChanConfiguration.OPTION_READ_THREAD_PARTIALLY);
+		ArrayList<String> domains = chan.locator.getChanHosts(true);
+		boolean localMode = chan.configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE) || domains.isEmpty();
+		boolean httpsConfigurable = chan.locator.isHttpsConfigurable();
+		boolean canReadThreadPartially = chan.configuration.getOption(ChanConfiguration.OPTION_READ_THREAD_PARTIALLY);
 		if (!localMode || httpsConfigurable || canReadThreadPartially) {
 			addHeader(R.string.connection);
 		}
 		if (!localMode) {
-			anotherDomainMode = !domains.contains(locator.getPreferredHost()) || domains.size() == 1 ||
+			anotherDomainMode = !domains.contains(chan.locator.getPreferredHost()) || domains.size() == 1 ||
 					savedInstanceState != null && savedInstanceState.getBoolean(EXTRA_ANOTHER_DOMAIN_MODE);
 			if (anotherDomainMode) {
 				addAnotherDomainPreference(domains.get(0));
@@ -239,12 +240,14 @@ public class ChanFragment extends PreferenceFragment {
 
 		addHeader(R.string.additional);
 		addButton(R.string.uninstall_extension, 0).setOnClickListener(p -> {
-			String packageName = ChanManager.getInstance().getExtensionPackageName(getChanName());
-			@SuppressWarnings("deprecation")
-			Intent intent = new Intent(Intent.ACTION_UNINSTALL_PACKAGE)
-					.setData(Uri.parse("package:" + packageName))
-					.putExtra(Intent.EXTRA_RETURN_RESULT, true);
-			startActivityForResult(intent, C.REQUEST_CODE_UNINSTALL);
+			Chan innerChan = Chan.get(chanName);
+			if (innerChan.name != null) {
+				@SuppressWarnings("deprecation")
+				Intent intent = new Intent(Intent.ACTION_UNINSTALL_PACKAGE)
+						.setData(Uri.parse("package:" + innerChan.packageName))
+						.putExtra(Intent.EXTRA_RETURN_RESULT, true);
+				startActivity(intent);
+			}
 		});
 	}
 
@@ -261,19 +264,28 @@ public class ChanFragment extends PreferenceFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		ChanConfiguration configuration = ChanConfiguration.get(getChanName());
-		((FragmentHandler) requireActivity()).setTitleSubtitle(configuration.getTitle(), null);
-		if (!ChanManager.getInstance().isExistingChanName(getChanName())) {
-			((FragmentHandler) requireActivity()).removeFragment();
-		}
+		Chan chan = Chan.get(getChanName());
+		((FragmentHandler) requireActivity()).setTitleSubtitle(chan.configuration.getTitle(), null);
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
 
-		// Check every time returned from cookies fragment
-		removeCookiePreferenceIfNotNeeded();
+		if (!ChanManager.getInstance().isExistingChanName(getChanName())) {
+			((FragmentHandler) requireActivity()).removeFragment();
+		} else {
+			// Check every time returned from cookies fragment
+			removeCookiePreferenceIfNotNeeded();
+		}
+	}
+
+	@Override
+	public void onChansChanged(Collection<String> changed, Collection<String> removed) {
+		if (changed.contains(getChanName()) || removed.contains(getChanName())) {
+			// Don't bother with updating fragment
+			((FragmentHandler) requireActivity()).removeFragment();
+		}
 	}
 
 	@Override
@@ -284,8 +296,8 @@ public class ChanFragment extends PreferenceFragment {
 
 	private void removeCookiePreferenceIfNotNeeded() {
 		if (cookiePreference != null) {
-			ChanConfiguration configuration = ChanConfiguration.get(getChanName());
-			if (!configuration.hasCookies()) {
+			Chan chan = Chan.get(getChanName());
+			if (!chan.configuration.hasCookies()) {
 				removePreference(cookiePreference);
 				cookiePreference = null;
 			}
@@ -293,13 +305,13 @@ public class ChanFragment extends PreferenceFragment {
 	}
 
 	private void clearSpecialCookies() {
-		Map<String, String> cookies = RelayBlockResolver.getInstance().getCookies(getChanName());
+		Chan chan = Chan.get(getChanName());
+		Map<String, String> cookies = RelayBlockResolver.getInstance().getCookies(chan);
 		if (!cookies.isEmpty()) {
-			ChanConfiguration configuration = ChanConfiguration.get(getChanName());
 			for (String cookie : cookies.keySet()) {
-				configuration.storeCookie(cookie, null, null);
+				chan.configuration.storeCookie(cookie, null, null);
 			}
-			configuration.commit();
+			chan.configuration.commit();
 		}
 		removeCookiePreferenceIfNotNeeded();
 	}
@@ -316,14 +328,6 @@ public class ChanFragment extends PreferenceFragment {
 			return true;
 		});
 		return preference;
-	}
-
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == C.REQUEST_CODE_UNINSTALL && resultCode == Activity.RESULT_OK) {
-			MessageDialog.create(this, getString(R.string.changes_after_restart__sentence), true);
-		}
-		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	private enum AuthorizationType {CAPTCHA_PASS, USER}
@@ -373,7 +377,8 @@ public class ChanFragment extends PreferenceFragment {
 		@Override
 		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
 			Bundle args = requireArguments();
-			CheckAuthorizationTask task = new CheckAuthorizationTask(args.getString(EXTRA_CHAN_NAME),
+			Chan chan = Chan.get(args.getString(EXTRA_CHAN_NAME));
+			CheckAuthorizationTask task = new CheckAuthorizationTask(chan,
 					AuthorizationType.valueOf(args.getString(EXTRA_AUTHORIZATION_TYPE)),
 					args.getStringArray(EXTRA_AUTHORIZATION_DATA));
 			task.executeOnExecutor(CheckAuthorizationTask.THREAD_POOL_EXECUTOR);
@@ -424,18 +429,19 @@ public class ChanFragment extends PreferenceFragment {
 	}
 
 	private static class CheckAuthorizationTask extends AsyncManager.SimpleTask<Void> {
-		private final HttpHolder holder = new HttpHolder();
+		private final HttpHolder holder;
 
-		private final String chanName;
+		private final Chan chan;
 		private final AuthorizationType authorizationType;
 		private final String[] authorizationData;
 
 		private boolean valid;
 		private ErrorItem errorItem;
 
-		public CheckAuthorizationTask(String chanName,
+		public CheckAuthorizationTask(Chan chan,
 				AuthorizationType authorizationType, String[] authorizationData) {
-			this.chanName = chanName;
+			holder = new HttpHolder(chan);
+			this.chan = chan;
 			this.authorizationType = authorizationType;
 			this.authorizationData = authorizationData;
 		}
@@ -443,7 +449,6 @@ public class ChanFragment extends PreferenceFragment {
 		@Override
 		public Void doInBackground() {
 			try (HttpHolder.Use ignored = holder.use()) {
-				ChanPerformer performer = ChanPerformer.get(chanName);
 				int type = -1;
 				switch (authorizationType) {
 					case CAPTCHA_PASS: {
@@ -455,14 +460,14 @@ public class ChanFragment extends PreferenceFragment {
 						break;
 					}
 				}
-				ChanPerformer.CheckAuthorizationResult result = performer.safe()
+				ChanPerformer.CheckAuthorizationResult result = chan.performer.safe()
 						.onCheckAuthorization(new ChanPerformer
 								.CheckAuthorizationData(type, authorizationData, holder));
 				valid = result != null && result.success;
 			} catch (ExtensionException | HttpException | InvalidResponseException e) {
 				errorItem = e.getErrorItemAndHandle();
 			} finally {
-				ChanConfiguration.get(chanName).commit();
+				chan.configuration.commit();
 			}
 			return null;
 		}

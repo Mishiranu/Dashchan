@@ -23,7 +23,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.RecyclerView;
-import chan.content.ChanConfiguration;
+import chan.content.Chan;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
@@ -462,8 +462,8 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 				chanNameText = getString(R.string.multiple_forums);
 			} else {
 				String chanName = selectedChanNames.iterator().next();
-				ChanConfiguration configuration = ChanConfiguration.get(chanName);
-				String title = configuration != null ? configuration.getTitle() : chanName;
+				Chan chan = Chan.get(chanName);
+				String title = chan.name != null ? chan.configuration.getTitle() : chanName;
 				chanNameText = getString(R.string.forum_only__format, title);
 			}
 			chanNameSelector.setText(chanNameText);
@@ -623,22 +623,22 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		@NonNull
 		@Override
 		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
-			ArrayList<String> chanNames = new ArrayList<>();
-			for (String chanName : ChanManager.getInstance().getAvailableChanNames()) {
-				chanNames.add(chanName);
+			ArrayList<Chan> chans = new ArrayList<>();
+			for (Chan chan : ChanManager.getInstance().getAvailableChans()) {
+				chans.add(chan);
 			}
-			String[] items = new String[chanNames.size()];
-			for (int i = 0; i < chanNames.size(); i++) {
-				items[i] = ChanConfiguration.get(chanNames.get(i)).getTitle();
+			String[] items = new String[chans.size()];
+			for (int i = 0; i < chans.size(); i++) {
+				items[i] = chans.get(i).configuration.getTitle();
 			}
 			boolean[] checkedItems = savedInstanceState != null ? savedInstanceState
 					.getBooleanArray(EXTRA_CHECKED) : null;
 			// size != length means some chans were added or deleted while configuration was changing (very rare case)
-			if (checkedItems == null || chanNames.size() != checkedItems.length) {
+			if (checkedItems == null || chans.size() != checkedItems.length) {
 				ArrayList<String> selected = requireArguments().getStringArrayList(EXTRA_SELECTED);
 				checkedItems = new boolean[items.length];
-				for (int i = 0; i < chanNames.size(); i++) {
-					checkedItems[i] = selected.contains(chanNames.get(i));
+				for (int i = 0; i < chans.size(); i++) {
+					checkedItems[i] = selected.contains(chans.get(i).name);
 				}
 			}
 			this.checkedItems = checkedItems;
@@ -647,9 +647,9 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 					.setNegativeButton(android.R.string.cancel, null)
 					.setPositiveButton(android.R.string.ok, (d, which) -> {
 						ArrayList<String> selected = new ArrayList<>();
-						for (int i = 0; i < chanNames.size(); i++) {
+						for (int i = 0; i < chans.size(); i++) {
 							if (this.checkedItems[i]) {
-								selected.add(chanNames.get(i));
+								selected.add(chans.get(i).name);
 							}
 						}
 						((AutohideDialog) getParentFragment()).onChansSelected(selected);

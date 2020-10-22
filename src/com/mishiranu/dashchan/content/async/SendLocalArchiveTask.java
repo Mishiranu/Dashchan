@@ -7,8 +7,9 @@ import android.text.SpannableStringBuilder;
 import android.text.style.StrikethroughSpan;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
+import android.util.Base64;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
 import chan.content.ChanMarkup;
 import chan.util.DataFile;
 import chan.util.StringUtils;
@@ -25,11 +26,17 @@ import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.QuoteSpan;
 import com.mishiranu.dashchan.text.style.ScriptSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
+import com.mishiranu.dashchan.util.Hasher;
+import com.mishiranu.dashchan.util.MimeTypes;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -38,13 +45,13 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 	private static final String DIRECTORY_FILES = "src";
 	private static final String DIRECTORY_THUMBNAILS = "thumb";
 
-	private final String chanName;
+	private final Callback callback;
+	private final Chan chan;
 	private final String boardName;
 	private final String threadNumber;
 	private final Collection<Post> posts;
 	private final boolean saveThumbnails;
 	private final boolean saveFiles;
-	private final Callback callback;
 
 	public interface Callback {
 		DownloadService.Binder getDownloadBinder();
@@ -52,15 +59,15 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		void onLocalArchivationComplete(boolean success);
 	}
 
-	public SendLocalArchiveTask(String chanName, String boardName, String threadNumber,
-			Collection<Post> posts, boolean saveThumbnails, boolean saveFiles, Callback callback) {
-		this.chanName = chanName;
+	public SendLocalArchiveTask(Callback callback, Chan chan, String boardName, String threadNumber,
+			Collection<Post> posts, boolean saveThumbnails, boolean saveFiles) {
+		this.callback = callback;
+		this.chan = chan;
 		this.boardName = boardName;
 		this.threadNumber = threadNumber;
 		this.posts = posts;
 		this.saveThumbnails = saveThumbnails;
 		this.saveFiles = saveFiles;
-		this.callback = callback;
 	}
 
 	@Override
@@ -88,26 +95,25 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 
 	@Override
 	protected Result doInBackground(Void... params) {
-		String chanName = this.chanName;
+		Chan chan = this.chan;
 		String boardName = this.boardName;
 		String threadNumber = this.threadNumber;
 		Collection<Post> posts = this.posts;
 		Object[] decodeTo = new Object[2];
 		ArrayList<SpanItem> spanItems = new ArrayList<>();
-		ChanConfiguration configuration = ChanConfiguration.get(chanName);
-		ChanLocator locator = ChanLocator.get(configuration);
-		ChanMarkup markup = ChanMarkup.get(configuration);
-		String archiveName = chanName + '-' + boardName + '-' + threadNumber;
-		int totalFilesCount = 0;
+		String archiveName = chan.name + '-' + boardName + '-' + threadNumber;
 		ArrayList<String> existFilesLc = new ArrayList<>();
 		ArrayList<String> existThumbnailsLc = new ArrayList<>();
+		HashMap<String, String> iconNames = new HashMap<>();
+		Hasher hasher = Hasher.getInstanceSha256();
+		int totalFilesCount = 0;
 		for (Post post : posts) {
 			totalFilesCount += post.attachments.size();
 		}
-		String defaultName = configuration.getDefaultName(boardName);
+		String defaultName = chan.configuration.getDefaultName(boardName);
 		WakabaLikeHtmlBuilder htmlBuilder = new WakabaLikeHtmlBuilder(posts.iterator().next().subject,
-				chanName, boardName, configuration.getBoardTitle(boardName), configuration.getTitle(),
-				locator.safe(false).createThreadUri(boardName, threadNumber), posts.size(), totalFilesCount);
+				boardName, chan.configuration.getBoardTitle(boardName), chan.configuration.getTitle(),
+				chan.locator.safe(false).createThreadUri(boardName, threadNumber), posts.size(), totalFilesCount);
 		ArrayList<DownloadService.DownloadItem> filesToDownload = new ArrayList<>();
 		ArrayList<DownloadService.DownloadItem> thumbnailsToDownload = new ArrayList<>();
 		for (Post post : posts) {
@@ -127,7 +133,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 			if (name.isEmpty()) {
 				name = defaultName;
 			}
-			CharSequence charSequence = HtmlParser.spanify(comment, markup, null, null, this);
+			CharSequence charSequence = HtmlParser.spanify(comment, chan.markup.getMarkup(), null, null, this);
 			spanItems.clear();
 			SpannableStringBuilder spannable = new SpannableStringBuilder(charSequence);
 			replaceSpannable(spannable, '<', "&lt;");
@@ -143,9 +149,10 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 					if (what == ChanMarkup.TAG_SPECIAL_LINK) {
 						String text = spannable.subSequence(start, end).toString();
 						if (text.startsWith("&gt;&gt;")) {
-							Uri uri = locator.validateClickedUriString((String) decodeTo[1], boardName, threadNumber);
-							if (threadNumber.equals(locator.safe(false).getThreadNumber(uri))) {
-								PostNumber postNumber = locator.safe(false).getPostNumber(uri);
+							Uri uri = chan.locator.validateClickedUriString((String) decodeTo[1],
+									boardName, threadNumber);
+							if (threadNumber.equals(chan.locator.safe(false).getThreadNumber(uri))) {
+								PostNumber postNumber = chan.locator.safe(false).getPostNumber(uri);
 								String postNumberString = postNumber == null ? threadNumber : postNumber.toString();
 								extra = "#" + postNumberString;
 							} else {
@@ -190,25 +197,62 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 					sage, originalPoster, timestamp, deleted, useDefaultName, comment);
 			for (Post.Icon icon : post.icons) {
 				if (icon.uri != null && !StringUtils.isEmpty(icon.title)) {
-					htmlBuilder.addIcon(locator.convert(icon.uri), icon.title);
+					Uri iconUri = chan.locator.convert(icon.uri);
+					String simpleUri = iconUri.buildUpon().scheme(null).authority(null).build().toString();
+					String pathHash = Base64.encodeToString(hasher.calculate(simpleUri), 0, 12,
+							Base64.NO_WRAP | Base64.URL_SAFE);
+					String iconNameWithoutExtension = "icon-" + pathHash;
+					String iconName = iconNames.get(iconNameWithoutExtension);
+					boolean downloadIcon = false;
+					if (iconName == null) {
+						String extension = null;
+						if (ChanConfiguration.SCHEME_CHAN.equals(iconUri.getScheme())) {
+							ByteArrayOutputStream output = new ByteArrayOutputStream();
+							try {
+								if (chan.configuration.readResourceUri(iconUri, output)) {
+									byte[] bytes = output.toByteArray();
+									String contentType = URLConnection
+											.guessContentTypeFromStream(new ByteArrayInputStream(bytes));
+									if (contentType != null) {
+										extension = MimeTypes.toExtension(contentType);
+									}
+								}
+							} catch (IOException e) {
+								// Ignore
+							}
+						} else {
+							extension = StringUtils.getFileExtension(iconUri.getPath());
+						}
+						iconName = iconNameWithoutExtension;
+						if (!StringUtils.isEmpty(extension)) {
+							iconName += "." + extension;
+						}
+						iconNames.put(iconNameWithoutExtension, iconName);
+						downloadIcon = true;
+					}
+					String iconPath = archiveName + "/" + DIRECTORY_THUMBNAILS + "/" + iconName;
+					htmlBuilder.addIcon(iconPath, icon.title);
+					if (downloadIcon && saveThumbnails) {
+						thumbnailsToDownload.add(new DownloadService.DownloadItem(chan.name, iconUri, iconName));
+					}
 				}
 			}
 			for (Post.Attachment attachment : post.attachments) {
 				if (attachment instanceof Post.Attachment.File) {
 					Post.Attachment.File file = (Post.Attachment.File) attachment;
-					Uri fileUri = locator.convert(locator.fixRelativeFileUri(file.fileUri));
-					Uri thumbnailUri = locator.convert(locator.fixRelativeFileUri(file.thumbnailUri));
+					Uri fileUri = chan.locator.convert(chan.locator.fixRelativeFileUri(file.fileUri));
+					Uri thumbnailUri = chan.locator.convert(chan.locator.fixRelativeFileUri(file.thumbnailUri));
 					if (fileUri == null) {
 						fileUri = thumbnailUri;
 					}
 					if (fileUri != null) {
-						String fileName = locator.createAttachmentFileName(fileUri);
+						String fileName = chan.locator.createAttachmentFileName(fileUri);
 						fileName = chooseFileName(existFilesLc, fileName);
 						String filePath = archiveName + "/" + DIRECTORY_FILES + "/" + fileName;
 						String thumbnailName = null;
 						String thumbnailPath = null;
 						if (thumbnailUri != null) {
-							thumbnailName = locator.createAttachmentFileName(thumbnailUri);
+							thumbnailName = chan.locator.createAttachmentFileName(thumbnailUri);
 							thumbnailName = chooseFileName(existThumbnailsLc, thumbnailName);
 							thumbnailPath = archiveName + "/" + DIRECTORY_THUMBNAILS + "/" + thumbnailName;
 						}
@@ -216,11 +260,11 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 						htmlBuilder.addFile(filePath, thumbnailPath, originalName, file.size,
 								file.width, file.height);
 						if (saveFiles) {
-							filesToDownload.add(new DownloadService.DownloadItem(chanName,
+							filesToDownload.add(new DownloadService.DownloadItem(chan.name,
 									fileUri, fileName));
 						}
 						if (saveThumbnails && thumbnailUri != null) {
-							thumbnailsToDownload.add(new DownloadService.DownloadItem(chanName,
+							thumbnailsToDownload.add(new DownloadService.DownloadItem(chan.name,
 									thumbnailUri, thumbnailName));
 						}
 					}

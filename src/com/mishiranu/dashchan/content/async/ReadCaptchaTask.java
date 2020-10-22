@@ -1,6 +1,7 @@
 package com.mishiranu.dashchan.content.async;
 
 import android.graphics.Bitmap;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
@@ -22,7 +23,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 	private final String[] captchaPass;
 	private final boolean mayShowLoadButton;
 	private final String requirement;
-	private final String chanName;
+	private final Chan chan;
 	private final String boardName;
 	private final String threadNumber;
 
@@ -59,16 +60,16 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	private static class ChanCaptchaReader implements CaptchaReader {
-		private final String chanName;
+		private final Chan chan;
 
-		public ChanCaptchaReader(String chanName) {
-			this.chanName = chanName;
+		public ChanCaptchaReader(Chan chan) {
+			this.chan = chan;
 		}
 
 		@Override
 		public Result onReadCaptcha(ChanPerformer.ReadCaptchaData data)
 				throws ExtensionException, HttpException, InvalidResponseException {
-			ChanPerformer.ReadCaptchaResult result = ChanPerformer.get(chanName).safe().onReadCaptcha(data);
+			ChanPerformer.ReadCaptchaResult result = chan.performer.safe().onReadCaptcha(data);
 			if (result == null) {
 				throw new ExtensionException(new RuntimeException("Captcha result is null"));
 			}
@@ -78,9 +79,10 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 
 	public ReadCaptchaTask(Callback callback, CaptchaReader captchaReader,
 			String captchaType, String requirement, String[] captchaPass, boolean mayShowLoadButton,
-			String chanName, String boardName, String threadNumber) {
+			Chan chan, String boardName, String threadNumber) {
+		super(chan);
 		if (captchaReader == null) {
-			captchaReader = new ChanCaptchaReader(chanName);
+			captchaReader = new ChanCaptchaReader(chan);
 		}
 		this.callback = callback;
 		this.captchaReader = captchaReader;
@@ -88,7 +90,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 		this.captchaPass = captchaPass;
 		this.mayShowLoadButton = mayShowLoadButton;
 		this.requirement = requirement;
-		this.chanName = chanName;
+		this.chan = chan;
 		this.boardName = boardName;
 		this.threadNumber = threadNumber;
 	}
@@ -103,7 +105,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 			errorItem = e.getErrorItemAndHandle();
 			return false;
 		} finally {
-			ChanConfiguration.get(chanName).commit();
+			chan.configuration.commit();
 		}
 		captchaState = result.result.captchaState;
 		captchaData = result.result.captchaData;

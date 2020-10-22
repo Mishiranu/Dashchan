@@ -3,7 +3,9 @@ package chan.content;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.net.Uri;
 import android.util.Pair;
+import android.util.SparseArray;
 import chan.annotation.Extendable;
 import chan.annotation.Public;
 import chan.content.model.BoardCategory;
@@ -12,6 +14,10 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.util.IOUtils;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,43 +32,45 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 @Extendable
-public class ChanConfiguration implements ChanManager.Linked {
-	private final String chanName;
+public class ChanConfiguration implements Chan.Linked {
+	private final Chan.Provider chanProvider;
 	private final Resources resources;
 	private final SharedPreferences preferences;
 
 	private boolean canSetOptions = true;
 
-	public static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
+	static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
 
 	@Public
 	public ChanConfiguration() {
-		this(true);
+		this(null);
 	}
 
-	ChanConfiguration(boolean useInitializer) {
-		if (useInitializer) {
+	ChanConfiguration(Chan.Provider chanProvider) {
+		if (chanProvider == null) {
 			ChanManager.Initializer.Holder holder = INITIALIZER.consume();
-			chanName = holder.chanName;
+			this.chanProvider = holder.chanProvider;
 			resources = holder.resources;
-			preferences = MainApplication.getInstance().getSharedPreferences("chan." + chanName,
-					Context.MODE_PRIVATE);
+			preferences = MainApplication.getInstance().getSharedPreferences
+					("chan." + holder.chanName, Context.MODE_PRIVATE);
 		} else {
-			chanName = null;
+			this.chanProvider = chanProvider;
 			resources = null;
 			preferences = null;
 		}
 	}
 
 	@Override
-	public final String getChanName() {
-		return chanName;
-	}
-
-	@Override
 	public final void init() {
 		canSetOptions = false;
 	}
+
+	@Override
+	public final Chan get() {
+		return chanProvider.get();
+	}
+
+	public static final String SCHEME_CHAN = "chan";
 
 	@Public public static final String OPTION_SINGLE_BOARD_MODE = "single_board_mode";
 	@Public public static final String OPTION_READ_THREAD_PARTIALLY = "read_thread_partially";
@@ -97,14 +105,9 @@ public class ChanConfiguration implements ChanManager.Linked {
 	private static final String KEY_COOKIE_DISPLAY_NAME = "displayName";
 	private static final String KEY_COOKIE_BLOCKED = "blocked";
 
-	public static <T extends ChanConfiguration> T get(String chanName) {
-		return ChanManager.getInstance().getConfiguration(chanName, true);
-	}
-
 	@Public
-	public static <T extends ChanConfiguration> T get(Object object) {
-		ChanManager manager = ChanManager.getInstance();
-		return manager.getConfiguration(manager.getLinkedChanName(object), false);
+	public static ChanConfiguration get(Object object) {
+		return ((Chan.Linked) object).get().configuration;
 	}
 
 	@Public
@@ -342,10 +345,10 @@ public class ChanConfiguration implements ChanManager.Linked {
 
 	@Public
 	public final String getTitle() {
-		if (chanName != null) {
+		if (get().name != null) {
 			if (title == null) {
 				String title = null;
-				ArrayList<String> hosts = ChanLocator.get(this).getChanHosts(false);
+				ArrayList<String> hosts = get().locator.getChanHosts(false);
 				if (hosts.size() > 0) {
 					title = hosts.get(0);
 				}
@@ -617,7 +620,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 	}
 
 	public final String getCaptchaType() {
-		return Preferences.getCaptchaTypeForChanConfiguration(getChanName());
+		return Preferences.getCaptchaTypeForChan(get());
 	}
 
 	private LinkedHashMap<String, Boolean> customPreferences;
@@ -730,6 +733,55 @@ public class ChanConfiguration implements ChanManager.Linked {
 	@Public
 	public final Resources getResources() {
 		return resources;
+	}
+
+	private final SparseArray<Uri> resourceUris = new SparseArray<>();
+
+	@Public
+	public final Uri getResourceUri(int resId) {
+		Uri uri;
+		synchronized (resourceUris) {
+			uri = resourceUris.get(resId);
+		}
+		if (uri == null) {
+			String packageName = resources.getResourcePackageName(resId);
+			if (get().packageName.equals(packageName)) {
+				String type = resources.getResourceTypeName(resId);
+				String name = resources.getResourceEntryName(resId);
+				uri = Uri.parse(SCHEME_CHAN + ":///res/" + type + "/" + name);
+				if (uri != null) {
+					synchronized (resourceUris) {
+						resourceUris.put(resId, uri);
+					}
+				}
+			}
+		}
+		return uri;
+	}
+
+	public final boolean readResourceUri(Uri uri, OutputStream output) throws IOException {
+		Chan chan = get();
+		if (chan.name == null) {
+			return false;
+		}
+		String chanName = uri.getAuthority();
+		if (!StringUtils.isEmpty(chanName) && !chanName.equals(chan.name)) {
+			return false;
+		}
+		List<String> pathSegments = uri.getPathSegments();
+		if (pathSegments == null || pathSegments.size() != 3 || !"res".equals(pathSegments.get(0))) {
+			return false;
+		}
+		String type = pathSegments.get(1);
+		String name = pathSegments.get(2);
+		int id = resources.getIdentifier(name, type, chan.packageName);
+		if (id == 0) {
+			return false;
+		}
+		try (InputStream input = resources.openRawResource(id)) {
+			IOUtils.copyStream(input, output);
+			return true;
+		}
 	}
 
 	private JSONObject cookies;
@@ -867,7 +919,7 @@ public class ChanConfiguration implements ChanManager.Linked {
 
 	@Public
 	public final String[] getUserAuthorizationData() {
-		return Preferences.getUserAuthorizationData(getChanName());
+		return Preferences.getUserAuthorizationData(get());
 	}
 
 	@Public

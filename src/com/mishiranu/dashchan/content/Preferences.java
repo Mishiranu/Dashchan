@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import androidx.annotation.RequiresApi;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
@@ -203,14 +204,13 @@ public class Preferences {
 	public static final ChanKey KEY_CAPTCHA = new ChanKey("captcha");
 	private static final String VALUE_CAPTCHA_START = "captcha_";
 
-	public static String getCaptchaTypeForChanConfiguration(String chanName) {
-		ChanConfiguration configuration = ChanConfiguration.get(chanName);
-		Collection<String> supportedCaptchaTypes = configuration.getSupportedCaptchaTypes();
+	public static String getCaptchaTypeForChan(Chan chan) {
+		Collection<String> supportedCaptchaTypes = chan.configuration.getSupportedCaptchaTypes();
 		if (supportedCaptchaTypes == null || supportedCaptchaTypes.isEmpty()) {
 			return null;
 		}
 		String defaultCaptchaType = supportedCaptchaTypes.iterator().next();
-		String captchaTypeValue = PREFERENCES.getString(KEY_CAPTCHA.bind(chanName),
+		String captchaTypeValue = PREFERENCES.getString(KEY_CAPTCHA.bind(chan.name),
 				transformCaptchaTypeToValue(defaultCaptchaType));
 		String captchaType;
 		if (captchaTypeValue != null && captchaTypeValue.startsWith(VALUE_CAPTCHA_START)) {
@@ -233,18 +233,17 @@ public class Preferences {
 		return values;
 	}
 
-	public static String[] getCaptchaTypeEntries(String chanName, Collection<String> captchaTypes) {
+	public static String[] getCaptchaTypeEntries(Chan chan, Collection<String> captchaTypes) {
 		int i = 0;
-		ChanConfiguration configuration = ChanConfiguration.get(chanName);
 		String[] entries = new String[captchaTypes.size()];
 		for (String captchaType : captchaTypes) {
-			entries[i++] = configuration.safe().obtainCaptcha(captchaType).title;
+			entries[i++] = chan.configuration.safe().obtainCaptcha(captchaType).title;
 		}
 		return entries;
 	}
 
-	public static String getCaptchaTypeDefaultValue(String chanName) {
-		Collection<String> supportedCaptchaTypes = ChanConfiguration.get(chanName).getSupportedCaptchaTypes();
+	public static String getCaptchaTypeDefaultValue(Chan chan) {
+		Collection<String> supportedCaptchaTypes = chan.configuration.getSupportedCaptchaTypes();
 		if (supportedCaptchaTypes == null || supportedCaptchaTypes.isEmpty()) {
 			return null;
 		}
@@ -257,10 +256,10 @@ public class Preferences {
 
 	public static final ChanKey KEY_CAPTCHA_PASS = new ChanKey("captcha_pass");
 
-	public static String[] getCaptchaPass(String chanName) {
-		ChanConfiguration.Authorization authorization = ChanConfiguration.get(chanName).safe().obtainCaptchaPass();
+	public static String[] getCaptchaPass(Chan chan) {
+		ChanConfiguration.Authorization authorization = chan.configuration.safe().obtainCaptchaPass();
 		if (authorization != null && authorization.fieldsCount > 0) {
-			String value = PREFERENCES.getString(KEY_CAPTCHA_PASS.bind(chanName), null);
+			String value = PREFERENCES.getString(KEY_CAPTCHA_PASS.bind(chan.name), null);
 			return unpackOrCastMultipleValues(value, authorization.fieldsCount);
 		} else {
 			return null;
@@ -321,10 +320,10 @@ public class Preferences {
 
 	public static final ChanKey KEY_DEFAULT_BOARD_NAME = new ChanKey("default_board_name");
 
-	public static String getDefaultBoardName(String chanName) {
-		ChanConfiguration configuration = ChanConfiguration.get(chanName);
-		return configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE) ? configuration.getSingleBoardName()
-				: StringUtils.validateBoardName(PREFERENCES.getString(KEY_DEFAULT_BOARD_NAME.bind(chanName), null));
+	public static String getDefaultBoardName(Chan chan) {
+		return chan.configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE)
+				? chan.configuration.getSingleBoardName()
+				: StringUtils.validateBoardName(PREFERENCES.getString(KEY_DEFAULT_BOARD_NAME.bind(chan.name), null));
 	}
 
 	public static void setDefaultBoardName(String chanName, String boardName) {
@@ -435,12 +434,12 @@ public class Preferences {
 
 	public static final ChanKey KEY_DOMAIN = new ChanKey("domain");
 
-	public static String getDomainUnhandled(String chanName) {
-		return PREFERENCES.getString(KEY_DOMAIN.bind(chanName), "");
+	public static String getDomainUnhandled(Chan chan) {
+		return PREFERENCES.getString(KEY_DOMAIN.bind(chan.name), "");
 	}
 
-	public static void setDomainUnhandled(String chanName, String domain) {
-		PREFERENCES.edit().putString(KEY_DOMAIN.bind(chanName), domain).commit();
+	public static void setDomainUnhandled(Chan chan, String domain) {
+		PREFERENCES.edit().putString(KEY_DOMAIN.bind(chan.name), domain).commit();
 	}
 
 	public static final String KEY_DOWNLOAD_DETAIL_NAME = "download_detail_name";
@@ -746,8 +745,8 @@ public class Preferences {
 	public static final ChanKey KEY_LOAD_CATALOG = new ChanKey("load_catalog");
 	public static final boolean DEFAULT_LOAD_CATALOG = false;
 
-	public static boolean isLoadCatalog(String chanName) {
-		return PREFERENCES.getBoolean(KEY_LOAD_CATALOG.bind(chanName), DEFAULT_LOAD_CATALOG);
+	public static boolean isLoadCatalog(Chan chan) {
+		return PREFERENCES.getBoolean(KEY_LOAD_CATALOG.bind(chan.name), DEFAULT_LOAD_CATALOG);
 	}
 
 	public static final String KEY_LOAD_NEAREST_IMAGE = "load_nearest_image";
@@ -845,9 +844,9 @@ public class Preferences {
 	public static final ChanKey KEY_PARTIAL_THREAD_LOADING = new ChanKey("partial_thread_loading");
 	public static final boolean DEFAULT_PARTIAL_THREAD_LOADING = true;
 
-	public static boolean isPartialThreadLoading(String chanName) {
-		if (ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_READ_THREAD_PARTIALLY)) {
-			return PREFERENCES.getBoolean(KEY_PARTIAL_THREAD_LOADING.bind(chanName),
+	public static boolean isPartialThreadLoading(Chan chan) {
+		if (chan.configuration.getOption(ChanConfiguration.OPTION_READ_THREAD_PARTIALLY)) {
+			return PREFERENCES.getBoolean(KEY_PARTIAL_THREAD_LOADING.bind(chan.name),
 					DEFAULT_PARTIAL_THREAD_LOADING);
 		} else {
 			return false;
@@ -873,8 +872,8 @@ public class Preferences {
 		return password.toString();
 	}
 
-	public static String getPassword(String chanName) {
-		String key = KEY_PASSWORD.bind(chanName);
+	public static String getPassword(Chan chan) {
+		String key = KEY_PASSWORD.bind(chan.name);
 		String password = PREFERENCES.getString(key, null);
 		if (StringUtils.isEmpty(password)) {
 			password = generatePassword();
@@ -900,11 +899,11 @@ public class Preferences {
 	public static final String[] ENTRIES_PROXY_2 = {"HTTP", "SOCKS"};
 	public static final String[] VALUES_PROXY_2 = {VALUE_PROXY_2_HTTP, VALUE_PROXY_2_SOCKS};
 
-	public static String[] getProxy(String chanName) {
-		if (ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_LOCAL_MODE)) {
+	public static String[] getProxy(Chan chan) {
+		if (chan.configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE)) {
 			return null;
 		}
-		String value = PREFERENCES.getString(KEY_PROXY.bind(chanName), null);
+		String value = PREFERENCES.getString(KEY_PROXY.bind(chan.name), null);
 		return unpackOrCastMultipleValues(value, 3);
 	}
 
@@ -1045,12 +1044,12 @@ public class Preferences {
 	public static final String KEY_USE_HTTPS_GENERAL = KEY_USE_HTTPS.bind(SPECIAL_CHAN_NAME_GENERAL);
 	public static final boolean DEFAULT_USE_HTTPS = true;
 
-	public static boolean isUseHttps(String chanName) {
-		return PREFERENCES.getBoolean(KEY_USE_HTTPS.bind(chanName), DEFAULT_USE_HTTPS);
+	public static boolean isUseHttps(Chan chan) {
+		return PREFERENCES.getBoolean(KEY_USE_HTTPS.bind(chan.name), DEFAULT_USE_HTTPS);
 	}
 
-	public static void setUseHttps(String chanName, boolean useHttps) {
-		PREFERENCES.edit().putBoolean(KEY_USE_HTTPS.bind(chanName), useHttps).commit();
+	public static void setUseHttps(Chan chan, boolean useHttps) {
+		PREFERENCES.edit().putBoolean(KEY_USE_HTTPS.bind(chan.name), useHttps).commit();
 	}
 
 	public static boolean isUseHttpsGeneral() {
@@ -1066,11 +1065,10 @@ public class Preferences {
 
 	public static final ChanKey KEY_USER_AUTHORIZATION = new ChanKey("user_authorization");
 
-	public static String[] getUserAuthorizationData(String chanName) {
-		ChanConfiguration.Authorization authorization = ChanConfiguration.get(chanName)
-				.safe().obtainUserAuthorization();
+	public static String[] getUserAuthorizationData(Chan chan) {
+		ChanConfiguration.Authorization authorization = chan.configuration.safe().obtainUserAuthorization();
 		if (authorization != null && authorization.fieldsCount > 0) {
-			String value = PREFERENCES.getString(KEY_USER_AUTHORIZATION.bind(chanName), null);
+			String value = PREFERENCES.getString(KEY_USER_AUTHORIZATION.bind(chan.name), null);
 			return unpackOrCastMultipleValues(value, authorization.fieldsCount);
 		} else {
 			return null;

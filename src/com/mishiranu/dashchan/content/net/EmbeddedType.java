@@ -1,6 +1,7 @@
 package com.mishiranu.dashchan.content.net;
 
 import android.net.Uri;
+import chan.content.Chan;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.model.Post;
@@ -78,11 +79,11 @@ public enum EmbeddedType {
 
 	public static Post.Attachment.Embedded extractAttachment(String data) {
 		if (!StringUtils.isEmpty(data)) {
-			ChanLocator locator = ChanLocator.getDefault();
+			Chan chan = Chan.getFallback();
 			for (EmbeddedType embeddedType : EmbeddedType.values()) {
-				String embeddedCode = embeddedType.get(locator, data);
+				String embeddedCode = embeddedType.get(chan.locator, data);
 				if (!StringUtils.isEmpty(embeddedCode)) {
-					return embeddedType.obtainAttachment(locator, embeddedCode);
+					return embeddedType.obtainAttachment(chan.locator, embeddedCode);
 				}
 			}
 		}

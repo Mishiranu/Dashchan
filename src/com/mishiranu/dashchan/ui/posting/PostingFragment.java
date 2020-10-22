@@ -48,8 +48,8 @@ import androidx.annotation.NonNull;
 import androidx.core.view.ViewCompat;
 import androidx.core.widget.TextViewCompat;
 import androidx.fragment.app.Fragment;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
 import chan.content.ChanMarkup;
 import chan.content.ChanPerformer;
 import chan.text.CommentEditor;
@@ -212,20 +212,19 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		ChanConfiguration configuration = ChanConfiguration.get(getChanName());
-		postingConfiguration = configuration.safe().obtainPosting(getBoardName(), getThreadNumber() == null);
+		Chan chan = Chan.get(getChanName());
+		postingConfiguration = chan.configuration.safe().obtainPosting(getBoardName(), getThreadNumber() == null);
 		if (postingConfiguration != null) {
-			allowPosting = true;
+			allowPosting = chan.configuration.safe().obtainBoard(getBoardName()).allowPosting;
 		} else {
 			postingConfiguration = new ChanConfiguration.Posting();
 			allowPosting = false;
 		}
 
 		DraftsStorage draftsStorage = DraftsStorage.getInstance();
-		captchaType = configuration.getCaptchaType();
+		captchaType = chan.configuration.getCaptchaType();
 		if (allowPosting) {
-			ChanMarkup markup = ChanMarkup.get(getChanName());
-			commentEditor = markup.safe().obtainCommentEditor(getBoardName());
+			commentEditor = chan.markup.safe().obtainCommentEditor(getBoardName());
 		}
 		float density = ResourceUtils.obtainDensity(view);
 		int screenWidthDp = getResources().getConfiguration().screenWidthDp;
@@ -347,7 +346,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 			layoutParams.leftMargin = (int) (8f * density);
 			layoutParams.rightMargin = (int) (8f * density);
 		}
-		ChanConfiguration.Captcha captcha = configuration.safe().obtainCaptcha(captchaType);
+		ChanConfiguration.Captcha captcha = chan.configuration.safe().obtainCaptcha(captchaType);
 		captchaForm = new CaptchaForm(this, true, !longFooter,
 				footerContainer, captchaInputParentView, captchaInputView, captcha);
 		if (C.API_LOLLIPOP) {
@@ -731,6 +730,16 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		}
 	}
 
+	@Override
+	public void onChansChanged(Collection<String> changed, Collection<String> removed) {
+		if (changed.contains(getChanName()) || removed.contains(getChanName())) {
+			updatePostingConfigurationIfNeeded();
+			if (!allowPosting) {
+				((FragmentHandler) requireActivity()).removeFragment();
+			}
+		}
+	}
+
 	// Should be called both from onDestroyView (1) and onSaveInstanceState (2).
 	// 1: Ensures draft is saved when user leaves posting screen.
 	// 2: Ensures draft is saved when activity is recreated.
@@ -787,10 +796,10 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 				iconView.setVisibility(View.GONE);
 			}
 			boolean needPassword = false;
-			ChanConfiguration chanConfiguration = ChanConfiguration.get(getChanName());
-			ChanConfiguration.Board board = chanConfiguration.safe().obtainBoard(getChanName());
+			Chan chan = Chan.get(getChanName());
+			ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(getChanName());
 			if (board.allowDeleting) {
-				ChanConfiguration.Deleting deleting = chanConfiguration.safe().obtainDeleting(getChanName());
+				ChanConfiguration.Deleting deleting = chan.configuration.safe().obtainDeleting(getChanName());
 				needPassword = deleting != null && deleting.password;
 			}
 			nameView.setVisibility(posting.allowName ? View.VISIBLE : View.GONE);
@@ -839,11 +848,15 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 	}
 
 	private void updatePostingConfigurationIfNeeded() {
+		Chan chan = Chan.get(getChanName());
 		ChanConfiguration.Posting oldPosting = postingConfiguration;
-		ChanConfiguration.Posting newPosting = ChanConfiguration.get(getChanName()).safe()
-				.obtainPosting(getBoardName(), getThreadNumber() == null);
+		ChanConfiguration.Posting newPosting = chan.configuration
+				.safe().obtainPosting(getBoardName(), getThreadNumber() == null);
 		if (newPosting == null) {
-			return;
+			allowPosting = false;
+			newPosting = new ChanConfiguration.Posting();
+		} else {
+			allowPosting = chan.configuration.safe().obtainBoard(getBoardName()).allowPosting;
 		}
 		boolean views = oldPosting.allowName != newPosting.allowName || oldPosting.allowEmail != newPosting.allowEmail
 				|| oldPosting.allowTripcode != newPosting.allowTripcode
@@ -1002,7 +1015,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		String email = getTextIfVisible(emailView);
 		String password = getTextIfVisible(passwordView);
 		if (password == null) {
-			password = Preferences.getPassword(getChanName());
+			password = Preferences.getPassword(Chan.get(getChanName()));
 		}
 		boolean optionSage = isCheckedIfVisible(sageCheckBox);
 		boolean optionSpoiler = isCheckedIfVisible(spoilerCheckBox);
@@ -1188,10 +1201,11 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 	public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
 		boolean forceCaptcha = (boolean) extra.get(EXTRA_FORCE_CAPTCHA);
 		boolean mayShowLoadButton = (boolean) extra.get(EXTRA_MAY_SHOW_LOAD_BUTTON);
-		String[] captchaPass = forceCaptcha ? null : Preferences.getCaptchaPass(getChanName());
+		Chan chan = Chan.get(getChanName());
+		String[] captchaPass = forceCaptcha ? null : Preferences.getCaptchaPass(chan);
 		ReadCaptchaHolder holder = new ReadCaptchaHolder();
 		ReadCaptchaTask task = new ReadCaptchaTask(holder, null, captchaType, null, captchaPass,
-				mayShowLoadButton, getChanName(), getBoardName(), getThreadNumber());
+				mayShowLoadButton, chan, getBoardName(), getThreadNumber());
 		task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);
 		return holder.attach(task);
 	}
@@ -1249,7 +1263,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		captchaBlackAndWhite = blackAndWhite;
 		loadedCaptchaType = captchaType;
 		if (captchaType != null) {
-			ChanConfiguration.Captcha captcha = ChanConfiguration.get(getChanName())
+			ChanConfiguration.Captcha captcha = Chan.get(getChanName()).configuration
 					.safe().obtainCaptcha(captchaType);
 			if (input == null) {
 				input = captcha.input;
@@ -1563,7 +1577,6 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		int size = fileHolder != null ? fileHolder.getSize() : 0;
 		String fileSize = StringUtils.formatFileSize(size, false);
 		Bitmap bitmap = null;
-		ChanLocator locator = ChanLocator.getDefault();
 		DisplayMetrics metrics = getResources().getDisplayMetrics();
 		int targetImageSize = Math.max(metrics.widthPixels, metrics.heightPixels);
 		if (fileHolder != null) {
@@ -1576,7 +1589,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 				fileSize += " " + fileHolder.getImageWidth() + '×' + fileHolder.getImageHeight();
 			}
 			if (bitmap == null) {
-				if (locator.isVideoExtension(fileHolder.getName())) {
+				if (Chan.getFallback().locator.isVideoExtension(fileHolder.getName())) {
 					MediaMetadataRetriever retriever = new MediaMetadataRetriever();
 					FileHolder.Descriptor descriptor = null;
 					try {
@@ -1705,7 +1718,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 			int maxButtonsWidth = lastWidth - textFormatView.getPaddingLeft() - textFormatView.getPaddingRight();
 			int buttonMarginLeft = (int) ((C.API_LOLLIPOP ? -4f : 0f) * density);
 			Pair<Integer, Integer> supportedAndDisplayedTags = MarkupButtonProvider
-					.obtainSupportedAndDisplayedTags(allowPosting ? ChanMarkup.get(getChanName()) : null,
+					.obtainSupportedAndDisplayedTags(allowPosting ? Chan.get(getChanName()).markup : null,
 							getBoardName(), density, maxButtonsWidth, buttonMarginLeft);
 			int supportedTags = supportedAndDisplayedTags.first;
 			int displayedTags = supportedAndDisplayedTags.second;

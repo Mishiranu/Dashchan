@@ -1,6 +1,6 @@
 package com.mishiranu.dashchan.content.async;
 
-import chan.content.ChanConfiguration;
+import chan.content.Chan;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
@@ -10,8 +10,8 @@ import chan.http.HttpHolder;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
 public class ReadUserBoardsTask extends HttpHolderTask<Void, Long, Boolean> {
-	private final String chanName;
 	private final Callback callback;
+	private final Chan chan;
 
 	private Board[] boards;
 	private ErrorItem errorItem;
@@ -21,22 +21,23 @@ public class ReadUserBoardsTask extends HttpHolderTask<Void, Long, Boolean> {
 		void onReadUserBoardsFail(ErrorItem errorItem);
 	}
 
-	public ReadUserBoardsTask(String chanName, Callback callback) {
-		this.chanName = chanName;
+	public ReadUserBoardsTask(Callback callback, Chan chan) {
+		super(chan);
 		this.callback = callback;
+		this.chan = chan;
 	}
 
 	@Override
 	protected Boolean doInBackground(HttpHolder holder, Void... params) {
 		try {
-			ChanPerformer.ReadUserBoardsResult result = ChanPerformer.get(chanName).safe()
+			ChanPerformer.ReadUserBoardsResult result = chan.performer.safe()
 					.onReadUserBoards(new ChanPerformer.ReadUserBoardsData(holder));
 			Board[] boards = result != null ? result.boards : null;
 			if (boards != null && boards.length == 0) {
 				boards = null;
 			}
 			if (boards != null) {
-				ChanConfiguration.get(chanName).updateFromBoards(boards);
+				chan.configuration.updateFromBoards(boards);
 			}
 			this.boards = boards;
 			return true;
@@ -44,7 +45,7 @@ public class ReadUserBoardsTask extends HttpHolderTask<Void, Long, Boolean> {
 			errorItem = e.getErrorItemAndHandle();
 			return false;
 		} finally {
-			ChanConfiguration.get(chanName).commit();
+			chan.configuration.commit();
 		}
 	}
 

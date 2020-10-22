@@ -6,9 +6,9 @@ import android.net.Uri;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.view.View;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
-import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
@@ -38,24 +38,22 @@ public class InteractionUnit {
 	public void handleLinkClick(UiManager.ConfigurationSet configurationSet,
 			Uri uri, CommentTextView.LinkListener.Extra extra, boolean confirmed) {
 		boolean handled = false;
-		final String uriChanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
-		if (uriChanName != null) {
-			boolean sameChan = uriChanName.equals(extra.chanName);
+		Chan chan = Chan.getPreferred(null, uri);
+		if (chan.name != null) {
+			boolean sameChan = chan.name.equals(extra.chanName);
 			ChanLocator.NavigationData navigationData = null;
-			ChanLocator locator = ChanLocator.get(uriChanName);
-			ChanConfiguration configuration = ChanConfiguration.get(uriChanName);
-			if (locator.safe(false).isBoardUri(uri)) {
+			if (chan.locator.safe(false).isBoardUri(uri)) {
 				navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.Target.THREADS,
-						locator.safe(false).getBoardName(uri), null, null, null);
+						chan.locator.safe(false).getBoardName(uri), null, null, null);
 				handled = true;
-			} else if (locator.safe(false).isThreadUri(uri)) {
-				String boardName = locator.safe(false).getBoardName(uri);
-				String threadNumber = locator.safe(false).getThreadNumber(uri);
-				PostNumber postNumber = locator.safe(false).getPostNumber(uri);
+			} else if (chan.locator.safe(false).isThreadUri(uri)) {
+				String boardName = chan.locator.safe(false).getBoardName(uri);
+				String threadNumber = chan.locator.safe(false).getThreadNumber(uri);
+				PostNumber postNumber = chan.locator.safe(false).getPostNumber(uri);
 				if (threadNumber != null) {
-					if (sameChan && configuration.getOption(ChanConfiguration.OPTION_READ_SINGLE_POST)) {
+					if (sameChan && chan.configuration.getOption(ChanConfiguration.OPTION_READ_SINGLE_POST)) {
 						uiManager.dialog().displayReplyAsync(configurationSet,
-								uriChanName, boardName, threadNumber, postNumber);
+								chan.name, boardName, threadNumber, postNumber);
 					} else {
 						navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.Target.POSTS,
 								boardName, threadNumber, postNumber, null);
@@ -63,14 +61,14 @@ public class InteractionUnit {
 					handled = true;
 				}
 			} else if (sameChan) {
-				navigationData = locator.safe(false).handleUriClickSpecial(uri);
+				navigationData = chan.locator.safe(false).handleUriClickSpecial(uri);
 				if (navigationData != null) {
 					handled = true;
 				}
 			}
 			if (handled && navigationData != null) {
 				if (confirmed) {
-					uiManager.navigator().navigateTargetAllowReturn(uriChanName, navigationData);
+					uiManager.navigator().navigateTargetAllowReturn(chan.name, navigationData);
 				} else {
 					int messageId;
 					if (sameChan) {
@@ -99,7 +97,7 @@ public class InteractionUnit {
 							.setMessage(messageId)
 							.setNegativeButton(android.R.string.cancel, null)
 							.setPositiveButton(android.R.string.ok, (d, which) -> uiManager.navigator()
-									.navigateTargetAllowReturn(uriChanName, navigationDataFinal))
+									.navigateTargetAllowReturn(chan.name, navigationDataFinal))
 							.show();
 					uiManager.getConfigurationLock().lockConfiguration(dialog);
 				}
@@ -110,37 +108,32 @@ public class InteractionUnit {
 		}
 	}
 
-	public void handleLinkLongClick(final Uri uri) {
-		String uriChanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
+	public void handleLinkLongClick(Uri uri) {
+		Chan chan = Chan.getPreferred(null, uri);
 		String fileName = null;
 		String boardName = null;
 		String threadNumber = null;
 		boolean isAttachment = false;
-		ChanLocator locator = null;
-		if (uriChanName != null) {
-			locator = ChanLocator.get(uriChanName);
-			if (locator.safe(false).isAttachmentUri(uri)) {
-				fileName = locator.createAttachmentFileName(uri);
-				boardName = locator.safe(false).getBoardName(uri);
-				threadNumber = locator.safe(false).getThreadNumber(uri);
-				if (threadNumber == null) {
-					boardName = null;
-				}
-				isAttachment = true;
+		if (chan.name != null && chan.locator.safe(false).isAttachmentUri(uri)) {
+			fileName = chan.locator.createAttachmentFileName(uri);
+			boardName = chan.locator.safe(false).getBoardName(uri);
+			threadNumber = chan.locator.safe(false).getThreadNumber(uri);
+			if (threadNumber == null) {
+				boardName = null;
 			}
+			isAttachment = true;
 		}
-		final String finalChanName = uriChanName;
-		final String finalFileName = fileName;
-		final String finalBoardName = boardName;
-		final String finalThreadNumber = threadNumber;
+		String finalFileName = fileName;
+		String finalBoardName = boardName;
+		String finalThreadNumber = threadNumber;
 		Context context = uiManager.getContext();
 		DialogMenu dialogMenu = new DialogMenu(context);
 		dialogMenu.add(R.string.copy_link, () -> StringUtils.copyToClipboard(context, uri.toString()));
 		dialogMenu.add(R.string.share_link, () -> NavigationUtils.shareLink(context, null, uri));
-		if (Preferences.isUseInternalBrowser() && (locator == null || !locator.safe(false).isBoardUri(uri)
-				&& !locator.safe(false).isThreadUri(uri) && !locator.safe(false).isAttachmentUri(uri)
-				&& locator.safe(false).handleUriClickSpecial(uri) == null)) {
-			dialogMenu.add(R.string.web_browser, () -> NavigationUtils.handleUri(context, finalChanName, uri,
+		if (Preferences.isUseInternalBrowser() && (chan.name == null || !chan.locator.safe(false).isBoardUri(uri)
+				&& !chan.locator.safe(false).isThreadUri(uri) && !chan.locator.safe(false).isAttachmentUri(uri)
+				&& chan.locator.safe(false).handleUriClickSpecial(uri) == null)) {
+			dialogMenu.add(R.string.web_browser, () -> NavigationUtils.handleUri(context, chan.name, uri,
 					NavigationUtils.BrowserType.INTERNAL));
 		}
 		if (isAttachment) {
@@ -148,13 +141,13 @@ public class InteractionUnit {
 				DownloadService.Binder binder = uiManager.callback().getDownloadBinder();
 				if (binder != null) {
 					binder.downloadStorage(uri, finalFileName, null,
-							finalChanName, finalBoardName, finalThreadNumber, null);
+							chan.name, finalBoardName, finalThreadNumber, null);
 				}
 			});
 		}
 		if (threadNumber != null) {
 			dialogMenu.add(R.string.open_thread, () -> uiManager.navigator()
-					.navigateTargetAllowReturn(finalChanName, new ChanLocator.NavigationData
+					.navigateTargetAllowReturn(chan.name, new ChanLocator.NavigationData
 							(ChanLocator.NavigationData.Target.POSTS, finalBoardName, finalThreadNumber, null, null)));
 		}
 		dialogMenu.show(uiManager.getConfigurationLock());
@@ -181,13 +174,14 @@ public class InteractionUnit {
 		@Override
 		public void onClick(View v) {
 			UiManager.Holder holder = ListViewUtils.getViewHolder(v, UiManager.Holder.class);
+			Chan chan = Chan.get(holder.getConfigurationSet().chanName);
 			List<AttachmentItem> attachmentItems = holder.getPostItem().getAttachmentItems();
 			if (attachmentItems != null) {
 				GalleryItem.Set gallerySet = holder.getGallerySet();
 				int startImageIndex = gallerySet.findIndex(holder.getPostItem());
 				if (mayShowDialog) {
 					uiManager.dialog().openAttachmentOrDialog(holder.getConfigurationSet().stackInstance, v,
-							attachmentItems, startImageIndex, navigatePostMode, gallerySet);
+							chan.name, attachmentItems, startImageIndex, navigatePostMode, gallerySet);
 				} else {
 					int index = this.index;
 					int imageIndex = startImageIndex;
@@ -196,7 +190,7 @@ public class InteractionUnit {
 							imageIndex++;
 						}
 					}
-					uiManager.dialog().openAttachment(v, attachmentItems, index, imageIndex,
+					uiManager.dialog().openAttachment(v, chan.name, attachmentItems, index, imageIndex,
 							navigatePostMode, gallerySet);
 				}
 			}
@@ -219,7 +213,8 @@ public class InteractionUnit {
 		@Override
 		public boolean onLongClick(View v) {
 			UiManager.Holder holder = ListViewUtils.getViewHolder(v, UiManager.Holder.class);
-			showThumbnailLongClickDialog(uiManager, attachmentItem, (AttachmentView) v, true,
+			Chan chan = Chan.get(holder.getConfigurationSet().chanName);
+			showThumbnailLongClickDialog(uiManager, chan, attachmentItem, (AttachmentView) v, true,
 					holder.getGallerySet().getThreadTitle());
 			return true;
 		}
@@ -233,44 +228,43 @@ public class InteractionUnit {
 		return new ThumbnailLongClickListenerImpl(uiManager);
 	}
 
-	private static void showThumbnailLongClickDialog(UiManager uiManager, AttachmentItem attachmentItem,
+	private static void showThumbnailLongClickDialog(UiManager uiManager, Chan chan, AttachmentItem attachmentItem,
 			AttachmentView attachmentView, boolean hasViewHolder, String threadTitle) {
 		Context context = attachmentView.getContext();
 		DialogMenu dialogMenu = new DialogMenu(context);
-		dialogMenu.setTitle(attachmentItem.getDialogTitle(), true);
+		dialogMenu.setTitle(attachmentItem.getDialogTitle(chan), true);
 		if (attachmentItem.canDownloadToStorage()) {
 			dialogMenu.add(R.string.download_file, () -> {
 				DownloadService.Binder binder = uiManager.callback().getDownloadBinder();
 				if (binder != null) {
-					binder.downloadStorage(attachmentItem.getFileUri(), attachmentItem.getFileName(),
-							attachmentItem.getOriginalName(), attachmentItem.getChanName(),
-							attachmentItem.getBoardName(), attachmentItem.getThreadNumber(), threadTitle);
+					binder.downloadStorage(attachmentItem.getFileUri(chan), attachmentItem.getFileName(chan),
+							attachmentItem.getOriginalName(), chan.name, attachmentItem.getBoardName(),
+							attachmentItem.getThreadNumber(), threadTitle);
 				}
 			});
 			if (attachmentItem.getType() == AttachmentItem.Type.IMAGE ||
-					attachmentItem.getThumbnailKey() != null) {
+					attachmentItem.getThumbnailKey(chan) != null) {
 				dialogMenu.add(R.string.search_image, () -> {
-					Uri fileUri = attachmentItem.getFileUri();
-					NavigationUtils.searchImage(context, uiManager.getConfigurationLock(),
-							ChanManager.getInstance().getChanNameByHost(fileUri.getAuthority()),
-							attachmentItem.getType() == AttachmentItem.Type.IMAGE
-									? fileUri : attachmentItem.getThumbnailUri());
+					Uri fileUri = attachmentItem.getType() == AttachmentItem.Type.IMAGE
+							? attachmentItem.getFileUri(chan) : attachmentItem.getThumbnailUri(chan);
+					Chan fileChan = Chan.getPreferred(null, fileUri);
+					NavigationUtils.searchImage(context, uiManager.getConfigurationLock(), fileChan.name, fileUri);
 				});
 			}
 		}
-		if (hasViewHolder && attachmentItem.canLoadThumbnailManually(attachmentView)) {
-			dialogMenu.add(R.string.show_thumbnail, () -> attachmentItem.startLoad(attachmentView, true));
+		if (hasViewHolder && attachmentItem.canLoadThumbnailManually(attachmentView, chan)) {
+			dialogMenu.add(R.string.show_thumbnail, () -> attachmentItem.startLoad(attachmentView, chan, true));
 		}
 		dialogMenu.add(R.string.copy_link, () -> StringUtils.copyToClipboard(context,
-				attachmentItem.getFileUri().toString()));
+				attachmentItem.getFileUri(chan).toString()));
 		dialogMenu.add(R.string.share_link, () -> NavigationUtils.shareLink(context, null,
-				attachmentItem.getFileUri()));
+				attachmentItem.getFileUri(chan)));
 		dialogMenu.show(uiManager.getConfigurationLock());
 	}
 
-	public void showThumbnailLongClickDialog(AttachmentItem attachmentItem,
+	public void showThumbnailLongClickDialog(Chan chan, AttachmentItem attachmentItem,
 			AttachmentView attachmentView, boolean hasViewHolder, String threadTitle) {
-		showThumbnailLongClickDialog(uiManager, attachmentItem, attachmentView, hasViewHolder, threadTitle);
+		showThumbnailLongClickDialog(uiManager, chan, attachmentItem, attachmentView, hasViewHolder, threadTitle);
 	}
 
 	public boolean handlePostClick(View view, UiManager.PostStateProvider postStateProvider,
@@ -294,63 +288,61 @@ public class InteractionUnit {
 		}
 	}
 
-	public boolean handlePostContextMenu(final PostItem postItem, Replyable replyable, boolean userPost,
+	public boolean handlePostContextMenu(Chan chan, PostItem postItem, Replyable replyable, boolean userPost,
 			boolean allowMyMarkEdit, boolean allowHiding, boolean allowGoToPost) {
 		if (postItem != null) {
 			Context context = uiManager.getContext();
-			String chanName = postItem.getChanName();
-			ChanConfiguration configuration = ChanConfiguration.get(chanName);
-			ChanConfiguration.Board board = configuration.safe().obtainBoard(postItem.getBoardName());
-			boolean postEmpty = StringUtils.isEmpty(postItem.getComment().toString());
+			ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(postItem.getBoardName());
+			boolean postEmpty = StringUtils.isEmpty(postItem.getComment(chan).toString());
 			final boolean copyText = !postEmpty;
 			final boolean shareText = !postEmpty;
 			DialogMenu dialogMenu = new DialogMenu(context);
-			if (replyable != null) {
+			if (replyable != null && replyable.onRequestReply(false)) {
 				dialogMenu.add(R.string.reply, () -> replyable
-						.onRequestReply(new Replyable.ReplyData(postItem.getPostNumber(), null)));
+						.onRequestReply(true, new Replyable.ReplyData(postItem.getPostNumber(), null)));
 				if (!postEmpty) {
 					dialogMenu.add(R.string.quote__verb, () -> replyable
-							.onRequestReply(new Replyable.ReplyData(postItem.getPostNumber(),
-									getCopyReadyComment(postItem.getComment()))));
+							.onRequestReply(true, new Replyable.ReplyData(postItem.getPostNumber(),
+									getCopyReadyComment(postItem.getComment(chan)))));
 				}
 			}
 			if (copyText) {
 				dialogMenu.add(R.string.copy__ellipsis, () -> {
 					DialogMenu innerDialogMenu = new DialogMenu(context);
 					innerDialogMenu.add(R.string.copy_text,
-							() -> handlePostContextMenuCopy(postItem, PostCopyShareAction.COPY_TEXT));
+							() -> handlePostContextMenuCopy(chan, postItem, PostCopyShareAction.COPY_TEXT));
 					innerDialogMenu.add(R.string.copy_markup,
-							() -> handlePostContextMenuCopy(postItem, PostCopyShareAction.COPY_MARKUP));
+							() -> handlePostContextMenuCopy(chan, postItem, PostCopyShareAction.COPY_MARKUP));
 					innerDialogMenu.add(R.string.copy_link,
-							() -> handlePostContextMenuCopy(postItem, PostCopyShareAction.COPY_LINK));
+							() -> handlePostContextMenuCopy(chan, postItem, PostCopyShareAction.COPY_LINK));
 					innerDialogMenu.show(uiManager.getConfigurationLock());
 				});
 			} else {
 				dialogMenu.add(R.string.copy_link,
-						() -> handlePostContextMenuCopy(postItem, PostCopyShareAction.COPY_LINK));
+						() -> handlePostContextMenuCopy(chan, postItem, PostCopyShareAction.COPY_LINK));
 			}
 			if (shareText) {
 				dialogMenu.add(R.string.share__ellipsis, () -> {
 					DialogMenu innerDialogMenu = new DialogMenu(context);
 					innerDialogMenu.add(R.string.share_text,
-							() -> handlePostContextMenuCopy(postItem, PostCopyShareAction.SHARE_TEXT));
+							() -> handlePostContextMenuCopy(chan, postItem, PostCopyShareAction.SHARE_TEXT));
 					innerDialogMenu.add(R.string.share_link,
-							() -> handlePostContextMenuCopy(postItem, PostCopyShareAction.SHARE_LINK));
+							() -> handlePostContextMenuCopy(chan, postItem, PostCopyShareAction.SHARE_LINK));
 					innerDialogMenu.show(uiManager.getConfigurationLock());
 				});
 			} else {
 				dialogMenu.add(R.string.share_link,
-						() -> handlePostContextMenuCopy(postItem, PostCopyShareAction.SHARE_LINK));
+						() -> handlePostContextMenuCopy(chan, postItem, PostCopyShareAction.SHARE_LINK));
 			}
 			if (!postItem.isDeleted()) {
 				if (board.allowReporting) {
 					dialogMenu.add(R.string.report, () -> uiManager.dialog()
-							.performSendReportPosts(postItem.getChanName(), postItem.getBoardName(),
+							.performSendReportPosts(chan.name, postItem.getBoardName(),
 									postItem.getThreadNumber(), Collections.singletonList(postItem.getPostNumber())));
 				}
 				if (board.allowDeleting) {
 					dialogMenu.add(R.string.delete, () -> uiManager.dialog()
-							.performSendDeletePosts(postItem.getChanName(), postItem.getBoardName(),
+							.performSendDeletePosts(chan.name, postItem.getBoardName(),
 									postItem.getThreadNumber(), Collections.singletonList(postItem.getPostNumber())));
 				}
 			}
@@ -384,27 +376,26 @@ public class InteractionUnit {
 
 	private enum PostCopyShareAction {COPY_TEXT, COPY_MARKUP, COPY_LINK, SHARE_LINK, SHARE_TEXT}
 
-	private void handlePostContextMenuCopy(PostItem postItem, PostCopyShareAction action) {
+	private void handlePostContextMenuCopy(Chan chan, PostItem postItem, PostCopyShareAction action) {
 		Context context = uiManager.getContext();
 		switch (action) {
 			case COPY_TEXT: {
-				StringUtils.copyToClipboard(context, getCopyReadyComment(postItem.getComment()));
+				StringUtils.copyToClipboard(context, getCopyReadyComment(postItem.getComment(chan)));
 				break;
 			}
 			case COPY_MARKUP: {
-				StringUtils.copyToClipboard(context, postItem.getCommentMarkup());
+				StringUtils.copyToClipboard(context, postItem.getCommentMarkup(chan));
 				break;
 			}
 			case COPY_LINK:
 			case SHARE_LINK:
 			case SHARE_TEXT: {
-				ChanLocator locator = ChanLocator.get(postItem.getChanName());
 				String boardName = postItem.getBoardName();
 				String threadNumber = postItem.getThreadNumber();
 				PostNumber postNumber = postItem.getPostNumber();
 				Uri uri = postItem.isOriginalPost()
-						? locator.safe(true).createThreadUri(boardName, threadNumber)
-						: locator.safe(true).createPostUri(boardName, threadNumber, postNumber);
+						? chan.locator.safe(true).createThreadUri(boardName, threadNumber)
+						: chan.locator.safe(true).createPostUri(boardName, threadNumber, postNumber);
 				if (uri != null) {
 					switch (action) {
 						case COPY_LINK: {
@@ -425,7 +416,7 @@ public class InteractionUnit {
 								subject = uri.toString();
 							}
 							NavigationUtils.shareText(context, subject,
-									getCopyReadyComment(postItem.getComment()), uri);
+									getCopyReadyComment(postItem.getComment(chan)), uri);
 							break;
 						}
 					}

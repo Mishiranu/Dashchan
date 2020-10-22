@@ -1,8 +1,7 @@
 package com.mishiranu.dashchan.content.net;
 
 import android.net.Uri;
-import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
@@ -122,7 +121,7 @@ public class StormWallResolver {
 							.perform();
 					try {
 						if (!isBlocked(response)) {
-							storeCookie(session.chanName, calculatedCookie, session.uri.toString());
+							storeCookie(session.chan, calculatedCookie, session.uri.toString());
 							return true;
 						}
 					} finally {
@@ -132,7 +131,7 @@ public class StormWallResolver {
 			}
 			CookieResult result = resolver.resolveWebView(session, new WebViewClient());
 			if (result != null) {
-				storeCookie(session.chanName, result.cookie, result.uriString);
+				storeCookie(session.chan, result.cookie, result.uriString);
 				return true;
 			}
 			return false;
@@ -145,14 +144,14 @@ public class StormWallResolver {
 	}
 
 	public RelayBlockResolver.Result checkResponse(RelayBlockResolver resolver,
-			String chanName, Uri uri, HttpHolder holder, HttpResponse response, boolean resolve) throws HttpException {
+			Chan chan, Uri uri, HttpHolder holder, HttpResponse response, boolean resolve) throws HttpException {
 		if (isBlocked(response)) {
 			boolean success = false;
 			if (resolve) {
 				List<String> contentType = response.getHeaderFields().get("Content-Type");
 				if (contentType != null && contentType.size() == 1 && contentType.get(0).startsWith("text/html")) {
 					String responseText = response.readString();
-					success = resolver.runExclusive(chanName, uri, holder, () -> new Resolver(responseText));
+					success = resolver.runExclusive(chan, uri, holder, () -> new Resolver(responseText));
 				}
 			}
 			return new RelayBlockResolver.Result(true, success);
@@ -160,23 +159,21 @@ public class StormWallResolver {
 		return new RelayBlockResolver.Result(false, false);
 	}
 
-	private void storeCookie(String chanName, String cookie, String uriString) {
-		ChanConfiguration configuration = ChanConfiguration.get(chanName);
-		configuration.storeCookie(COOKIE_STORMWALL, cookie, cookie != null ? "StormWall" : null);
-		configuration.commit();
+	private void storeCookie(Chan chan, String cookie, String uriString) {
+		chan.configuration.storeCookie(COOKIE_STORMWALL, cookie, cookie != null ? "StormWall" : null);
+		chan.configuration.commit();
 		Uri uri = uriString != null ? Uri.parse(uriString) : null;
 		if (uri != null) {
-			ChanLocator locator = ChanLocator.get(chanName);
 			String host = uri.getHost();
-			if (locator.isConvertableChanHost(host)) {
-				locator.setPreferredHost(host);
+			if (chan.locator.isConvertableChanHost(host)) {
+				chan.locator.setPreferredHost(host);
 			}
-			Preferences.setUseHttps(chanName, "https".equals(uri.getScheme()));
+			Preferences.setUseHttps(chan, "https".equals(uri.getScheme()));
 		}
 	}
 
-	public Map<String, String> addCookies(String chanName, Map<String, String> cookies) {
-		String cookie = ChanConfiguration.get(chanName).getCookie(COOKIE_STORMWALL);
+	public Map<String, String> addCookies(Chan chan, Map<String, String> cookies) {
+		String cookie = chan.configuration.getCookie(COOKIE_STORMWALL);
 		if (!StringUtils.isEmpty(cookie)) {
 			if (cookies == null) {
 				cookies = new HashMap<>();

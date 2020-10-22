@@ -1,6 +1,7 @@
 package com.mishiranu.dashchan.content.async;
 
 import android.net.Uri;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
@@ -34,7 +35,7 @@ import java.util.TreeMap;
 
 public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 	private final Callback callback;
-	private final String chanName;
+	private final Chan chan;
 	private final String boardName;
 	private final String threadNumber;
 	private final boolean loadFullThread;
@@ -53,10 +54,11 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 		void onReadPostsFail(ErrorItem errorItem);
 	}
 
-	public ReadPostsTask(Callback callback, String chanName, String boardName, String threadNumber,
+	public ReadPostsTask(Callback callback, Chan chan, String boardName, String threadNumber,
 			boolean loadFullThread, Collection<PendingUserPost> pendingUserPosts) {
+		super(chan);
 		this.callback = callback;
-		this.chanName = chanName;
+		this.chan = chan;
 		this.boardName = boardName;
 		this.threadNumber = threadNumber;
 		this.loadFullThread = loadFullThread;
@@ -68,9 +70,8 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 	}
 
 	protected Boolean doInBackground(HttpHolder holder, Void... params) {
-		ChanConfiguration configuration = ChanConfiguration.get(chanName);
-		boolean temporary = configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
-		PagesDatabase.ThreadKey threadKey = new PagesDatabase.ThreadKey(chanName, boardName, threadNumber);
+		boolean temporary = chan.configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
+		PagesDatabase.ThreadKey threadKey = new PagesDatabase.ThreadKey(chan.name, boardName, threadNumber);
 		PagesDatabase.Meta meta = PagesDatabase.getInstance().getMeta(threadKey, temporary);
 		PostNumber originalPostNumber;
 		PostNumber lastExistingPostNumber;
@@ -82,28 +83,27 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 			originalPostNumber = threadSummary.originalPostNumber;
 			lastExistingPostNumber = threadSummary.lastExistingPostNumber;
 		}
-		boolean partial = !loadFullThread && Preferences.isPartialThreadLoading(chanName);
+		boolean partial = !loadFullThread && Preferences.isPartialThreadLoading(chan);
 		HttpValidator useValidator = !loadFullThread && meta != null ? meta.validator : null;
-		ChanPerformer performer = ChanPerformer.get(chanName);
 		try {
 			ChanPerformer.ReadPostsResult result;
 			try {
 				String lastPostNumber = lastExistingPostNumber != null ? lastExistingPostNumber.toString() : null;
-				result = performer.safe().onReadPosts(new ChanPerformer.ReadPostsData(chanName, boardName,
+				result = chan.performer.safe().onReadPosts(new ChanPerformer.ReadPostsData(chan.name, boardName,
 						threadNumber, lastPostNumber, partial, lastPostNumber != null, holder, useValidator));
 			} catch (ThreadRedirectException e) {
-				RedirectException.Target target = e.obtainTarget(chanName, boardName);
+				RedirectException.Target target = e.obtainTarget(chan.name, boardName);
 				if (target == null) {
 					throw HttpException.createNotFoundException();
 				}
 				this.target = target;
 				return true;
 			} catch (RedirectException e) {
-				RedirectException.Target target = e.obtainTarget(chanName);
+				RedirectException.Target target = e.obtainTarget(chan.name);
 				if (target == null) {
 					throw HttpException.createNotFoundException();
 				}
-				if (!chanName.equals(target.chanName) || target.threadNumber == null) {
+				if (!chan.name.equals(target.chanName) || target.threadNumber == null) {
 					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
 							"Only local thread redirects allowed");
 					errorItem = new ErrorItem(ErrorItem.Type.INVALID_DATA_FORMAT);
@@ -166,7 +166,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 								removedPendingUserPosts = new HashSet<>();
 							}
 							removedPendingUserPosts.add(pendingUserPost);
-							CommonDatabase.getInstance().getPosts().setFlags(false, chanName,
+							CommonDatabase.getInstance().getPosts().setFlags(false, chan.name,
 									boardName, threadNumber, post.number, PostItem.HideState.UNDEFINED, true);
 							break;
 						}
@@ -202,17 +202,17 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 			}
 			if (responseCode == HttpURLConnection.HTTP_NOT_FOUND ||
 					responseCode == HttpURLConnection.HTTP_GONE) {
-				if (ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_READ_SINGLE_POST)) {
+				if (chan.configuration.getOption(ChanConfiguration.OPTION_READ_SINGLE_POST)) {
 					try {
 						// Check the post belongs to another thread
-						ChanPerformer.ReadSinglePostResult result = performer.safe().onReadSinglePost
+						ChanPerformer.ReadSinglePostResult result = chan.performer.safe().onReadSinglePost
 								(new ChanPerformer.ReadSinglePostData(boardName, threadNumber, holder));
 						SinglePost post = result != null ? result.post : null;
 						if (post != null) {
 							String threadNumber = post.threadNumber;
 							if (!this.threadNumber.equals(threadNumber)) {
 								target = RedirectException.toThread(boardName, threadNumber, post.post.number)
-										.obtainTarget(chanName);
+										.obtainTarget(chan.name);
 								return true;
 							}
 						}
@@ -229,7 +229,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 			errorItem = e.getErrorItemAndHandle();
 			return false;
 		} finally {
-			ChanConfiguration.get(chanName).commit();
+			chan.configuration.commit();
 		}
 	}
 

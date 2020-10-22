@@ -2,13 +2,13 @@ package com.mishiranu.dashchan.content.async;
 
 import android.content.Context;
 import android.net.Uri;
-import chan.content.ChanManager;
+import chan.content.Chan;
+import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
-import chan.http.HttpRequest;
 import chan.http.HttpResponse;
 import chan.util.DataFile;
 import com.mishiranu.dashchan.content.CacheManager;
@@ -47,7 +47,7 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 	}
 
 	private final Callback callback;
-	private final String chanName;
+	private final Chan chan;
 	private final Uri fromUri;
 	private final DataFile toFile;
 	private final File cachedMediaFile;
@@ -64,26 +64,27 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 		}
 	};
 
-	public static ReadFileTask createCachedMediaFile(Context context, FileCallback callback, String chanName,
+	public static ReadFileTask createCachedMediaFile(Context context, FileCallback callback, Chan chan,
 			Uri fromUri, File cachedMediaFile) {
 		DataFile toFile = DataFile.obtain(context, DataFile.Target.CACHE, cachedMediaFile.getName());
-		return new ReadFileTask(callback, chanName, fromUri, toFile, null, true);
+		return new ReadFileTask(callback, chan, fromUri, toFile, null, true);
 	}
 
-	public static ReadFileTask createShared(Callback callback, String chanName,
+	public static ReadFileTask createShared(Callback callback, Chan chan,
 			Uri fromUri, DataFile toFile, boolean overwrite) {
 		File cachedMediaFile = CacheManager.getInstance().getMediaFile(fromUri, true);
 		if (cachedMediaFile == null || !cachedMediaFile.exists() ||
 				CacheManager.getInstance().cancelCachedMediaBusy(cachedMediaFile)) {
 			cachedMediaFile = null;
 		}
-		return new ReadFileTask(callback, chanName, fromUri, toFile, cachedMediaFile, overwrite);
+		return new ReadFileTask(callback, chan, fromUri, toFile, cachedMediaFile, overwrite);
 	}
 
-	private ReadFileTask(Callback callback, String chanName, Uri fromUri, DataFile toFile,
+	private ReadFileTask(Callback callback, Chan chan, Uri fromUri, DataFile toFile,
 			File cachedMediaFile, boolean overwrite) {
+		super(chan);
 		this.callback = callback;
-		this.chanName = chanName;
+		this.chan = chan;
 		this.fromUri = fromUri;
 		this.toFile = toFile;
 		this.cachedMediaFile = cachedMediaFile;
@@ -113,21 +114,21 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 					errorItem = new ErrorItem(type != null ? type : ErrorItem.Type.UNKNOWN);
 					return false;
 				}
+			} else if (ChanConfiguration.SCHEME_CHAN.equals(fromUri.getScheme())) {
+				try (OutputStream output = toFile.openOutputStream()) {
+					if (!chan.configuration.readResourceUri(fromUri, output)) {
+						throw HttpException.createNotFoundException();
+					}
+				} catch (IOException e) {
+					ErrorItem.Type type = getErrorTypeFromExceptionAndHandle(e);
+					errorItem = new ErrorItem(type != null ? type : ErrorItem.Type.UNKNOWN);
+					return false;
+				}
 			} else {
-				Uri uri = fromUri;
-				HttpResponse response;
-				String chanName = this.chanName;
-				if (chanName == null) {
-					chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
-				}
-				if (chanName != null) {
-					ChanPerformer.ReadContentResult result = ChanPerformer.get(chanName).safe()
-							.onReadContent(new ChanPerformer.ReadContentData(uri,
-									CONNECT_TIMEOUT, READ_TIMEOUT, holder, -1, -1));
-					response = result != null ? result.response : null;
-				} else {
-					response = new HttpRequest(uri, holder).setTimeouts(CONNECT_TIMEOUT, READ_TIMEOUT).perform();
-				}
+				ChanPerformer.ReadContentResult result = chan.performer.safe()
+						.onReadContent(new ChanPerformer.ReadContentData(fromUri,
+								CONNECT_TIMEOUT, READ_TIMEOUT, holder, -1, -1));
+				HttpResponse response = result != null ? result.response : null;
 				if (response == null) {
 					errorItem = new ErrorItem(ErrorItem.Type.DOWNLOAD);
 					return false;
@@ -160,6 +161,9 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 			File file = toFile.getFileOrUri().first;
 			if (file != null) {
 				CacheManager.getInstance().handleDownloadedFile(file, success);
+			}
+			if (chan.name != null) {
+				chan.configuration.commit();
 			}
 		}
 	}

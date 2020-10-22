@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import chan.content.ChanConfiguration;
+import chan.content.Chan;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -112,12 +112,12 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		viewHolder.text1.setText(StringUtils.isEmpty(historyItem.title)
 				? StringUtils.formatThreadTitle(historyItem.chanName, historyItem.boardName,
 				historyItem.threadNumber) : historyItem.title);
-		ChanConfiguration configuration = ChanConfiguration.get(historyItem.chanName);
-		String title = configuration.getBoardTitle(historyItem.boardName);
+		Chan chan = Chan.get(historyItem.chanName);
+		String title = chan.configuration.getBoardTitle(historyItem.boardName);
 		title = StringUtils.isEmpty(historyItem.boardName) ? title
 				: StringUtils.formatBoardTitle(historyItem.chanName, historyItem.boardName, title);
 		if (chanName == null) {
-			title = configuration.getTitle() + " — " + title;
+			title = chan.configuration.getTitle() + " — " + title;
 		}
 		viewHolder.text2.setText(title);
 	}

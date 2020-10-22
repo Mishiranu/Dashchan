@@ -27,8 +27,8 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import chan.content.Chan;
 import chan.content.ChanLocator;
-import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
@@ -92,9 +92,9 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 			switch (hitTestResult.getType()) {
 				case WebView.HitTestResult.IMAGE_TYPE:
 				case WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE: {
-					final Uri uri = Uri.parse(hitTestResult.getExtra());
-					ChanLocator locator = ChanLocator.getDefault();
-					if (locator.isWebScheme(uri) && locator.isImageExtension(uri.getPath())) {
+					Chan chan = Chan.getFallback();
+					Uri uri = Uri.parse(hitTestResult.getExtra());
+					if (chan.locator.isWebScheme(uri) && chan.locator.isImageExtension(uri.getPath())) {
 						NavigationUtils.openImageVideo(requireContext(), uri);
 					}
 					return true;
@@ -213,26 +213,25 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
 			Uri uri = Uri.parse(url);
-			String chanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
-			if (chanName != null) {
-				ChanLocator locator = ChanLocator.get(chanName);
+			Chan chan = Chan.getPreferred(null, uri);
+			if (chan.name != null) {
 				ChanLocator.NavigationData navigationData;
-				if (locator.safe(true).isBoardUri(uri)) {
+				if (chan.locator.safe(true).isBoardUri(uri)) {
 					navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.Target.THREADS,
-							locator.safe(true).getBoardName(uri), null, null, null);
-				} else if (locator.safe(true).isThreadUri(uri)) {
+							chan.locator.safe(true).getBoardName(uri), null, null, null);
+				} else if (chan.locator.safe(true).isThreadUri(uri)) {
 					navigationData = new ChanLocator.NavigationData(ChanLocator.NavigationData.Target.POSTS,
-							locator.safe(true).getBoardName(uri), locator.safe(true).getThreadNumber(uri),
-							locator.safe(true).getPostNumber(uri), null);
+							chan.locator.safe(true).getBoardName(uri), chan.locator.safe(true).getThreadNumber(uri),
+							chan.locator.safe(true).getPostNumber(uri), null);
 				} else {
-					navigationData = locator.safe(true).handleUriClickSpecial(uri);
+					navigationData = chan.locator.safe(true).handleUriClickSpecial(uri);
 				}
 				if (navigationData != null) {
 					AlertDialog alertDialog = new AlertDialog.Builder(requireContext())
 							.setMessage(R.string.follow_the_link__sentence)
 							.setNegativeButton(android.R.string.cancel, null)
 							.setPositiveButton(android.R.string.ok, (dialog, which) -> ((FragmentHandler)
-									requireActivity()).navigateTargetAllowReturn(chanName, navigationData))
+									requireActivity()).navigateTargetAllowReturn(chan.name, navigationData))
 							.show();
 					((FragmentHandler) requireActivity()).getConfigurationLock().lockConfiguration(alertDialog);
 					return true;

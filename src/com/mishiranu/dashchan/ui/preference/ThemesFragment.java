@@ -16,7 +16,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.RecyclerView;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
@@ -414,7 +414,7 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 	}
 
 	private static class ReadThemesTask extends AsyncManager.SimpleTask<Boolean> {
-		private final HttpHolder holder = new HttpHolder();
+		private final HttpHolder holder = new HttpHolder(Chan.getFallback());
 
 		private ArrayList<JSONObject> themes;
 		private ErrorItem errorItem;
@@ -423,7 +423,7 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 		protected Boolean doInBackground() {
 			ArrayList<JSONObject> themes = new ArrayList<>();
 			try (HttpHolder.Use ignored = holder.use()) {
-				Uri uri = ChanLocator.getDefault().setScheme(Uri.parse(BuildConfig.URI_THEMES));
+				Uri uri = Chan.getFallback().locator.setScheme(Uri.parse(BuildConfig.URI_THEMES));
 				int redirects = 0;
 				while (redirects++ < 5) {
 					JSONObject jsonObject = new JSONObject(new HttpRequest(uri, holder).perform().readString());

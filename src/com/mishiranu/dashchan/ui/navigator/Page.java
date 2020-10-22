@@ -2,6 +2,7 @@ package com.mishiranu.dashchan.ui.navigator;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import chan.content.Chan;
 import chan.util.CommonUtils;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.ui.navigator.page.ArchivePage;
@@ -64,7 +65,7 @@ public final class Page implements Parcelable {
 
 	public boolean canRemoveFromStackIfDeep() {
 		if (content == Content.BOARDS) {
-			String boardName = Preferences.getDefaultBoardName(chanName);
+			String boardName = Preferences.getDefaultBoardName(Chan.get(chanName));
 			return boardName != null;
 		}
 		return content == Content.SEARCH || content == Content.ARCHIVE || content == Content.USER_BOARDS

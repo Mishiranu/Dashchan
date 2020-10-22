@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Process;
 import android.os.SystemClock;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.content.ChanPerformer;
@@ -138,7 +139,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 		ArrayList<FavoritesStorage.FavoriteItem> favoriteItems = FavoritesStorage.getInstance().getThreads(null);
 		boolean available = isAvailable();
 		for (FavoritesStorage.FavoriteItem favoriteItem : favoriteItems) {
-			if (favoriteItem.watcherEnabled && isWatcherAllowed(favoriteItem.chanName)) {
+			if (favoriteItem.watcherEnabled) {
 				WatcherItem watcherItem = new WatcherItem(favoriteItem);
 				watcherItem.lastState = available ? State.ENABLED : State.UNAVAILABLE;
 				watcherItem.lastWasAvailable = available;
@@ -251,12 +252,10 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 				if (favoriteItem.threadNumber == null) {
 					throw new IllegalArgumentException();
 				}
-				if (isWatcherAllowed(favoriteItem.chanName)) {
-					WatcherItem watcherItem = new WatcherItem(favoriteItem);
-					watching.put(watcherItem.key, watcherItem);
-					if (isActiveChanName(favoriteItem.chanName)) {
-						enqueue(watcherItem, true);
-					}
+				WatcherItem watcherItem = new WatcherItem(favoriteItem);
+				watching.put(watcherItem.key, watcherItem);
+				if (isActiveChanName(favoriteItem.chanName)) {
+					enqueue(watcherItem, true);
 				}
 				break;
 			}
@@ -370,12 +369,9 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 		return null;
 	}
 
-	private boolean isWatcherAllowed(String chanName) {
-		return ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_READ_POSTS_COUNT);
-	}
-
 	private boolean isActiveChanName(String chanName) {
-		return ChanManager.getInstance().isAvailableChanName(chanName) &&
+		Chan chan = Chan.get(chanName);
+		return chan.name != null && chan.configuration.getOption(ChanConfiguration.OPTION_READ_POSTS_COUNT) &&
 				(mergeChans || clients.containsValue(chanName));
 	}
 
@@ -465,18 +461,19 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 
 	private static class WatcherRunnable implements Callable<Result> {
 		private final Result result;
+		private final Chan chan;
 
 		public WatcherRunnable(WatcherItem watcherItem) {
 			result = new Result(watcherItem);
+			chan = Chan.get(watcherItem.chanName);
 		}
 
 		@Override
 		public Result call() {
 			WatcherItem watcherItem = result.watcherItem;
-			HttpHolder holder = new HttpHolder();
+			HttpHolder holder = new HttpHolder(chan);
 			try (HttpHolder.Use ignored = holder.use()) {
-				ChanPerformer performer = ChanPerformer.get(watcherItem.chanName);
-				ChanPerformer.ReadPostsCountResult result = performer.safe()
+				ChanPerformer.ReadPostsCountResult result = chan.performer.safe()
 						.onReadPostsCount(new ChanPerformer.ReadPostsCountData(watcherItem.boardName,
 								watcherItem.threadNumber, 5000, 5000, holder, watcherItem.validator));
 				this.result.newPostsCount = result != null ? result.postsCount : 0;

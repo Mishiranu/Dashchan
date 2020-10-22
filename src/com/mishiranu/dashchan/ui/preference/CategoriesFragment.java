@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 import androidx.annotation.NonNull;
+import chan.content.Chan;
 import chan.content.ChanManager;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -28,10 +29,10 @@ public class CategoriesFragment extends PreferenceFragment {
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		Iterator<String> chanNames = ChanManager.getInstance().getAvailableChanNames().iterator();
-		boolean hasChan = chanNames.hasNext();
-		String singleChanName = hasChan ? chanNames.next() : null;
-		boolean hasMultipleChans = hasChan && chanNames.hasNext();
+		Iterator<Chan> chans = ChanManager.getInstance().getAvailableChans().iterator();
+		boolean hasChan = chans.hasNext();
+		String singleChanName = hasChan ? chans.next().name : null;
+		boolean hasMultipleChans = hasChan && chans.hasNext();
 		addCategory(R.string.general, R.drawable.ic_map)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new GeneralFragment()));

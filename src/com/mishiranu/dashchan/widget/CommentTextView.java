@@ -25,7 +25,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.text.style.LinkSpan;
@@ -600,8 +600,8 @@ public class CommentTextView extends TextView {
 
 	private Uri createUri(String uriString) {
 		if (chanName != null) {
-			ChanLocator locator = ChanLocator.get(chanName);
-			return locator.validateClickedUriString(uriString, boardName, threadNumber);
+			Chan chan = Chan.get(chanName);
+			return chan.locator.validateClickedUriString(uriString, boardName, threadNumber);
 		} else {
 			return Uri.parse(uriString);
 		}

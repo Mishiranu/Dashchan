@@ -1,5 +1,6 @@
 package com.mishiranu.dashchan.content.storage;
 
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.util.StringUtils;
 import java.util.HashMap;
@@ -130,7 +131,8 @@ public class StatisticsStorage extends StorageManager.Storage<Map<String, Statis
 	}
 
 	public void incrementThreadsViewed(String chanName) {
-		ChanConfiguration.Statistics statistics = ChanConfiguration.get(chanName).safe().obtainStatistics();
+		Chan chan = Chan.get(chanName);
+		ChanConfiguration.Statistics statistics = chan.configuration.safe().obtainStatistics();
 		if (statistics == null || !statistics.threadsViewed) {
 			return;
 		}
@@ -140,7 +142,8 @@ public class StatisticsStorage extends StorageManager.Storage<Map<String, Statis
 	}
 
 	public void incrementPostsSent(String chanName, boolean newThread) {
-		ChanConfiguration.Statistics statistics = ChanConfiguration.get(chanName).safe().obtainStatistics();
+		Chan chan = Chan.get(chanName);
+		ChanConfiguration.Statistics statistics = chan.configuration.safe().obtainStatistics();
 		if (statistics == null || !(statistics.postsSent || statistics.threadsCreated && newThread)) {
 			return;
 		}

@@ -3,7 +3,7 @@ package com.mishiranu.dashchan.content.net;
 import android.net.Uri;
 import android.os.Build;
 import android.util.Base64;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
@@ -64,11 +64,12 @@ public class UserAgentProvider {
 	}
 
 	private void loadChromiumUserAgentReference() {
-		new HttpHolderTask<Void, Void, String>() {
+		Chan chan = Chan.getFallback();
+		new HttpHolderTask<Void, Void, String>(chan) {
 			@Override
 			protected String doInBackground(HttpHolder holder, Void... params) {
 				try {
-					Uri uri = ChanLocator.getDefault().buildQueryWithHost("www.googleapis.com",
+					Uri uri = chan.locator.buildQueryWithHost("www.googleapis.com",
 							"storage/v1/b/chromium-browser-snapshots/o",
 							"prefix", "Linux_x64/LAST_CHANGE", "fields", "items(metadata)");
 					JSONObject object = new JSONObject(new HttpRequest(uri, holder).perform().readString());
@@ -80,13 +81,13 @@ public class UserAgentProvider {
 						return null;
 					}
 
-					uri = ChanLocator.getDefault().buildQueryWithHost("chromium.googlesource.com",
+					uri = chan.locator.buildQueryWithHost("chromium.googlesource.com",
 							"chromium/src/+/" + commit + "/chrome/VERSION", "format", "TEXT");
 					String chromeVersionResponse = new HttpRequest(uri, holder).perform().readString();
 					if (StringUtils.isEmpty(chromeVersionResponse)) {
 						return null;
 					}
-					uri = ChanLocator.getDefault().buildQueryWithHost("chromium.googlesource.com",
+					uri = chan.locator.buildQueryWithHost("chromium.googlesource.com",
 							"chromium/src/+/" + commit + "/build/util/webkit_version.h.in", "format", "TEXT");
 					String webKitVersionResponse = new HttpRequest(uri, holder).perform().readString();
 					if (StringUtils.isEmpty(webKitVersionResponse)) {

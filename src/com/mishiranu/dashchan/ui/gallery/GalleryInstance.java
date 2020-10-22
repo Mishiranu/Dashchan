@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.ui.gallery;
 
 import android.content.Context;
 import android.view.Window;
-import chan.content.ChanLocator;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.util.ConfigurationLock;
 import java.util.List;
@@ -19,16 +18,14 @@ public class GalleryInstance {
 	public final int actionBarColor;
 
 	public final String chanName;
-	public final ChanLocator locator;
 	public final List<GalleryItem> galleryItems;
 
 	public GalleryInstance(Context context, Callback callback, int actionBarColor,
-			String chanName, ChanLocator locator, List<GalleryItem> galleryItems) {
+			String chanName, List<GalleryItem> galleryItems) {
 		this.context = context;
 		this.callback = callback;
 		this.actionBarColor = actionBarColor;
 		this.chanName = chanName;
-		this.locator = locator;
 		this.galleryItems = galleryItems;
 	}
 

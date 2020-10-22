@@ -15,8 +15,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Extendable
-public class ChanLocator implements ChanManager.Linked {
-	private final String chanName;
+public class ChanLocator implements Chan.Linked {
+	private final Chan.Provider chanProvider;
 
 	private static final int HOST_TYPE_CONFIGURABLE = 0;
 	private static final int HOST_TYPE_CONVERTABLE = 1;
@@ -84,23 +84,21 @@ public class ChanLocator implements ChanManager.Linked {
 		}
 	}
 
-	public static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
+	static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
 
 	@Public
 	public ChanLocator() {
-		this(true);
+		this(null);
 	}
 
-	ChanLocator(boolean useInitializer) {
-		chanName = useInitializer ? INITIALIZER.consume().chanName : null;
-		if (!useInitializer) {
+	ChanLocator(Chan.Provider chanProvider) {
+		if (chanProvider == null) {
+			ChanManager.Initializer.Holder holder = INITIALIZER.consume();
+			this.chanProvider = holder.chanProvider;
+		} else {
+			this.chanProvider = chanProvider;
 			setHttpsMode(HttpsMode.CONFIGURABLE);
 		}
-	}
-
-	@Override
-	public final String getChanName() {
-		return chanName;
 	}
 
 	@Override
@@ -110,18 +108,14 @@ public class ChanLocator implements ChanManager.Linked {
 		}
 	}
 
-	public static <T extends ChanLocator> T get(String chanName) {
-		return ChanManager.getInstance().getLocator(chanName, true);
+	@Override
+	public Chan get() {
+		return chanProvider.get();
 	}
 
 	@Public
-	public static <T extends ChanLocator> T get(Object object) {
-		ChanManager manager = ChanManager.getInstance();
-		return ChanManager.getInstance().getLocator(manager.getLinkedChanName(object), false);
-	}
-
-	public static ChanLocator getDefault() {
-		return ChanManager.getInstance().getLocator(null, true);
+	public static ChanLocator get(Object object) {
+		return ((Chan.Linked) object).get().locator;
 	}
 
 	@Public
@@ -155,8 +149,8 @@ public class ChanLocator implements ChanManager.Linked {
 	public final boolean isUseHttps() {
 		HttpsMode httpsMode = this.httpsMode;
 		if (httpsMode == HttpsMode.CONFIGURABLE) {
-			String chanName = getChanName();
-			return chanName != null ? Preferences.isUseHttps(chanName) : Preferences.isUseHttpsGeneral();
+			Chan chan = get();
+			return chan.name != null ? Preferences.isUseHttps(chan) : Preferences.isUseHttpsGeneral();
 		}
 		return httpsMode == HttpsMode.HTTPS_ONLY;
 	}
@@ -179,7 +173,7 @@ public class ChanLocator implements ChanManager.Linked {
 		if (StringUtils.isEmpty(host)) {
 			return false;
 		}
-		return hosts.containsKey(host) || host.equals(Preferences.getDomainUnhandled(getChanName()))
+		return hosts.containsKey(host) || host.equals(Preferences.getDomainUnhandled(get()))
 				|| getHostTransition(getPreferredHost(), host) != null;
 	}
 
@@ -199,7 +193,7 @@ public class ChanLocator implements ChanManager.Linked {
 		if (StringUtils.isEmpty(host)) {
 			return false;
 		}
-		if (host.equals(Preferences.getDomainUnhandled(getChanName()))) {
+		if (host.equals(Preferences.getDomainUnhandled(get()))) {
 			return true;
 		}
 		Integer hostType = hosts.get(host);
@@ -409,7 +403,7 @@ public class ChanLocator implements ChanManager.Linked {
 	}
 
 	public final String getPreferredHost() {
-		String host = Preferences.getDomainUnhandled(getChanName());
+		String host = Preferences.getDomainUnhandled(get());
 		if (StringUtils.isEmpty(host)) {
 			for (LinkedHashMap.Entry<String, Integer> entry : hosts.entrySet()) {
 				if (entry.getValue() == HOST_TYPE_CONFIGURABLE) {
@@ -425,7 +419,7 @@ public class ChanLocator implements ChanManager.Linked {
 		if (host == null || getChanHosts(true).get(0).equals(host)) {
 			host = "";
 		}
-		Preferences.setDomainUnhandled(chanName, host);
+		Preferences.setDomainUnhandled(get(), host);
 	}
 
 	private static String getPreferredScheme(boolean useHttps) {

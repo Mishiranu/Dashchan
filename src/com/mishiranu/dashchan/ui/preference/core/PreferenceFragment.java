@@ -167,6 +167,12 @@ public abstract class PreferenceFragment extends Fragment {
 				PreferenceDialog.class.getName()));
 	}
 
+	public void removeAllPreferences() {
+		preferences.clear();
+		persistent.clear();
+		recyclerView.getAdapter().notifyDataSetChanged();
+	}
+
 	public int removePreference(Preference<?> preference) {
 		int index = preferences.indexOf(preference);
 		if (index >= 0) {

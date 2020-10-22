@@ -3,8 +3,8 @@ package com.mishiranu.dashchan.content.async;
 import android.net.Uri;
 import android.os.CancellationSignal;
 import android.os.OperationCanceledException;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
 import chan.text.ParseException;
 import com.mishiranu.dashchan.content.database.CommonDatabase;
 import com.mishiranu.dashchan.content.database.PagesDatabase;
@@ -68,7 +68,7 @@ public class ExtractPostsTask extends CancellableTask<Void, Void, ExtractPostsTa
 
 	private final Callback callback;
 	private final PagesDatabase.Cache cache;
-	private final String chanName;
+	private final Chan chan;
 	private final String boardName;
 	private final String threadNumber;
 	private final boolean initial;
@@ -76,11 +76,11 @@ public class ExtractPostsTask extends CancellableTask<Void, Void, ExtractPostsTa
 	private final boolean removeDeleted;
 	private final CancellationSignal signal = new CancellationSignal();
 
-	public ExtractPostsTask(Callback callback, PagesDatabase.Cache cache, String chanName, String boardName,
+	public ExtractPostsTask(Callback callback, PagesDatabase.Cache cache, Chan chan, String boardName,
 			String threadNumber, boolean initial, boolean newThread, boolean removeDeleted) {
 		this.callback = callback;
 		this.cache = cache;
-		this.chanName = chanName;
+		this.chan = chan;
 		this.boardName = boardName;
 		this.threadNumber = threadNumber;
 		this.initial = initial;
@@ -91,7 +91,7 @@ public class ExtractPostsTask extends CancellableTask<Void, Void, ExtractPostsTa
 	@Override
 	protected Result doInBackground(Void... params) {
 		PagesDatabase.Diff diff;
-		PagesDatabase.ThreadKey threadKey = new PagesDatabase.ThreadKey(chanName, boardName, threadNumber);
+		PagesDatabase.ThreadKey threadKey = new PagesDatabase.ThreadKey(chan.name, boardName, threadNumber);
 		try {
 			diff = PagesDatabase.getInstance().collectDiffPosts(threadKey, cache, removeDeleted, signal);
 		} catch (ParseException e) {
@@ -108,20 +108,19 @@ public class ExtractPostsTask extends CancellableTask<Void, Void, ExtractPostsTa
 		Collection<PostNumber> removedPosts = Collections.emptyList();
 		if (initial) {
 			stateExtra = CommonDatabase.getInstance().getThreads()
-					.getStateExtra(chanName, boardName, threadNumber);
+					.getStateExtra(chan.name, boardName, threadNumber);
 		}
 		if (diff.cache.isChanged(cache)) {
-			ChanConfiguration configuration = ChanConfiguration.get(chanName);
-			boolean temporary = configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
+			boolean temporary = chan.configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
 			meta = PagesDatabase.getInstance().getMeta(threadKey, temporary);
-			flags = CommonDatabase.getInstance().getPosts().getFlags(chanName, boardName, threadNumber);
+			flags = CommonDatabase.getInstance().getPosts().getFlags(chan.name, boardName, threadNumber);
 			cacheChanged = true;
 			postItems = new HashMap<>(diff.changed.size());
 			removedPosts = diff.removed;
 			PostNumber originalPostNumber = diff.cache.originalPostNumber;
 			for (Post post : diff.changed) {
-				postItems.put(post.number, PostItem.createPost(post, ChanLocator.get(chanName),
-						chanName, boardName, threadNumber, originalPostNumber));
+				postItems.put(post.number, PostItem.createPost(post, chan,
+						boardName, threadNumber, originalPostNumber));
 			}
 		}
 		return new Result(diff.newPosts, diff.deletedPosts, diff.editedPosts, diff.replyCount, diff.cache, cacheChanged,

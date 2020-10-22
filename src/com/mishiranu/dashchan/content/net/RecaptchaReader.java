@@ -24,7 +24,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
@@ -133,8 +133,8 @@ public class RecaptchaReader {
 				}
 			}
 		} else {
-			ChanLocator locator = ChanLocator.getDefault();
-			Uri uri = locator.buildQueryWithHost("www.google.com", "recaptcha/api/fallback", "k", apiKey);
+			Chan chan = Chan.getFallback();
+			Uri uri = chan.locator.buildQueryWithHost("www.google.com", "recaptcha/api/fallback", "k", apiKey);
 			String acceptLanguage = "en-US,en;q=0.5";
 			String initialResponseText = new HttpRequest(uri, initialHolder)
 					.addCookie(AdvancedPreferences.getGoogleCookie())
@@ -239,9 +239,9 @@ public class RecaptchaReader {
 
 	private Pair<Bitmap, Boolean> getImage2(HttpHolder holder, String apiKey, String challenge, String id,
 			boolean transformBlackAndWhite) throws HttpException {
-		ChanLocator locator = ChanLocator.getDefault();
-		Uri uri = locator.buildQueryWithHost("www.google.com", "recaptcha/api2/payload", "c", challenge, "k", apiKey,
-				"id", StringUtils.emptyIfNull(id));
+		Chan chan = Chan.getFallback();
+		Uri uri = chan.locator.buildQueryWithHost("www.google.com", "recaptcha/api2/payload",
+				"c", challenge, "k", apiKey, "id", StringUtils.emptyIfNull(id));
 		Bitmap image = new HttpRequest(uri, holder).perform().readBitmap();
 		if (transformBlackAndWhite) {
 			transformBlackAndWhite = GraphicsUtils.isBlackAndWhiteCaptchaImage(image);

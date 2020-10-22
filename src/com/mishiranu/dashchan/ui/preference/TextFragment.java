@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.ScrollView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import chan.content.Chan;
 import chan.content.ChanMarkup;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -50,7 +51,7 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 				break;
 			}
 		}
-		CharSequence text = HtmlParser.spanify(content, new Markup(), null, null, null);
+		CharSequence text = HtmlParser.spanify(content, new Markup().getMarkup(), null, null, null);
 		ThemeEngine.getColorScheme(requireContext()).apply(text);
 		float density = ResourceUtils.obtainDensity(this);
 		textView = new CommentTextView(requireActivity(), null, android.R.attr.textAppearanceLarge);
@@ -107,7 +108,7 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 
 	private static class Markup extends ChanMarkup {
 		public Markup() {
-			super(false);
+			super(Chan.getFallback());
 			addTag("h1", TAG_HEADING);
 			addTag("h2", TAG_HEADING);
 			addTag("h3", TAG_HEADING);

@@ -44,7 +44,6 @@
 	<string name="captcha_type">Tipo de captcha</string>
 	<string name="catalog">Catálogo</string>
 	<string name="change_theme">Mudar tema</string>
-	<string name="changes_after_restart__sentence">Mudanças só aconteceram quando reiniciar o aplicativo.</string>
 	<string name="check_for_updates">Checar por atualizações</string>
 	<string name="check_on_startup">Checar no startup</string>
 	<string name="choose">Escolher</string>
@@ -374,7 +373,7 @@
 	<string name="unsorted">Não-organizado</string>
 	<string name="unsupported_version">Versão não suportada</string>
 	<string name="update_reminder__sentence">Você pode acompanhar o progresso de download na barra de status.\n\nVocê
-		pode instalar as aplicações quando o download acabar.\n\nNão se esqueça de reiniciar o aplicativo!</string>
+		pode instalar as aplicações quando o download acabar.</string>
 	<string name="updates__genitive">Atualizações</string>
 	<string name="updates_available__genitive">Atualizações disponíveis</string>
 	<string name="use_built_in_video_player">Usar reprodutor de vídeo embutido</string>

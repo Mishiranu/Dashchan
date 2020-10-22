@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.util.Pair;
+import chan.content.Chan;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.http.CookieBuilder;
@@ -38,9 +39,9 @@ public class NavigationUtils {
 
 	public static void handleUri(Context context, String chanName, Uri uri, BrowserType browserType) {
 		if (chanName != null) {
-			uri = ChanLocator.get(chanName).convert(uri);
+			uri = Chan.get(chanName).locator.convert(uri);
 		}
-		boolean isWeb = ChanLocator.getDefault().isWebScheme(uri);
+		boolean isWeb = Chan.getFallback().locator.isWebScheme(uri);
 		Intent intent;
 		boolean internalBrowser = isWeb && (browserType == BrowserType.INTERNAL || browserType == BrowserType.AUTO &&
 				Preferences.isUseInternalBrowser());
@@ -72,17 +73,20 @@ public class NavigationUtils {
 			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
 			intent.putExtra(C.EXTRA_FROM_CLIENT, true);
-			if (chanName != null && ChanLocator.get(chanName).safe(false).isAttachmentUri(uri)) {
-				Map<String, String> cookies = RelayBlockResolver.getInstance().getCookies(chanName);
-				if (!cookies.isEmpty()) {
-					// For MX Player, see https://sites.google.com/site/mxvpen/api
-					String userAgent = AdvancedPreferences.getUserAgent(chanName);
-					CookieBuilder cookieBuilder = new CookieBuilder();
-					for (Map.Entry<String, String> cookie : cookies.entrySet()) {
-						cookieBuilder.append(cookie.getKey(), cookie.getValue());
+			if (chanName != null) {
+				Chan chan = Chan.get(chanName);
+				if (chan.locator.safe(false).isAttachmentUri(uri)) {
+					Map<String, String> cookies = RelayBlockResolver.getInstance().getCookies(chan);
+					if (!cookies.isEmpty()) {
+						// For MX Player, see https://sites.google.com/site/mxvpen/api
+						String userAgent = AdvancedPreferences.getUserAgent(chanName);
+						CookieBuilder cookieBuilder = new CookieBuilder();
+						for (Map.Entry<String, String> cookie : cookies.entrySet()) {
+							cookieBuilder.append(cookie.getKey(), cookie.getValue());
+						}
+						intent.putExtra("headers", new String[] {"User-Agent", userAgent,
+								"Cookie", cookieBuilder.build()});
 					}
-					intent.putExtra("headers", new String[] {"User-Agent", userAgent,
-							"Cookie", cookieBuilder.build()});
 				}
 			}
 			if (!isWeb) {
@@ -99,11 +103,11 @@ public class NavigationUtils {
 	}
 
 	public static void handleUriInternal(Context context, String chanName, Uri uri) {
-		String uriChanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
-		if (uriChanName != null) {
-			chanName = uriChanName;
+		Chan uriChan = Chan.getPreferred(null, uri);
+		if (uriChan.name != null) {
+			chanName = uriChan.name;
 		}
-		ChanLocator locator = ChanLocator.get(chanName);
+		ChanLocator locator = Chan.getFallback().locator;
 		boolean handled = false;
 		if (chanName != null && locator.safe(false).isAttachmentUri(uri)) {
 			Uri internalUri = locator.convert(uri);
@@ -143,8 +147,8 @@ public class NavigationUtils {
 
 	public static void searchImage(Context context, ConfigurationLock configurationLock,
 			final String chanName, Uri uri) {
-		ChanLocator locator = ChanLocator.getDefault();
-		final String imageUriString = ChanLocator.get(chanName).convert(uri).toString();
+		ChanLocator locator = Chan.getFallback().locator;
+		String imageUriString = Chan.get(chanName).locator.convert(uri).toString();
 		new DialogMenu(context)
 				.add("Google", () -> searchImageUri(context, locator.buildQueryWithHost("www.google.com",
 						"searchbyimage", "image_url", imageUriString)))

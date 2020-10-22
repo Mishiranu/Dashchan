@@ -18,9 +18,9 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 
-public class HtmlParser implements ContentHandler {
-	public static CharSequence spanify(String source, Markup markup,
-			String threadNumber, PostNumber originalPostNumber, Object extra) {
+public class HtmlParser<E, D, S extends HtmlParser.SpanProvider<E>> implements ContentHandler {
+	public static <E, D, S extends SpanProvider<E>> CharSequence spanify(String source,
+			Markup<E, D, S> markup, String threadNumber, PostNumber originalPostNumber, E extra) {
 		return parse(source, markup, Mode.SPANIFY, threadNumber, originalPostNumber, extra);
 	}
 
@@ -28,33 +28,33 @@ public class HtmlParser implements ContentHandler {
 		return parse(source, null, Mode.CLEAR, null, null, null).toString();
 	}
 
-	public static String unmark(String source, Markup markup, Object extra) {
+	public static <E, D, S extends SpanProvider<E>> String unmark(String source, Markup<E, D, S> markup, E extra) {
 		return parse(source, markup, Mode.UNMARK, null, null, extra).toString();
 	}
 
-	private static CharSequence parse(String source, Markup markup, Mode parsingMode,
-			String threadNumber, PostNumber originalPostNumber, Object extra) {
+	private static <E, D, S extends SpanProvider<E>> CharSequence parse(String source,
+			Markup<E, D, S> markup, Mode parsingMode, String threadNumber, PostNumber originalPostNumber, E extra) {
 		if (StringUtils.isEmpty(source)) {
 			return "";
 		}
-		return new HtmlParser(source, markup, parsingMode, threadNumber, originalPostNumber, extra).convert();
+		return new HtmlParser<>(source, markup, parsingMode, threadNumber, originalPostNumber, extra).convert();
 	}
 
-	public interface Markup {
-		Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,
+	public interface Markup<E, D, S extends SpanProvider<E>> {
+		D onBeforeTagStart(HtmlParser<E, D, S> parser, StringBuilder builder, String tagName,
 				Attributes attributes, TagData tagData);
-		void onTagStart(HtmlParser parser, StringBuilder builder, String tagName,
-				Attributes attributes, Object object);
-		void onTagEnd(HtmlParser parser, StringBuilder builder, String tagName);
+		void onTagStart(HtmlParser<E, D, S> parser, StringBuilder builder, String tagName,
+				Attributes attributes, D object);
+		void onTagEnd(HtmlParser<E, D, S> parser, StringBuilder builder, String tagName);
 
-		int onListLineStart(HtmlParser parser, StringBuilder builder, boolean ordered, int line);
-		void onCutBlock(HtmlParser parser, StringBuilder builder);
+		int onListLineStart(HtmlParser<E, D, S> parser, StringBuilder builder, boolean ordered, int line);
+		void onCutBlock(HtmlParser<E, D, S> parser, StringBuilder builder);
 
-		SpanProvider initSpanProvider(HtmlParser parser);
+		S initSpanProvider(HtmlParser<E, D, S> parser);
 	}
 
-	public interface SpanProvider {
-		CharSequence transformBuilder(HtmlParser parser, StringBuilder builder);
+	public interface SpanProvider<E> {
+		CharSequence transformBuilder(HtmlParser<E, ?, ?> parser, StringBuilder builder);
 	}
 
 	public static class TagData {
@@ -75,19 +75,20 @@ public class HtmlParser implements ContentHandler {
 
 	private final String source;
 	private final StringBuilder builder = new StringBuilder();
-	private final Markup markup;
+	private final Markup<E, D, S> markup;
 	private final Mode parsingMode;
-	private final SpanProvider spanProvider;
+	private final S spanProvider;
 
 	private final String threadNumber;
 	private final PostNumber originalPostNumber;
+	private final E extra;
 
-	private final Object extra;
-
-	private HtmlParser(String source, Markup markup, Mode parsingMode,
-			String threadNumber, PostNumber originalPostNumber, Object extra) {
+	private HtmlParser(String source, Markup<E, D, S> markup, Mode parsingMode,
+			String threadNumber, PostNumber originalPostNumber, E extra) {
 		if (markup == null) {
-			markup = IDLE_MARKUP;
+			@SuppressWarnings("unchecked")
+			Markup<E, D, S> uncheckedMarkup = (Markup<E, D, S>) IDLE_MARKUP;
+			markup = uncheckedMarkup;
 		}
 		source = source.replace("&#10;", "\n");
 		this.source = source;
@@ -182,14 +183,12 @@ public class HtmlParser implements ContentHandler {
 		return originalPostNumber;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T> T getExtra() {
-		return (T) extra;
+	public E getExtra() {
+		return extra;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T extends SpanProvider> T getSpanProvider() {
-		return (T) spanProvider;
+	public S getSpanProvider() {
+		return spanProvider;
 	}
 
 	@Override
@@ -367,7 +366,7 @@ public class HtmlParser implements ContentHandler {
 			return; // Ignore tag
 		}
 		TagData tagData = fillBaseTagData(tagName);
-		Object object = markup.onBeforeTagStart(this, builder, tagName, attributes, tagData);
+		D object = markup.onBeforeTagStart(this, builder, tagName, attributes, tagData);
 		boolean blockTag = tagData.block;
 		boolean spacedTag = blockTag && tagData.spaced;
 		boolean preformattedTag = tagData.preformatted == TagData.Preformatted.ENABLED ||
@@ -544,30 +543,32 @@ public class HtmlParser implements ContentHandler {
 		return null;
 	}
 
-	private static final Markup IDLE_MARKUP = new Markup() {
+	private static final Markup<?, ?, ?> IDLE_MARKUP = new Markup<Void, Void, SpanProvider<Void>>() {
 		@Override
-		public Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,
-				Attributes attributes, TagData tagData) {
+		public Void onBeforeTagStart(HtmlParser<Void, Void, SpanProvider<Void>> parser,
+				StringBuilder builder, String tagName, Attributes attributes, TagData tagData) {
 			return null;
 		}
 
 		@Override
-		public void onTagStart(HtmlParser parser, StringBuilder builder, String tagName,
-				Attributes attributes, Object object) {}
+		public void onTagStart(HtmlParser<Void, Void, SpanProvider<Void>> parser,
+				StringBuilder builder, String tagName, Attributes attributes, Void object) {}
 
 		@Override
-		public void onTagEnd(HtmlParser parser, StringBuilder builder, String tagName) {}
+		public void onTagEnd(HtmlParser<Void, Void, SpanProvider<Void>> parser,
+				StringBuilder builder, String tagName) {}
 
 		@Override
-		public int onListLineStart(HtmlParser parser, StringBuilder builder, boolean ordered, int line) {
+		public int onListLineStart(HtmlParser<Void, Void, SpanProvider<Void>> parser,
+				StringBuilder builder, boolean ordered, int line) {
 			return 0;
 		}
 
 		@Override
-		public void onCutBlock(HtmlParser parser, StringBuilder builder) {}
+		public void onCutBlock(HtmlParser<Void, Void, SpanProvider<Void>> parser, StringBuilder builder) {}
 
 		@Override
-		public SpanProvider initSpanProvider(HtmlParser parser) {
+		public SpanProvider<Void> initSpanProvider(HtmlParser<Void, Void, SpanProvider<Void>> parser) {
 			return null;
 		}
 	};

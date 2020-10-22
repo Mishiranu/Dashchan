@@ -18,18 +18,18 @@ public interface WebViewExtra extends Parcelable {
 		dest.writeString(getClass().getName());
 	}
 
-	public static final Creator<WebViewExtra> CREATOR = new Creator<WebViewExtra>() {
+	Creator<WebViewExtra> CREATOR = new Creator<WebViewExtra>() {
 		@SuppressWarnings("unchecked")
 		@Override
-		public WebViewExtra createFromParcel(Parcel in) {
-			String className = in.readString();
+		public WebViewExtra createFromParcel(Parcel source) {
+			String className = source.readString();
 			Creator<WebViewExtra> creator;
 			try {
 				creator = (Creator<WebViewExtra>) Class.forName(className).getField("CREATOR").get(null);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-			return creator.createFromParcel(in);
+			return creator.createFromParcel(source);
 		}
 
 		@Override

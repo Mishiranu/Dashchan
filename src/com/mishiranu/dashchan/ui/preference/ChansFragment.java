@@ -4,15 +4,17 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import androidx.annotation.NonNull;
-import chan.content.ChanConfiguration;
+import chan.content.Chan;
 import chan.content.ChanManager;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
+import java.util.Collection;
 
-public class ChansFragment extends PreferenceFragment {
+public class ChansFragment extends PreferenceFragment implements ActivityHandler {
 	@Override
 	protected SharedPreferences getPreferences() {
 		return Preferences.PREFERENCES;
@@ -21,23 +23,41 @@ public class ChansFragment extends PreferenceFragment {
 	@Override
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
-		ChanManager manager = ChanManager.getInstance();
-		for (String chanName : manager.getAvailableChanNames()) {
-			Preference<?> preference = addCategory(ChanConfiguration.get(chanName).getTitle(),
-					manager.getIcon(chanName));
-			preference.setOnClickListener(p -> ((FragmentHandler) requireActivity())
-					.pushFragment(new ChanFragment(chanName)));
-		}
+		updateList();
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
 		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.forums), null);
-		if (!ChanManager.getInstance().getAvailableChanNames().iterator().hasNext()) {
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		if (!ChanManager.getInstance().getAvailableChans().iterator().hasNext()) {
 			((FragmentHandler) requireActivity()).removeFragment();
 		}
+	}
+
+	@Override
+	public void onChansChanged(Collection<String> changed, Collection<String> removed) {
+		removeAllPreferences();
+		if (!updateList()) {
+			((FragmentHandler) requireActivity()).removeFragment();
+		}
+	}
+
+	private boolean updateList() {
+		boolean hasChans = false;
+		ChanManager manager = ChanManager.getInstance();
+		for (Chan chan : manager.getAvailableChans()) {
+			Preference<?> preference = addCategory(chan.configuration.getTitle(), manager.getIcon(chan));
+			preference.setOnClickListener(p -> ((FragmentHandler) requireActivity())
+					.pushFragment(new ChanFragment(chan.name)));
+			hasChans = true;
+		}
+		return hasChans;
 	}
 }

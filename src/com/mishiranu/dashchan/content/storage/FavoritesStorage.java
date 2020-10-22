@@ -183,10 +183,7 @@ public class FavoritesStorage extends StorageManager.Storage<List<FavoritesStora
 	}
 
 	public void add(String chanName, String boardName, String threadNumber, String title, int postsCount) {
-		FavoriteItem favoriteItem = new FavoriteItem();
-		favoriteItem.chanName = chanName;
-		favoriteItem.boardName = boardName;
-		favoriteItem.threadNumber = threadNumber;
+		FavoriteItem favoriteItem = new FavoriteItem(chanName, boardName, threadNumber);
 		favoriteItem.title = title;
 		favoriteItem.postsCount = postsCount;
 		favoriteItem.newPostsCount = postsCount;
@@ -358,9 +355,9 @@ public class FavoritesStorage extends StorageManager.Storage<List<FavoritesStora
 	};
 
 	public static class FavoriteItem {
-		public String chanName;
-		public String boardName;
-		public String threadNumber;
+		public final String chanName;
+		public final String boardName;
+		public final String threadNumber;
 		public String title;
 
 		public boolean modifiedTitle;
@@ -371,7 +368,11 @@ public class FavoritesStorage extends StorageManager.Storage<List<FavoritesStora
 		public boolean hasNewPosts;
 		public HttpValidator watcherValidator;
 
-		public FavoriteItem() {}
+		public FavoriteItem(String chanName, String boardName, String threadNumber) {
+			this.chanName = chanName;
+			this.boardName = boardName;
+			this.threadNumber = threadNumber;
+		}
 
 		public FavoriteItem(FavoriteItem favoriteItem) {
 			this(favoriteItem.chanName, favoriteItem.boardName, favoriteItem.threadNumber, favoriteItem.title,

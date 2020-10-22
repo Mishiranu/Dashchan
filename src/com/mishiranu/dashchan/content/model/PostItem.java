@@ -9,8 +9,8 @@ import android.text.Spanned;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import androidx.annotation.NonNull;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
 import chan.content.ChanMarkup;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
@@ -82,7 +82,6 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 
 	private final Post post;
 	private final ThreadData threadData;
-	private final String chanName;
 	private final String boardName;
 	private final String threadNumber;
 	private final PostNumber originalPostNumber;
@@ -138,28 +137,27 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 		}
 	}
 
-	public static PostItem createPost(Post post, ChanLocator locator,
-			String chanName, String boardName, String threadNumber, PostNumber originalPostNumber) {
-		return new PostItem(post, null, locator, chanName, boardName, threadNumber, originalPostNumber);
+	public static PostItem createPost(Post post, Chan chan,
+			String boardName, String threadNumber, PostNumber originalPostNumber) {
+		return new PostItem(post, null, chan, boardName, threadNumber, originalPostNumber);
 	}
 
 	public static PostItem createThread(List<Post> posts, int postsCount, int filesCount, int postsWithFilesCount,
-			ChanLocator locator, String chanName, String boardName, String threadNumber) {
+			Chan chan, String boardName, String threadNumber) {
 		Post post = posts.get(0);
 		ThreadData.Base threadData = new ThreadData.Base(postsCount, filesCount, postsWithFilesCount, posts);
-		return new PostItem(post, threadData, locator, chanName, boardName, threadNumber, post.number);
+		return new PostItem(post, threadData, chan, boardName, threadNumber, post.number);
 	}
 
-	private PostItem(Post post, ThreadData.Base threadDataBase, ChanLocator locator,
-			String chanName, String boardName, String threadNumber, PostNumber originalPostNumber) {
+	private PostItem(Post post, ThreadData.Base threadDataBase, Chan chan,
+			String boardName, String threadNumber, PostNumber originalPostNumber) {
 		this.post = post;
-		this.chanName = chanName;
 		this.boardName = boardName;
 		this.threadNumber = threadNumber;
 		this.originalPostNumber = originalPostNumber;
-		attachmentItems = AttachmentItem.obtain(this, post, locator);
+		attachmentItems = AttachmentItem.obtain(this, post, chan.locator);
 		if (threadDataBase != null) {
-			CharSequence commentShort = obtainThreadComment(post.comment, chanName, this);
+			CharSequence commentShort = obtainThreadComment(post.comment, chan.markup, this);
 			ColorScheme.Span[] commentShortSpans = ColorScheme.getSpans(commentShort);
 			GalleryItem.Set gallerySet = null;
 			if (attachmentItems != null) {
@@ -247,11 +245,6 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 	}
 
 	@Override
-	public String getChanName() {
-		return chanName;
-	}
-
-	@Override
 	public String getBoardName() {
 		return boardName;
 	}
@@ -284,12 +277,12 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 		return useDefaultName;
 	}
 
-	private CharSequence makeFullName() {
+	private CharSequence makeFullName(ChanConfiguration configuration) {
 		String name = post.name;
 		String identifier = post.identifier;
 		String tripcode = post.tripcode;
 		String capcode = post.capcode;
-		String defaultName = ChanConfiguration.get(getChanName()).getDefaultName(boardName);
+		String defaultName = configuration.getDefaultName(boardName);
 		if (StringUtils.isEmptyOrWhitespace(defaultName)) {
 			defaultName = "Anonymous";
 		}
@@ -336,9 +329,9 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 	}
 
 	@NonNull
-	public CharSequence getFullName() {
+	public CharSequence getFullName(Chan chan) {
 		if (fullName == null) {
-			CharSequence fullName = makeFullName();
+			CharSequence fullName = makeFullName(chan.configuration);
 			if (StringUtils.isEmpty(fullName)) {
 				fullName = "";
 			}
@@ -386,7 +379,7 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 
 	public enum BumpLimitState {NOT_REACHED, REACHED, NEED_COUNT}
 
-	public BumpLimitState getBumpLimitReachedState(int postsCount) {
+	public BumpLimitState getBumpLimitReachedState(Chan chan, int postsCount) {
 		if (!isOriginalPost() || isSticky() || isCyclical()) {
 			return BumpLimitState.NOT_REACHED;
 		}
@@ -397,8 +390,7 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 			postsCount = threadData.base.postsCount;
 		}
 		if (postsCount > 0) {
-			ChanConfiguration configuration = ChanConfiguration.get(getChanName());
-			int bumpLimit = configuration.getBumpLimitWithMode(getBoardName());
+			int bumpLimit = chan.configuration.getBumpLimitWithMode(getBoardName());
 			if (bumpLimit != ChanConfiguration.BUMP_LIMIT_INVALID) {
 				return postsCount >= bumpLimit ? BumpLimitState.REACHED : BumpLimitState.NOT_REACHED;
 			}
@@ -437,15 +429,15 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 		return subject;
 	}
 
-	private static CharSequence obtainComment(String comment, String chanName,
+	private static CharSequence obtainComment(String comment, ChanMarkup markup,
 			String threadNumber, PostNumber originalPostNumber, ChanMarkup.MarkupExtra extra) {
-		return StringUtils.isEmpty(comment) ? "" : HtmlParser.spanify(comment, ChanMarkup.get(chanName),
+		return StringUtils.isEmpty(comment) ? "" : HtmlParser.spanify(comment, markup.getMarkup(),
 				threadNumber, originalPostNumber, extra);
 	}
 
-	private static CharSequence obtainThreadComment(String comment, String chanName, ChanMarkup.MarkupExtra extra) {
+	private static CharSequence obtainThreadComment(String comment, ChanMarkup markup, ChanMarkup.MarkupExtra extra) {
 		SpannableStringBuilder commentBuilder = new SpannableStringBuilder(obtainComment(comment,
-				chanName, null, null, extra));
+				markup, null, null, extra));
 		int linebreaks = 0;
 		// Remove more than one linebreaks in sequence
 		for (int i = commentBuilder.length() - 1; i >= 0; i--) {
@@ -464,9 +456,9 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 	}
 
 	@NonNull
-	public CharSequence getComment() {
+	public CharSequence getComment(Chan chan) {
 		if (comment == null) {
-			CharSequence comment = obtainComment(post.comment, getChanName(),
+			CharSequence comment = obtainComment(post.comment, chan.markup,
 					getThreadNumber(), getOriginalPostNumber(), this);
 			// Make empty lines take less space
 			SpannableStringBuilder builder = null;
@@ -498,8 +490,8 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 	}
 
 	@NonNull
-	public CharSequence getComment(PostNumber repliesToPost) {
-		SpannableString comment = new SpannableString(getComment());
+	public CharSequence getComment(Chan chan, PostNumber repliesToPost) {
+		SpannableString comment = new SpannableString(getComment(chan));
 		LinkSpan[] spans = comment.getSpans(0, comment.length(), LinkSpan.class);
 		if (spans != null) {
 			String commentString = comment.toString();
@@ -539,11 +531,11 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 		return threadData.commentShortSpans;
 	}
 
-	public String getCommentMarkup() {
+	public String getCommentMarkup(Chan chan) {
 		if (!StringUtils.isEmpty(post.commentMarkup)) {
 			return post.commentMarkup;
 		} else if (!StringUtils.isEmpty(post.comment)) {
-			return HtmlParser.unmark(post.comment, ChanMarkup.get(chanName), this);
+			return HtmlParser.unmark(post.comment, chan.markup.getMarkup(), this);
 		} else {
 			return "";
 		}
@@ -630,14 +622,13 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 		return threadData.base.postsCount;
 	}
 
-	public List<PostItem> getThreadPosts() {
+	public List<PostItem> getThreadPosts(Chan chan) {
 		int count = threadData.base.posts.size();
 		if (count >= 2) {
 			int startIndex = threadData.base.postsCount - count + 1;
 			ArrayList<PostItem> postItems = new ArrayList<>(count - 1);
 			for (Post post : threadData.base.posts.subList(1, count)) {
-				PostItem postItem = createPost(post, ChanLocator.get(chanName),
-						chanName, boardName, threadNumber, originalPostNumber);
+				PostItem postItem = createPost(post, chan, boardName, threadNumber, originalPostNumber);
 				postItem.setOrdinalIndex(startIndex > 0 ? startIndex++ : ORDINAL_INDEX_NONE);
 				postItems.add(postItem);
 			}

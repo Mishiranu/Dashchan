@@ -8,8 +8,7 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.util.Pair;
 import androidx.annotation.NonNull;
-import chan.content.ChanLocator;
-import chan.content.ChanManager;
+import chan.content.Chan;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
@@ -221,8 +220,8 @@ public class HttpClient {
 		return proxyData == null || proxyData.getProxy() != null;
 	}
 
-	public ProxyData getProxyData(String chanName) {
-		return getProxyData(Preferences.getProxy(chanName));
+	public ProxyData getProxyData(Chan chan) {
+		return getProxyData(Preferences.getProxy(chan));
 	}
 
 	private ProxyData getProxyData(String[] array) {
@@ -240,15 +239,15 @@ public class HttpClient {
 		return null;
 	}
 
-	Proxy getProxy(String chanName) {
-		ProxyData proxyData = getProxyData(chanName);
+	Proxy getProxy(Chan chan) {
+		ProxyData proxyData = getProxyData(chan);
 		synchronized (proxies) {
-			ProxyData lastProxyData = proxies.get(chanName);
+			ProxyData lastProxyData = proxies.get(chan.name);
 			if (CommonUtils.equals(proxyData, lastProxyData)) {
 				// With initialized proxy object
 				proxyData = lastProxyData;
 			} else {
-				proxies.put(chanName, proxyData);
+				proxies.put(chan.name, proxyData);
 			}
 		}
 		return proxyData != null ? proxyData.getProxy() : null;
@@ -301,11 +300,9 @@ public class HttpClient {
 	}
 
 	HttpResponse execute(HttpRequest request) throws HttpException {
-		String chanName = ChanManager.getInstance().getChanNameByHost(request.uri.getAuthority());
-		ChanLocator locator = ChanLocator.get(chanName);
-		boolean verifyCertificate = locator.isUseHttps() && Preferences.isVerifyCertificate();
-		request.holder.initSession(this, request.uri, getProxy(chanName),
-				chanName, verifyCertificate, request.delay, MAX_ATTEMPS_COUNT);
+		boolean verifyCertificate = request.holder.chan.locator.isUseHttps() && Preferences.isVerifyCertificate();
+		request.holder.initSession(this, request.uri, getProxy(request.holder.chan),
+				verifyCertificate, request.delay, MAX_ATTEMPS_COUNT);
 		handshakeSessions.set(new HandshakeSSLSocket.Session(request.connectTimeout));
 		try {
 			while (true) {
@@ -383,7 +380,7 @@ public class HttpClient {
 		session.executing = true;
 		try {
 			Uri requestedUri = session.requestedUri;
-			if (!ChanLocator.getDefault().isWebScheme(requestedUri)) {
+			if (!request.holder.chan.locator.isWebScheme(requestedUri)) {
 				throw new HttpException(ErrorItem.Type.UNSUPPORTED_SCHEME, false, false);
 			}
 			URL url = encodeUri(requestedUri);
@@ -400,7 +397,6 @@ public class HttpClient {
 				connection.disconnect();
 				throw e;
 			}
-			String chanName = session.chanName;
 
 			connection.setUseCaches(false);
 			connection.setConnectTimeout(request.connectTimeout);
@@ -424,13 +420,14 @@ public class HttpClient {
 				}
 			}
 			if (!userAgentSet) {
-				connection.setRequestProperty("User-Agent", AdvancedPreferences.getUserAgent(chanName));
+				connection.setRequestProperty("User-Agent", AdvancedPreferences
+						.getUserAgent(request.holder.chan.name));
 			}
 			if (!acceptEncodingSet) {
 				connection.setRequestProperty("Accept-Encoding", "gzip");
 			}
 			CookieBuilder cookieBuilder = request.checkRelayBlock == HttpRequest.CheckRelayBlock.SKIP
-					? request.cookieBuilder : obtainModifiedCookieBuilder(request.cookieBuilder, chanName);
+					? request.cookieBuilder : obtainModifiedCookieBuilder(request.cookieBuilder, request.holder.chan);
 			if (cookieBuilder != null) {
 				connection.setRequestProperty("Cookie", cookieBuilder.build());
 			}
@@ -554,10 +551,11 @@ public class HttpClient {
 				throw new HttpException(responseCode, responseMessage);
 			}
 
-			if (chanName != null && request.checkRelayBlock != HttpRequest.CheckRelayBlock.SKIP &&
+			if (request.holder.chan.name != null &&
+					request.checkRelayBlock != HttpRequest.CheckRelayBlock.SKIP &&
 					requestMethod != HttpRequest.RequestMethod.HEAD) {
 				RelayBlockResolver.Result result = RelayBlockResolver.getInstance()
-						.checkResponse(chanName, requestedUri, request.holder, response,
+						.checkResponse(request.holder.chan, requestedUri, request.holder, response,
 								request.checkRelayBlock == HttpRequest.CheckRelayBlock.RESOLVE);
 				if (result.blocked) {
 					if (result.resolved && session.nextAttempt()) {
@@ -646,8 +644,8 @@ public class HttpClient {
 		return "gzip".equals(encoding);
 	}
 
-	CookieBuilder obtainModifiedCookieBuilder(CookieBuilder cookieBuilder, String chanName) {
-		Map<String, String> cookies = RelayBlockResolver.getInstance().getCookies(chanName);
+	CookieBuilder obtainModifiedCookieBuilder(CookieBuilder cookieBuilder, Chan chan) {
+		Map<String, String> cookies = RelayBlockResolver.getInstance().getCookies(chan);
 		if (!cookies.isEmpty()) {
 			cookieBuilder = new CookieBuilder(cookieBuilder);
 			for (Map.Entry<String, String> cookie : cookies.entrySet()) {
@@ -931,10 +929,10 @@ public class HttpClient {
 	private final HashMap<String, AtomicBoolean> delayLocks = new HashMap<>();
 
 	// Called from HttpSession
-	void onConnect(String chanName, HttpURLConnection connection, int delay) throws InterruptedHttpException {
-		if (AdvancedPreferences.isSingleConnection(chanName)) {
+	void onConnect(Chan chan, HttpURLConnection connection, int delay) throws InterruptedHttpException {
+		if (AdvancedPreferences.isSingleConnection(chan.name)) {
 			synchronized (singleConnections) {
-				while (singleConnections.containsKey(chanName)) {
+				while (singleConnections.containsKey(chan.name)) {
 					try {
 						singleConnections.wait();
 					} catch (InterruptedException e) {
@@ -942,8 +940,8 @@ public class HttpClient {
 						throw new InterruptedHttpException();
 					}
 				}
-				singleConnections.put(chanName, connection);
-				singleConnectionIdentifiers.put(connection, chanName);
+				singleConnections.put(chan.name, connection);
+				singleConnectionIdentifiers.put(connection, chan.name);
 			}
 		}
 		if (delay > 0) {

@@ -4,7 +4,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import chan.content.ChanConfiguration;
+import chan.content.Chan;
 import chan.content.model.Board;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
@@ -78,12 +78,12 @@ public class UserBoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 
 	public void setItems(Board[] boards) {
 		listItems.clear();
-		ChanConfiguration configuration = ChanConfiguration.get(chanName);
+		Chan chan = Chan.get(chanName);
 		if (boards != null) {
 			for (Board board : boards) {
 				String boardName = board.getBoardName();
-				String title = configuration.getBoardTitle(boardName);
-				String description = configuration.getBoardDescription(boardName);
+				String title = chan.configuration.getBoardTitle(boardName);
+				String description = chan.configuration.getBoardDescription(boardName);
 				listItems.add(new ListItem(boardName, StringUtils.formatBoardTitle(chanName, boardName, title),
 						description));
 			}

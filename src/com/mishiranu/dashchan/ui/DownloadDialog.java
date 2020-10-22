@@ -26,7 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
-import chan.content.ChanConfiguration;
+import chan.content.Chan;
 import chan.util.CommonUtils;
 import chan.util.DataFile;
 import chan.util.StringUtils;
@@ -160,7 +160,7 @@ public class DownloadDialog {
 		}
 
 		if (choiceRequest.chanName != null && choiceRequest.threadNumber != null) {
-			String chanTitle = ChanConfiguration.get(choiceRequest.chanName).getTitle();
+			String chanTitle = Chan.get(choiceRequest.chanName).configuration.getTitle();
 			String threadTitle = choiceRequest.threadTitle;
 			if (threadTitle != null) {
 				threadTitle = StringUtils.escapeFile(StringUtils.cutIfLongerToLine(threadTitle, 50, false), false);

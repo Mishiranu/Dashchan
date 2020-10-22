@@ -30,35 +30,40 @@ import java.util.Locale;
 import org.xml.sax.Attributes;
 
 @Extendable
-public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
-	private final String chanName;
+public class ChanMarkup implements Chan.Linked {
+	private final Chan.Provider chanProvider;
 
-	public static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
+	static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
 
 	@Public
 	public ChanMarkup() {
-		this(true);
+		this((Chan.Provider) null);
 	}
 
-	public ChanMarkup(boolean useInitializer) {
-		chanName = useInitializer ? INITIALIZER.consume().chanName : null;
+	public ChanMarkup(Chan chan) {
+		this(new Chan.Provider(chan));
 	}
 
-	@Override
-	public final String getChanName() {
-		return chanName;
+	ChanMarkup(Chan.Provider chanProvider) {
+		if (chanProvider == null) {
+			ChanManager.Initializer.Holder holder = INITIALIZER.consume();
+			this.chanProvider = holder.chanProvider;
+		} else {
+			this.chanProvider = chanProvider;
+		}
 	}
 
 	@Override
 	public final void init() {}
 
-	public static <T extends ChanMarkup> T get(String chanName) {
-		return ChanManager.getInstance().getMarkup(chanName);
+	@Override
+	public final Chan get() {
+		return chanProvider.get();
 	}
 
 	@Public
-	public static <T extends ChanMarkup> T get(Object object) {
-		return get(ChanManager.getInstance().getLinkedChanName(object));
+	public static ChanMarkup get(Object object) {
+		return ((Chan.Linked) object).get().markup;
 	}
 
 	@Public public static final int TAG_BOLD = 0x00000001;
@@ -299,65 +304,69 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 		obtainTagItem(tagName, false, null, true, attribute, value).setPreformatted(preformatted);
 	}
 
+	public final HtmlParser.Markup<MarkupExtra, ?, ChanSpanProvider> getMarkup() {
+		return markup;
+	}
+
 	private static final TagItem UNUSED_TAG_ITEM = new TagItem();
 
-	@SuppressWarnings("UnusedAssignment")
-	@Override
-	public final Object onBeforeTagStart(HtmlParser parser, StringBuilder builder, String tagName,
-			Attributes attributes, HtmlParser.TagData tagData) {
-		if (!tagName.equals("a")) {
-			MarkupItem markupItem = markupItems.get(tagName);
-			if (markupItem != null) {
-				TagItem tagItem = markupItem.tagItem;
-				boolean preferredTagItemFound = false;
-				if (markupItem.cssClassTagItems != null) {
-					String fullCssClass = attributes.getValue("", "class");
-					String[] cssClasses = fullCssClass != null ? fullCssClass.split(" +") : null;
-					if (cssClasses != null) {
-						for (String cssClass : cssClasses) {
-							TagItem preferredTagItem = markupItem.cssClassTagItems.get(cssClass);
-							if (preferredTagItem != null && preferredTagItem.isMorePreferredThanParent()) {
-								tagItem = preferredTagItem;
-								preferredTagItemFound = true;
+	private final HtmlParser.Markup<MarkupExtra, ?, ChanSpanProvider> markup =
+			new HtmlParser.Markup<MarkupExtra, TagItem, ChanSpanProvider>() {
+		@Override
+		public TagItem onBeforeTagStart(HtmlParser<MarkupExtra, TagItem, ChanSpanProvider> parser,
+				StringBuilder builder, String tagName, Attributes attributes, HtmlParser.TagData tagData) {
+			if (!tagName.equals("a")) {
+				MarkupItem markupItem = markupItems.get(tagName);
+				if (markupItem != null) {
+					TagItem tagItem = markupItem.tagItem;
+					boolean preferredTagItemFound = false;
+					if (markupItem.cssClassTagItems != null) {
+						String fullCssClass = attributes.getValue("", "class");
+						String[] cssClasses = fullCssClass != null ? fullCssClass.split(" +") : null;
+						if (cssClasses != null) {
+							for (String cssClass : cssClasses) {
+								TagItem preferredTagItem = markupItem.cssClassTagItems.get(cssClass);
+								if (preferredTagItem != null &&
+										preferredTagItem.isMorePreferredThanParent()) {
+									tagItem = preferredTagItem;
+									preferredTagItemFound = true;
+									break;
+								}
+							}
+						}
+					}
+					if (!preferredTagItemFound && markupItem.attrubuteItems != null) {
+						for (AttributeItem attributeItem : markupItem.attrubuteItems) {
+							String value = attributes.getValue("", attributeItem.attribute);
+							if (attributeItem.value.equals(value) &&
+									attributeItem.tagItem.isMorePreferredThanParent()) {
+								tagItem = attributeItem.tagItem;
 								break;
 							}
 						}
 					}
-				}
-				if (!preferredTagItemFound && markupItem.attrubuteItems != null) {
-					for (AttributeItem attributeItem : markupItem.attrubuteItems) {
-						String value = attributes.getValue("", attributeItem.attribute);
-						if (attributeItem.value.equals(value) && attributeItem.tagItem.isMorePreferredThanParent()) {
-							tagItem = attributeItem.tagItem;
-							preferredTagItemFound = true;
-							break;
-						}
+					if (tagItem != null) {
+						tagItem.applyTagData(tagData);
+						return tagItem;
 					}
+					return UNUSED_TAG_ITEM;
 				}
-				if (tagItem != null) {
-					tagItem.applyTagData(tagData);
-					return tagItem;
-				}
-				return UNUSED_TAG_ITEM;
 			}
+			return null;
 		}
-		return null;
-	}
 
-	@Override
-	public final void onTagStart(HtmlParser parser, StringBuilder builder, String tagName,
-			Attributes attributes, Object object) {
-		ChanSpanProvider provider = parser.getSpanProvider();
-		int tag = 0;
-		Object extra = null;
-		if (tagName.equals("a")) {
-			tag = TAG_SPECIAL_LINK;
-			LinkHolder linkHolder = new LinkHolder();
-			linkHolder.uriString = StringUtils.nullIfEmpty(attributes.getValue("", "href"));
-			extra = linkHolder;
-		} else {
-			TagItem tagItem = (TagItem) object;
-			if (tagItem != null) {
+		@Override
+		public void onTagStart(HtmlParser<MarkupExtra, TagItem, ChanSpanProvider> parser,
+				StringBuilder builder, String tagName, Attributes attributes, TagItem tagItem) {
+			ChanSpanProvider provider = parser.getSpanProvider();
+			int tag = 0;
+			Object extra = null;
+			if (tagName.equals("a")) {
+				tag = TAG_SPECIAL_LINK;
+				LinkHolder linkHolder = new LinkHolder();
+				linkHolder.uriString = StringUtils.nullIfEmpty(attributes.getValue("", "href"));
+				extra = linkHolder;
+			} else if (tagItem != null) {
 				if (tagItem.tag != 0) {
 					tag = tagItem.tag;
 				} else if (tagItem.colorable) {
@@ -371,113 +380,115 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 					tag = TAG_SPECIAL_UNUSED;
 				}
 			}
-		}
-		if (tag != 0) {
-			if (parser.isUnmarkMode()) {
-				CommentEditor commentEditor = provider.commentEditor;
-				if (commentEditor != null) {
-					String markupTag = commentEditor.getTag(tag, false, 0);
-					if (markupTag != null) {
-						builder.append(markupTag);
-					}
-				}
-			}
-			provider.add(tag, extra, builder.length());
-		}
-	}
-
-	@Override
-	public final void onTagEnd(HtmlParser parser, StringBuilder builder, String tagName) {
-		ChanSpanProvider provider = parser.getSpanProvider();
-		StyledItem styledItem = null;
-		if (tagName.equals("a") || markupItems.containsKey(tagName)) {
-			styledItem = provider.getLastOpenStyledItem();
-		}
-		if (styledItem != null) {
-			if (parser.isUnmarkMode()) {
-				CommentEditor commentEditor = provider.commentEditor;
-				if (commentEditor != null) {
-					if (styledItem.tag != 0) {
-						String markupTag = commentEditor.getTag(styledItem.tag, true,
-								builder.length() - styledItem.start);
+			if (tag != 0) {
+				if (parser.isUnmarkMode()) {
+					CommentEditor commentEditor = provider.commentEditor;
+					if (commentEditor != null) {
+						String markupTag = commentEditor.getTag(tag, false, 0);
 						if (markupTag != null) {
 							builder.append(markupTag);
 						}
 					}
 				}
+				provider.add(tag, extra, builder.length());
 			}
-			int end = builder.length();
-			if (styledItem.tag == TAG_SPECIAL_LINK) {
-				LinkHolder linkHolder = (LinkHolder) styledItem.extra;
-				if (parser.isSpanifyMode()) {
-					provider.modifyLink(parser, styledItem.start, end, linkHolder);
-				} else if (parser.isUnmarkMode()) {
-					end += provider.replaceLink(parser, styledItem.start, end, linkHolder.uriString);
+		}
+
+		@Override
+		public void onTagEnd(HtmlParser<MarkupExtra, TagItem, ChanSpanProvider> parser,
+				StringBuilder builder, String tagName) {
+			ChanSpanProvider provider = parser.getSpanProvider();
+			StyledItem styledItem = null;
+			if (tagName.equals("a") || markupItems.containsKey(tagName)) {
+				styledItem = provider.getLastOpenStyledItem();
+			}
+			if (styledItem != null) {
+				if (parser.isUnmarkMode()) {
+					CommentEditor commentEditor = provider.commentEditor;
+					if (commentEditor != null) {
+						if (styledItem.tag != 0) {
+							String markupTag = commentEditor.getTag(styledItem.tag, true,
+									builder.length() - styledItem.start);
+							if (markupTag != null) {
+								builder.append(markupTag);
+							}
+						}
+					}
+				}
+				int end = builder.length();
+				if (styledItem.tag == TAG_SPECIAL_LINK) {
+					LinkHolder linkHolder = (LinkHolder) styledItem.extra;
+					if (parser.isSpanifyMode()) {
+						provider.modifyLink(parser, styledItem.start, end, linkHolder);
+					} else if (parser.isUnmarkMode()) {
+						end += provider.replaceLink(parser, styledItem.start, end, linkHolder.uriString);
+					}
+				}
+				styledItem.close(end);
+			}
+		}
+
+		@Override
+		public int onListLineStart(HtmlParser<MarkupExtra, TagItem, ChanSpanProvider> parser,
+				StringBuilder builder, boolean ordered, int line) {
+			int length = builder.length();
+			if (parser.isSpanifyMode()) {
+				if (ordered) {
+					builder.append(line).append(". ");
+				} else {
+					builder.append("\u2022 ");
+				}
+			} else if (parser.isUnmarkMode()) {
+				ChanSpanProvider provider = parser.getSpanProvider();
+				CommentEditor commentEditor = provider.commentEditor;
+				String mark;
+				if (commentEditor != null) {
+					if (ordered) {
+						mark = commentEditor.getOrderedListMark();
+					} else {
+						mark = commentEditor.getUnorderedListMark();
+					}
+				} else {
+					if (ordered) {
+						mark = null;
+					} else {
+						mark = "- ";
+					}
+				}
+				if (mark == null) {
+					builder.append(line).append(". ");
+				} else {
+					builder.append(mark);
 				}
 			}
-			styledItem.close(end);
+			return builder.length() - length;
 		}
-	}
+
+		@Override
+		public void onCutBlock(HtmlParser<MarkupExtra, TagItem, ChanSpanProvider> parser, StringBuilder builder) {
+			ChanSpanProvider provider = parser.getSpanProvider();
+			provider.cut(builder.length());
+		}
+
+		@Override
+		public ChanSpanProvider initSpanProvider(HtmlParser<MarkupExtra, TagItem, ChanSpanProvider> parser) {
+			ChanSpanProvider provider = new ChanSpanProvider();
+			if (parser.isUnmarkMode()) {
+				MarkupExtra extra = parser.getExtra();
+				if (extra != null) {
+					String boardName = extra.getBoardName();
+					provider.commentEditor = safe.obtainCommentEditor(boardName);
+				}
+			}
+			return provider;
+		}
+	};
 
 	private static final class NotImplementedException extends Exception {}
 
 	@Extendable
 	protected Pair<String, String> obtainPostLinkThreadPostNumbers(String uriString) throws NotImplementedException {
 		throw new NotImplementedException();
-	}
-
-	@Override
-	public final int onListLineStart(HtmlParser parser, StringBuilder builder, boolean ordered, int line) {
-		int length = builder.length();
-		if (parser.isSpanifyMode()) {
-			if (ordered) {
-				builder.append(line).append(". ");
-			} else {
-				builder.append("\u2022 ");
-			}
-		} else if (parser.isUnmarkMode()) {
-			ChanSpanProvider provider = parser.getSpanProvider();
-			CommentEditor commentEditor = provider.commentEditor;
-			String mark;
-			if (commentEditor != null) {
-				if (ordered) {
-					mark = commentEditor.getOrderedListMark();
-				} else {
-					mark = commentEditor.getUnorderedListMark();
-				}
-			} else {
-				if (ordered) {
-					mark = null;
-				} else {
-					mark = "- ";
-				}
-			}
-			if (mark == null) {
-				builder.append(line).append(". ");
-			} else {
-				builder.append(mark);
-			}
-		}
-		return builder.length() - length;
-	}
-
-	@Override
-	public final void onCutBlock(HtmlParser parser, StringBuilder builder) {
-		ChanSpanProvider provider = parser.getSpanProvider();
-		provider.cut(builder.length());
-	}
-
-	@Override
-	public final HtmlParser.SpanProvider initSpanProvider(HtmlParser parser) {
-		ChanSpanProvider provider = new ChanSpanProvider();
-		if (parser.isUnmarkMode()) {
-			MarkupExtra extra = parser.getExtra();
-			if (extra != null) {
-				String boardName = extra.getBoardName();
-				provider.commentEditor = safe.obtainCommentEditor(boardName);
-			}
-		}
-		return provider;
 	}
 
 	private static class LinkHolder {
@@ -513,7 +524,9 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 		}
 	}
 
-	private class ChanSpanProvider implements HtmlParser.SpanProvider {
+	public class ChanSpanProvider implements HtmlParser.SpanProvider<MarkupExtra> {
+		private ChanSpanProvider() {}
+
 		private final ArrayList<StyledItem> styledItems = new ArrayList<>();
 
 		public CommentEditor commentEditor;
@@ -548,7 +561,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 			}
 		}
 
-		private void modifyLink(HtmlParser parser, int start, int end, LinkHolder linkHolder) {
+		private void modifyLink(HtmlParser<MarkupExtra, ?, ?> parser, int start, int end, LinkHolder linkHolder) {
 			String processThreadNumber = parser.getThreadNumber();
 			PostNumber processOriginalPostNumber = parser.getOriginalPostNumber();
 			if (linkHolder.uriString != null && processThreadNumber != null && processOriginalPostNumber != null) {
@@ -583,7 +596,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 				} catch (NotImplementedException e) {
 					MarkupExtra extra = parser.getExtra();
 					if (extra != null) {
-						ChanLocator locator = ChanLocator.get(chanName);
+						ChanLocator locator = get().locator;
 						Uri uri = locator.validateClickedUriString(uriString, extra.getBoardName(),
 								extra.getThreadNumber());
 						threadNumber = locator.safe(false).getThreadNumber(uri);
@@ -609,7 +622,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 		/*
 		 * Returns number of characters added or removed
 		 */
-		private int replaceLink(HtmlParser parser, int start, int end, String uriString) {
+		private int replaceLink(HtmlParser<MarkupExtra, ?, ?> parser, int start, int end, String uriString) {
 			if (uriString != null) {
 				StringBuilder builder = parser.getBuilder();
 				String string = builder.substring(start, end);
@@ -622,7 +635,7 @@ public class ChanMarkup implements ChanManager.Linked, HtmlParser.Markup {
 		}
 
 		@Override
-		public CharSequence transformBuilder(HtmlParser parser, StringBuilder builder) {
+		public CharSequence transformBuilder(HtmlParser<MarkupExtra, ?, ?> parser, StringBuilder builder) {
 			SpannableString spannable = new SpannableString(builder);
 			for (int i = 0; i < spannable.length(); i++) {
 				if (spannable.charAt(i) == '\t') {

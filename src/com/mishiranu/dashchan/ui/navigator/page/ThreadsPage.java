@@ -12,8 +12,8 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
 import chan.content.ChanPerformer;
 import chan.content.RedirectException;
 import chan.http.HttpValidator;
@@ -105,7 +105,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 				if (hideState != PostItem.HideState.UNDEFINED) {
 					postItem.setHidden(hideState, null);
 				} else {
-					String hideReason = hidePerformer.checkHidden(postItem);
+					String hideReason = hidePerformer.checkHidden(getChan(), postItem);
 					if (hideReason != null) {
 						postItem.setHidden(PostItem.HideState.HIDDEN, hideReason);
 					} else {
@@ -128,6 +128,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		GridLayoutManager layoutManager = new GridLayoutManager(recyclerView.getContext(), 1);
 		recyclerView.setLayoutManager(layoutManager);
 		Page page = getPage();
+		Chan chan = getChan();
 		hidePerformer = new HidePerformer(context);
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
@@ -152,11 +153,11 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		layoutManager.setSpanCount(adapter.setGridMode(Preferences.isThreadsGridMode()));
 		adapter.applyFilter(getInitSearch().currentQuery);
-		ChanConfiguration.Board board = getChanConfiguration().safe().obtainBoard(page.boardName);
 		InitRequest initRequest = getInitRequest();
 		if (initRequest.shouldLoad || retainExtra.cachedPostItems.isEmpty()) {
+			ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(page.boardName);
 			retainExtra.cachedPostItems.clear();
-			retainExtra.startPageNumber = board.allowCatalog && Preferences.isLoadCatalog(page.chanName)
+			retainExtra.startPageNumber = board.allowCatalog && Preferences.isLoadCatalog(chan)
 					? PAGE_NUMBER_CATALOG : 0;
 			refreshThreads(RefreshPage.CURRENT, false);
 		} else  {
@@ -209,7 +210,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	@Override
 	public String obtainTitle() {
 		Page page = getPage();
-		String title = getChanConfiguration().getBoardTitle(page.boardName);
+		String title = getChan().configuration.getBoardTitle(page.boardName);
 		return StringUtils.formatBoardTitle(page.chanName, page.boardName, title);
 	}
 
@@ -233,13 +234,13 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			Page page = getPage();
 			DialogMenu dialogMenu = new DialogMenu(getContext());
 			dialogMenu.add(R.string.copy_link, () -> {
-				Uri uri = getChanLocator().safe(true).createThreadUri(page.boardName, postItem.getThreadNumber());
+				Uri uri = getChan().locator.safe(true).createThreadUri(page.boardName, postItem.getThreadNumber());
 				if (uri != null) {
 					StringUtils.copyToClipboard(getContext(), uri.toString());
 				}
 			});
 			dialogMenu.add(R.string.share_link, () -> {
-				Uri uri = ChanLocator.get(page.chanName).safe(true)
+				Uri uri = getChan().locator.safe(true)
 						.createThreadUri(page.boardName, postItem.getThreadNumber());
 				String subject = postItem.getSubjectOrComment();
 				if (StringUtils.isEmptyOrWhitespace(subject)) {
@@ -262,7 +263,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	private void setThreadHideState(PostItem postItem, PostItem.HideState hideState) {
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		retainExtra.hiddenThreads.set(postItem.getThreadNumber(), hideState);
-		CommonDatabase.getInstance().getThreads().setFlagsAsync(postItem.getChanName(),
+		CommonDatabase.getInstance().getThreads().setFlagsAsync(getPage().chanName,
 				postItem.getBoardName(), postItem.getThreadNumber(), hideState);
 		postItem.setHidden(hideState, null);
 	}
@@ -296,8 +297,8 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	public void onPrepareOptionsMenu(Menu menu) {
 		Page page = getPage();
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		ChanConfiguration configuration = getChanConfiguration();
-		ChanConfiguration.Board board = configuration.safe().obtainBoard(page.boardName);
+		Chan chan = getChan();
+		ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(page.boardName);
 		boolean search = board.allowSearch;
 		boolean catalog = board.allowCatalog;
 		boolean catalogSearch = catalog && board.allowCatalogSearch;
@@ -309,7 +310,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		menu.findItem(R.id.menu_pages).setVisible(catalog && isCatalogOpen);
 		menu.findItem(R.id.menu_archive).setVisible(board.allowArchive);
 		menu.findItem(R.id.menu_new_thread).setVisible(board.allowPosting);
-		boolean singleBoardMode = configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE);
+		boolean singleBoardMode = chan.configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE);
 		boolean isFavorite = FavoritesStorage.getInstance().hasFavorite(page.chanName, page.boardName, null);
 		boolean iconFavorite = ResourceUtils.isTabletOrLandscape(getResources().getConfiguration());
 		menu.findItem(R.id.menu_star_text).setVisible(!iconFavorite && !isFavorite && !singleBoardMode);
@@ -317,7 +318,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		menu.findItem(R.id.menu_star_icon).setVisible(iconFavorite && !isFavorite && !singleBoardMode);
 		menu.findItem(R.id.menu_unstar_icon).setVisible(iconFavorite && isFavorite);
 		menu.findItem(R.id.menu_make_home_page).setVisible(!singleBoardMode &&
-				!CommonUtils.equals(page.boardName, Preferences.getDefaultBoardName(page.chanName)));
+				!CommonUtils.equals(page.boardName, Preferences.getDefaultBoardName(chan)));
 	}
 
 	@Override
@@ -482,8 +483,9 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			readTask.cancel();
 		}
 		Page page = getPage();
-		if (pageNumber < PAGE_NUMBER_CATALOG || pageNumber >= Math.max(getChanConfiguration()
-				.getPagesCount(page.boardName), 1)) {
+		Chan chan = getChan();
+		if (pageNumber < PAGE_NUMBER_CATALOG || pageNumber >=
+				Math.max(chan.configuration.getPagesCount(page.boardName), 1)) {
 			getRecyclerView().getWrapper().cancelBusyState();
 			ToastUtils.show(getContext(), getString(R.string.number_page_doesnt_exist__format, pageNumber));
 			return false;
@@ -491,7 +493,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 			HttpValidator validator = !append && retainExtra.cachedPostItems.size() == 1
 					&& retainExtra.startPageNumber == pageNumber ? retainExtra.validator : null;
-			readTask = new ReadThreadsTask(this, page.chanName, page.boardName, pageNumber, validator, append);
+			readTask = new ReadThreadsTask(this, chan, page.boardName, pageNumber, validator, append);
 			readTask.executeOnExecutor(ReadThreadsTask.THREAD_POOL_EXECUTOR);
 			if (showPull) {
 				getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
@@ -589,7 +591,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 				switchView(ViewType.ERROR, R.string.empty_response);
 			}
 			String message = getString(R.string.open_forum__format_sentence,
-					ChanConfiguration.get(target.chanName).getTitle());
+					Chan.get(target.chanName).configuration.getTitle());
 			AlertDialog dialog = new AlertDialog.Builder(getContext())
 					.setMessage(message)
 					.setNegativeButton(android.R.string.cancel, null)

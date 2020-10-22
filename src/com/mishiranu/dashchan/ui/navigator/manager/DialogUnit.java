@@ -31,8 +31,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
@@ -403,14 +403,17 @@ public class DialogUnit {
 			@Override
 			public DialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
 				Intermediate intermediate = new Intermediate();
-				ChanConfiguration configuration = ChanConfiguration.get(postItem.getChanName());
-				boolean canReply = configuration.safe().obtainBoard(postItem.getBoardName()).allowPosting;
-				Replyable replyable = null;
-				if (canReply) {
-					replyable = data -> uiManager.navigator().navigatePosting(postItem.getChanName(),
-							postItem.getBoardName(), postItem.getThreadNumber(), data);
-				}
-				configurationSet = new UiManager.ConfigurationSet(replyable,
+				String chanName = configurationSet.chanName;
+				Replyable replyable = (click, data) -> {
+					Chan chan = Chan.get(chanName);
+					ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(postItem.getBoardName());
+					if (click && board.allowPosting) {
+						uiManager.navigator().navigatePosting(chanName,
+								postItem.getBoardName(), postItem.getThreadNumber(), data);
+					}
+					return board.allowPosting;
+				};
+				configurationSet = new UiManager.ConfigurationSet(configurationSet.chanName, replyable,
 						intermediate, UiManager.PostStateProvider.DEFAULT, new GalleryItem.Set(false),
 						configurationSet.stackInstance, intermediate, false, true, false, false, false, null);
 				return new ThreadDialogProvider(uiManager, configurationSet, intermediate, postItem);
@@ -456,7 +459,7 @@ public class DialogUnit {
 			postItem.setOrdinalIndex(0);
 			postItem.clearReferencesFrom();
 			postItems.add(postItem);
-			List<PostItem> childPostItems = postItem.getThreadPosts();
+			List<PostItem> childPostItems = postItem.getThreadPosts(Chan.get(configurationSet.chanName));
 			if (!childPostItems.isEmpty()) {
 				for (int i = 0; i < childPostItems.size(); i++) {
 					PostItem childPostItem = childPostItems.get(i);
@@ -503,11 +506,11 @@ public class DialogUnit {
 			PostItem originalPostItem = postItems.get(0);
 			String boardName = originalPostItem.getBoardName();
 			String threadNumber = originalPostItem.getThreadNumber();
-			ChanLocator locator = ChanLocator.get(extra.chanName);
-			if (extra.chanName != null && locator.safe(false).isThreadUri(uri)
-					&& (extra.inBoardLink || CommonUtils.equals(boardName, locator.safe(false).getBoardName(uri)))
-					&& CommonUtils.equals(threadNumber, locator.safe(false).getThreadNumber(uri))) {
-				PostNumber postNumber = locator.safe(false).getPostNumber(uri);
+			Chan chan = Chan.get(configurationSet.chanName);
+			if (extra.chanName != null && chan.locator.safe(false).isThreadUri(uri)
+					&& (extra.inBoardLink || CommonUtils.equals(boardName, chan.locator.safe(false).getBoardName(uri)))
+					&& CommonUtils.equals(threadNumber, chan.locator.safe(false).getThreadNumber(uri))) {
+				PostNumber postNumber = chan.locator.safe(false).getPostNumber(uri);
 				if (postNumber != null) {
 					for (PostItem postItem : postItems) {
 						if (postNumber.equals(postItem.getPostNumber())) {
@@ -633,9 +636,9 @@ public class DialogUnit {
 
 			@Override
 			public DialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
-				configurationSet = new UiManager.ConfigurationSet(null, null, UiManager.PostStateProvider.DEFAULT,
-						new GalleryItem.Set(false), configurationSet.stackInstance, null,
-						false, true, false, false, false, null);
+				configurationSet = new UiManager.ConfigurationSet(configurationSet.chanName, null,
+						null, UiManager.PostStateProvider.DEFAULT, new GalleryItem.Set(false),
+						configurationSet.stackInstance, null, false, true, false, false, false, null);
 				return new AsyncDialogProvider(uiManager, configurationSet, this,
 						chanName, boardName, threadNumber, postNumber);
 			}
@@ -663,7 +666,7 @@ public class DialogUnit {
 				onReadSinglePostSuccess(factory.postItem);
 			} else {
 				switchState(State.LOADING, null);
-				readTask = new ReadSinglePostTask(this, chanName, boardName, threadNumber, postNumber);
+				readTask = new ReadSinglePostTask(this, Chan.get(chanName), boardName, threadNumber, postNumber);
 				readTask.executeOnExecutor(ReadSinglePostTask.THREAD_POOL_EXECUTOR);
 			}
 		}
@@ -779,9 +782,9 @@ public class DialogUnit {
 			uiManager.callback().onDialogStackOpen();
 		}
 		if (state.attachmentDialog != null) {
-			showAttachmentsGrid(configurationSet.stackInstance, state.attachmentDialog.attachmentItems,
-					state.attachmentDialog.startImageIndex, state.attachmentDialog.navigatePostMode,
-					state.attachmentDialog.gallerySet);
+			showAttachmentsGrid(configurationSet.stackInstance, configurationSet.chanName,
+					state.attachmentDialog.attachmentItems, state.attachmentDialog.startImageIndex,
+					state.attachmentDialog.navigatePostMode, state.attachmentDialog.gallerySet);
 		}
 	}
 
@@ -853,9 +856,11 @@ public class DialogUnit {
 			PostItem postItem = postItems.get(position);
 			UiManager.ConfigurationSet configurationSet = dialogProvider.configurationSet;
 			if (longClick) {
+				Chan chan = Chan.get(configurationSet.chanName);
 				boolean userPost = configurationSet.postStateProvider.isUserPost(postItem.getPostNumber());
-				return uiManager.interaction().handlePostContextMenu(postItem, configurationSet.replyable, userPost,
-						configurationSet.allowMyMarkEdit, configurationSet.allowHiding, configurationSet.allowGoToPost);
+				return uiManager.interaction().handlePostContextMenu(chan, postItem,
+						configurationSet.replyable, userPost, configurationSet.allowMyMarkEdit,
+						configurationSet.allowHiding, configurationSet.allowGoToPost);
 			} else {
 				uiManager.interaction().handlePostClick(holder.itemView,
 						configurationSet.postStateProvider, postItem, postItems);
@@ -913,7 +918,7 @@ public class DialogUnit {
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	private void showAttachmentsGrid(StackInstance stackInstance, List<AttachmentItem> attachmentItems,
+	private void showAttachmentsGrid(StackInstance stackInstance, String chanName, List<AttachmentItem> attachmentItems,
 			int startImageIndex, GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.Set gallerySet) {
 		if (stackInstance.attachmentDialog != null) {
 			stackInstance.attachmentDialog.second.dismiss();
@@ -960,8 +965,9 @@ public class DialogUnit {
 					imageIndex++;
 				}
 			}
-			openAttachment(v, attachmentItems, index, imageIndex, navigatePostMode, gallerySet);
+			openAttachment(v, chanName, attachmentItems, index, imageIndex, navigatePostMode, gallerySet);
 		};
+		Chan chan = Chan.get(chanName);
 		Configuration configuration = context.getResources().getConfiguration();
 		boolean tablet = ResourceUtils.isTablet(configuration);
 		boolean tabletLarge = ResourceUtils.isTabletLarge(configuration);
@@ -993,12 +999,12 @@ public class DialogUnit {
 			AttachmentView attachmentView = view.findViewById(R.id.thumbnail);
 			TextView textView = view.findViewById(R.id.attachment_info);
 			textView.setBackgroundColor(0xcc222222);
-			attachmentItem.configureAndLoad(attachmentView, false, true);
+			attachmentItem.configureAndLoad(attachmentView, chan, false, true);
 			textView.setText(attachmentItem.getDescription(AttachmentItem.FormatMode.TWO_LINES));
 			View clickView = view.findViewById(R.id.attachment_click);
 			clickView.setOnClickListener(clickListener);
 			clickView.setOnLongClickListener(v -> {
-				uiManager.interaction().showThumbnailLongClickDialog(attachmentItem,
+				uiManager.interaction().showThumbnailLongClickDialog(chan, attachmentItem,
 						attachmentView, false, gallerySet.getThreadTitle());
 				return true;
 			});
@@ -1031,25 +1037,25 @@ public class DialogUnit {
 	}
 
 	public void openAttachmentOrDialog(StackInstance stackInstance, View imageView,
-			List<AttachmentItem> attachmentItems, int imageIndex,
+			String chanName, List<AttachmentItem> attachmentItems, int imageIndex,
 			GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.Set gallerySet) {
 		if (attachmentItems.size() > 1) {
-			showAttachmentsGrid(stackInstance, attachmentItems, imageIndex, navigatePostMode, gallerySet);
+			showAttachmentsGrid(stackInstance, chanName, attachmentItems, imageIndex, navigatePostMode, gallerySet);
 		} else {
-			openAttachment(imageView, attachmentItems, 0, imageIndex, navigatePostMode, gallerySet);
+			openAttachment(imageView, chanName, attachmentItems, 0, imageIndex, navigatePostMode, gallerySet);
 		}
 	}
 
-	public void openAttachment(View imageView, List<AttachmentItem> attachmentItems, int index,
+	public void openAttachment(View imageView, String chanName, List<AttachmentItem> attachmentItems, int index,
 			int imageIndex, GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.Set gallerySet) {
 		Context context = uiManager.getContext();
 		AttachmentItem attachmentItem = attachmentItems.get(index);
 		boolean canDownload = attachmentItem.canDownloadToStorage();
-		String chanName = attachmentItem.getChanName();
-		Uri uri = attachmentItem.getFileUri();
+		Chan chan = Chan.get(chanName);
+		Uri uri = attachmentItem.getFileUri(chan);
 		AttachmentItem.Type type = attachmentItem.getType();
 		if (canDownload && type == AttachmentItem.Type.AUDIO) {
-			AudioPlayerService.start(context, chanName, uri, attachmentItem.getFileName());
+			AudioPlayerService.start(context, chanName, uri, attachmentItem.getFileName(chan));
 		} else if (canDownload && (type == AttachmentItem.Type.IMAGE || type == AttachmentItem.Type.VIDEO &&
 				NavigationUtils.isOpenableVideoExtension(attachmentItem.getExtension()))) {
 			uiManager.navigator().navigateGallery(chanName, gallerySet, imageIndex,
@@ -1081,6 +1087,7 @@ public class DialogUnit {
 		Context context = uiManager.getContext();
 		float density = ResourceUtils.obtainDensity(context);
 		ImageLoader imageLoader = ImageLoader.getInstance();
+		Chan chan = Chan.get(chanName);
 		LinearLayout container = new LinearLayout(context);
 		container.setOrientation(LinearLayout.VERTICAL);
 		if (C.API_LOLLIPOP) {
@@ -1097,7 +1104,7 @@ public class DialogUnit {
 			ImageView imageView = new ImageView(context);
 			linearLayout.addView(imageView, (int) (20f * density), (int) (20f * density));
 			if (icon.uri != null) {
-				imageLoader.loadImage(chanName, icon.uri, false, imageView);
+				imageLoader.loadImage(chan, icon.uri, false, imageView);
 			} else {
 				imageView.setImageResource(ResourceUtils.getResourceId(context, icon.attrId, 0));
 				if (C.API_LOLLIPOP) {
@@ -1130,7 +1137,8 @@ public class DialogUnit {
 
 	public void performSendDeletePosts(String chanName, String boardName, String threadNumber,
 			List<PostNumber> postNumbers) {
-		ChanConfiguration.Deleting deleting = ChanConfiguration.get(chanName).safe().obtainDeleting(boardName);
+		Chan chan = Chan.get(chanName);
+		ChanConfiguration.Deleting deleting = chan.configuration.safe().obtainDeleting(boardName);
 		if (deleting == null) {
 			return;
 		}
@@ -1142,19 +1150,20 @@ public class DialogUnit {
 					context.getString(R.string.files_only)));
 		}
 		SendMultifunctionalTask.State state = new SendMultifunctionalTask.State(SendMultifunctionalTask
-				.Operation.DELETE, chanName, boardName, threadNumber, null, options, deleting.password);
+				.Operation.DELETE, chan, boardName, threadNumber, null, options, deleting.password);
 		state.postNumbers = postNumbers;
-		showPerformSendDialog(state, null, Preferences.getPassword(chanName), null, null, true);
+		showPerformSendDialog(state, null, Preferences.getPassword(chan), null, null, true);
 	}
 
 	public void performSendReportPosts(String chanName, String boardName, String threadNumber,
 			List<PostNumber> postNumbers) {
-		ChanConfiguration.Reporting reporting = ChanConfiguration.get(chanName).safe().obtainReporting(boardName);
+		Chan chan = Chan.get(chanName);
+		ChanConfiguration.Reporting reporting = chan.configuration.safe().obtainReporting(boardName);
 		if (reporting == null) {
 			return;
 		}
 		SendMultifunctionalTask.State state = new SendMultifunctionalTask.State(SendMultifunctionalTask
-				.Operation.REPORT, chanName, boardName, threadNumber, reporting.types,
+				.Operation.REPORT, chan, boardName, threadNumber, reporting.types,
 				reporting.options, reporting.comment);
 		state.postNumbers = postNumbers;
 		showPerformSendDialog(state, null, null, null, null, true);
@@ -1163,49 +1172,52 @@ public class DialogUnit {
 	public void performSendArchiveThread(String chanName, String boardName, String threadNumber,
 			String threadTitle, Collection<Post> posts) {
 		Context context = uiManager.getContext();
-		boolean canArchiveLocal = !ChanConfiguration.get(chanName)
-				.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
+		Chan chan = Chan.get(chanName);
+		boolean canArchiveLocal = !chan.configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
 		List<String> archiveChanNames = ChanManager.getInstance().getArchiveChanNames(chanName);
 		SendMultifunctionalTask.State state = new SendMultifunctionalTask.State(SendMultifunctionalTask
-				.Operation.ARCHIVE, chanName, boardName, threadNumber, null, null, false);
+				.Operation.ARCHIVE, chan, boardName, threadNumber, null, null, false);
 		state.archiveThreadTitle = threadTitle;
 		if (canArchiveLocal && archiveChanNames.size() > 0 || archiveChanNames.size() > 1) {
+			Chan[] archiveChans = new Chan[archiveChanNames.size() + (canArchiveLocal ? 1 : 0)];
 			String[] items = new String[archiveChanNames.size() + (canArchiveLocal ? 1 : 0)];
 			if (canArchiveLocal) {
 				items[0] = context.getString(R.string.local_archive);
 			}
 			for (int i = 0; i < archiveChanNames.size(); i++) {
-				items[canArchiveLocal ? i + 1 : i] = ChanConfiguration.get(archiveChanNames.get(i)).getTitle();
+				Chan archiveChan = Chan.get(archiveChanNames.get(i));
+				archiveChans[canArchiveLocal ? i + 1 : i] = archiveChan;
+				items[canArchiveLocal ? i + 1 : i] = archiveChan.configuration.getTitle();
 			}
 			AlertDialog dialog = new AlertDialog.Builder(context)
 					.setTitle(R.string.archive__verb)
-					.setItems(items, (d, which) -> performSendArchiveThreadInternal(state, canArchiveLocal
-							? which == 0 ? null : archiveChanNames.get(which - 1) : archiveChanNames.get(which), posts))
+					.setItems(items, (d, which) -> performSendArchiveThreadInternal(state, archiveChans[which], posts))
 					.show();
 			uiManager.getConfigurationLock().lockConfiguration(dialog);
 		} else if (canArchiveLocal) {
-			performSendArchiveThreadInternal(state, canArchiveLocal ? null : archiveChanNames.get(0), posts);
+			Chan archiveChan = canArchiveLocal ? null : Chan.get(archiveChanNames.get(0));
+			performSendArchiveThreadInternal(state, archiveChan, posts);
 		}
 	}
 
 	public static final String OPTION_THUMBNAILS = "thumbnails";
 	public static final String OPTION_FILES = "files";
 
-	private void performSendArchiveThreadInternal(SendMultifunctionalTask.State state, String archiveChanName,
+	private void performSendArchiveThreadInternal(SendMultifunctionalTask.State state, Chan archiveChan,
 			Collection<Post> posts) {
 		Context context = uiManager.getContext();
 		ChanConfiguration.Archivation archivation;
-		if (archiveChanName == null) {
+		if (archiveChan == null) {
 			archivation = new ChanConfiguration.Archivation();
 			archivation.options.add(new Pair<>(OPTION_THUMBNAILS, context.getString(R.string.save_thumbnails)));
 			archivation.options.add(new Pair<>(OPTION_FILES, context.getString(R.string.save_files)));
 		} else {
-			archivation = ChanConfiguration.get(archiveChanName).safe().obtainArchivation();
+			archivation = archiveChan.configuration.safe().obtainArchivation();
 		}
 		if (archivation == null) {
 			return;
 		}
-		state.archiveChanName = archiveChanName;
+		state.archiveChan = archiveChan;
 		state.options = archivation.options;
 		showPerformSendDialog(state, null, null, null, posts, true);
 	}
@@ -1346,19 +1358,19 @@ public class DialogUnit {
 					}
 				}
 			}
-			if (state.operation == SendMultifunctionalTask.Operation.ARCHIVE && state.archiveChanName == null) {
+			if (state.operation == SendMultifunctionalTask.Operation.ARCHIVE && state.archiveChan == null) {
 				if (posts.isEmpty()) {
 					ToastUtils.show(uiManager.getContext(), R.string.cache_is_unavailable);
 				} else {
-					SendLocalArchiveTask task = new SendLocalArchiveTask(state.chanName, state.boardName,
-							state.threadNumber, posts, options.contains(OPTION_THUMBNAILS),
-							options.contains(OPTION_FILES), new PerformSendCallback(posts.size()));
+					SendLocalArchiveTask task = new SendLocalArchiveTask(new PerformSendCallback(posts.size()),
+							state.chan, state.boardName, state.threadNumber, posts,
+							options.contains(OPTION_THUMBNAILS), options.contains(OPTION_FILES));
 					task.executeOnExecutor(SendMultifunctionalTask.THREAD_POOL_EXECUTOR);
 					sendTask = task;
 				}
 			} else {
-				SendMultifunctionalTask task = new SendMultifunctionalTask(state, type, text, options,
-						new PerformSendCallback(-1));
+				SendMultifunctionalTask task = new SendMultifunctionalTask(new PerformSendCallback(-1),
+						state, type, text, options);
 				task.executeOnExecutor(SendMultifunctionalTask.THREAD_POOL_EXECUTOR);
 				sendTask = task;
 			}
@@ -1398,8 +1410,8 @@ public class DialogUnit {
 		}
 
 		@Override
-		public void onSendSuccess(final SendMultifunctionalTask.State state, final String archiveBoardName,
-				final String archiveThreadNumber) {
+		public void onSendSuccess(SendMultifunctionalTask.State state,
+				String archiveBoardName, String archiveThreadNumber) {
 			completeTask();
 			Context context = uiManager.getContext();
 			switch (state.operation) {
@@ -1410,11 +1422,12 @@ public class DialogUnit {
 				}
 				case ARCHIVE: {
 					if (archiveThreadNumber != null) {
-						FavoritesStorage.getInstance().add(state.archiveChanName, archiveBoardName,
+						String chanName = state.archiveChan.name;
+						FavoritesStorage.getInstance().add(chanName, archiveBoardName,
 								archiveThreadNumber, state.archiveThreadTitle, 0);
 						ClickableToast.show(context, context.getString(R.string.completed),
 								context.getString(R.string.open_thread), false, () -> uiManager.navigator()
-										.navigatePosts(state.archiveChanName, archiveBoardName,
+										.navigatePosts(chanName, archiveBoardName,
 												archiveThreadNumber, null, state.archiveThreadTitle));
 					} else {
 						ToastUtils.show(context, R.string.completed);

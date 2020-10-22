@@ -2,8 +2,7 @@ package com.mishiranu.dashchan.content.net;
 
 import android.net.Uri;
 import android.os.Parcel;
-import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpResponse;
@@ -121,7 +120,7 @@ public class CloudFlareResolver {
 				throws RelayBlockResolver.CancelException {
 			CookieResult result = resolver.resolveWebView(session, new WebViewClient(title));
 			if (result != null) {
-				storeCookie(session.chanName, result.cookie, result.uriString);
+				storeCookie(session.chan, result.cookie, result.uriString);
 				return true;
 			}
 			return false;
@@ -129,7 +128,7 @@ public class CloudFlareResolver {
 	}
 
 	public RelayBlockResolver.Result checkResponse(RelayBlockResolver resolver,
-			String chanName, Uri uri, HttpHolder holder, HttpResponse response, boolean resolve) throws HttpException {
+			Chan chan, Uri uri, HttpHolder holder, HttpResponse response, boolean resolve) throws HttpException {
 		int responseCode = response.getResponseCode();
 		if ((responseCode == HttpURLConnection.HTTP_FORBIDDEN || responseCode == HttpURLConnection.HTTP_UNAVAILABLE)
 				&& response.getHeaderFields().containsKey("CF-RAY")) {
@@ -156,7 +155,7 @@ public class CloudFlareResolver {
 					if (title != null) {
 						String titleFinal = title;
 						boolean success = resolve && resolver
-								.runExclusive(chanName, uri, holder, () -> new Resolver(titleFinal));
+								.runExclusive(chan, uri, holder, () -> new Resolver(titleFinal));
 						return new RelayBlockResolver.Result(true, success);
 					}
 				}
@@ -165,23 +164,21 @@ public class CloudFlareResolver {
 		return new RelayBlockResolver.Result(false, false);
 	}
 
-	private void storeCookie(String chanName, String cookie, String uriString) {
-		ChanConfiguration configuration = ChanConfiguration.get(chanName);
-		configuration.storeCookie(COOKIE_CLOUDFLARE, cookie, cookie != null ? "CloudFlare" : null);
-		configuration.commit();
+	private void storeCookie(Chan chan, String cookie, String uriString) {
+		chan.configuration.storeCookie(COOKIE_CLOUDFLARE, cookie, cookie != null ? "CloudFlare" : null);
+		chan.configuration.commit();
 		Uri uri = uriString != null ? Uri.parse(uriString) : null;
 		if (uri != null) {
-			ChanLocator locator = ChanLocator.get(chanName);
 			String host = uri.getHost();
-			if (locator.isConvertableChanHost(host)) {
-				locator.setPreferredHost(host);
+			if (chan.locator.isConvertableChanHost(host)) {
+				chan.locator.setPreferredHost(host);
 			}
-			Preferences.setUseHttps(chanName, "https".equals(uri.getScheme()));
+			Preferences.setUseHttps(chan, "https".equals(uri.getScheme()));
 		}
 	}
 
-	public Map<String, String> addCookies(String chanName, Map<String, String> cookies) {
-		String cookie = ChanConfiguration.get(chanName).getCookie(COOKIE_CLOUDFLARE);
+	public Map<String, String> addCookies(Chan chan, Map<String, String> cookies) {
+		String cookie = chan.configuration.getCookie(COOKIE_CLOUDFLARE);
 		if (!StringUtils.isEmpty(cookie)) {
 			if (cookies == null) {
 				cookies = new HashMap<>();

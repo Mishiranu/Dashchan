@@ -27,7 +27,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -85,9 +85,10 @@ public class ViewUnit {
 				.asList(new CommentTextView.ExtraButton(context.getString(R.string.quote__verb),
 						R.attr.iconActionPaste, (view, text, click) -> {
 					PostViewHolder holder = ListViewUtils.getViewHolder(view, PostViewHolder.class);
-					if (holder.configurationSet.replyable != null) {
+					if (holder.configurationSet.replyable != null &&
+							holder.configurationSet.replyable.onRequestReply(false)) {
 						if (click) {
-							holder.configurationSet.replyable.onRequestReply(new Replyable
+							holder.configurationSet.replyable.onRequestReply(true, new Replyable
 									.ReplyData(holder.postItem.getPostNumber(), text.toPreparedString(view)));
 						}
 						return true;
@@ -157,7 +158,7 @@ public class ViewUnit {
 					uri = uri.buildUpon().scheme("http").build();
 				}
 				String host = uri.getHost();
-				if (host != null && host.matches(".+\\..+") && ChanLocator.getDefault().isWebScheme(uri)) {
+				if (host != null && host.matches(".+\\..+") && Chan.getFallback().locator.isWebScheme(uri)) {
 					return uri;
 				}
 			}
@@ -199,10 +200,11 @@ public class ViewUnit {
 		Context context = uiManager.getContext();
 		ColorScheme colorScheme = ThemeEngine.getColorScheme(context);
 		ThreadViewHolder holder = (ThreadViewHolder) viewHolder;
+		Chan chan = Chan.get(holder.configurationSet.chanName);
 		holder.postItem = postItem;
 
-		holder.stateSage.setVisibility(postItem.getBumpLimitReachedState(0) == PostItem.BumpLimitState.REACHED
-				? View.VISIBLE : View.GONE);
+		holder.stateSage.setVisibility(postItem.getBumpLimitReachedState(chan, 0) ==
+				PostItem.BumpLimitState.REACHED ? View.VISIBLE : View.GONE);
 		holder.stateSticky.setVisibility(postItem.isSticky() ? View.VISIBLE : View.GONE);
 		holder.stateClosed.setVisibility(postItem.isClosed() ? View.VISIBLE : View.GONE);
 
@@ -229,7 +231,7 @@ public class ViewUnit {
 		if (attachmentItems != null) {
 			AttachmentItem attachmentItem = attachmentItems.get(0);
 			boolean needShowMultipleIcon = attachmentItems.size() > 1;
-			attachmentItem.configureAndLoad(holder.thumbnail, needShowMultipleIcon, false);
+			attachmentItem.configureAndLoad(holder.thumbnail, chan, needShowMultipleIcon, false);
 			holder.thumbnailClickListener.update(0, true, GalleryOverlay.NavigatePostMode.DISABLED);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
@@ -247,6 +249,7 @@ public class ViewUnit {
 		Context context = uiManager.getContext();
 		ColorScheme colorScheme = ThemeEngine.getColorScheme(context);
 		ThreadViewHolder holder = (ThreadViewHolder) viewHolder;
+		Chan chan = Chan.get(holder.configurationSet.chanName);
 		holder.postItem = postItem;
 
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
@@ -277,7 +280,7 @@ public class ViewUnit {
 		if (attachmentItems != null && !hidden) {
 			AttachmentItem attachmentItem = attachmentItems.get(0);
 			boolean needShowMultipleIcon = attachmentItems.size() > 1;
-			attachmentItem.configureAndLoad(holder.thumbnail, needShowMultipleIcon, false);
+			attachmentItem.configureAndLoad(holder.thumbnail, chan, needShowMultipleIcon, false);
 			holder.thumbnailClickListener.update(0, true, GalleryOverlay.NavigatePostMode.DISABLED);
 			holder.thumbnailLongClickListener.update(attachmentItem);
 			holder.thumbnail.setSfwMode(Preferences.isSfwMode());
@@ -316,15 +319,15 @@ public class ViewUnit {
 	public void bindPostView(RecyclerView.ViewHolder viewHolder, PostItem postItem, UiManager.DemandSet demandSet) {
 		ColorScheme colorScheme = ThemeEngine.getColorScheme(uiManager.getContext());
 		PostViewHolder holder = (PostViewHolder) viewHolder;
+		Chan chan = Chan.get(holder.configurationSet.chanName);
 		holder.notifyUnbind();
 		holder.postItem = postItem;
 
-		String chanName = postItem.getChanName();
 		String boardName = postItem.getBoardName();
 		String threadNumber = postItem.getThreadNumber();
 		PostNumber postNumber = postItem.getPostNumber();
 		boolean bumpLimitReached = false;
-		PostItem.BumpLimitState bumpLimitReachedState = postItem.getBumpLimitReachedState(0);
+		PostItem.BumpLimitState bumpLimitReachedState = postItem.getBumpLimitReachedState(chan, 0);
 		if (bumpLimitReachedState == PostItem.BumpLimitState.REACHED) {
 			bumpLimitReached = true;
 		} else if (bumpLimitReachedState == PostItem.BumpLimitState.NEED_COUNT &&
@@ -335,7 +338,7 @@ public class ViewUnit {
 					postsCount++;
 				}
 			}
-			bumpLimitReached = postItem.getBumpLimitReachedState(postsCount) == PostItem.BumpLimitState.REACHED;
+			bumpLimitReached = postItem.getBumpLimitReachedState(chan, postsCount) == PostItem.BumpLimitState.REACHED;
 		}
 		holder.number.setText("#" + postNumber);
 		holder.states[0] = Preferences.isShowMyPosts() &&
@@ -353,14 +356,14 @@ public class ViewUnit {
 		}
 		viewHolder.itemView.setAlpha(postItem.isDeleted() ? ALPHA_DELETED_POST : 1f);
 
-		CharSequence name = postItem.getFullName();
+		CharSequence name = postItem.getFullName(chan);
 		colorScheme.apply(postItem.getFullNameSpans());
 		holder.name.setText(makeHighlightedText(demandSet.highlightText, name));
 		holder.date.setText(postItem.getDateTime(postDateFormatter));
 
 		String subject = postItem.getSubject();
 		CharSequence comment = holder.configurationSet.repliesToPost != null
-				? postItem.getComment(holder.configurationSet.repliesToPost) : postItem.getComment();
+				? postItem.getComment(chan, holder.configurationSet.repliesToPost) : postItem.getComment(chan);
 				colorScheme.apply(postItem.getCommentSpans());
 		LinkSuffixSpan[] linkSuffixSpans = postItem.getLinkSuffixSpansAfterComment();
 		if (linkSuffixSpans != null) {
@@ -390,7 +393,8 @@ public class ViewUnit {
 		holder.comment.setSubjectAndComment(makeHighlightedText(demandSet.highlightText, subject),
 				makeHighlightedText(demandSet.highlightText, comment));
 		holder.comment.setLinkListener(holder.configurationSet.linkListener != null
-				? holder.configurationSet.linkListener : defaultLinkListener, chanName, boardName, threadNumber);
+				? holder.configurationSet.linkListener : defaultLinkListener,
+				holder.configurationSet.chanName, boardName, threadNumber);
 		holder.comment.setVisibility(subject.length() > 0 || comment.length() > 0 ? View.VISIBLE : View.GONE);
 		holder.comment.bindSelectionPaddingView(demandSet.lastInList ? holder.textSelectionPadding : null);
 
@@ -493,6 +497,7 @@ public class ViewUnit {
 	@SuppressLint("InflateParams")
 	private void handlePostViewAttachments(PostViewHolder holder) {
 		Context context = uiManager.getContext();
+		Chan chan = Chan.get(holder.configurationSet.chanName);
 		PostItem postItem = holder.postItem;
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 		if (attachmentItems != null && !attachmentItems.isEmpty()) {
@@ -541,7 +546,7 @@ public class ViewUnit {
 				for (int i = 0; i < size; i++) {
 					AttachmentHolder attachmentHolder = attachmentHolders.get(i);
 					AttachmentItem attachmentItem = attachmentItems.get(i);
-					attachmentItem.configureAndLoad(attachmentHolder.thumbnail, false, false);
+					attachmentItem.configureAndLoad(attachmentHolder.thumbnail, chan, false, false);
 					attachmentHolder.thumbnailClickListener.update(i, false, holder.configurationSet.isDialog
 							? GalleryOverlay.NavigatePostMode.MANUALLY : GalleryOverlay.NavigatePostMode.ENABLED);
 					attachmentHolder.thumbnailLongClickListener.update(attachmentItem);
@@ -560,7 +565,7 @@ public class ViewUnit {
 				holder.attachmentViewCount = size;
 			} else {
 				AttachmentItem attachmentItem = attachmentItems.get(0);
-				attachmentItem.configureAndLoad(holder.thumbnail, size > 1, false);
+				attachmentItem.configureAndLoad(holder.thumbnail, chan, size > 1, false);
 				holder.thumbnailClickListener.update(0, true, holder.configurationSet.isDialog
 						? GalleryOverlay.NavigatePostMode.MANUALLY : GalleryOverlay.NavigatePostMode.ENABLED);
 				holder.thumbnailLongClickListener.update(attachmentItem);
@@ -584,8 +589,8 @@ public class ViewUnit {
 
 	private void handlePostViewIcons(PostViewHolder holder) {
 		Context context = uiManager.getContext();
+		Chan chan = Chan.get(holder.configurationSet.chanName);
 		PostItem postItem = holder.postItem;
-		String chanName = postItem.getChanName();
 		List<Post.Icon> icons = postItem.getIcons();
 		if (!icons.isEmpty() && Preferences.isDisplayIcons()) {
 			if (holder.badgeImages == null) {
@@ -606,15 +611,14 @@ public class ViewUnit {
 					holder.badgeImages.add(imageView);
 				}
 			}
-			ChanLocator locator = ChanLocator.get(chanName);
 			for (int i = 0; i < holder.badgeImages.size(); i++) {
 				ImageView imageView = holder.badgeImages.get(i);
 				if (i < icons.size()) {
 					imageView.setVisibility(View.VISIBLE);
 					Uri uri = icons.get(i).uri;
 					if (uri != null) {
-						uri = uri.isRelative() ? locator.convert(uri) : uri;
-						ImageLoader.getInstance().loadImage(chanName, uri, false, imageView);
+						uri = uri.isRelative() ? chan.locator.convert(uri) : uri;
+						ImageLoader.getInstance().loadImage(chan, uri, false, imageView);
 					} else {
 						ImageLoader.getInstance().cancel(imageView);
 						imageView.setTag(null);
@@ -718,7 +722,7 @@ public class ViewUnit {
 			PostViewHolder holder = ListViewUtils.getViewHolder(v, PostViewHolder.class);
 			PostItem postItem = holder.postItem;
 			PostNumber postNumber = postItem.isOriginalPost() ? null : postItem.getPostNumber();
-			uiManager.navigator().navigatePosts(postItem.getChanName(), postItem.getBoardName(),
+			uiManager.navigator().navigatePosts(holder.configurationSet.chanName, postItem.getBoardName(),
 					postItem.getThreadNumber(), postNumber, null);
 		}
 	};
@@ -787,12 +791,12 @@ public class ViewUnit {
 							String emailToCopy = null;
 							switch (type) {
 								case TYPE_BADGES: {
+									Chan chan = Chan.get(holder.configurationSet.chanName);
 									List<Post.Icon> postIcons = holder.postItem.getIcons();
-									ChanLocator locator = ChanLocator.get(holder.postItem.getChanName());
 									for (Post.Icon postIcon : postIcons) {
 										Uri uri = postIcon.uri;
 										if (uri != null) {
-											uri = uri.isRelative() ? locator.convert(uri) : uri;
+											uri = uri.isRelative() ? chan.locator.convert(uri) : uri;
 										}
 										icons.add(new DialogUnit.IconData(postIcon.title, uri));
 									}
@@ -819,7 +823,7 @@ public class ViewUnit {
 								}
 							}
 							uiManager.dialog().showPostDescriptionDialog(icons,
-									holder.postItem.getChanName(), emailToCopy);
+									holder.configurationSet.chanName, emailToCopy);
 						}
 						return true;
 					}

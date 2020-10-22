@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import chan.content.Chan;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
@@ -203,22 +204,22 @@ public class PagerUnit implements PagerInstance.Callback {
 		if (holder != null) {
 			available = true;
 			GalleryItem galleryItem = holder.galleryItem;
+			Chan chan = Chan.get(galleryInstance.chanName);
 			boolean fullLoaded = holder.fullLoaded;
-			boolean isVideo = galleryItem.isVideo(galleryInstance.locator);
-			boolean isOpenableVideo = isVideo && galleryItem.isOpenableVideo(galleryInstance.locator);
+			boolean isVideo = galleryItem.isVideo(chan);
+			boolean isOpenableVideo = isVideo && galleryItem.isOpenableVideo(chan);
 			boolean isVideoInitialized = isOpenableVideo && videoUnit.isInitialized();
 			boolean imageHasMetadata = imageUnit.hasMetadata();
 			save = fullLoaded || isVideo && !isOpenableVideo;
 			if (!save && isOpenableVideo) {
-				File cachedFile = CacheManager.getInstance().getMediaFile(galleryItem
-						.getFileUri(galleryInstance.locator), false);
+				File cachedFile = CacheManager.getInstance().getMediaFile(galleryItem.getFileUri(chan), false);
 				if (cachedFile != null && cachedFile.exists()) {
 					save = true;
 				}
 			}
 			refresh = !isOpenableVideo && !isVideo || isVideoInitialized;
 			viewTechnicalInfo = isVideoInitialized || imageHasMetadata;
-			searchImage = galleryItem.getDisplayImageUri(galleryInstance.locator) != null;
+			searchImage = galleryItem.getDisplayImageUri(chan) != null;
 			navigatePost = galleryItem.postNumber != null;
 			shareFile = fullLoaded;
 		}
@@ -256,6 +257,7 @@ public class PagerUnit implements PagerInstance.Callback {
 			return;
 		}
 		GalleryItem galleryItem = holder.galleryItem;
+		Chan chan = Chan.get(galleryInstance.chanName);
 		interrupt(false);
 		holder.fullLoaded = false;
 		galleryInstance.callback.invalidateOptionsMenu();
@@ -271,9 +273,9 @@ public class PagerUnit implements PagerInstance.Callback {
 			holder.recyclePhotoView();
 			thumbnailReady = presetThumbnail(holder, reload);
 		}
-		boolean isImage = galleryItem.isImage(galleryInstance.locator);
-		boolean isVideo = galleryItem.isVideo(galleryInstance.locator);
-		boolean isOpenableVideo = isVideo && galleryItem.isOpenableVideo(galleryInstance.locator);
+		boolean isImage = galleryItem.isImage(chan);
+		boolean isVideo = galleryItem.isVideo(chan);
+		boolean isOpenableVideo = isVideo && galleryItem.isOpenableVideo(chan);
 		if (waitBeforeVideo > 0 && thumbnailReady && isOpenableVideo && !mayShowThumbnailOnly) {
 			viewPagerParent.postDelayed(() -> loadImageVideo(reload, false, 0), waitBeforeVideo);
 			return;
@@ -287,7 +289,7 @@ public class PagerUnit implements PagerInstance.Callback {
 			holder.photoView.setDrawDimForCurrentImage(false);
 		}
 		holder.playButton.setVisibility(View.GONE);
-		Uri uri = galleryItem.getFileUri(galleryInstance.locator);
+		Uri uri = galleryItem.getFileUri(chan);
 		File cachedFile = cacheManager.getMediaFile(uri, true);
 		if (cachedFile == null) {
 			showError(holder, galleryInstance.context.getString(R.string.cache_is_unavailable));
@@ -316,14 +318,15 @@ public class PagerUnit implements PagerInstance.Callback {
 			GalleryInstance galleryInstance = this.galleryInstance.get();
 			PagerInstance.ViewHolder holder = this.holder.get();
 			if (galleryInstance != null && holder != null && bitmap != null) {
+				Chan chan = Chan.get(galleryInstance.chanName);
 				boolean setImage = awaitImmediate || holder.galleryItem != null && !holder.photoView.hasImage() &&
 						key.equals(CacheManager.getInstance().getCachedFileKey(holder.galleryItem
-								.getThumbnailUri(galleryInstance.locator)));
+								.getThumbnailUri(chan)));
 				if (setImage) {
 					holder.recyclePhotoView();
 					holder.simpleBitmapDrawable = new SimpleBitmapDrawable(bitmap,
 							holder.galleryItem.width, holder.galleryItem.height, false);
-					boolean fitScreen = holder.galleryItem.isVideo(galleryInstance.locator);
+					boolean fitScreen = holder.galleryItem.isVideo(chan);
 					boolean keepScale = this.keepScale && !fitScreen;
 					holder.photoView.setImage(holder.simpleBitmapDrawable, bitmap.hasAlpha(), fitScreen, keepScale);
 					holder.photoViewThumbnail = true;
@@ -341,13 +344,14 @@ public class PagerUnit implements PagerInstance.Callback {
 		if (holder.galleryItem == null) {
 			return false;
 		}
-		Uri uri = holder.galleryItem.getThumbnailUri(galleryInstance.locator);
+		Chan chan = Chan.get(galleryInstance.chanName);
+		Uri uri = holder.galleryItem.getThumbnailUri(chan);
 		if (uri != null && holder.galleryItem.width > 0 && holder.galleryItem.height > 0) {
 			target.awaitImmediate = true;
 			target.keepScale = keepScale;
 			try {
 				boolean allowLoad = galleryInstance.callback.isGalleryWindow() || Preferences.isLoadThumbnails();
-				return ImageLoader.getInstance().loadImage(galleryInstance.chanName, uri, null, !allowLoad, target);
+				return ImageLoader.getInstance().loadImage(chan, uri, null, !allowLoad, target);
 			} finally {
 				target.awaitImmediate = false;
 				target.keepScale = false;
@@ -374,17 +378,18 @@ public class PagerUnit implements PagerInstance.Callback {
 		@Override
 		public void onClick(PhotoView photoView, boolean image, float x, float y) {
 			GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
+			Chan chan = Chan.get(galleryInstance.chanName);
 			View playButton = pagerInstance.currentHolder.playButton;
-			if (playButton.getVisibility() == View.VISIBLE && galleryItem.isVideo(galleryInstance.locator)
+			if (playButton.getVisibility() == View.VISIBLE && galleryItem.isVideo(chan)
 					&& !videoUnit.isCreated()) {
 				int centerX = playButton.getLeft() + playButton.getWidth() / 2;
 				int centerY = playButton.getTop() + playButton.getHeight() / 2;
 				int size = Math.min(playButton.getWidth(), playButton.getHeight());
 				float distance = (float) Math.sqrt((centerX - x) * (centerX - x) + (centerY - y) * (centerY - y));
 				if (distance <= size / 3f * 2f) {
-					if (!galleryItem.isOpenableVideo(galleryInstance.locator)) {
+					if (!galleryItem.isOpenableVideo(chan)) {
 						NavigationUtils.handleUri(galleryInstance.callback.getWindow().getContext(),
-								galleryInstance.chanName, galleryItem.getFileUri(galleryInstance.locator),
+								galleryInstance.chanName, galleryItem.getFileUri(chan),
 								NavigationUtils.BrowserType.EXTERNAL);
 					} else {
 						loadImageVideo(false, false, 0);
@@ -492,7 +497,7 @@ public class PagerUnit implements PagerInstance.Callback {
 				holder.progressBar.setVisible(false, true);
 			}
 			boolean hasValidImage = holder.galleryItem == galleryItem && holder.fullLoaded &&
-					!galleryItem.isVideo(galleryInstance.locator);
+					!galleryItem.isVideo(Chan.get(galleryInstance.chanName));
 			if (hasValidImage) {
 				if (holder.animatedPngDecoder != null || holder.gifDecoder != null) {
 					holder.recyclePhotoView();
@@ -549,7 +554,7 @@ public class PagerUnit implements PagerInstance.Callback {
 				galleryInstance.callback.modifySystemUiVisibility(GalleryInstance.Flags.LOCKED_ERROR, false);
 			}
 			if (galleryItem.size <= 0) {
-				Uri uri = galleryItem.getFileUri(galleryInstance.locator);
+				Uri uri = galleryItem.getFileUri(Chan.get(galleryInstance.chanName));
 				File cachedFile = CacheManager.getInstance().getMediaFile(uri, false);
 				if (cachedFile != null && cachedFile.exists()) {
 					galleryItem.size = (int) cachedFile.length();
@@ -581,10 +586,11 @@ public class PagerUnit implements PagerInstance.Callback {
 		GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
 		OptionsMenuCapabilities capabilities = obtainOptionsMenuCapabilities();
 		if (capabilities != null && capabilities.available) {
+			Chan chan = Chan.get(galleryInstance.chanName);
 			Context context = galleryInstance.callback.getWindow().getContext();
 			DialogMenu dialogMenu = new DialogMenu(context);
 			dialogMenu.setTitle(!StringUtils.isEmpty(galleryItem.originalName) ? galleryItem.originalName
-					: galleryItem.getFileName(galleryInstance.locator), true);
+					: galleryItem.getFileName(chan), true);
 			if (!galleryInstance.callback.isSystemUiVisible()) {
 				if (capabilities.save) {
 					dialogMenu.add(R.string.save, () -> galleryInstance.callback
@@ -596,9 +602,9 @@ public class PagerUnit implements PagerInstance.Callback {
 			}
 			if (capabilities.viewTechnicalInfo) {
 				dialogMenu.add(R.string.technical_info, () -> {
-					if (galleryItem.isImage(galleryInstance.locator)) {
+					if (galleryItem.isImage(chan)) {
 						imageUnit.viewTechnicalInfo();
-					} else if (galleryItem.isVideo(galleryInstance.locator)) {
+					} else if (galleryItem.isVideo(chan)) {
 						videoUnit.viewTechnicalInfo();
 					}
 				});
@@ -607,7 +613,7 @@ public class PagerUnit implements PagerInstance.Callback {
 				dialogMenu.add(R.string.search_image, () -> {
 					videoUnit.forcePause();
 					NavigationUtils.searchImage(context, galleryInstance.callback.getConfigurationLock(),
-							galleryInstance.chanName, galleryItem.getDisplayImageUri(galleryInstance.locator));
+							galleryInstance.chanName, galleryItem.getDisplayImageUri(chan));
 				});
 			}
 			if (galleryInstance.callback.isAllowNavigatePostManually(true) && capabilities.navigatePost) {
@@ -615,22 +621,22 @@ public class PagerUnit implements PagerInstance.Callback {
 						.navigatePost(galleryItem, true, true));
 			}
 			dialogMenu.add(R.string.copy_link, () -> StringUtils.copyToClipboard(context,
-					galleryItem.getFileUri(galleryInstance.locator).toString()));
+					galleryItem.getFileUri(chan).toString()));
 			dialogMenu.add(R.string.share_link, () -> {
 				videoUnit.forcePause();
-				NavigationUtils.shareLink(context, null, galleryItem.getFileUri(galleryInstance.locator));
+				NavigationUtils.shareLink(context, null, galleryItem.getFileUri(chan));
 			});
 			if (capabilities.shareFile) {
 				dialogMenu.add(R.string.share_file, () -> {
 					videoUnit.forcePause();
-					Uri uri = galleryItem.getFileUri(galleryInstance.locator);
+					Uri uri = galleryItem.getFileUri(chan);
 					File file = CacheManager.getInstance().getMediaFile(uri, false);
 					if (file == null) {
 						ToastUtils.show(galleryInstance.callback.getWindow().getContext(),
 								R.string.cache_is_unavailable);
 					} else {
 						NavigationUtils.shareFile(galleryInstance.callback.getWindow().getContext(), file,
-								galleryItem.getFileName(galleryInstance.locator));
+								galleryItem.getFileName(chan));
 					}
 				});
 			}

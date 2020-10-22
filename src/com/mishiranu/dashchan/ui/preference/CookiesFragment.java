@@ -7,23 +7,25 @@ import android.os.Bundle;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.DialogMenu;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 
-public class CookiesFragment extends PreferenceFragment {
+public class CookiesFragment extends PreferenceFragment implements ActivityHandler {
 	private static final String EXTRA_CHAN_NAME = "chanName";
 
-	private ChanConfiguration configuration;
 	private final HashMap<String, ChanConfiguration.CookieData> cookies = new HashMap<>();
 
 	public CookiesFragment() {}
@@ -46,10 +48,9 @@ public class CookiesFragment extends PreferenceFragment {
 	@Override
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		String chanName = getChanName();
 
-		configuration = ChanConfiguration.get(chanName);
-		ArrayList<ChanConfiguration.CookieData> cookies = configuration.getCookies();
+		Chan chan = Chan.get(getChanName());
+		ArrayList<ChanConfiguration.CookieData> cookies = chan.configuration.getCookies();
 		Collections.sort(cookies, (l, r) -> StringUtils.compare(l.cookie, r.cookie, true));
 		for (ChanConfiguration.CookieData cookieData : cookies) {
 			this.cookies.put(cookieData.cookie, cookieData);
@@ -65,9 +66,21 @@ public class CookiesFragment extends PreferenceFragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
 		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.manage_cookies), null);
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+
 		if (!ChanManager.getInstance().isExistingChanName(getChanName())) {
+			((FragmentHandler) requireActivity()).removeFragment();
+		}
+	}
+
+	@Override
+	public void onChansChanged(Collection<String> changed, Collection<String> removed) {
+		if (removed.contains(getChanName())) {
 			((FragmentHandler) requireActivity()).removeFragment();
 		}
 	}
@@ -106,8 +119,9 @@ public class CookiesFragment extends PreferenceFragment {
 
 	private void removeCookie(String cookie, boolean preferenceOnly) {
 		if (!preferenceOnly) {
-			configuration.storeCookie(cookie, null, null);
-			configuration.commit();
+			Chan chan = Chan.get(getChanName());
+			chan.configuration.storeCookie(cookie, null, null);
+			chan.configuration.commit();
 		}
 		CookiePreference preference = (CookiePreference) findPreference(cookie);
 		if (preference != null) {
@@ -120,8 +134,9 @@ public class CookiesFragment extends PreferenceFragment {
 	}
 
 	private void setBlocked(String cookie, boolean blocked) {
-		boolean remove = configuration.setCookieBlocked(cookie, blocked);
-		configuration.commit();
+		Chan chan = Chan.get(getChanName());
+		boolean remove = chan.configuration.setCookieBlocked(cookie, blocked);
+		chan.configuration.commit();
 		if (remove) {
 			removeCookie(cookie, true);
 		} else {

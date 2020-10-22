@@ -47,11 +47,11 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 	private boolean groupMode = false;
 
-	public SearchAdapter(Context context, Callback callback, UiManager uiManager, String searchQuery) {
+	public SearchAdapter(Context context, Callback callback, String chanName, UiManager uiManager, String searchQuery) {
 		this.context = context;
 		this.callback = callback;
 		this.uiManager = uiManager;
-		configurationSet = new UiManager.ConfigurationSet(null, null, UiManager.PostStateProvider.DEFAULT,
+		configurationSet = new UiManager.ConfigurationSet(chanName, null, null, UiManager.PostStateProvider.DEFAULT,
 				new GalleryItem.Set(false), uiManager.dialog().createStackInstance(), null,
 				true, false, false, false, false, null);
 		demandSet.highlightText = Collections.singleton(searchQuery);

@@ -13,8 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import chan.util.CommonUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.HidePerformer;
@@ -64,7 +63,6 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
 	private final UiManager.ConfigurationSet configurationSet;
 	private final CommentTextView.RecyclerKeeper recyclerKeeper;
-	private final int bumpLimit;
 
 	private final ArrayList<PostNumber> postNumbers = new ArrayList<>();
 	private final Map<PostNumber, PostItem> postItemsMap;
@@ -73,17 +71,16 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	private int bumpLimitOrdinalIndex = PostItem.ORDINAL_INDEX_NONE;
 	private boolean selection = false;
 
-	public PostsAdapter(Callback callback, String chanName, String boardName, UiManager uiManager,
-			Replyable replyable, UiManager.PostStateProvider postStateProvider, RecyclerView recyclerView,
+	public PostsAdapter(Callback callback, String chanName, UiManager uiManager, Replyable replyable,
+			UiManager.PostStateProvider postStateProvider, RecyclerView recyclerView,
 			Map<PostNumber, PostItem> postItemsMap) {
 		this.callback = callback;
 		this.uiManager = uiManager;
-		configurationSet = new UiManager.ConfigurationSet(replyable, this, postStateProvider,
+		configurationSet = new UiManager.ConfigurationSet(chanName, replyable, this, postStateProvider,
 				new GalleryItem.Set(true), uiManager.dialog().createStackInstance(), this,
 				true, false, true, true, true, null);
 		recyclerKeeper = new CommentTextView.RecyclerKeeper(recyclerView);
 		super.registerAdapterDataObserver(recyclerKeeper);
-		bumpLimit = ChanConfiguration.get(chanName).getBumpLimitWithMode(boardName);
 		this.postItemsMap = postItemsMap;
 		postNumbers.addAll(postItemsMap.keySet());
 		Collections.sort(postNumbers);
@@ -215,13 +212,13 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	@Override
 	public void onLinkClick(CommentTextView view, Uri uri, Extra extra, boolean confirmed) {
 		PostItem originalPostItem = getItem(0);
-		ChanLocator locator = ChanLocator.get(extra.chanName);
+		Chan chan = Chan.get(extra.chanName);
 		String boardName = originalPostItem.getBoardName();
 		String threadNumber = originalPostItem.getThreadNumber();
-		if (extra.chanName != null && locator.safe(false).isThreadUri(uri)
-				&& (extra.inBoardLink || CommonUtils.equals(boardName, locator.safe(false).getBoardName(uri)))
-				&& CommonUtils.equals(threadNumber, locator.safe(false).getThreadNumber(uri))) {
-			PostNumber postNumber = locator.safe(false).getPostNumber(uri);
+		if (extra.chanName != null && chan.locator.safe(false).isThreadUri(uri)
+				&& (extra.inBoardLink || CommonUtils.equals(boardName, chan.locator.safe(false).getBoardName(uri)))
+				&& CommonUtils.equals(threadNumber, chan.locator.safe(false).getThreadNumber(uri))) {
+			PostNumber postNumber = chan.locator.safe(false).getPostNumber(uri);
 			int position = postNumber == null ? 0 : positionOfPostNumber(postNumber);
 			if (position < 0) {
 				ToastUtils.show(view.getContext(), R.string.post_is_not_found);
@@ -290,13 +287,15 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 		int ordinalIndex = 0;
 		bumpLimitOrdinalIndex = PostItem.ORDINAL_INDEX_NONE;
+		Chan chan = Chan.get(configurationSet.chanName);
+		int bumpLimit = getItemCount() > 0 ? chan.configuration.getBumpLimitWithMode(getItem(0).getBoardName()) : -1;
 		for (PostItem postItem : iterate(true, 0)) {
 			if (postItem.isDeleted()) {
 				postItem.setOrdinalIndex(PostItem.ORDINAL_INDEX_DELETED);
 			} else {
 				postItem.setOrdinalIndex(ordinalIndex++);
-				if (ordinalIndex == bumpLimit &&
-						getItem(0).getBumpLimitReachedState(ordinalIndex) == PostItem.BumpLimitState.REACHED) {
+				if (ordinalIndex == bumpLimit && getItem(0).getBumpLimitReachedState(chan, ordinalIndex) ==
+						PostItem.BumpLimitState.REACHED) {
 					bumpLimitOrdinalIndex = ordinalIndex;
 				}
 			}
@@ -446,12 +445,13 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		public boolean handleMessage(Message msg) {
 			// Take only 8ms per frame for preloading in main thread
 			PreloadIterator iterator = (PreloadIterator) msg.obj;
+			Chan chan = Chan.get(configurationSet.chanName);
 			final int ms = 8;
 			long time = SystemClock.elapsedRealtime();
 			while (SystemClock.elapsedRealtime() - time < ms && iterator.hasNext()) {
 				PostItem postItem = iterator.next();
 				configurationSet.postStateProvider.isHiddenResolve(postItem);
-				postItem.getComment();
+				postItem.getComment(chan);
 			}
 			if (iterator.hasNext()) {
 				msg.getTarget().obtainMessage(0, 0, 0, iterator).sendToTarget();

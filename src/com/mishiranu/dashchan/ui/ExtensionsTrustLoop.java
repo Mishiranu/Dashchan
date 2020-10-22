@@ -14,8 +14,13 @@ import chan.content.ChanManager;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.text.style.MonospaceSpan;
 import com.mishiranu.dashchan.util.ConfigurationLock;
+import java.lang.ref.WeakReference;
 
 public class ExtensionsTrustLoop {
+	public static final class State {
+		private WeakReference<AlertDialog> currentDialog;
+	}
+
 	// Allows dots to break lines
 	private static class DotSpan extends ReplacementSpan {
 		@Override
@@ -31,7 +36,13 @@ public class ExtensionsTrustLoop {
 		}
 	}
 
-	public static void handleUntrustedExtensions(Context context, ConfigurationLock configurationLock) {
+	public static void handleUntrustedExtensions(Context context, State state, ConfigurationLock configurationLock) {
+		if (state.currentDialog != null) {
+			AlertDialog currentDialog = state.currentDialog.get();
+			if (currentDialog != null) {
+				currentDialog.dismiss();
+			}
+		}
 		ChanManager.ExtensionItem extensionItem = ChanManager.getInstance().getFirstUntrustedExtension();
 		if (extensionItem != null) {
 			SpannableStringBuilder message = new SpannableStringBuilder();
@@ -69,20 +80,25 @@ public class ExtensionsTrustLoop {
 					.setCancelable(false)
 					.setPositiveButton(android.R.string.ok, (d, w) -> {
 						ChanManager.getInstance().changeUntrustedExtensionState(extensionItem.extensionName, true);
-						handleUntrustedExtensions(context, configurationLock);
+						handleUntrustedExtensions(context, state, configurationLock);
 					})
 					.setNegativeButton(android.R.string.cancel, (d, w) -> {
 						ChanManager.getInstance().changeUntrustedExtensionState(extensionItem.extensionName, false);
-						handleUntrustedExtensions(context, configurationLock);
+						handleUntrustedExtensions(context, state, configurationLock);
 					})
 					.setNeutralButton(R.string.details, (d, w) -> {
 						context.startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
 								.setData(Uri.parse("package:" + extensionItem.packageName)));
-						handleUntrustedExtensions(context, configurationLock);
+						handleUntrustedExtensions(context, state, configurationLock);
 					})
 					.show();
+			state.currentDialog = new WeakReference<>(dialog);
 			if (configurationLock != null) {
-				configurationLock.lockConfiguration(dialog);
+				configurationLock.lockConfiguration(dialog, d -> {
+					if (state.currentDialog != null && state.currentDialog.get() == dialog) {
+						state.currentDialog = null;
+					}
+				});
 			}
 		}
 	}

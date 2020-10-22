@@ -1,6 +1,5 @@
 package com.mishiranu.dashchan.content;
 
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -10,30 +9,25 @@ import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
 import androidx.core.view.ViewCompat;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
-import chan.content.ChanManager;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
-import chan.http.HttpRequest;
 import chan.http.HttpResponse;
-import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.HttpHolderTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
-import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.LruCache;
 import com.mishiranu.dashchan.widget.AttachmentView;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public class ImageLoader {
@@ -69,7 +63,7 @@ public class ImageLoader {
 
 	private class LoaderTask extends HttpHolderTask<Void, Void, Bitmap> {
 		public final Uri uri;
-		public final String chanName;
+		public final Chan chan;
 		public final String key;
 		public final boolean fromCacheOnly;
 
@@ -79,9 +73,10 @@ public class ImageLoader {
 		private boolean notFound;
 		private boolean finished;
 
-		public LoaderTask(Uri uri, String chanName, String key, boolean fromCacheOnly) {
+		public LoaderTask(Uri uri, Chan chan, String key, boolean fromCacheOnly) {
+			super(chan);
 			this.uri = uri;
-			this.chanName = chanName;
+			this.chan = chan;
 			this.key = key;
 			this.fromCacheOnly = fromCacheOnly;
 		}
@@ -100,7 +95,7 @@ public class ImageLoader {
 				}
 			}
 			String scheme = uri.getScheme();
-			boolean chanScheme = "chan".equals(scheme);
+			boolean chanScheme = ChanConfiguration.SCHEME_CHAN.equals(scheme);
 			boolean dataScheme = "data".equals(scheme);
 			boolean storeExternal = !chanScheme && !dataScheme;
 			Bitmap bitmap = null;
@@ -111,35 +106,12 @@ public class ImageLoader {
 				}
 				if (bitmap == null && !fromCacheOnly) {
 					if (chanScheme) {
-						String chanName = uri.getAuthority();
-						if (StringUtils.isEmpty(chanName)) {
-							chanName = this.chanName;
+						ByteArrayOutputStream output = new ByteArrayOutputStream();
+						if (!chan.configuration.readResourceUri(uri, output)) {
+							throw HttpException.createNotFoundException();
 						}
-						Resources resources = ChanConfiguration.get(chanName).getResources();
-						if (resources != null) {
-							String packageName = ChanManager.getInstance().getExtensionPackageName(chanName);
-							List<String> pathSegments = uri.getPathSegments();
-							if (pathSegments != null && pathSegments.size() == 3) {
-								String entity = pathSegments.get(0);
-								if ("res".equals(entity)) {
-									String type = pathSegments.get(1);
-									String name = pathSegments.get(2);
-									int id = resources.getIdentifier(name, type, packageName);
-									if (id != 0) {
-										ByteArrayOutputStream output = new ByteArrayOutputStream();
-										InputStream input = null;
-										try {
-											input = resources.openRawResource(id);
-											IOUtils.copyStream(resources.openRawResource(id), output);
-										} finally {
-											IOUtils.close(input);
-										}
-										byte[] bytes = output.toByteArray();
-										bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-									}
-								}
-							}
-						}
+						byte[] bytes = output.toByteArray();
+						bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 					} else if (dataScheme) {
 						String data = uri.toString();
 						int index = data.indexOf("base64,");
@@ -152,24 +124,14 @@ public class ImageLoader {
 						}
 					} else {
 						HttpResponse response;
-						String chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
-						if (chanName == null) {
-							chanName = this.chanName;
-						}
-						if (chanName != null) {
-							ChanPerformer performer = ChanPerformer.get(chanName);
-							try {
-								ChanPerformer.ReadContentResult result = performer.safe()
-										.onReadContent(new ChanPerformer.ReadContentData(uri,
-												CONNECT_TIMEOUT, READ_TIMEOUT, holder, -1, -1));
-								response = result != null ? result.response : null;
-							} catch (ExtensionException e) {
-								e.getErrorItemAndHandle();
-								return null;
-							}
-						} else {
-							response = new HttpRequest(uri, holder)
-									.setTimeouts(CONNECT_TIMEOUT, READ_TIMEOUT).perform();
+						try {
+							ChanPerformer.ReadContentResult result = chan.performer.safe()
+									.onReadContent(new ChanPerformer.ReadContentData(uri,
+											CONNECT_TIMEOUT, READ_TIMEOUT, holder, -1, -1));
+							response = result != null ? result.response : null;
+						} catch (ExtensionException e) {
+							e.getErrorItemAndHandle();
+							return null;
 						}
 						if (response != null) {
 							try {
@@ -351,17 +313,17 @@ public class ImageLoader {
 		}
 	}
 
-	public void loadImage(String chanName, Uri uri, boolean fromCacheOnly, ImageView target) {
+	public void loadImage(Chan chan, Uri uri, boolean fromCacheOnly, ImageView target) {
 		WrapperTarget<ImageView> wrapperTarget = getWrapperTarget(target, WRAPPER_CALLBACK_IMAGE_VIEW);
-		loadImage(chanName, uri, null, fromCacheOnly, wrapperTarget);
+		loadImage(chan, uri, null, fromCacheOnly, wrapperTarget);
 	}
 
-	public void loadImage(String chanName, Uri uri, String key, boolean fromCacheOnly, AttachmentView target) {
+	public void loadImage(Chan chan, Uri uri, String key, boolean fromCacheOnly, AttachmentView target) {
 		WrapperTarget<AttachmentView> wrapperTarget = getWrapperTarget(target, WRAPPER_CALLBACK_ATTACHMENT_VIEW);
-		loadImage(chanName, uri, key, fromCacheOnly, wrapperTarget);
+		loadImage(chan, uri, key, fromCacheOnly, wrapperTarget);
 	}
 
-	public boolean loadImage(String chanName, Uri uri, String key, boolean fromCacheOnly, Target target) {
+	public boolean loadImage(Chan chan, Uri uri, String key, boolean fromCacheOnly, Target target) {
 		if (key == null) {
 			key = CacheManager.getInstance().getCachedFileKey(uri);
 		}
@@ -400,14 +362,14 @@ public class ImageLoader {
 				currentLoaderTask.fromCacheOnly && !fromCacheOnly;
 		LoaderTask registerLoaderTask = currentLoaderTask;
 		if (startTask) {
-			LoaderTask loaderTask = new LoaderTask(uri, chanName, key, fromCacheOnly);
+			LoaderTask loaderTask = new LoaderTask(uri, chan, key, fromCacheOnly);
 			registerLoaderTask = loaderTask;
 			if (currentLoaderTask != null) {
 				currentLoaderTask.cancel(true);
 				loaderTask.callbacks.addAll(currentLoaderTask.callbacks);
 			}
 			loaderTasks.put(key, loaderTask);
-			loaderTask.executeOnExecutor(getExecutor(chanName));
+			loaderTask.executeOnExecutor(getExecutor(chan.name));
 		}
 		registerLoaderTask.callbacks.add(target.taskCallback);
 		return false;

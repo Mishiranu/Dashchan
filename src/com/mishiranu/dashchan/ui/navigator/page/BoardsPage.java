@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.view.Menu;
 import android.view.MenuItem;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.model.Board;
 import chan.content.model.BoardCategory;
@@ -65,7 +66,7 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback, Read
 
 	@Override
 	public String obtainTitle() {
-		boolean hasUserBoards = getChanConfiguration().getOption(ChanConfiguration.OPTION_READ_USER_BOARDS);
+		boolean hasUserBoards = getChan().configuration.getOption(ChanConfiguration.OPTION_READ_USER_BOARDS);
 		return getString(hasUserBoards ? R.string.general_boards : R.string.boards);
 	}
 
@@ -81,7 +82,7 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback, Read
 		if (boardName != null) {
 			DialogMenu dialogMenu = new DialogMenu(getContext());
 			dialogMenu.add(R.string.copy_link, () -> {
-				Uri uri = getChanLocator().safe(true).createBoardUri(boardName, 0);
+				Uri uri = getChan().locator.safe(true).createBoardUri(boardName, 0);
 				if (uri != null) {
 					StringUtils.copyToClipboard(getContext(), uri.toString());
 				}
@@ -105,7 +106,7 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback, Read
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.appearance);
 		menu.add(0, R.id.menu_make_home_page, 0, R.string.make_home_page)
-				.setVisible(Preferences.getDefaultBoardName(getPage().chanName) != null);
+				.setVisible(Preferences.getDefaultBoardName(getChan()) != null);
 	}
 
 	@Override
@@ -138,7 +139,7 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback, Read
 		if (readTask != null) {
 			readTask.cancel();
 		}
-		readTask = new ReadBoardsTask(getPage().chanName, this);
+		readTask = new ReadBoardsTask(this, getChan());
 		readTask.executeOnExecutor(ReadBoardsTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
 			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
@@ -177,9 +178,9 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback, Read
 				// Invalid data, ignore exception
 			}
 		}
-		ChanConfiguration configuration = getChanConfiguration();
-		configuration.storeBoards(jsonArray);
-		configuration.commit();
+		Chan chan = getChan();
+		chan.configuration.storeBoards(jsonArray);
+		chan.configuration.commit();
 		getAdapter().update();
 		getRecyclerView().scrollToPosition(0);
 	}

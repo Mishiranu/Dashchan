@@ -10,7 +10,7 @@ import android.os.Bundle;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
@@ -269,7 +269,7 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 	private static class ReadChangelogTask extends AsyncManager.SimpleTask<Boolean> {
 		private static final Pattern PATTERN_TITLE = Pattern.compile("<h1.*?>Changelog (.*)</h1>");
 
-		private final HttpHolder holder = new HttpHolder();
+		private final HttpHolder holder = new HttpHolder(Chan.getFallback());
 
 		private final Configuration configuration;
 
@@ -281,7 +281,7 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 		}
 
 		private static String downloadChangelog(HttpHolder holder, String suffix) throws HttpException {
-			Uri uri = ChanLocator.getDefault().buildPathWithHost("github.com",
+			Uri uri = Chan.getFallback().locator.buildPathWithHost("github.com",
 					"Mishiranu", "Dashchan", "wiki", "Changelog-" + suffix);
 			String response = new HttpRequest(uri, holder).setSuccessOnly(false).perform().readString();
 			Matcher matcher = PATTERN_TITLE.matcher(StringUtils.emptyIfNull(response));

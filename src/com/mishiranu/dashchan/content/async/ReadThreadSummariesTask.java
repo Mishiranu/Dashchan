@@ -1,6 +1,6 @@
 package com.mishiranu.dashchan.content.async;
 
-import chan.content.ChanConfiguration;
+import chan.content.Chan;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
@@ -14,11 +14,11 @@ import java.util.Collections;
 import java.util.HashSet;
 
 public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSummary[]> {
-	private final String chanName;
+	private final Callback callback;
+	private final Chan chan;
 	private final String boardName;
 	private final int pageNumber;
 	private final int type;
-	private final Callback callback;
 
 	private ErrorItem errorItem;
 
@@ -27,19 +27,19 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSu
 		void onReadThreadSummariesFail(ErrorItem errorItem);
 	}
 
-	public ReadThreadSummariesTask(String chanName, String boardName, int pageNumber, int type, Callback callback) {
-		this.chanName = chanName;
+	public ReadThreadSummariesTask(Callback callback, Chan chan, String boardName, int pageNumber, int type) {
+		super(chan);
+		this.callback = callback;
+		this.chan = chan;
 		this.boardName = boardName;
 		this.pageNumber = pageNumber;
 		this.type = type;
-		this.callback = callback;
 	}
 
 	@Override
 	protected ThreadSummary[] doInBackground(HttpHolder holder, Void... params) {
 		try {
-			ChanPerformer performer = ChanPerformer.get(chanName);
-			ChanPerformer.ReadThreadSummariesResult result = performer.safe()
+			ChanPerformer.ReadThreadSummariesResult result = chan.performer.safe()
 					.onReadThreadSummaries(new ChanPerformer
 							.ReadThreadSummariesData(boardName, pageNumber, type, holder));
 			ThreadSummary[] threadSummaries = result != null ? result.threadSummaries : null;
@@ -48,7 +48,7 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSu
 			errorItem = e.getErrorItemAndHandle();
 			return null;
 		} finally {
-			ChanConfiguration.get(chanName).commit();
+			chan.configuration.commit();
 		}
 	}
 

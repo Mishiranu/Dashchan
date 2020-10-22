@@ -21,7 +21,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.RecyclerView;
-import chan.content.ChanConfiguration;
+import chan.content.Chan;
 import chan.content.ChanManager;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
@@ -75,7 +75,7 @@ public class UpdateFragment extends BaseListFragment implements ActivityHandler,
 		public String warning;
 
 		public static ListItem create(String extensionName, boolean enabled, boolean installed) {
-			String title = ChanConfiguration.get(extensionName).getTitle();
+			String title = Chan.get(extensionName).configuration.getTitle();
 			if (title == null) {
 				title = extensionName;
 			}
@@ -300,13 +300,13 @@ public class UpdateFragment extends BaseListFragment implements ActivityHandler,
 		}
 		handledExtensionNames.add(ChanManager.EXTENSION_NAME_CLIENT);
 		ChanManager manager = ChanManager.getInstance();
-		for (String chanName : manager.getAvailableChanNames()) {
-			List<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(chanName, true);
+		for (Chan chan : manager.getAvailableChans()) {
+			List<ReadUpdateTask.UpdateItem> updateItems = updateDataMap.get(chan.name, true);
 			if (updateItems != null) {
-				ListItem listItem = handleAddListItem(context, updateItems, chanName,
+				ListItem listItem = handleAddListItem(context, updateItems, chan.name,
 						savedInstanceState, minVersion, maxVersion, true, warningUnsupported);
 				listItems.add(listItem);
-				handledExtensionNames.add(chanName);
+				handledExtensionNames.add(chan.name);
 			}
 		}
 		for (ChanManager.ExtensionItem extensionItem : manager.getExtensionItems()) {

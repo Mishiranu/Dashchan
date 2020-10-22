@@ -36,6 +36,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
@@ -124,6 +125,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	private RetainFragment retainFragment;
 	private ConfigurationLock configurationLock;
 	private final WatcherService.Client watcherServiceClient = new WatcherService.Client(this);
+	private final ExtensionsTrustLoop.State extensionsTrustLoopState = new ExtensionsTrustLoop.State();
 	private DownloadDialog downloadDialog;
 
 	private DrawerForm drawerForm;
@@ -351,13 +353,13 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 		Iterator<SavedPageItem> iterator = new ConcatIterable<>(preservedPageItems, stackPageItems).iterator();
 		while (iterator.hasNext()) {
-			if (!ChanManager.getInstance().isAvailableChanName(getSavedPage(iterator.next()).chanName)) {
+			if (Chan.get(getSavedPage(iterator.next()).chanName).name == null) {
 				iterator.remove();
 			}
 		}
 		if (currentFragmentFromSaved != null) {
-			if (currentFragmentFromSaved instanceof PageFragment && !ChanManager.getInstance()
-					.isAvailableChanName(((PageFragment) currentFragmentFromSaved).getPage().chanName)) {
+			if (currentFragmentFromSaved instanceof PageFragment &&
+					Chan.get(((PageFragment) currentFragmentFromSaved).getPage().chanName).name == null) {
 				currentFragmentFromSaved = null;
 				currentPageItem = null;
 			}
@@ -374,8 +376,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			}
 		} else {
 			Fragment currentFragment = getCurrentFragment();
-			if (currentFragment instanceof PageFragment && !ChanManager.getInstance()
-					.isAvailableChanName(((PageFragment) currentFragment).getPage().chanName)) {
+			if (currentFragment instanceof PageFragment &&
+					Chan.get(((PageFragment) currentFragment).getPage().chanName).name == null) {
 				currentFragment = null;
 				currentPageItem = null;
 			}
@@ -391,11 +393,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			navigateIntent(getIntent(), false);
 		}
 		if (getCurrentFragment() == null) {
-			String chanName = ChanManager.getInstance().getDefaultChanName();
-			if (chanName != null) {
-				navigateData(chanName, Preferences.getDefaultBoardName(chanName), null, null, null, null, 0);
-			} else {
-				navigateFragment(new CategoriesFragment(), null, true);
+			boolean hasChans = navigateInitial(false);
+			if (!hasChans) {
 				ClickableToast.show(this, getString(R.string.no_extensions_installed),
 						getString(R.string.install), false, () -> {
 					if (getCurrentFragment() instanceof UpdateFragment) {
@@ -407,7 +406,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			}
 		}
 
-		ExtensionsTrustLoop.handleUntrustedExtensions(this, configurationLock);
+		ExtensionsTrustLoop.handleUntrustedExtensions(this, extensionsTrustLoopState, configurationLock);
 		if (storageRequestState == StorageRequestState.INSTRUCTIONS) {
 			showStorageInstructionsDialog();
 		}
@@ -671,39 +670,38 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	private boolean navigateUri(Uri uri) {
-		String chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
-		if (chanName != null) {
-			ChanLocator locator = ChanLocator.get(chanName);
-			boolean boardUri = locator.safe(false).isBoardUri(uri);
-			boolean threadUri = locator.safe(false).isThreadUri(uri);
-			String boardName = boardUri || threadUri ? locator.safe(false).getBoardName(uri) : null;
-			String threadNumber = threadUri ? locator.safe(false).getThreadNumber(uri) : null;
-			PostNumber postNumber = threadUri ? locator.safe(false).getPostNumber(uri) : null;
+		Chan chan = Chan.getPreferred(null, uri);
+		if (chan.name != null) {
+			boolean boardUri = chan.locator.safe(false).isBoardUri(uri);
+			boolean threadUri = chan.locator.safe(false).isThreadUri(uri);
+			String boardName = boardUri || threadUri ? chan.locator.safe(false).getBoardName(uri) : null;
+			String threadNumber = threadUri ? chan.locator.safe(false).getThreadNumber(uri) : null;
+			PostNumber postNumber = threadUri ? chan.locator.safe(false).getPostNumber(uri) : null;
 			if (boardUri) {
-				navigateData(chanName, boardName, null, null, null, null,
+				navigateData(chan.name, boardName, null, null, null, null,
 						FLAG_DATA_CLOSE_OVERLAYS | FLAG_DATA_ALLOW_RETURN);
 				return true;
 			} else if (threadUri) {
-				navigateData(chanName, boardName, threadNumber, postNumber, null, null,
+				navigateData(chan.name, boardName, threadNumber, postNumber, null, null,
 						FLAG_DATA_CLOSE_OVERLAYS | FLAG_DATA_ALLOW_RETURN);
 				return true;
-			} else if (locator.isImageUri(uri)) {
+			} else if (chan.locator.isImageUri(uri)) {
 				navigateGalleryUri(uri);
 				return true;
-			} else if (locator.isAudioUri(uri)) {
-				AudioPlayerService.start(this, chanName, uri, locator.createAttachmentFileName(uri));
+			} else if (chan.locator.isAudioUri(uri)) {
+				AudioPlayerService.start(this, chan.name, uri, chan.locator.createAttachmentFileName(uri));
 				return true;
-			} else if (locator.isVideoUri(uri)) {
-				String fileName = locator.createAttachmentFileName(uri);
+			} else if (chan.locator.isVideoUri(uri)) {
+				String fileName = chan.locator.createAttachmentFileName(uri);
 				if (NavigationUtils.isOpenableVideoPath(fileName)) {
-					navigateGalleryUri(locator.convert(uri));
+					navigateGalleryUri(chan.locator.convert(uri));
 				} else {
-					NavigationUtils.handleUri(this, chanName, locator.convert(uri),
+					NavigationUtils.handleUri(this, chan.name, chan.locator.convert(uri),
 							NavigationUtils.BrowserType.EXTERNAL);
 				}
 				return true;
 			} else if (Preferences.isUseInternalBrowser()) {
-				NavigationUtils.handleUri(this, chanName, locator.convert(uri),
+				NavigationUtils.handleUri(this, chan.name, chan.locator.convert(uri),
 						NavigationUtils.BrowserType.INTERNAL);
 				return true;
 			}
@@ -711,12 +709,12 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		return false;
 	}
 
-	private static boolean isSingleBoardMode(String chanName) {
-		return ChanConfiguration.get(chanName).getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE);
+	private static boolean isSingleBoardMode(Chan chan) {
+		return chan.configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE);
 	}
 
-	private static String getSingleBoardName(String chanName) {
-		return ChanConfiguration.get(chanName).getSingleBoardName();
+	private static String getSingleBoardName(Chan chan) {
+		return chan.configuration.getSingleBoardName();
 	}
 
 	private Page getSavedPage(SavedPageItem savedPageItem) {
@@ -783,18 +781,32 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 	}
 
+	private boolean navigateInitial(boolean closeOverlays) {
+		currentPageItem = null;
+		Chan chan = ChanManager.getInstance().getDefaultChan();
+		if (chan != null) {
+			navigateData(chan.name, Preferences.getDefaultBoardName(chan),
+					null, null, null, null, closeOverlays ? FLAG_DATA_CLOSE_OVERLAYS : 0);
+			return true;
+		} else {
+			navigateFragment(new CategoriesFragment(), null, closeOverlays);
+			return false;
+		}
+	}
+
 	private static final int FLAG_DATA_CLOSE_OVERLAYS = 0x00000001;
 	private static final int FLAG_DATA_FROM_CACHE = 0x00000002;
 	private static final int FLAG_DATA_ALLOW_RETURN = 0x00000004;
 
 	private void navigateData(String chanName, String boardName, String threadNumber, PostNumber postNumber,
 			String threadTitle, String searchQuery, int dataFlags) {
-		if (chanName == null) {
+		Chan chan = Chan.get(chanName);
+		if (chan.name == null) {
 			return;
 		}
 		boolean forceBoardPage = false;
-		if (isSingleBoardMode(chanName)) {
-			boardName = getSingleBoardName(chanName);
+		if (isSingleBoardMode(chan)) {
+			boardName = getSingleBoardName(chan);
 			forceBoardPage = true;
 		}
 		int pageFlags = 0;
@@ -807,15 +819,15 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 					FlagUtils.get(dataFlags, FLAG_DATA_FROM_CACHE));
 			Page.Content content = searchQuery != null ? Page.Content.SEARCH
 					: threadNumber == null ? Page.Content.THREADS : Page.Content.POSTS;
-			navigatePage(content, chanName, boardName, threadNumber, postNumber, threadTitle, searchQuery, pageFlags);
+			navigatePage(content, chan.name, boardName, threadNumber, postNumber, threadTitle, searchQuery, pageFlags);
 		} else {
 			String currentChanName = null;
 			Fragment currentFragment = getCurrentFragment();
 			if (currentFragment instanceof PageFragment) {
 				currentChanName = ((PageFragment) currentFragment).getPage().chanName;
 			}
-			if (getPagesStackSize(chanName) == 0 || !chanName.equals(currentChanName)) {
-				navigatePage(Page.Content.BOARDS, chanName, null, null, null, null, null, pageFlags);
+			if (getPagesStackSize(chan.name) == 0 || !chan.name.equals(currentChanName)) {
+				navigatePage(Page.Content.BOARDS, chan.name, null, null, null, null, null, pageFlags);
 			}
 		}
 	}
@@ -1022,7 +1034,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		} else if (!stackPageItems.isEmpty()) {
 			chanName = getSavedPage(stackPageItems.get(stackPageItems.size() - 1)).chanName;
 		} else {
-			chanName = ChanManager.getInstance().getDefaultChanName();
+			Chan chan = ChanManager.getInstance().getDefaultChan();
+			chanName = chan != null ? chan.name : null;
 		}
 		if (currentFragment instanceof PageFragment) {
 			expandedScreen.removeLocker(LOCKER_NON_PAGE);
@@ -1143,15 +1156,22 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
+	protected void onStart() {
+		super.onStart();
+		handleChansChangedDelayed();
+	}
+
+	@Override
 	protected void onResume() {
 		super.onResume();
 
 		watcherServiceClient.start();
 		clickableToastHolder.onResume();
 		drawerForm.updateRestartViewVisibility();
-		drawerForm.invalidateItems(true, true);
+		drawerForm.updateItems(true, true);
 		updateWideConfiguration(false);
 		ForegroundManager.register(this);
+		handleChansChangedDelayed();
 
 		Intent navigateIntentOnResume = this.navigateIntentOnResume;
 		this.navigateIntentOnResume = null;
@@ -1205,8 +1225,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		Preferences.PREFERENCES.unregisterOnSharedPreferenceChangeListener(preferencesListener);
 		ChanManager.getInstance().observable.unregister(chanManagerCallback);
-		for (String chanName : ChanManager.getInstance().getAvailableChanNames()) {
-			ChanConfiguration.get(chanName).commit();
+		for (Chan chan : ChanManager.getInstance().getAvailableChans()) {
+			chan.configuration.commit();
 		}
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		notificationManager.cancel(C.NOTIFICATION_ID_UPDATES);
@@ -1228,17 +1248,17 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 	@Override
 	public void removeFragment() {
-		onBackPressed(true, false);
+		onBackPressed(true, false, () -> navigateInitial(true));
 	}
 
 	private long backPressed = 0;
 
 	@Override
 	public void onBackPressed() {
-		onBackPressed(false, true);
+		onBackPressed(false, true, super::onBackPressed);
 	}
 
-	private void onBackPressed(boolean homeHandled, boolean allowTimeout) {
+	private void onBackPressed(boolean homeHandled, boolean allowTimeout, Runnable close) {
 		if (!wideMode && drawerLayout.isDrawerOpen(GravityCompat.START)) {
 			drawerLayout.closeDrawers();
 		} else {
@@ -1275,7 +1295,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 					ClickableToast.show(this, R.string.press_again_to_exit);
 					backPressed = SystemClock.elapsedRealtime();
 				} else {
-					super.onBackPressed();
+					close.run();
 				}
 			}
 		}
@@ -1369,10 +1389,11 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 					String newBoardName = page.boardName;
 					if (page.content == Page.Content.THREADS) {
 						// Up button must navigate to main page in threads list
-						newBoardName = Preferences.getDefaultBoardName(page.chanName);
+						newBoardName = Preferences.getDefaultBoardName(Chan.get(page.chanName));
 						if (Preferences.isMergeChans() && CommonUtils.equals(page.boardName, newBoardName)) {
-							newChanName = ChanManager.getInstance().getDefaultChanName();
-							newBoardName = Preferences.getDefaultBoardName(newChanName);
+							Chan chan = ChanManager.getInstance().getDefaultChan();
+							newChanName = chan.name;
+							newBoardName = Preferences.getDefaultBoardName(chan);
 						}
 					}
 					clearStackAndCurrent();
@@ -1386,7 +1407,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 					navigateData(newChanName, newBoardName, null, null, null, null,
 							FLAG_DATA_CLOSE_OVERLAYS | (fromCache ? FLAG_DATA_FROM_CACHE : 0));
 				} else {
-					onBackPressed(true, true);
+					onBackPressed(true, true, super::onBackPressed);
 				}
 				return true;
 			}
@@ -1458,6 +1479,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		Fragment currentFragment = getCurrentFragment();
 		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
 		if (page == null || !page.chanName.equals(chanName)) {
+			Chan chan = Chan.get(chanName);
 			if (!Preferences.isMergeChans()) {
 				// Find chan page and open it. Open root page if nothing was found.
 				SavedPageItem lastSavedPageItem = null;
@@ -1477,12 +1499,12 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 					}
 					navigateSavedPage(lastSavedPageItem, true);
 				} else {
-					navigateBoardsOrThreads(chanName, Preferences.getDefaultBoardName(chanName), false, false);
+					navigateBoardsOrThreads(chanName, Preferences.getDefaultBoardName(chan), false, false);
 				}
 			} else {
 				// Open root page. If page is already opened, load it from cache.
 				boolean fromCache = false;
-				String boardName = Preferences.getDefaultBoardName(chanName);
+				String boardName = Preferences.getDefaultBoardName(chan);
 				for (SavedPageItem savedPageItem : new ConcatIterable<>(preservedPageItems, stackPageItems)) {
 					if (getSavedPage(savedPageItem).is(Page.Content.THREADS, chanName, boardName, null)) {
 						fromCache = true;
@@ -1492,7 +1514,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				navigateBoardsOrThreads(chanName, boardName, fromCache, false);
 			}
 			drawerForm.updateConfiguration(chanName);
-			drawerForm.invalidateItems(true, false);
 		} else {
 			closeOverlaysForNavigation();
 		}
@@ -1502,8 +1523,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	public void onSelectBoard(String chanName, String boardName, boolean fromCache) {
 		Fragment currentFragment = getCurrentFragment();
 		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
-		if (isSingleBoardMode(chanName)) {
-			boardName = getSingleBoardName(chanName);
+		Chan chan = Chan.get(chanName);
+		if (isSingleBoardMode(chan)) {
+			boardName = getSingleBoardName(chan);
 		}
 		if (page == null || !page.is(Page.Content.THREADS, chanName, boardName, null)) {
 			navigateBoardsOrThreads(chanName, boardName, fromCache, false);
@@ -1517,8 +1539,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			String threadTitle, boolean fromCache) {
 		Fragment currentFragment = getCurrentFragment();
 		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
-		if (isSingleBoardMode(chanName)) {
-			boardName = getSingleBoardName(chanName);
+		Chan chan = Chan.get(chanName);
+		if (isSingleBoardMode(chan)) {
+			boardName = getSingleBoardName(chan);
 		} else if (boardName == null) {
 			if (page == null) {
 				return false;
@@ -1554,9 +1577,10 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			if (savedPageItem != null) {
 				navigateSavedPage(savedPageItem, false);
 			} else {
-				if (isSingleBoardMode(chanName)) {
+				Chan chan = Chan.get(chanName);
+				if (isSingleBoardMode(chan)) {
 					navigatePage(Page.Content.THREADS, chanName,
-							getSingleBoardName(chanName), null, null, null, null, FLAG_PAGE_FROM_CACHE);
+							getSingleBoardName(chan), null, null, null, null, FLAG_PAGE_FROM_CACHE);
 				} else {
 					navigatePage(Page.Content.BOARDS, chanName,
 							null, null, null, null, null, FLAG_PAGE_FROM_CACHE);
@@ -1577,7 +1601,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 					break;
 				}
 			}
-			drawerForm.invalidateItems(true, false);
+			drawerForm.updateItems(true, false);
 			invalidateHomeUpState();
 		}
 	}
@@ -1602,9 +1626,10 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			chanName = getSavedPage(stackPageItems.get(stackPageItems.size() - 1)).chanName;
 		}
 		if (chanName != null) {
-			String boardName = Preferences.getDefaultBoardName(chanName);
-			boolean singleBoardMode = isSingleBoardMode(chanName);
-			String singleBoardName = getSingleBoardName(chanName);
+			Chan chan = Chan.get(chanName);
+			String boardName = Preferences.getDefaultBoardName(chan);
+			boolean singleBoardMode = isSingleBoardMode(chan);
+			String singleBoardName = getSingleBoardName(chan);
 			boolean cached = page != null && isCloseAllTarget(page,
 					chanName, boardName, singleBoardMode, singleBoardName);
 			boolean mergeChans = Preferences.isMergeChans();
@@ -1643,7 +1668,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			}
 			preservedPageItems.addAll(addPreserved);
 		}
-		drawerForm.invalidateItems(true, false);
+		drawerForm.updateItems(true, false);
 		invalidateHomeUpState();
 	}
 
@@ -1695,8 +1720,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				String chanName = page != null ? page.chanName : null;
 				String boardName = page != null ? page.boardName : null;
 				if (chanName == null) {
-					chanName = ChanManager.getInstance().getDefaultChanName();
-					boardName = Preferences.getDefaultBoardName(boardName);
+					Chan chan = ChanManager.getInstance().getDefaultChan();
+					chanName = chan.name;
+					boardName = Preferences.getDefaultBoardName(chan);
 				}
 				if (chanName != null) {
 					navigatePage(content, chanName, boardName, null, null, null, null,
@@ -1740,16 +1766,82 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		return drawerPages;
 	}
 
+	private final HashSet<String> changedChanNames = new HashSet<>();
+	private final HashSet<String> removedChanNames = new HashSet<>();
+
+	private void handleChansChangedDelayed() {
+		if (removedChanNames.isEmpty()) {
+			if (!changedChanNames.isEmpty()) {
+				Fragment currentFragment = getCurrentFragment();
+				if (currentFragment instanceof ActivityHandler) {
+					((ActivityHandler) currentFragment)
+							.onChansChanged(Collections.unmodifiableSet(changedChanNames), Collections.emptySet());
+				}
+			}
+		} else {
+			Iterator<SavedPageItem> iterator = new ConcatIterable<>(preservedPageItems, stackPageItems).iterator();
+			while (iterator.hasNext()) {
+				if (removedChanNames.contains(getSavedPage(iterator.next()).chanName)) {
+					iterator.remove();
+				}
+			}
+			Fragment currentFragment = getCurrentFragment();
+			if (currentFragment instanceof PageFragment &&
+					removedChanNames.contains(((PageFragment) currentFragment).getPage().chanName)) {
+				if (!stackPageItems.isEmpty()) {
+					currentPageItem = null;
+					navigateSavedPage(stackPageItems.remove(stackPageItems.size() - 1), true);
+				} else {
+					navigateInitial(true);
+				}
+			} else if (currentFragment instanceof ActivityHandler) {
+				((ActivityHandler) currentFragment)
+						.onChansChanged(Collections.unmodifiableSet(changedChanNames),
+								Collections.unmodifiableSet(removedChanNames));
+			}
+			String galleryTag = GalleryOverlay.class.getName();
+			GalleryOverlay currentGalleryOverlay = (GalleryOverlay) getSupportFragmentManager()
+					.findFragmentByTag(galleryTag);
+			if (currentGalleryOverlay != null && removedChanNames.contains(currentGalleryOverlay.getChanName())) {
+				currentGalleryOverlay.dismiss();
+			}
+		}
+		if (!changedChanNames.isEmpty() || !removedChanNames.isEmpty()) {
+			changedChanNames.clear();
+			removedChanNames.clear();
+			drawerForm.updateChans();
+			updatePostFragmentConfiguration();
+		}
+	}
+
 	private final ChanManager.Callback chanManagerCallback = new ChanManager.Callback() {
 		@Override
-		public void onExtensionInstalled() {
+		public void onRestartRequiredChanged() {
 			drawerForm.updateRestartViewVisibility();
 		}
 
 		@Override
-		public void onExtensionsChanged() {
-			drawerForm.updateChans();
-			updatePostFragmentConfiguration();
+		public void onUntrustedExtensionInstalled() {
+			ExtensionsTrustLoop.handleUntrustedExtensions(MainActivity.this,
+					extensionsTrustLoopState, configurationLock);
+		}
+
+		@Override
+		public void onChanInstalled(Chan chan) {
+			changedChanNames.add(chan.name);
+			removedChanNames.remove(chan.name);
+			if (!getSupportFragmentManager().isStateSaved()) {
+				handleChansChangedDelayed();
+			}
+		}
+
+		@Override
+		public void onChanUninstalled(Chan chan) {
+			changedChanNames.remove(chan.name);
+			removedChanNames.add(chan.name);
+			if (!getSupportFragmentManager().isStateSaved()) {
+				handleChansChangedDelayed();
+			}
 		}
 	};
 
@@ -1962,7 +2054,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			case ADD:
 			case REMOVE:
 			case MODIFY_TITLE: {
-				drawerForm.invalidateItems(false, true);
+				drawerForm.updateItems(false, true);
 				break;
 			}
 		}
@@ -1979,7 +2071,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		if (((PageFragment) getCurrentFragment()).getPage().content == Page.Content.POSTS) {
 			currentPageItem.threadTitle = title;
 		}
-		drawerForm.invalidateItems(true, false);
+		drawerForm.updateItems(true, false);
 	}
 
 	@Override

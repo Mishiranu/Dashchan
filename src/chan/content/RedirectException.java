@@ -64,23 +64,22 @@ public final class RedirectException extends Exception {
 
 	public final Target obtainTarget(String chanName) throws ExtensionException {
 		if (uri != null) {
-			chanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
-			if (chanName != null) {
-				ChanLocator locator = ChanLocator.get(chanName);
+			Chan chan = Chan.getPreferred(null, uri);
+			if (chan.name != null) {
 				try {
-					if (locator.isBoardUri(uri)) {
-						String boardName = locator.getBoardName(uri);
-						return new Target(chanName, boardName, null, null);
-					} else if (locator.isThreadUri(uri)) {
-						String boardName = locator.getBoardName(uri);
-						String threadNumber = locator.getThreadNumber(uri);
-						String postNumberString = locator.getPostNumber(uri);
+					if (chan.locator.isBoardUri(uri)) {
+						String boardName = chan.locator.getBoardName(uri);
+						return new Target(chan.name, boardName, null, null);
+					} else if (chan.locator.isThreadUri(uri)) {
+						String boardName = chan.locator.getBoardName(uri);
+						String threadNumber = chan.locator.getThreadNumber(uri);
+						String postNumberString = chan.locator.getPostNumber(uri);
 						PostNumber.validateThreadNumber(threadNumber, false);
 						PostNumber postNumber = null;
 						if (postNumberString != null) {
 							postNumber = PostNumber.parseOrThrow(postNumberString);
 						}
-						return new Target(chanName, boardName, threadNumber, postNumber);
+						return new Target(chan.name, boardName, threadNumber, postNumber);
 					} else {
 						return null;
 					}

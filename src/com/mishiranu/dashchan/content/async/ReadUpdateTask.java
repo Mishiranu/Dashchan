@@ -7,7 +7,7 @@ import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import androidx.core.content.pm.PackageInfoCompat;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import chan.content.ChanManager;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
@@ -185,6 +185,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 	}
 
 	public ReadUpdateTask(Context context, Callback callback) {
+		super(Chan.getFallback());
 		this.context = context.getApplicationContext();
 		this.callback = callback;
 	}
@@ -288,17 +289,17 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 
 	private static Iterable<Response> readData(HttpHolder holder,
 			Iterable<ChanManager.ExtensionItem> extensionItems) {
-		ChanLocator locator = ChanLocator.getDefault();
+		Chan chan = Chan.getFallback();
 		LinkedHashMap<Uri, HashSet<String>> targets = new LinkedHashMap<>();
 		{
-			Uri applicationUri = locator.setScheme(Uri.parse(BuildConfig.URI_UPDATES));
+			Uri applicationUri = chan.locator.setScheme(Uri.parse(BuildConfig.URI_UPDATES));
 			HashSet<String> extensionNames = new HashSet<>();
 			extensionNames.add(ChanManager.EXTENSION_NAME_CLIENT);
 			targets.put(applicationUri, extensionNames);
 		}
 		for (ChanManager.ExtensionItem extensionItem : extensionItems) {
 			if (extensionItem.updateUri != null) {
-				Uri uri = locator.setScheme(extensionItem.updateUri);
+				Uri uri = chan.locator.setScheme(extensionItem.updateUri);
 				HashSet<String> extensionNames = targets.get(uri);
 				if (extensionNames == null) {
 					extensionNames = new HashSet<>();

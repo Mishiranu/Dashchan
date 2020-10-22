@@ -7,7 +7,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Pair;
-import chan.content.ChanManager;
+import chan.content.Chan;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.Hasher;
@@ -429,12 +429,12 @@ public class CacheManager implements Runnable {
 			} else if ("chan".equals(scheme)) {
 				data = uri.toString();
 			} else {
-				String chanName = ChanManager.getInstance().getChanNameByHost(uri.getHost());
+				Chan chan = Chan.getPreferred(null, uri);
 				String path = uri.getPath();
 				String query = uri.getQuery();
 				StringBuilder dataBuilder = new StringBuilder();
-				if (chanName != null) {
-					dataBuilder.append(chanName);
+				if (chan.name != null) {
+					dataBuilder.append(chan.name);
 				}
 				dataBuilder.append(path);
 				if (query != null) {

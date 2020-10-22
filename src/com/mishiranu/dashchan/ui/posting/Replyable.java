@@ -5,7 +5,7 @@ import android.os.Parcelable;
 import com.mishiranu.dashchan.content.model.PostNumber;
 
 public interface Replyable {
-	void onRequestReply(ReplyData... data);
+	boolean onRequestReply(boolean click, ReplyData... data);
 
 	class ReplyData implements Parcelable {
 		public final PostNumber postNumber;

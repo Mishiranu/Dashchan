@@ -4,7 +4,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import chan.content.ChanConfiguration;
+import chan.content.Chan;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
@@ -80,8 +80,8 @@ public class BoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 	public void update() {
 		listItems.clear();
-		ChanConfiguration configuration = ChanConfiguration.get(chanName);
-		JSONArray jsonArray = configuration.getBoards();
+		Chan chan = Chan.get(chanName);
+		JSONArray jsonArray = chan.configuration.getBoards();
 		if (jsonArray != null) {
 			try {
 				for (int i = 0, length = jsonArray.length(); i < length; i++) {
@@ -94,7 +94,7 @@ public class BoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 					for (int j = 0; j < boardsArray.length(); j++) {
 						String boardName = boardsArray.isNull(j) ? null : boardsArray.getString(j);
 						if (!StringUtils.isEmpty(boardName)) {
-							title = configuration.getBoardTitle(boardName);
+							title = chan.configuration.getBoardTitle(boardName);
 							listItems.add(new ListItem(boardName, StringUtils.formatBoardTitle(chanName,
 									boardName, title)));
 						}

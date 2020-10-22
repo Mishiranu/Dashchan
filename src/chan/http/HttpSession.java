@@ -14,7 +14,6 @@ public final class HttpSession {
 	HttpResponse response;
 
 	final Proxy proxy;
-	final String chanName;
 	final boolean verifyCertificate;
 	final int delay;
 
@@ -29,12 +28,10 @@ public final class HttpSession {
 	HttpURLConnection deadConnection;
 	HttpHolder.Callback callback;
 
-	HttpSession(HttpHolder holder, HttpClient client, Proxy proxy,
-			String chanName, boolean verifyCertificate, int delay) {
+	HttpSession(HttpHolder holder, HttpClient client, Proxy proxy, boolean verifyCertificate, int delay) {
 		this.holder = holder;
 		this.client = client;
 		this.proxy = proxy;
-		this.chanName = chanName;
 		this.verifyCertificate = verifyCertificate;
 		this.delay = delay;
 	}
@@ -71,7 +68,7 @@ public final class HttpSession {
 			throw new HttpClient.InterruptedHttpException();
 		}
 		if (connection != null) {
-			client.onConnect(chanName, connection, delay);
+			client.onConnect(holder.chan, connection, delay);
 		}
 	}
 

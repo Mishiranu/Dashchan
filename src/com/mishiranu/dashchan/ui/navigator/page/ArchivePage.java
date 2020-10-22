@@ -92,7 +92,7 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 		Page page = getPage();
 		DialogMenu dialogMenu = new DialogMenu(getContext());
 		dialogMenu.add(R.string.copy_link, () -> {
-			Uri uri = getChanLocator().safe(true).createThreadUri(page.boardName, threadNumber);
+			Uri uri = getChan().locator.safe(true).createThreadUri(page.boardName, threadNumber);
 			if (uri != null) {
 				StringUtils.copyToClipboard(getContext(), uri.toString());
 			}
@@ -148,8 +148,8 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 				pageNumber = retainExtra.pageNumber + 1;
 			}
 		}
-		readTask = new ReadThreadSummariesTask(page.chanName, page.boardName, pageNumber,
-				ChanPerformer.ReadThreadSummariesData.TYPE_ARCHIVED_THREADS, this);
+		readTask = new ReadThreadSummariesTask(this, getChan(), page.boardName, pageNumber,
+				ChanPerformer.ReadThreadSummariesData.TYPE_ARCHIVED_THREADS);
 		readTask.executeOnExecutor(ReadThreadSummariesTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
 			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);

@@ -155,6 +155,7 @@ public class UiManager {
 	}
 
 	public static class ConfigurationSet {
+		public final String chanName;
 		public final Replyable replyable;
 		public final PostsProvider postsProvider;
 		public final PostStateProvider postStateProvider;
@@ -169,11 +170,12 @@ public class UiManager {
 		public final boolean allowGoToPost;
 		public final PostNumber repliesToPost;
 
-		public ConfigurationSet(Replyable replyable, PostsProvider postsProvider,
+		public ConfigurationSet(String chanName, Replyable replyable, PostsProvider postsProvider,
 				PostStateProvider postStateProvider, GalleryItem.Set gallerySet,
 				DialogUnit.StackInstance stackInstance, CommentTextView.LinkListener linkListener,
 				boolean mayCollapse, boolean isDialog, boolean allowMyMarkEdit,
 				boolean allowHiding, boolean allowGoToPost, PostNumber repliesToPost) {
+			this.chanName = chanName;
 			this.replyable = replyable;
 			this.postsProvider = postsProvider;
 			this.postStateProvider = postStateProvider;
@@ -190,8 +192,9 @@ public class UiManager {
 		}
 
 		public ConfigurationSet copy(boolean mayCollapse, boolean isDialog, PostNumber repliesToPost) {
-			return new ConfigurationSet(replyable, postsProvider, postStateProvider, gallerySet, stackInstance,
-					linkListener, mayCollapse, isDialog, allowMyMarkEdit, allowHiding, allowGoToPost, repliesToPost);
+			return new ConfigurationSet(chanName, replyable,
+					postsProvider, postStateProvider, gallerySet, stackInstance, linkListener,
+					mayCollapse, isDialog, allowMyMarkEdit, allowHiding, allowGoToPost, repliesToPost);
 		}
 	}
 

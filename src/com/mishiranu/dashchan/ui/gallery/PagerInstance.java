@@ -73,6 +73,6 @@ public class PagerInstance {
 	}
 
 	public interface Callback {
-		public void showError(ViewHolder holder, String message);
+		void showError(ViewHolder holder, String message);
 	}
 }

@@ -1,6 +1,7 @@
 package com.mishiranu.dashchan.content.model;
 
 import android.net.Uri;
+import chan.content.Chan;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
@@ -18,7 +19,6 @@ public abstract class AttachmentItem {
 	public enum GeneralType {FILE, EMBEDDED, LINK}
 
 	public interface Master {
-		String getChanName();
 		String getBoardName();
 		String getThreadNumber();
 		PostNumber getPostNumber();
@@ -26,10 +26,10 @@ public abstract class AttachmentItem {
 
 	private final Master master;
 
-	public abstract Uri getFileUri();
-	public abstract Uri getThumbnailUri();
-	public abstract String getThumbnailKey();
-	public abstract String getDialogTitle();
+	public abstract Uri getFileUri(Chan chan);
+	public abstract Uri getThumbnailUri(Chan chan);
+	public abstract String getThumbnailKey(Chan chan);
+	public abstract String getDialogTitle(Chan chan);
 	public abstract int getSize();
 	public abstract Type getType();
 	public abstract GeneralType getGeneralType();
@@ -37,13 +37,9 @@ public abstract class AttachmentItem {
 	public abstract boolean canDownloadToStorage();
 	public abstract GalleryItem createGalleryItem();
 	public abstract String getExtension();
-	public abstract String getFileName();
+	public abstract String getFileName(Chan chan);
 	public abstract String getOriginalName();
 	public abstract String getDescription(AttachmentItem.FormatMode formatMode);
-
-	public String getChanName() {
-		return master.getChanName();
-	}
 
 	public String getBoardName() {
 		return master.getBoardName();
@@ -97,31 +93,27 @@ public abstract class AttachmentItem {
 			this.height = height;
 		}
 
-		private ChanLocator getLocator() {
-			return ChanLocator.get(getChanName());
+		@Override
+		public Uri getFileUri(Chan chan) {
+			return chan.locator.convert(fileUri);
 		}
 
 		@Override
-		public Uri getFileUri() {
-			return getLocator().convert(fileUri);
+		public Uri getThumbnailUri(Chan chan) {
+			return chan.locator.convert(thumbnailUri);
 		}
 
 		@Override
-		public Uri getThumbnailUri() {
-			return getLocator().convert(thumbnailUri);
-		}
-
-		@Override
-		public String getThumbnailKey() {
+		public String getThumbnailKey(Chan chan) {
 			if (thumbnailKey == null && thumbnailUri != null) {
-				thumbnailKey = CacheManager.getInstance().getCachedFileKey(getThumbnailUri());
+				thumbnailKey = CacheManager.getInstance().getCachedFileKey(getThumbnailUri(chan));
 			}
 			return thumbnailKey;
 		}
 
 		@Override
-		public String getDialogTitle() {
-			return !StringUtils.isEmpty(originalName) ? originalName : getFileName();
+		public String getDialogTitle(Chan chan) {
+			return !StringUtils.isEmpty(originalName) ? originalName : getFileName(chan);
 		}
 
 		@Override
@@ -161,8 +153,8 @@ public abstract class AttachmentItem {
 		}
 
 		@Override
-		public String getFileName() {
-			return getLocator().createAttachmentFileName(getFileUri());
+		public String getFileName(Chan chan) {
+			return chan.locator.createAttachmentFileName(getFileUri(chan));
 		}
 
 		@Override
@@ -242,25 +234,25 @@ public abstract class AttachmentItem {
 		}
 
 		@Override
-		public Uri getFileUri() {
+		public Uri getFileUri(Chan chan) {
 			return fileUri;
 		}
 
 		@Override
-		public Uri getThumbnailUri() {
+		public Uri getThumbnailUri(Chan chan) {
 			return thumbnailUri;
 		}
 
 		@Override
-		public String getThumbnailKey() {
+		public String getThumbnailKey(Chan chan) {
 			if (thumbnailKey == null && thumbnailUri != null) {
-				thumbnailKey = CacheManager.getInstance().getCachedFileKey(getThumbnailUri());
+				thumbnailKey = CacheManager.getInstance().getCachedFileKey(getThumbnailUri(chan));
 			}
 			return thumbnailKey;
 		}
 
 		@Override
-		public String getDialogTitle() {
+		public String getDialogTitle(Chan chan) {
 			return embeddedType;
 		}
 
@@ -300,7 +292,7 @@ public abstract class AttachmentItem {
 		}
 
 		@Override
-		public String getFileName() {
+		public String getFileName(Chan chan) {
 			return fileName;
 		}
 
@@ -400,10 +392,10 @@ public abstract class AttachmentItem {
 		}
 	}
 
-	public void configureAndLoad(AttachmentView view, boolean needShowMultipleIcon, boolean force) {
+	public void configureAndLoad(AttachmentView view, Chan chan, boolean needShowMultipleIcon, boolean force) {
 		view.setCropEnabled(Preferences.isCutThumbnails());
 		Type type = getType();
-		String key = getThumbnailKey();
+		String key = getThumbnailKey(chan);
 		AttachmentView.Overlay overlay = AttachmentView.Overlay.NONE;
 		if (needShowMultipleIcon) {
 			overlay = AttachmentView.Overlay.MULTIPLE;
@@ -434,26 +426,26 @@ public abstract class AttachmentItem {
 			}
 		}
 		view.resetImage(key, overlay);
-		startLoad(view, key, force);
+		startLoad(view, chan, key, force);
 	}
 
-	public void startLoad(AttachmentView view, boolean force) {
-		startLoad(view, getThumbnailKey(), force);
+	public void startLoad(AttachmentView view, Chan chan, boolean force) {
+		startLoad(view, chan, getThumbnailKey(chan), force);
 	}
 
-	private void startLoad(AttachmentView view, String key, boolean force) {
+	private void startLoad(AttachmentView view, Chan chan, String key, boolean force) {
 		if (key != null) {
-			Uri uri = getThumbnailUri();
+			Uri uri = getThumbnailUri(chan);
 			boolean loadThumbnails = Preferences.isLoadThumbnails();
 			boolean allowDownload = loadThumbnails || force;
-			ImageLoader.getInstance().loadImage(getChanName(), uri, key, !allowDownload, view);
+			ImageLoader.getInstance().loadImage(chan, uri, key, !allowDownload, view);
 		} else {
 			ImageLoader.getInstance().cancel(view);
 		}
 	}
 
-	public boolean canLoadThumbnailManually(AttachmentView attachmentView) {
-		return getThumbnailKey() != null && !attachmentView.hasImage() &&
+	public boolean canLoadThumbnailManually(AttachmentView attachmentView, Chan chan) {
+		return getThumbnailKey(chan) != null && !attachmentView.hasImage() &&
 				!ImageLoader.getInstance().hasRunningTask(attachmentView);
 	}
 }

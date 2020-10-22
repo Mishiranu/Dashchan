@@ -17,6 +17,7 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
 import chan.util.StringUtils;
@@ -80,7 +81,6 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 	private final Context context;
 	private final Callback callback;
-	private final String chanName;
 	private final String boardName;
 	private final UiManager uiManager;
 	private final UiManager.ConfigurationSet configurationSet;
@@ -100,10 +100,9 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 			UiManager.PostStateProvider postStateProvider, boolean headerExpanded, int catalogSortIndex) {
 		this.context = context;
 		this.callback = callback;
-		this.chanName = chanName;
 		this.boardName = boardName;
 		this.uiManager = uiManager;
-		configurationSet = new UiManager.ConfigurationSet(null, null, postStateProvider,
+		configurationSet = new UiManager.ConfigurationSet(chanName, null, null, postStateProvider,
 				new GalleryItem.Set(false), uiManager.dialog().createStackInstance(), null,
 				false, true, false, false, false, null);
 		float density = ResourceUtils.obtainDensity(context);
@@ -461,10 +460,10 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	}
 
 	private void updateHeaderView(boolean catalog, int boardSpeed) {
-		ChanConfiguration configuration = ChanConfiguration.get(chanName);
-		String title = configuration.getBoardTitle(boardName);
+		Chan chan = Chan.get(configurationSet.chanName);
+		String title = chan.configuration.getBoardTitle(boardName);
 		if (StringUtils.isEmpty(title)) {
-			title = StringUtils.formatBoardTitle(chanName, boardName, null);
+			title = StringUtils.formatBoardTitle(chan.name, boardName, null);
 		}
 		boolean mayExpand = false;
 		if (boardSpeed > 0) {
@@ -495,18 +494,18 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 				button.setVisibility(View.GONE);
 			}
 			headerData[0].setText(title);
-			String info = StringUtils.nullIfEmpty(configuration.getBoardDescription(boardName));
+			String info = StringUtils.nullIfEmpty(chan.configuration.getBoardDescription(boardName));
 			StringBuilder builder = new StringBuilder();
-			int pagesCount = Math.max(configuration.getPagesCount(boardName), 1);
+			int pagesCount = Math.max(chan.configuration.getPagesCount(boardName), 1);
 			if (pagesCount != ChanConfiguration.PAGES_COUNT_INVALID) {
 				appendNewLine(builder, ResourceUtils.getColonString(context.getResources(),
 						R.string.pages_count, pagesCount));
 			}
-			ChanConfiguration.Board board = configuration.safe().obtainBoard(boardName);
+			ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(boardName);
 			ChanConfiguration.Posting posting = board.allowPosting
-					? configuration.safe().obtainPosting(boardName, true) : null;
+					? chan.configuration.safe().obtainPosting(boardName, true) : null;
 			if (posting != null) {
-				int bumpLimit = configuration.getBumpLimit(boardName);
+				int bumpLimit = chan.configuration.getBumpLimit(boardName);
 				if (bumpLimit != ChanConfiguration.BUMP_LIMIT_INVALID) {
 					appendNewLine(builder, context.getString(R.string.bump_limit_posts__colon_format, bumpLimit));
 				}
@@ -627,10 +626,12 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 				filteredListItems.clear();
 			}
 			text = text.toLowerCase(Locale.getDefault());
+			Chan chan = Chan.get(configurationSet.chanName);
+			Locale locale = Locale.getDefault();
 			for (ListItem listItem : listItems) {
 				if (listItem.postItem != null) {
-					boolean add = listItem.postItem.getSubject().toLowerCase(Locale.getDefault()).contains(text) ||
-							listItem.postItem.getComment().toString().toLowerCase(Locale.getDefault()).contains(text);
+					boolean add = listItem.postItem.getSubject().toLowerCase(locale).contains(text) ||
+							listItem.postItem.getComment(chan).toString().toLowerCase(locale).contains(text);
 					if (add) {
 						filteredListItems.add(listItem);
 					}

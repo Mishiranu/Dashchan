@@ -1,5 +1,7 @@
 package com.mishiranu.dashchan.ui;
 
+import java.util.Collection;
+
 public interface ActivityHandler {
 	default boolean isSearchMode() {
 		return false;
@@ -18,5 +20,6 @@ public interface ActivityHandler {
 	}
 
 	default void onTerminate() {}
+	default void onChansChanged(Collection<String> changed, Collection<String> removed) {}
 	default void onStorageRequestResult() {}
 }

@@ -67,7 +67,6 @@
 	<string name="catalog">Catalog</string>
 	<string name="change_theme">Change theme</string>
 	<string name="changelog">Changelog</string>
-	<string name="changes_after_restart__sentence">Changes will take effect after restarting the application.</string>
 	<string name="check_for_updates">Check for updates</string>
 	<string name="check_on_startup">Check on startup</string>
 	<string name="choose">Choose</string>
@@ -487,7 +486,7 @@
 	<string name="unsorted">Unsorted</string>
 	<string name="unsupported_version">Unsupported version</string>
 	<string name="update_reminder__sentence">You can track downloading progress in notification bar.\n\nYou can install
-		applications when download finishes.\n\nDon\'t forget to restart client after installing extensions!</string>
+		applications when download finishes.</string>
 	<string name="updates">Updates</string>
 	<string name="updates__genitive">Updates</string>
 	<string name="updates_available__genitive">Updates available</string>

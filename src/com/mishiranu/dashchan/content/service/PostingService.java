@@ -16,8 +16,7 @@ import android.os.PowerManager;
 import android.util.Pair;
 import androidx.core.app.NotificationCompat;
 import chan.content.ApiException;
-import chan.content.ChanConfiguration;
-import chan.content.ChanMarkup;
+import chan.content.Chan;
 import chan.content.ChanPerformer;
 import chan.text.CommentEditor;
 import chan.util.CommonUtils;
@@ -110,12 +109,12 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 		private long progress = 0;
 		private long progressMax = 0;
 
-		public TaskState(Key key, SendPostTask<Key> task, Context context, String chanName,
+		public TaskState(Key key, SendPostTask<Key> task, Context context, Chan chan,
 				ChanPerformer.SendPostData data) {
 			this.key = key;
 			this.task = task;
 			builder = new NotificationCompat.Builder(context, C.NOTIFICATION_CHANNEL_POSTING);
-			text = buildNotificationText(chanName, data.boardName, data.threadNumber, null);
+			text = buildNotificationText(chan, data.boardName, data.threadNumber, null);
 		}
 	}
 
@@ -133,11 +132,11 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 		}
 	}
 
-	public static String buildNotificationText(String chanName, String boardName, String threadNumber,
+	public static String buildNotificationText(Chan chan, String boardName, String threadNumber,
 			PostNumber postNumber) {
-		ChanConfiguration configuration = ChanConfiguration.get(chanName);
-		StringBuilder builder = new StringBuilder(configuration.getTitle()).append(", ");
-		builder.append(StringUtils.formatThreadTitle(chanName, boardName, threadNumber != null ? threadNumber : "?"));
+		StringBuilder builder = new StringBuilder(chan.configuration.getTitle()).append(", ");
+		builder.append(StringUtils.formatThreadTitle(chan.name,
+				boardName, threadNumber != null ? threadNumber : "?"));
 		if (postNumber != null) {
 			builder.append(", #").append(postNumber);
 		}
@@ -292,9 +291,10 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 				Key key = new Key(chanName, data.boardName, data.threadNumber);
 				AndroidUtils.startAnyService(PostingService.this, new Intent(PostingService.this, PostingService.class));
 				wakeLock.acquire();
-				SendPostTask<Key> task = new SendPostTask<>(key, chanName, PostingService.this, data);
+				Chan chan = Chan.get(chanName);
+				SendPostTask<Key> task = new SendPostTask<>(key, PostingService.this, chan, data);
 				task.executeOnExecutor(SendPostTask.THREAD_POOL_EXECUTOR);
-				TaskState taskState = new TaskState(key, task, PostingService.this, chanName, data);
+				TaskState taskState = new TaskState(key, task, PostingService.this, chan, data);
 				refreshNotification(NotificationData.Type.CREATE, taskState);
 				PostingService.this.taskState = taskState;
 				ArrayList<Callback> callbacks = PostingService.this.callbacks.get(key);
@@ -431,6 +431,7 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 	public void onSendPostSuccess(Key key, ChanPerformer.SendPostData data,
 			String chanName, String threadNumber, PostNumber postNumber) {
 		if (performFinish(key, false)) {
+			Chan chan = Chan.get(chanName);
 			String targetThreadNumber = data.threadNumber != null ? data.threadNumber
 					: StringUtils.nullIfEmpty(threadNumber);
 			if (targetThreadNumber != null && Preferences.isFavoriteOnReply(data.optionSage)) {
@@ -441,7 +442,7 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 			draftsStorage.removeCaptchaDraft();
 			draftsStorage.removePostDraft(chanName, data.boardName, data.threadNumber);
 			if (targetThreadNumber != null) {
-				String password = Preferences.getPassword(chanName);
+				String password = Preferences.getPassword(chan);
 				if (CommonUtils.equals(password, data.password)) {
 					password = null;
 				}
@@ -452,7 +453,7 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 			if (targetThreadNumber != null) {
 				String comment = data.comment;
 				if (comment != null) {
-					CommentEditor commentEditor = ChanMarkup.get(chanName).safe().obtainCommentEditor(data.boardName);
+					CommentEditor commentEditor = chan.markup.safe().obtainCommentEditor(data.boardName);
 					if (commentEditor != null) {
 						comment = commentEditor.removeTags(comment);
 					}
@@ -500,7 +501,7 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 					builder.setTicker(getString(R.string.post_sent));
 				}
 				builder.setContentTitle(getString(R.string.post_sent));
-				builder.setContentText(buildNotificationText(chanName, data.boardName, targetThreadNumber, postNumber));
+				builder.setContentText(buildNotificationText(chan, data.boardName, targetThreadNumber, postNumber));
 				String tag = newPostData.tag;
 				Intent intent = new Intent(this, MainActivity.class)
 						.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)

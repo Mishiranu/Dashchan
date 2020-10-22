@@ -39,36 +39,36 @@ import java.util.List;
 import java.util.Map;
 
 @Extendable
-public class ChanPerformer implements ChanManager.Linked {
-	private final String chanName;
+public class ChanPerformer implements Chan.Linked {
+	private final Chan.Provider chanProvider;
 
-	public static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
+	static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
 
 	@Public
 	public ChanPerformer() {
-		this(true);
+		this(null);
 	}
 
-	ChanPerformer(boolean useInitializer) {
-		chanName = useInitializer ? INITIALIZER.consume().chanName : null;
-	}
-
-	@Override
-	public final String getChanName() {
-		return chanName;
+	ChanPerformer(Chan.Provider chanProvider) {
+		if (chanProvider == null) {
+			ChanManager.Initializer.Holder holder = INITIALIZER.consume();
+			this.chanProvider = holder.chanProvider;
+		} else {
+			this.chanProvider = chanProvider;
+		}
 	}
 
 	@Override
 	public final void init() {}
 
-	public static <T extends ChanPerformer> T get(String chanName) {
-		return ChanManager.getInstance().getPerformer(chanName, true);
+	@Override
+	public Chan get() {
+		return chanProvider.get();
 	}
 
 	@Public
-	public static <T extends ChanPerformer> T get(Object object) {
-		ChanManager manager = ChanManager.getInstance();
-		return manager.getPerformer(manager.getLinkedChanName(object), false);
+	public static ChanPerformer get(Object object) {
+		return ((Chan.Linked) object).get().performer;
 	}
 
 	@SuppressWarnings("RedundantThrows")
@@ -1196,7 +1196,7 @@ public class ChanPerformer implements ChanManager.Linked {
 	public final CaptchaData requireUserCaptcha(String requirement, String boardName, String threadNumber,
 			boolean retry) {
 		checkPerformerRequireCall();
-		return ForegroundManager.getInstance().requireUserCaptcha(this, requirement, boardName, threadNumber, retry);
+		return ForegroundManager.getInstance().requireUserCaptcha(get(), requirement, boardName, threadNumber, retry);
 	}
 
 	@Public

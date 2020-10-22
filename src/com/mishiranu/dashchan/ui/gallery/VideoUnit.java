@@ -22,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import chan.content.Chan;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -629,7 +630,8 @@ public class VideoUnit {
 			this.chanName = chanName;
 			this.uri = uri;
 			allowRangeRequests = !AdvancedPreferences.isSingleConnection(chanName);
-			downloadTask = new ReadVideoTask(chanName, uri, 0, this);
+			Chan chan = Chan.getPreferred(chanName, uri);
+			downloadTask = new ReadVideoTask(this, chan, uri, 0);
 			downloadTask.executeOnExecutor(ReadVideoTask.THREAD_POOL_EXECUTOR);
 		}
 
@@ -756,7 +758,8 @@ public class VideoUnit {
 				rangeTask = null;
 			}
 			if (allowRangeRequests && start > 0) {
-				rangeTask = new ReadVideoTask(chanName, uri, start, this);
+				Chan chan = Chan.getPreferred(chanName, uri);
+				rangeTask = new ReadVideoTask(this, chan, uri, start);
 				rangeTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
 			}
 		}

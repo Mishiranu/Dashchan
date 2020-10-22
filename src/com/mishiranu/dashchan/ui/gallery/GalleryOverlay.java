@@ -28,8 +28,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.DialogFragment;
-import chan.content.ChanLocator;
-import chan.content.ChanManager;
+import chan.content.Chan;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
@@ -100,6 +99,10 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 			View fromView, NavigatePostMode navigatePostMode, boolean initialGalleryMode) {
 		this(null, chanName, galleryItems, imageIndex, threadTitle, fromView,
 				navigatePostMode, initialGalleryMode);
+	}
+
+	public String getChanName() {
+		return requireArguments().getString(EXTRA_CHAN_NAME);
 	}
 
 	private GalleryOverlay(Uri uri, String chanName, List<GalleryItem> galleryItems, int imageIndex, String threadTitle,
@@ -204,16 +207,10 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 		Integer newImagePosition = null;
 		if (instance == null) {
 			Uri uri = requireArguments().getParcelable(EXTRA_URI);
-			String chanName = requireArguments().getString(EXTRA_CHAN_NAME);
-			if (uri != null && chanName == null) {
-				chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
-			}
-			ChanLocator locator = chanName != null ? ChanLocator.get(chanName) : null;
-			boolean defaultLocator = false;
-			if (locator == null) {
-				locator = ChanLocator.getDefault();
-				defaultLocator = true;
-			}
+			String chanNameFromArguments = requireArguments().getString(EXTRA_CHAN_NAME);
+			Chan chan = chanNameFromArguments == null && uri != null
+					? Chan.getPreferred(null, uri) : Chan.get(chanNameFromArguments);
+			boolean defaultLocator = chan.name == null;
 
 			List<GalleryItem> galleryItems;
 			int imagePosition;
@@ -221,8 +218,8 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 				String boardName = null;
 				String threadNumber = null;
 				if (!defaultLocator) {
-					boardName = locator.safe(true).getBoardName(uri);
-					threadNumber = locator.safe(true).getThreadNumber(uri);
+					boardName = chan.locator.safe(true).getBoardName(uri);
+					threadNumber = chan.locator.safe(true).getThreadNumber(uri);
 				}
 				galleryItems = Collections.singletonList(new GalleryItem(uri, boardName, threadNumber));
 				imagePosition = 0;
@@ -232,7 +229,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 				imagePosition = savedInstanceState != null ? savedInstanceState.getInt(EXTRA_POSITION)
 						: requireArguments().getInt(EXTRA_IMAGE_INDEX);
 			}
-			instance = new GalleryInstance(rootView.getContext(), this, ACTION_BAR_COLOR, chanName, locator,
+			instance = new GalleryInstance(rootView.getContext(), this, ACTION_BAR_COLOR, chan.name,
 					galleryItems != null ? galleryItems : Collections.emptyList());
 			if (!instance.galleryItems.isEmpty()) {
 				listUnit = new ListUnit(instance);
@@ -421,7 +418,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 	public void downloadGalleryItem(GalleryItem galleryItem) {
 		DownloadService.Binder binder = ((FragmentHandler) requireActivity()).getDownloadBinder();
 		if (binder != null) {
-			galleryItem.downloadStorage(binder, instance.locator, getThreadTitle());
+			galleryItem.downloadStorage(binder, Chan.get(instance.chanName), getThreadTitle());
 		}
 	}
 
@@ -429,6 +426,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 	public void downloadGalleryItems(List<GalleryItem> galleryItems) {
 		String boardName = null;
 		String threadNumber = null;
+		Chan chan = Chan.get(instance.chanName);
 		ArrayList<DownloadService.RequestItem> requestItems = new ArrayList<>();
 		for (GalleryItem galleryItem : galleryItems) {
 			if (requestItems.size() == 0) {
@@ -442,8 +440,8 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 					threadNumber = null;
 				}
 			}
-			requestItems.add(new DownloadService.RequestItem(galleryItem.getFileUri(instance.locator),
-					galleryItem.getFileName(instance.locator), galleryItem.originalName));
+			requestItems.add(new DownloadService.RequestItem(galleryItem.getFileUri(chan),
+					galleryItem.getFileName(chan), galleryItem.originalName));
 		}
 		if (requestItems.size() > 0) {
 			DownloadService.Binder binder = ((FragmentHandler) requireActivity()).getDownloadBinder();
@@ -560,7 +558,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 	}
 
 	private void setTitle(GalleryItem galleryItem, int position, int size) {
-		String fileName = galleryItem.getFileName(instance.locator);
+		String fileName = galleryItem.getFileName(Chan.get(instance.chanName));
 		if (!StringUtils.isEmpty(galleryItem.originalName)) {
 			fileName = galleryItem.originalName;
 		}

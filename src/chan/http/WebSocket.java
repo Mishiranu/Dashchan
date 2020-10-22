@@ -6,8 +6,6 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import chan.annotation.Extendable;
 import chan.annotation.Public;
-import chan.content.ChanLocator;
-import chan.content.ChanManager;
 import chan.content.ExtensionException;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.AdvancedPreferences;
@@ -211,11 +209,9 @@ public final class WebSocket {
 			if (closed) {
 				throw new HttpClient.InterruptedHttpException();
 			}
-			String chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
-			ChanLocator locator = ChanLocator.get(chanName);
-			boolean verifyCertificate = locator.isUseHttps() && Preferences.isVerifyCertificate();
-			holder.initSession(client, uri, null, chanName, verifyCertificate, 0, 0);
-			SocketResult socketResult = openSocket(uri, chanName, verifyCertificate, 5);
+			boolean verifyCertificate = holder.chan.locator.isUseHttps() && Preferences.isVerifyCertificate();
+			holder.initSession(client, uri, null, verifyCertificate, 0, 0);
+			SocketResult socketResult = openSocket(uri, verifyCertificate, 5);
 			socket = socketResult.socket;
 			inputStream = socketResult.inputStream;
 			outputStream = socketResult.outputStream;
@@ -351,7 +347,7 @@ public final class WebSocket {
 	}
 
 	@SuppressWarnings("ConditionalBreakInInfiniteLoop")
-	private SocketResult openSocket(Uri uri, String chanName, boolean verifyCertificate, int attempts)
+	private SocketResult openSocket(Uri uri, boolean verifyCertificate, int attempts)
 			throws HttpException, IOException {
 		Socket socket = null;
 		try {
@@ -374,7 +370,7 @@ public final class WebSocket {
 			}
 
 			InetSocketAddress address;
-			Proxy proxy = client.getProxy(chanName);
+			Proxy proxy = client.getProxy(holder.chan);
 			if (proxy != null && proxy.type() == Proxy.Type.HTTP) {
 				// TODO Add support for HTTP proxy
 				throw new HttpException(ErrorItem.Type.DOWNLOAD, false, false);
@@ -461,13 +457,13 @@ public final class WebSocket {
 			requestBuilder.append("Sec-WebSocket-Version: 13\r\n");
 			requestBuilder.append("Sec-WebSocket-Key: ").append(webSocketKeyEncoded).append("\r\n");
 			requestBuilder.append("Sec-WebSocket-Protocol: chat, superchat\r\n");
-			CookieBuilder cookieBuilder = client.obtainModifiedCookieBuilder(this.cookieBuilder, chanName);
+			CookieBuilder cookieBuilder = client.obtainModifiedCookieBuilder(this.cookieBuilder, holder.chan);
 			if (cookieBuilder != null) {
 				requestBuilder.append("Cookie: ").append(cookieBuilder.build().replaceAll("[\r\n]", ""))
 						.append("\r\n");
 			}
 			if (addUserAgent) {
-				requestBuilder.append("User-Agent: ").append(AdvancedPreferences.getUserAgent(chanName)
+				requestBuilder.append("User-Agent: ").append(AdvancedPreferences.getUserAgent(holder.chan.name)
 						.replaceAll("[\r\n]", "")).append("\r\n");
 			}
 			requestBuilder.append("\r\n");
@@ -530,7 +526,7 @@ public final class WebSocket {
 										// Redirect from https/wss to http/ws is unsafe
 										throw new HttpException(ErrorItem.Type.UNSAFE_REDIRECT, true, false);
 									}
-									return openSocket(redirectedUri, chanName, verifyCertificate, attempts - 1);
+									return openSocket(redirectedUri, verifyCertificate, attempts - 1);
 								}
 							}
 						}
@@ -948,17 +944,17 @@ public final class WebSocket {
 		}
 
 		@Override
-		public int read() throws IOException {
+		public int read() {
 			return position < array.length ? array[position++] & 0xff : -1;
 		}
 
 		@Override
-		public int read(@NonNull byte[] buffer) throws IOException {
+		public int read(@NonNull byte[] buffer) {
 			return read(buffer, 0, buffer.length);
 		}
 
 		@Override
-		public int read(@NonNull byte[] buffer, int byteOffset, int byteCount) throws IOException {
+		public int read(@NonNull byte[] buffer, int byteOffset, int byteCount) {
 			int left = array.length - position;
 			if (left > 0) {
 				byteCount = Math.min(byteCount, left);

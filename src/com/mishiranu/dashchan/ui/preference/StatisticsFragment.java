@@ -13,6 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.widget.TextViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
@@ -46,7 +47,7 @@ public class StatisticsFragment extends BaseListFragment {
 		int totalPostsSent = 0;
 		int totalThreadsCreated = 0;
 		for (HashMap.Entry<String, StatisticsStorage.StatisticsItem> entry : statisticsItems.entrySet()) {
-			ChanConfiguration.Statistics statistics = ChanConfiguration.get(entry.getKey()).safe().obtainStatistics();
+			ChanConfiguration.Statistics statistics = Chan.get(entry.getKey()).configuration.safe().obtainStatistics();
 			StatisticsStorage.StatisticsItem statisticsItem = entry.getValue();
 			if (statistics.threadsViewed && statisticsItem.threadsViewed > 0) {
 				totalThreadsViewed += statisticsItem.threadsViewed;
@@ -61,17 +62,17 @@ public class StatisticsFragment extends BaseListFragment {
 		listItems.add(new Adapter.ListItem(getString(R.string.total), Integer.toString(totalThreadsViewed),
 				Integer.toString(totalPostsSent), Integer.toString(totalThreadsCreated)));
 
-		for (String chanName : ChanManager.getInstance().getAvailableChanNames()) {
-			StatisticsStorage.StatisticsItem statisticsItem = statisticsItems.get(chanName);
+		for (Chan chan : ChanManager.getInstance().getAvailableChans()) {
+			StatisticsStorage.StatisticsItem statisticsItem = statisticsItems.get(chan.name);
 			if (statisticsItem != null) {
-				ChanConfiguration.Statistics statistics = ChanConfiguration.get(chanName).safe().obtainStatistics();
+				ChanConfiguration.Statistics statistics = chan.configuration.safe().obtainStatistics();
 				if (statistics.threadsViewed && statistics.postsSent && statistics.threadsCreated) {
 					int threadsViewed = statistics.threadsViewed ? statisticsItem.threadsViewed : -1;
 					int postsSent = statistics.postsSent ? statisticsItem.postsSent : -1;
 					int threadsCreated = statistics.threadsCreated ? statisticsItem.threadsCreated : -1;
-					String title = ChanConfiguration.get(chanName).getTitle();
+					String title = chan.configuration.getTitle();
 					if (StringUtils.isEmpty(title)) {
-						title = chanName;
+						title = chan.name;
 					}
 					listItems.add(new Adapter.ListItem(title, Integer.toString(threadsViewed),
 							Integer.toString(postsSent), Integer.toString(threadsCreated)));

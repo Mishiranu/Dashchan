@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import androidx.core.app.NotificationCompat;
+import chan.content.Chan;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
@@ -137,7 +138,8 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 						if (cachedFile.exists()) {
 							initAndPlayAudio(cachedFile);
 						} else {
-							readFileTask = ReadFileTask.createCachedMediaFile(this, this, chanName, uri, cachedFile);
+							Chan chan = Chan.getPreferred(chanName, uri);
+							readFileTask = ReadFileTask.createCachedMediaFile(this, this, chan, uri, cachedFile);
 							readFileTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
 						}
 					}

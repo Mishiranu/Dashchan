@@ -2,6 +2,7 @@ package chan.http;
 
 import android.net.Uri;
 import chan.annotation.Public;
+import chan.content.Chan;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import java.io.Closeable;
 import java.net.Proxy;
@@ -20,7 +21,11 @@ public final class HttpHolder {
 	HttpSession session;
 	private ArrayList<HttpSession> sessions;
 
-	public HttpHolder() {}
+	final Chan chan;
+
+	public HttpHolder(Chan chan) {
+		this.chan = chan;
+	}
 
 	void checkThread() {
 		synchronized (this) {
@@ -54,13 +59,12 @@ public final class HttpHolder {
 		}
 	}
 
-	void initSession(HttpClient client, Uri uri, Proxy proxy,
-			String chanName, boolean verifyCertificate, int delay, int maxAttempts) {
+	void initSession(HttpClient client, Uri uri, Proxy proxy, boolean verifyCertificate, int delay, int maxAttempts) {
 		checkThread();
 		if (session != null) {
 			session.disconnectAndClear();
 		}
-		session = new HttpSession(this, client, proxy, chanName, verifyCertificate, delay);
+		session = new HttpSession(this, client, proxy, verifyCertificate, delay);
 		session.requestedUri = uri;
 		session.attempt = maxAttempts;
 		session.forceGet = false;

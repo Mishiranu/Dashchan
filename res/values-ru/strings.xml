@@ -65,7 +65,6 @@
 	<string name="catalog">Каталог</string>
 	<string name="change_theme">Сменить тему</string>
 	<string name="changelog">Список изменений</string>
-	<string name="changes_after_restart__sentence">Изменения вступят в силу после перезапуска приложения.</string>
 	<string name="check_for_updates">Проверить наличие обновлений</string>
 	<string name="check_on_startup">Проверять при запуске</string>
 	<string name="choose">Выбрать</string>
@@ -502,8 +501,7 @@
 	<string name="unsorted">Без сортировки</string>
 	<string name="unsupported_version">Неподдерживаемая версия</string>
 	<string name="update_reminder__sentence">Прогресс загрузки можно отследить в панели уведомлений.\n\nВы можете
-		установить приложения после окончания загрузки.\n\nНе забудьте перезапустить клиент после
-		установки расширений!</string>
+		установить приложения после окончания загрузки.</string>
 	<string name="updates">Обновления</string>
 	<string name="updates__genitive">Обновлений</string>
 	<string name="updates_available__genitive">Доступно обновлений</string>

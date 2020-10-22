@@ -82,7 +82,7 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 		if (boardName != null) {
 			DialogMenu dialogMenu = new DialogMenu(getContext());
 			dialogMenu.add(R.string.copy_link, () -> {
-				Uri uri = getChanLocator().safe(true).createBoardUri(boardName, 0);
+				Uri uri = getChan().locator.safe(true).createBoardUri(boardName, 0);
 				if (uri != null) {
 					StringUtils.copyToClipboard(getContext(), uri.toString());
 				}
@@ -132,7 +132,7 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 		if (readTask != null) {
 			readTask.cancel();
 		}
-		readTask = new ReadUserBoardsTask(getPage().chanName, this);
+		readTask = new ReadUserBoardsTask(this, getChan());
 		readTask.executeOnExecutor(ReadUserBoardsTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
 			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);

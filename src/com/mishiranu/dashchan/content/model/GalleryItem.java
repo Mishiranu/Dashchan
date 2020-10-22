@@ -1,7 +1,7 @@
 package com.mishiranu.dashchan.content.model;
 
 import android.net.Uri;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import java.io.Serializable;
@@ -56,44 +56,44 @@ public class GalleryItem implements Serializable {
 		this.fileUri = fileUri;
 	}
 
-	public boolean isImage(ChanLocator locator) {
-		return locator.isImageExtension(getFileName(locator));
+	public boolean isImage(Chan chan) {
+		return chan.locator.isImageExtension(getFileName(chan));
 	}
 
-	public boolean isVideo(ChanLocator locator) {
-		return locator.isVideoExtension(getFileName(locator));
+	public boolean isVideo(Chan chan) {
+		return chan.locator.isVideoExtension(getFileName(chan));
 	}
 
-	public boolean isOpenableVideo(ChanLocator locator) {
-		return NavigationUtils.isOpenableVideoPath(getFileName(locator));
+	public boolean isOpenableVideo(Chan chan) {
+		return NavigationUtils.isOpenableVideoPath(getFileName(chan));
 	}
 
-	public Uri getFileUri(ChanLocator locator) {
+	public Uri getFileUri(Chan chan) {
 		if (fileUri == null && fileUriString != null) {
-			fileUri = locator.convert(Uri.parse(fileUriString));
+			fileUri = chan.locator.convert(Uri.parse(fileUriString));
 		}
 		return fileUri;
 	}
 
-	public Uri getThumbnailUri(ChanLocator locator) {
+	public Uri getThumbnailUri(Chan chan) {
 		if (thumbnailUri == null && thumbnailUriString != null) {
-			thumbnailUri = locator.convert(Uri.parse(thumbnailUriString));
+			thumbnailUri = chan.locator.convert(Uri.parse(thumbnailUriString));
 		}
 		return thumbnailUri;
 	}
 
-	public Uri getDisplayImageUri(ChanLocator locator) {
-		return isImage(locator) ? getFileUri(locator) : getThumbnailUri(locator);
+	public Uri getDisplayImageUri(Chan chan) {
+		return isImage(chan) ? getFileUri(chan) : getThumbnailUri(chan);
 	}
 
-	public String getFileName(ChanLocator locator) {
-		Uri fileUri = getFileUri(locator);
-		return locator.createAttachmentFileName(fileUri);
+	public String getFileName(Chan chan) {
+		Uri fileUri = getFileUri(chan);
+		return chan.locator.createAttachmentFileName(fileUri);
 	}
 
-	public void downloadStorage(DownloadService.Binder binder, ChanLocator locator, String threadTitle) {
-		binder.downloadStorage(getFileUri(locator), getFileName(locator), originalName,
-				locator.getChanName(), boardName, threadNumber, threadTitle);
+	public void downloadStorage(DownloadService.Binder binder, Chan chan, String threadTitle) {
+		binder.downloadStorage(getFileUri(chan), getFileName(chan), originalName,
+				chan.name, boardName, threadNumber, threadTitle);
 	}
 
 	public static class Set {

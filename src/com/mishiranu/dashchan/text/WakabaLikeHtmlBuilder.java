@@ -27,11 +27,9 @@ public class WakabaLikeHtmlBuilder {
 	}
 
 	private final StringBuilder builder = new StringBuilder();
-	private final String chanName;
 
-	public WakabaLikeHtmlBuilder(String threadTitle, String chanName, String boardName, String boardTitle,
+	public WakabaLikeHtmlBuilder(String threadTitle, String boardName, String boardTitle,
 			String chanTitle, Uri threadUri, int postsCount, int filesCount) {
-		this.chanName = chanName;
 		StringBuilder builder = this.builder;
 		builder.append("<!DOCTYPE html>\n<html>\n<head>\n")
 				.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n");
@@ -62,7 +60,7 @@ public class WakabaLikeHtmlBuilder {
 				.append(".replyheader {padding: 0 0.25em 0 0;}\n")
 				.append(".reflink a {color: inherit; text-decoration: none;}\n")
 				.append(".withimage {min-width: 30em;}\n")
-				.append(".postericon {padding-right: 6px; max-height: 1em;}\n")
+				.append(".postericon {max-height: 1em;}\n")
 				.append("span.underline {text-decoration: underline;}\n")
 				.append("span.overline {text-decoration: overline;}\n")
 				.append("span.strike {text-decoration: line-through;}\n")
@@ -101,8 +99,18 @@ public class WakabaLikeHtmlBuilder {
 	private boolean deleted;
 	private boolean useDefaultName;
 	private String comment;
-	private final ArrayList<Pair<Uri, String>> iconItems = new ArrayList<>();
+	private final ArrayList<IconItem> iconItems = new ArrayList<>();
 	private final ArrayList<FileItem> fileItems = new ArrayList<>();
+
+	private static class IconItem {
+		public final String imageFile;
+		public final String title;
+
+		public IconItem(String imageFile, String title) {
+			this.imageFile = imageFile;
+			this.title = title;
+		}
+	}
 
 	private static class FileItem {
 		public final String imageFile;
@@ -144,13 +152,8 @@ public class WakabaLikeHtmlBuilder {
 		this.comment = comment;
 	}
 
-	public void addIcon(Uri uri, String title) {
-		if (uri != null) {
-			if ("chan".equals(uri.getScheme()) && StringUtils.isEmpty(uri.getAuthority())) {
-				uri = uri.buildUpon().authority(chanName).build();
-			}
-			iconItems.add(new Pair<>(uri, title));
-		}
+	public void addIcon(String imageFile, String title) {
+		iconItems.add(new IconItem(imageFile, title));
 	}
 
 	public void addFile(String imageFile, String thumbnailFile, String originalName, int size, int width, int height) {
@@ -218,13 +221,6 @@ public class WakabaLikeHtmlBuilder {
 		}
 		builder.append(">\n<a name=\"").append(number).append("\"></a>\n<input type=\"checkbox\" value=\"")
 				.append(number).append("\" disabled />\n");
-		for (Pair<Uri, String> icon : iconItems) {
-			builder.append("<img data-icon=\"true\" class=\"postericon\" src=\"").append(icon.first).append("\"");
-			if (icon.second != null) {
-				builder.append(" title=\"").append(escapeHtml(icon.second)).append("\"");
-			}
-			builder.append(" />\n");
-		}
 		if (!StringUtils.isEmpty(subject)) {
 			builder.append("<span class=\"replytitle\" data-subject=\"true\">").append(subject).append("</span>\n");
 		}
@@ -295,6 +291,14 @@ public class WakabaLikeHtmlBuilder {
 		}
 		if (sage) {
 			builder.append("<a href=\"mailto:sage\" data-sage=\"true\"></a>\n");
+		}
+		for (IconItem iconItem : iconItems) {
+			builder.append("<img data-icon=\"true\" class=\"postericon\" src=\"")
+					.append(iconItem.imageFile).append("\"");
+			if (iconItem.title != null) {
+				builder.append(" title=\"").append(escapeHtml(iconItem.title)).append("\"");
+			}
+			builder.append(" />\n");
 		}
 		builder.append("<span data-timestamp=\"").append(timestamp).append("\">").append(DATE_FORMAT.format(timestamp))
 				.append("</span>\n");

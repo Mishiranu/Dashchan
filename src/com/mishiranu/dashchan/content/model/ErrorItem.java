@@ -40,7 +40,7 @@ public final class ErrorItem implements Parcelable {
 	public final String message;
 
 	public interface Holder {
-		public ErrorItem getErrorItemAndHandle();
+		ErrorItem getErrorItemAndHandle();
 	}
 
 	private ErrorItem(Type type, int specialType, int httpResponseCode, String message) {

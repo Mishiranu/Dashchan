@@ -1,6 +1,7 @@
 package com.mishiranu.dashchan.content;
 
 import android.content.Context;
+import chan.content.Chan;
 import chan.text.JsonSerial;
 import chan.text.ParseException;
 import chan.util.StringUtils;
@@ -44,16 +45,16 @@ public class HidePerformer {
 		this.postsProvider = postsProvider;
 	}
 
-	public String checkHidden(PostItem postItem) {
+	public String checkHidden(Chan chan, PostItem postItem) {
 		String message = checkHiddenByReplies(postItem);
 		if (message == null) {
-			message = checkHiddenByName(postItem);
+			message = checkHiddenByName(chan, postItem);
 		}
 		if (message == null) {
-			message = checkHiddenBySimilarPost(postItem);
+			message = checkHiddenBySimilarPost(chan, postItem);
 		}
 		if (message == null) {
-			message = checkHiddenGlobalAutohide(postItem);
+			message = checkHiddenGlobalAutohide(chan, postItem);
 		}
 		return message != null ? autohidePrefix + message : null;
 	}
@@ -76,9 +77,9 @@ public class HidePerformer {
 		return null;
 	}
 
-	private String checkHiddenByName(PostItem postItem) {
+	private String checkHiddenByName(Chan chan, PostItem postItem) {
 		if (names != null) {
-			String name = postItem.getFullName().toString();
+			String name = postItem.getFullName(chan).toString();
 			if (names.contains(name)) {
 				return "name " + name;
 			}
@@ -86,10 +87,10 @@ public class HidePerformer {
 		return null;
 	}
 
-	private String checkHiddenBySimilarPost(PostItem postItem) {
+	private String checkHiddenBySimilarPost(Chan chan, PostItem postItem) {
 		if (similar != null) {
 			SimilarTextEstimator.WordsData<PostNumber> wordsData =
-					estimator.getWords(postItem.getComment().toString());
+					estimator.getWords(postItem.getComment(chan).toString());
 			if (wordsData != null) {
 				for (SimilarTextEstimator.WordsData<PostNumber> similarWordsData : similar) {
 					if (estimator.checkSimiliar(wordsData, similarWordsData)) {
@@ -101,8 +102,7 @@ public class HidePerformer {
 		return null;
 	}
 
-	private String checkHiddenGlobalAutohide(PostItem postItem) {
-		String chanName = postItem.getChanName();
+	private String checkHiddenGlobalAutohide(Chan chan, PostItem postItem) {
 		String boardName = postItem.getBoardName();
 		PostNumber originalPostNumber = postItem.getOriginalPostNumber();
 		String originalPostNumberString = originalPostNumber != null
@@ -116,7 +116,7 @@ public class HidePerformer {
 		for (int i = 0; i < autohideItems.size(); i++) {
 			AutohideStorage.AutohideItem autohideItem = autohideItems.get(i);
 			// AND selection (only if chan, board, thread, op, and sage match the rule)
-			if (autohideItem.chanNames == null || autohideItem.chanNames.contains(chanName)) {
+			if (autohideItem.chanNames == null || autohideItem.chanNames.contains(chan.name)) {
 				if (StringUtils.isEmpty(autohideItem.boardName) || boardName == null
 						|| autohideItem.boardName.equals(boardName)) {
 					if (StringUtils.isEmpty(autohideItem.threadNumber) || autohideItem.boardName != null &&
@@ -136,7 +136,7 @@ public class HidePerformer {
 							}
 							if (autohideItem.optionComment) {
 								if (comment == null) {
-									comment = postItem.getComment().toString();
+									comment = postItem.getComment(chan).toString();
 								}
 								if ((result = autohideItem.find(comment)) != null) {
 									return autohideItem.getReason(AutohideStorage.AutohideItem
@@ -145,7 +145,7 @@ public class HidePerformer {
 							}
 							if (autohideItem.optionName) {
 								if (names == null) {
-									String name = postItem.getFullName().toString();
+									String name = postItem.getFullName(chan).toString();
 									List<Post.Icon> icons = postItem.getIcons();
 									if (!icons.isEmpty()) {
 										names = new ArrayList<>(1 + icons.size());
@@ -186,7 +186,7 @@ public class HidePerformer {
 		return AddResult.SUCCESS;
 	}
 
-	public AddResult addHideByName(Context context, PostItem postItem) {
+	public AddResult addHideByName(Context context, Chan chan, PostItem postItem) {
 		if (postItem.isUseDefaultName()) {
 			ToastUtils.show(context, R.string.default_name_cant_be_hidden);
 			return AddResult.FAIL;
@@ -194,7 +194,7 @@ public class HidePerformer {
 		if (names == null) {
 			names = new LinkedHashSet<>();
 		}
-		String fullName = postItem.getFullName().toString();
+		String fullName = postItem.getFullName(chan).toString();
 		if (names.contains(fullName)) {
 			return AddResult.EXISTS;
 		}
@@ -202,8 +202,8 @@ public class HidePerformer {
 		return AddResult.SUCCESS;
 	}
 
-	public AddResult addHideSimilar(Context context, PostItem postItem) {
-		String comment = postItem.getComment().toString();
+	public AddResult addHideSimilar(Context context, Chan chan, PostItem postItem) {
+		String comment = postItem.getComment(chan).toString();
 		SimilarTextEstimator.WordsData<PostNumber> wordsData = estimator.getWords(comment);
 		if (wordsData == null) {
 			ToastUtils.show(context, R.string.too_few_meaningful_words);

@@ -1,8 +1,8 @@
 package com.mishiranu.dashchan.content.async;
 
 import chan.content.ApiException;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
-import chan.content.ChanMarkup;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
@@ -21,8 +21,8 @@ import java.util.List;
 
 public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 	private final Key key;
-	private final String chanName;
 	private final Callback<Key> callback;
+	private final Chan chan;
 	private final ChanPerformer.SendPostData data;
 
 	private final boolean progressMode;
@@ -71,10 +71,11 @@ public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 				ApiException.Extra extra, boolean captchaError, boolean keepCaptcha);
 	}
 
-	public SendPostTask(Key key, String chanName, Callback<Key> callback, ChanPerformer.SendPostData data) {
+	public SendPostTask(Key key, Callback<Key> callback, Chan chan, ChanPerformer.SendPostData data) {
+		super(chan);
 		this.key = key;
-		this.chanName = chanName;
 		this.callback = callback;
+		this.chan = chan;
 		this.data = data;
 		progressMode = data.attachments != null;
 		if (progressMode) {
@@ -128,13 +129,12 @@ public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 			}
 			data.holder = holder;
 			data.listener = progressHandler;
-			ChanPerformer performer = ChanPerformer.get(chanName);
-			ChanPerformer.SendPostResult result = performer.safe().onSendPost(data);
+			ChanPerformer.SendPostResult result = chan.performer.safe().onSendPost(data);
 			if (data.threadNumber == null && (result == null || result.threadNumber == null)) {
 				// New thread created with undefined number
 				ChanPerformer.ReadThreadsResult readThreadsResult;
 				try {
-					readThreadsResult = performer.safe().onReadThreads(new ChanPerformer
+					readThreadsResult = chan.performer.safe().onReadThreads(new ChanPerformer
 							.ReadThreadsData(data.boardName, 0, data.holder, null));
 				} catch (RedirectException e) {
 					readThreadsResult = null;
@@ -143,7 +143,7 @@ public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 						? readThreadsResult.threads : null;
 				if (threads != null && !threads.isEmpty()) {
 					String postComment = data.comment;
-					CommentEditor commentEditor = ChanMarkup.get(chanName).safe().obtainCommentEditor(data.boardName);
+					CommentEditor commentEditor = chan.markup.safe().obtainCommentEditor(data.boardName);
 					if (commentEditor != null && postComment != null) {
 						postComment = commentEditor.removeTags(postComment);
 					}
@@ -174,7 +174,7 @@ public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 			keepCaptcha = !captchaError && e.checkFlag(ApiException.FLAG_KEEP_CAPTCHA);
 			return false;
 		} finally {
-			ChanConfiguration.get(chanName).commit();
+			chan.configuration.commit();
 		}
 	}
 
@@ -190,10 +190,11 @@ public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 	protected void onPostExecute(final Boolean result) {
 		if (callback != null) {
 			if (result) {
-				callback.onSendPostSuccess(key, data, chanName, this.result != null ? this.result.threadNumber : null,
+				callback.onSendPostSuccess(key, data, chan.name,
+						this.result != null ? this.result.threadNumber : null,
 						this.result != null ? this.result.postNumber : null);
 			} else {
-				callback.onSendPostFail(key, data, chanName, errorItem, extra, captchaError, keepCaptcha);
+				callback.onSendPostFail(key, data, chan.name, errorItem, extra, captchaError, keepCaptcha);
 			}
 		}
 	}

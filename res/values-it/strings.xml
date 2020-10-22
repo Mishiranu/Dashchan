@@ -65,8 +65,6 @@
     <string name="catalog">Catalogo</string>
     <string name="change_theme">Cambia tema</string>
     <string name="changelog">Changelog</string>
-    <string name="changes_after_restart__sentence">I cambiamenti avranno effetto dopo il riavvio
-        dell\'applicazione</string>
     <string name="check_for_updates">Controlla aggiornamenti</string>
     <string name="check_on_startup">Controlla all\'avvio</string>
     <string name="choose">Scegli</string>
@@ -490,8 +488,7 @@
     <string name="unsorted">Non ordinati</string>
     <string name="unsupported_version">Versione non supportata</string>
     <string name="update_reminder__sentence">Puoi vedere il progresso del download nella barra delle notifiche.\n\nPuoi
-        installare applicazioni quando il download finisce.\n\nNon dimenticare di riavviare l\'app dopo aver installato
-        le estensioni!</string>
+        installare applicazioni quando il download finisce.</string>
     <string name="updates">Aggiornamenti</string>
     <string name="updates__genitive">Aggiornamenti</string>
     <string name="updates_available__genitive">Aggiornamenti disponibili</string>

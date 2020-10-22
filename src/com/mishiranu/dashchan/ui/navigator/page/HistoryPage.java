@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.view.Menu;
 import android.view.MenuItem;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import chan.content.Chan;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -82,7 +83,8 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback, Ge
 		if (historyItem != null) {
 			DialogMenu dialogMenu = new DialogMenu(getContext());
 			dialogMenu.add(R.string.copy_link, () -> {
-				Uri uri = getChanLocator().safe(true).createThreadUri(historyItem.boardName, historyItem.threadNumber);
+				Uri uri = Chan.get(historyItem.chanName).locator.safe(true)
+						.createThreadUri(historyItem.boardName, historyItem.threadNumber);
 				if (uri != null) {
 					StringUtils.copyToClipboard(getContext(), uri.toString());
 				}

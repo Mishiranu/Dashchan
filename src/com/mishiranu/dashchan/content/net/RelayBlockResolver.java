@@ -8,8 +8,8 @@ import android.net.Uri;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
 import chan.content.ChanPerformer;
 import chan.http.HttpClient;
 import chan.http.HttpException;
@@ -40,12 +40,12 @@ public class RelayBlockResolver {
 	private RelayBlockResolver() {}
 
 	public static class Session {
-		public final String chanName;
+		public final Chan chan;
 		public final Uri uri;
 		public final HttpHolder holder;
 
-		private Session(String chanName, Uri uri, HttpHolder holder) {
-			this.chanName = chanName;
+		private Session(Chan chan, Uri uri, HttpHolder holder) {
+			this.chan = chan;
 			this.uri = uri;
 			this.holder = holder;
 		}
@@ -178,7 +178,7 @@ public class RelayBlockResolver {
 			String captchaType = invisible ? ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE
 					: ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2;
 			RecaptchaReader.ChallengeExtra challengeExtra;
-			HttpHolder holder = new HttpHolder();
+			HttpHolder holder = new HttpHolder(Chan.getFallback());
 			try (HttpHolder.Use ignored = holder.use()) {
 				challengeExtra = RecaptchaReader.getInstance().getChallenge2(holder, apiKey, invisible, referer,
 						Preferences.isRecaptchaJavascript(), true);
@@ -270,10 +270,9 @@ public class RelayBlockResolver {
 				boolean finished = false;
 				Uri initialUri = session.uri.buildUpon().clearQuery().encodedFragment(null).build();
 				try {
-					ChanLocator locator = ChanLocator.get(session.chanName);
-					String userAgent = AdvancedPreferences.getUserAgent(session.chanName);
-					HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(session.chanName);
-					boolean verifyCertificate = locator.isUseHttps() && Preferences.isVerifyCertificate();
+					String userAgent = AdvancedPreferences.getUserAgent(session.chan.name);
+					HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(session.chan);
+					boolean verifyCertificate = session.chan.locator.isUseHttps() && Preferences.isVerifyCertificate();
 					IRequestCallback requestCallback = new WebViewRequestCallback(client, initialUri,
 							() -> status.cancel = true);
 					finished = service.loadWithCookieResult(initialUri.toString(), userAgent,
@@ -303,27 +302,27 @@ public class RelayBlockResolver {
 	private final HashMap<String, CheckHolder> checkHolders = new HashMap<>();
 	private final HashMap<String, Long> lastCheckCancel = new HashMap<>();
 
-	public boolean runExclusive(String chanName, Uri uri, HttpHolder holder,
+	public boolean runExclusive(Chan chan, Uri uri, HttpHolder holder,
 			ResolverFactory resolverFactory) throws HttpException {
 		CheckHolder checkHolder;
 		boolean handle = false;
 		synchronized (lastCheckCancel) {
-			Long cancel = lastCheckCancel.get(chanName);
+			Long cancel = lastCheckCancel.get(chan.name);
 			if (cancel != null && cancel + 15 * 1000 > SystemClock.elapsedRealtime()) {
 				return false;
 			}
 		}
 		synchronized (checkHolders) {
-			checkHolder = checkHolders.get(chanName);
+			checkHolder = checkHolders.get(chan.name);
 			if (checkHolder == null) {
 				checkHolder = new CheckHolder(resolverFactory.newResolver());
-				checkHolders.put(chanName, checkHolder);
+				checkHolders.put(chan.name, checkHolder);
 				handle = true;
 			}
 		}
 
 		if (handle) {
-			Session session = new Session(chanName, uri, holder);
+			Session session = new Session(chan, uri, holder);
 			boolean cancel = false;
 			HttpException httpException = null;
 			try (HttpHolder.Use ignored = holder.use()) {
@@ -339,11 +338,11 @@ public class RelayBlockResolver {
 			}
 			if (cancel) {
 				synchronized (lastCheckCancel) {
-					lastCheckCancel.put(chanName, SystemClock.elapsedRealtime());
+					lastCheckCancel.put(chan.name, SystemClock.elapsedRealtime());
 				}
 			}
 			synchronized (checkHolders) {
-				checkHolders.remove(chanName);
+				checkHolders.remove(chan.name);
 			}
 			if (httpException != null) {
 				throw httpException;
@@ -363,24 +362,24 @@ public class RelayBlockResolver {
 		return checkHolder.success;
 	}
 
-	public Result checkResponse(String chanName, Uri uri,
+	public Result checkResponse(Chan chan, Uri uri,
 			HttpHolder holder, HttpResponse response, boolean resolve) throws HttpException {
-		if (ChanLocator.get(chanName).getChanHosts(false).contains(uri.getHost())) {
+		if (chan.locator.getChanHosts(false).contains(uri.getHost())) {
 			Result result = CloudFlareResolver.getInstance()
-					.checkResponse(this, chanName, uri, holder, response, resolve);
+					.checkResponse(this, chan, uri, holder, response, resolve);
 			if (!result.blocked) {
 				result = StormWallResolver.getInstance()
-						.checkResponse(this, chanName, uri, holder, response, resolve);
+						.checkResponse(this, chan, uri, holder, response, resolve);
 			}
 			return result;
 		}
 		return new Result(false, false);
 	}
 
-	public Map<String, String> getCookies(String chanName) {
+	public Map<String, String> getCookies(Chan chan) {
 		Map<String, String> cookies = null;
-		cookies = CloudFlareResolver.getInstance().addCookies(chanName, cookies);
-		cookies = StormWallResolver.getInstance().addCookies(chanName, cookies);
+		cookies = CloudFlareResolver.getInstance().addCookies(chan, cookies);
+		cookies = StormWallResolver.getInstance().addCookies(chan, cookies);
 		return cookies != null ? cookies : Collections.emptyMap();
 	}
 }

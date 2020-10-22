@@ -3,8 +3,7 @@ package com.mishiranu.dashchan.content.async;
 import android.net.Uri;
 import android.util.Pair;
 import chan.content.ApiException;
-import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
@@ -36,10 +35,10 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 	public static final String OPTION_FILES_ONLY = "filesOnly";
 
 	public static class State {
-		public Operation operation;
-		public String chanName;
-		public String boardName;
-		public String threadNumber;
+		public final Operation operation;
+		public final Chan chan;
+		public final String boardName;
+		public final String threadNumber;
 
 		public List<Pair<String, String>> types;
 		public List<Pair<String, String>> options;
@@ -48,22 +47,27 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 
 		public List<PostNumber> postNumbers;
 		public String archiveThreadTitle;
-		public String archiveChanName;
+		public Chan archiveChan;
 
-		public State(Operation operation, String chanName, String boardName, String threadNumber,
+		public State(Operation operation, Chan chan, String boardName, String threadNumber,
 				List<Pair<String, String>> types, List<Pair<String, String>> options, boolean commentField) {
 			this.operation = operation;
-			this.chanName = chanName;
+			this.chan = chan;
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
 			this.types = types;
 			this.options = options;
 			this.commentField = commentField;
 		}
+
+		private Chan getWorkChan() {
+			return archiveChan != null ? archiveChan : chan;
+		}
 	}
 
-	public SendMultifunctionalTask(State state, String type, String text, ArrayList<String> options,
-			Callback callback) {
+	public SendMultifunctionalTask(Callback callback,
+			State state, String type, String text, ArrayList<String> options) {
+		super(state.getWorkChan());
 		this.state = state;
 		this.type = type;
 		this.text = text;
@@ -81,29 +85,36 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 
 	@Override
 	protected Boolean doInBackground(HttpHolder holder, Void... params) {
+		Chan chan = state.chan;
 		try {
 			switch (state.operation) {
 				case DELETE: {
-					ChanPerformer.get(state.chanName).safe().onSendDeletePosts(new ChanPerformer
+					chan.performer.safe().onSendDeletePosts(new ChanPerformer
 							.SendDeletePostsData(state.boardName, state.threadNumber,
 							createPostNumberList(state.postNumbers), text,
 							options != null && options.contains(OPTION_FILES_ONLY), holder));
 					break;
 				}
 				case REPORT: {
-					ChanPerformer.get(state.chanName).safe().onSendReportPosts(new ChanPerformer
+					chan.performer.safe().onSendReportPosts(new ChanPerformer
 							.SendReportPostsData(state.boardName, state.threadNumber,
 							createPostNumberList(state.postNumbers), type, options, text, holder));
 					break;
 				}
 				case ARCHIVE: {
-					Uri uri = ChanLocator.get(state.chanName).safe(false)
+					Uri uri = chan.locator.safe(false)
 							.createThreadUri(state.boardName, state.threadNumber);
 					if (uri == null) {
 						errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
 						return false;
 					}
-					ChanPerformer.SendAddToArchiveResult result = ChanPerformer.get(state.archiveChanName).safe()
+					Chan archiveChan = state.archiveChan;
+					if (archiveChan == null) {
+						errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
+						return false;
+					}
+					chan = archiveChan;
+					ChanPerformer.SendAddToArchiveResult result = chan.performer.safe()
 							.onSendAddToArchive(new ChanPerformer.SendAddToArchiveData(uri, state.boardName,
 									state.threadNumber, options, holder));
 					if (result != null && result.threadNumber != null) {
@@ -121,7 +132,7 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 			errorItem = e.getErrorItem();
 			return false;
 		} finally {
-			ChanConfiguration.get(state.chanName).commit();
+			chan.configuration.commit();
 		}
 	}
 

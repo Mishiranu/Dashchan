@@ -20,8 +20,8 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.content.RedirectException;
 import chan.text.JsonSerial;
@@ -198,7 +198,6 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 	private Replyable replyable;
 	private HidePerformer hidePerformer;
-	private Pair<String, Uri> originalThreadData;
 
 	private ActionMode selectionMode;
 
@@ -216,7 +215,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				if (hideState != PostItem.HideState.UNDEFINED) {
 					postItem.setHidden(hideState, null);
 				} else {
-					String hideReason = hidePerformer.checkHidden(postItem);
+					String hideReason = hidePerformer.checkHidden(getChan(), postItem);
 					if (hideReason != null) {
 						postItem.setHidden(PostItem.HideState.HIDDEN, hideReason);
 					} else {
@@ -274,14 +273,15 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		hidePerformer = new HidePerformer(context);
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
-		ChanConfiguration.Board board = getChanConfiguration().safe().obtainBoard(page.boardName);
-		if (board.allowPosting) {
-			replyable = data -> getUiManager().navigator().navigatePosting(page.chanName, page.boardName,
-					page.threadNumber, data);
-		} else {
-			replyable = null;
-		}
-		PostsAdapter adapter = new PostsAdapter(this, page.chanName, page.boardName, uiManager,
+		replyable = (click, data) -> {
+			ChanConfiguration.Board board = getChan().configuration.safe().obtainBoard(page.boardName);
+			if (click && board.allowPosting) {
+				getUiManager().navigator().navigatePosting(page.chanName, page.boardName,
+						page.threadNumber, data);
+			}
+			return board.allowPosting;
+		};
+		PostsAdapter adapter = new PostsAdapter(this, page.chanName, uiManager,
 				replyable, postStateProvider, recyclerView, retainExtra.postItems);
 		recyclerView.setAdapter(adapter);
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
@@ -475,7 +475,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		boolean userPost = retainExtra.userPosts.contains(postItem.getPostNumber());
 		return postItem != null && getUiManager().interaction()
-				.handlePostContextMenu(postItem, replyable, userPost, true, true, false);
+				.handlePostContextMenu(getChan(), postItem, replyable, userPost, true, true, false);
 	}
 
 	private void setPostUserPost(PostItem postItem, boolean userPost) {
@@ -485,7 +485,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		} else {
 			retainExtra.userPosts.remove(postItem.getPostNumber());
 		}
-		CommonDatabase.getInstance().getPosts().setFlags(true, postItem.getChanName(), postItem.getBoardName(),
+		CommonDatabase.getInstance().getPosts().setFlags(true, getPage().chanName, postItem.getBoardName(),
 				postItem.getThreadNumber(), postItem.getPostNumber(),
 				retainExtra.hiddenPosts.get(postItem.getPostNumber()), userPost);
 	}
@@ -493,7 +493,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	private void setPostHideState(PostItem postItem, PostItem.HideState hideState) {
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		retainExtra.hiddenPosts.set(postItem.getPostNumber(), hideState);
-		CommonDatabase.getInstance().getPosts().setFlags(true, postItem.getChanName(), postItem.getBoardName(),
+		CommonDatabase.getInstance().getPosts().setFlags(true, getPage().chanName, postItem.getBoardName(),
 				postItem.getThreadNumber(), postItem.getPostNumber(),
 				hideState, retainExtra.userPosts.contains(postItem.getPostNumber()));
 		postItem.setHidden(hideState, null);
@@ -532,18 +532,21 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
-		Page pageHolder = getPage();
-		menu.findItem(R.id.menu_add_post).setVisible(replyable != null);
-		boolean isFavorite = FavoritesStorage.getInstance().hasFavorite(pageHolder.chanName, pageHolder.boardName,
-				pageHolder.threadNumber);
+		Page page = getPage();
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		menu.findItem(R.id.menu_add_post).setVisible(replyable != null && replyable.onRequestReply(false));
+		boolean isFavorite = FavoritesStorage.getInstance().hasFavorite(page.chanName, page.boardName,
+				page.threadNumber);
 		boolean iconFavorite = ResourceUtils.isTabletOrLandscape(getResources().getConfiguration());
 		menu.findItem(R.id.menu_star_text).setVisible(!iconFavorite && !isFavorite);
 		menu.findItem(R.id.menu_unstar_text).setVisible(!iconFavorite && isFavorite);
 		menu.findItem(R.id.menu_star_icon).setVisible(iconFavorite && !isFavorite);
 		menu.findItem(R.id.menu_unstar_icon).setVisible(iconFavorite && isFavorite);
-		menu.findItem(R.id.menu_open_original_thread).setVisible(originalThreadData != null);
-		menu.findItem(R.id.menu_archive).setVisible(ChanManager.getInstance()
-				.canBeArchived(pageHolder.chanName));
+		menu.findItem(R.id.menu_open_original_thread)
+				.setVisible(Chan.getPreferred(null, retainExtra.archivedThreadUri).name != null);
+		boolean canBeArchived = !ChanManager.getInstance().getArchiveChanNames(page.chanName).isEmpty() ||
+				!getChan().configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
+		menu.findItem(R.id.menu_archive).setVisible(canBeArchived);
 		menu.findItem(R.id.menu_hidden_posts).setEnabled(hidePerformer.hasLocalFilters());
 		menu.findItem(R.id.menu_clear).setEnabled(getAdapter().hasDeletedPosts());
 	}
@@ -602,14 +605,16 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				return true;
 			}
 			case R.id.menu_open_original_thread: {
-				String chanName = originalThreadData.first;
-				Uri uri = originalThreadData.second;
-				ChanLocator locator = ChanLocator.get(chanName);
-				String boardName = locator.safe(true).getBoardName(uri);
-				String threadNumber = locator.safe(true).getThreadNumber(uri);
-				if (threadNumber != null) {
-					String threadTitle = getAdapter().getItem(0).getSubjectOrComment();
-					getUiManager().navigator().navigatePosts(chanName, boardName, threadNumber, null, threadTitle);
+				RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+				Chan chan = Chan.getPreferred(null, retainExtra.archivedThreadUri);
+				if (chan.name != null) {
+					Uri uri = retainExtra.archivedThreadUri;
+					String boardName = chan.locator.safe(true).getBoardName(uri);
+					String threadNumber = chan.locator.safe(true).getThreadNumber(uri);
+					if (threadNumber != null) {
+						String threadTitle = getAdapter().getItem(0).getSubjectOrComment();
+						getUiManager().navigator().navigatePosts(chan.name, boardName, threadNumber, null, threadTitle);
+					}
 				}
 				return true;
 			}
@@ -709,7 +714,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				String boardName = page.boardName;
 				if (boardName != null) {
 					builder.append(getString(R.string.board)).append(": ");
-					String title = getChanConfiguration().getBoardTitle(boardName);
+					String title = getChan().configuration.getBoardTitle(boardName);
 					builder.append(StringUtils.formatBoardTitle(page.chanName, boardName, title));
 					builder.append('\n');
 				}
@@ -763,21 +768,21 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	@Override
 	public boolean onCreateActionMode(ActionMode mode, Menu menu) {
 		Page page = getPage();
-		ChanConfiguration configuration = getChanConfiguration();
+		Chan chan = getChan();
 		getAdapter().setSelectionModeEnabled(true);
 		mode.setTitle(ResourceUtils.getColonString(getResources(),
 				R.string.selected, getAdapter().getSelectedCount()));
-		ChanConfiguration.Board board = configuration.safe().obtainBoard(page.boardName);
+		ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(page.boardName);
 		menu.add(0, R.id.menu_make_threadshot, 0, R.string.make_threadshot)
 				.setIcon(getActionBarIcon(R.attr.iconActionMakeThreadshot))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		if (replyable != null) {
+		if (replyable != null && replyable.onRequestReply(false)) {
 			menu.add(0, R.id.menu_reply, 0, R.string.reply)
 					.setIcon(getActionBarIcon(R.attr.iconActionPaste))
 					.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		}
 		if (board.allowDeleting) {
-			ChanConfiguration.Deleting deleting = configuration.safe().obtainDeleting(page.boardName);
+			ChanConfiguration.Deleting deleting = chan.configuration.safe().obtainDeleting(page.boardName);
 			if (deleting != null && deleting.multiplePosts) {
 				menu.add(0, R.id.menu_delete, 0, R.string.delete)
 						.setIcon(getActionBarIcon(R.attr.iconActionDelete))
@@ -785,7 +790,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			}
 		}
 		if (board.allowReporting) {
-			ChanConfiguration.Reporting reporting = configuration.safe().obtainReporting(page.boardName);
+			ChanConfiguration.Reporting reporting = chan.configuration.safe().obtainReporting(page.boardName);
 			if (reporting != null && reporting.multiplePosts) {
 				menu.add(0, R.id.menu_report, 0, R.string.report)
 						.setIcon(getActionBarIcon(R.attr.iconActionReport))
@@ -820,7 +825,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					data.add(new Replyable.ReplyData(postItem.getPostNumber(), null));
 				}
 				if (data.size() > 0) {
-					replyable.onRequestReply(CommonUtils.toArray(data, Replyable.ReplyData.class));
+					replyable.onRequestReply(true, CommonUtils.toArray(data, Replyable.ReplyData.class));
 				}
 				mode.finish();
 				return true;
@@ -880,6 +885,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				.findFirstVisibleItemPosition();
 		retainExtra.searchLastPosition = 0;
 		boolean positionDefined = false;
+		Chan chan = getChan();
 		Locale locale = Locale.getDefault();
 		SearchHelper helper = new SearchHelper(Preferences.isAdvancedSearch());
 		helper.setFlags("m", "r", "a", "d", "e", "n", "op");
@@ -893,7 +899,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			PostItem postItem = adapter.getItem(i);
 			if (!postStateProvider.isHiddenResolve(postItem)) {
 				PostNumber postNumber = postItem.getPostNumber();
-				String comment = postItem.getComment().toString().toLowerCase(locale);
+				String comment = postItem.getComment(chan).toString().toLowerCase(locale);
 				int postPosition = getAdapter().positionOfPostNumber(postNumber);
 				boolean userPost = retainExtra.userPosts.contains(postNumber);
 				boolean reply = false;
@@ -918,12 +924,12 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					}
 				}
 				String subject = postItem.getSubject().toLowerCase(locale);
-				String name = postItem.getFullName().toString().toLowerCase(locale);
+				String name = postItem.getFullName(chan).toString().toLowerCase(locale);
 				fileNames.clear();
 				List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 				if (attachmentItems != null) {
 					for (AttachmentItem attachmentItem : attachmentItems) {
-						String fileName = attachmentItem.getFileName();
+						String fileName = attachmentItem.getFileName(chan);
 						if (!StringUtils.isEmpty(fileName)) {
 							fileNames.add(fileName.toLowerCase(locale));
 							String originalName = attachmentItem.getOriginalName();
@@ -1274,7 +1280,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		boolean removeDeleted = retainExtra.removeDeleted;
 		retainExtra.removeDeleted = false;
 		extractTask = new ExtractPostsTask(this, retainExtra.cache,
-				page.chanName, page.boardName, page.threadNumber, initial, newThread, removeDeleted);
+				getChan(), page.boardName, page.threadNumber, initial, newThread, removeDeleted);
 		extractTask.executeOnExecutor(ExtractPostsTask.THREAD_POOL_EXECUTOR);
 	}
 
@@ -1314,7 +1320,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		parcelableExtra.queuedRefresh = QueuedRefresh.NONE;
 		cancelTasks();
 		Page page = getPage();
-		readTask = new ReadPostsTask(this, page.chanName, page.boardName, page.threadNumber,
+		readTask = new ReadPostsTask(this, getChan(), page.boardName, page.threadNumber,
 				reload, PostingService.getPendingUserPosts(page.chanName, page.boardName, page.threadNumber));
 		readTask.executeOnExecutor(ReadPostsTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
@@ -1485,16 +1491,6 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				}
 			}
 
-			Pair<String, Uri> originalThreadData = null;
-			if (retainExtra.archivedThreadUri != null) {
-				String chanName = ChanManager.getInstance()
-						.getChanNameByHost(retainExtra.archivedThreadUri.getAuthority());
-				if (chanName != null) {
-					originalThreadData = new Pair<>(chanName, retainExtra.archivedThreadUri);
-				}
-			}
-			this.originalThreadData = originalThreadData;
-
 			if (parcelableExtra.selectedPosts != null) {
 				Set<PostNumber> selected = parcelableExtra.selectedPosts;
 				parcelableExtra.selectedPosts = null;
@@ -1617,11 +1613,11 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 						break;
 					}
 					case PERFORM_HIDE_NAME: {
-						result = hidePerformer.addHideByName(getContext(), postItem);
+						result = hidePerformer.addHideByName(getContext(), getChan(), postItem);
 						break;
 					}
 					case PERFORM_HIDE_SIMILAR: {
-						result = hidePerformer.addHideSimilar(getContext(), postItem);
+						result = hidePerformer.addHideSimilar(getContext(), getChan(), postItem);
 						break;
 					}
 					default: {

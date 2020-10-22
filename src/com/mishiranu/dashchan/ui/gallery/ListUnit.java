@@ -22,7 +22,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -64,7 +64,7 @@ public class ListUnit implements ActionMode.Callback {
 		recyclerView.setClipToPadding(false);
 		recyclerView.setLayoutManager(new GridLayoutManager(recyclerView.getContext(), 1));
 		recyclerView.addItemDecoration(new SpacingItemDecoration(spacing));
-		GridAdapter adapter = new GridAdapter(callback, instance.chanName, instance.locator, instance.galleryItems);
+		GridAdapter adapter = new GridAdapter(callback, instance.chanName, instance.galleryItems);
 		recyclerView.setAdapter(adapter);
 		updateGridMetrics(instance.context.getResources().getConfiguration());
 	}
@@ -200,23 +200,24 @@ public class ListUnit implements ActionMode.Callback {
 			return false;
 		}
 		GalleryItem galleryItem = getAdapter().getItem(position);
+		Chan chan = Chan.get(instance.chanName);
 		Context context = instance.callback.getWindow().getContext();
 		DialogMenu dialogMenu = new DialogMenu(context);
 		dialogMenu.setTitle(!StringUtils.isEmpty(galleryItem.originalName) ? galleryItem.originalName
-				: galleryItem.getFileName(instance.locator), true);
+				: galleryItem.getFileName(chan), true);
 		dialogMenu.add(R.string.download_file, () -> instance.callback.downloadGalleryItem(galleryItem));
-		if (galleryItem.getDisplayImageUri(instance.locator) != null) {
+		if (galleryItem.getDisplayImageUri(chan) != null) {
 			dialogMenu.add(R.string.search_image, () -> NavigationUtils.searchImage(context,
 					instance.callback.getConfigurationLock(), instance.chanName,
-					galleryItem.getDisplayImageUri(instance.locator)));
+					galleryItem.getDisplayImageUri(chan)));
 		}
 		dialogMenu.add(R.string.copy_link, () -> StringUtils.copyToClipboard(context,
-				galleryItem.getFileUri(instance.locator).toString()));
+				galleryItem.getFileUri(chan).toString()));
 		if (instance.callback.isAllowNavigatePostManually(false) && galleryItem.postNumber != null) {
 			dialogMenu.add(R.string.go_to_post, () -> instance.callback.navigatePost(galleryItem, true, true));
 		}
 		dialogMenu.add(R.string.share_link, () -> NavigationUtils.shareLink(context, null,
-				galleryItem.getFileUri(instance.locator)));
+				galleryItem.getFileUri(chan)));
 		dialogMenu.show(instance.callback.getConfigurationLock());
 		return true;
 	}
@@ -428,15 +429,13 @@ public class ListUnit implements ActionMode.Callback {
 
 		private final Callback callback;
 		private final String chanName;
-		private final ChanLocator locator;
 		private final List<GalleryItem> galleryItems;
 
 		private boolean enabled = false;
 
-		public GridAdapter(Callback callback, String chanName, ChanLocator locator, List<GalleryItem> galleryItems) {
+		public GridAdapter(Callback callback, String chanName, List<GalleryItem> galleryItems) {
 			this.callback = callback;
 			this.chanName = chanName;
-			this.locator = locator;
 			this.galleryItems = galleryItems;
 		}
 
@@ -462,15 +461,16 @@ public class ListUnit implements ActionMode.Callback {
 		@Override
 		public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 			GalleryItem galleryItem = getItem(position);
+			Chan chan = Chan.get(chanName);
 			holder.attachmentInfo.setText(StringUtils
-					.getFileExtension(galleryItem.getFileName(locator)).toUpperCase(Locale.getDefault()) +
+					.getFileExtension(galleryItem.getFileName(chan)).toUpperCase(Locale.getDefault()) +
 					(galleryItem.size > 0 ? " " + StringUtils.formatFileSize(galleryItem.size, true) : ""));
-			Uri thumbnailUri = galleryItem.getThumbnailUri(locator);
+			Uri thumbnailUri = galleryItem.getThumbnailUri(chan);
 			if (thumbnailUri != null) {
 				CacheManager cacheManager = CacheManager.getInstance();
 				String key = cacheManager.getCachedFileKey(thumbnailUri);
 				holder.thumbnail.resetImage(key, AttachmentView.Overlay.NONE);
-				ImageLoader.getInstance().loadImage(chanName, thumbnailUri, key, false, holder.thumbnail);
+				ImageLoader.getInstance().loadImage(chan, thumbnailUri, key, false, holder.thumbnail);
 			} else {
 				holder.thumbnail.resetImage(null, AttachmentView.Overlay.WARNING);
 				ImageLoader.getInstance().cancel(holder.thumbnail);

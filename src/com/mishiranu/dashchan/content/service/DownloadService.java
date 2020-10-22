@@ -22,7 +22,7 @@ import android.os.SystemClock;
 import android.util.DisplayMetrics;
 import android.util.Pair;
 import androidx.core.app.NotificationCompat;
-import chan.content.ChanLocator;
+import chan.content.Chan;
 import chan.util.CommonUtils;
 import chan.util.DataFile;
 import chan.util.StringUtils;
@@ -266,7 +266,8 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 				onFinishDownloadingInternal(success, new TaskData(taskData.chanName, taskData.overwrite,
 						(InputStream) null, taskData.target, taskData.path, taskData.name, taskData.allowWrite));
 			} else {
-				ReadFileTask readFileTask = ReadFileTask.createShared(this, taskData.chanName,
+				Chan chan = Chan.getPreferred(taskData.chanName, taskData.uri);
+				ReadFileTask readFileTask = ReadFileTask.createShared(this, chan,
 						taskData.uri, getDataFile(taskData), taskData.overwrite);
 				activeTask = new Pair<>(taskData, readFileTask);
 				readFileTask.executeOnExecutor(SINGLE_THREAD_EXECUTOR);
@@ -1193,7 +1194,8 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 	}
 
 	private static boolean isFileNameModifyingAllowed(String chanName, Uri uri) {
-		return chanName != null && ChanLocator.get(chanName).safe(false).isAttachmentUri(uri);
+		Chan chan = Chan.getPreferred(chanName, uri);
+		return chanName != null && chan.locator.safe(false).isAttachmentUri(uri);
 	}
 
 	private static String getDesiredFileName(Uri uri, String fileName, String originalName, boolean detailName,

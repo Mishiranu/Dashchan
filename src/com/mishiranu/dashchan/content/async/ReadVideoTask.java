@@ -1,14 +1,12 @@
 package com.mishiranu.dashchan.content.async;
 
 import android.net.Uri;
-import chan.content.ChanConfiguration;
-import chan.content.ChanManager;
+import chan.content.Chan;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
-import chan.http.HttpRequest;
 import chan.http.HttpResponse;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
@@ -28,10 +26,10 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
 
 	private static final Pattern PATTERN_BYTES = Pattern.compile("bytes (\\d+)-(\\d+)/(\\d+)");
 
-	private final String chanName;
+	private final Callback callback;
+	private final Chan chan;
 	private final Uri uri;
 	private final long start;
-	private final Callback callback;
 	private final File file;
 	private final File partialFile;
 
@@ -53,11 +51,12 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
 		}
 	};
 
-	public ReadVideoTask(String chanName, Uri uri, long start, Callback callback) {
-		this.chanName = chanName;
+	public ReadVideoTask(Callback callback, Chan chan, Uri uri, long start) {
+		super(chan);
+		this.callback = callback;
+		this.chan = chan;
 		this.uri = uri;
 		this.start = start;
-		this.callback = callback;
 		file = CacheManager.getInstance().getMediaFile(uri, false);
 		partialFile = CacheManager.getInstance().getPartialMediaFile(uri);
 	}
@@ -70,21 +69,11 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
 		}
 		boolean success = false;
 		try {
-			HttpResponse response;
 			TimedProgressHandler progressHandler = start > 0 ? null : this.progressHandler;
-			String chanName = this.chanName;
-			if (chanName == null) {
-				chanName = ChanManager.getInstance().getChanNameByHost(uri.getAuthority());
-			}
-			if (chanName != null) {
-				ChanPerformer.ReadContentResult result = ChanPerformer.get(chanName).safe()
-						.onReadContent(new ChanPerformer.ReadContentData(uri,
-								CONNECT_TIMEOUT, READ_TIMEOUT, holder, start > 0 ? start : -1, -1));
-				response = result != null ? result.response : null;
-			} else {
-				response = new HttpRequest(uri, holder).setTimeouts(CONNECT_TIMEOUT, READ_TIMEOUT)
-						.setRange(start > 0 ? start : -1, -1).perform();
-			}
+			ChanPerformer.ReadContentResult result = chan.performer.safe()
+					.onReadContent(new ChanPerformer.ReadContentData(uri,
+							CONNECT_TIMEOUT, READ_TIMEOUT, holder, start > 0 ? start : -1, -1));
+			HttpResponse response = result != null ? result.response : null;
 			if (response == null) {
 				errorItem = new ErrorItem(ErrorItem.Type.DOWNLOAD);
 				return false;
@@ -170,8 +159,8 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
 				}
 				CacheManager.getInstance().handleDownloadedFile(partialFile, false);
 				CacheManager.getInstance().handleDownloadedFile(file, success);
-				if (chanName != null) {
-					ChanConfiguration.get(chanName).commit();
+				if (chan.name != null) {
+					chan.configuration.commit();
 				}
 			}
 		}

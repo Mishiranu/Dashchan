@@ -29,8 +29,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
-import chan.content.ChanManager;
 import chan.content.ChanPerformer;
 import chan.http.HttpException;
 import chan.util.StringUtils;
@@ -224,10 +224,10 @@ public class ForegroundManager implements Handler.Callback {
 		@Override
 		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
 			Bundle args = requireArguments();
-			String chanName = args.getString(EXTRA_CHAN_NAME);
+			Chan chan = Chan.get(args.getString(EXTRA_CHAN_NAME));
 			boolean forceCaptcha = (boolean) extra.get(EXTRA_FORCE_CAPTCHA);
 			boolean mayShowLoadButton = (boolean) extra.get(EXTRA_MAY_SHOW_LOAD_BUTTON);
-			String[] captchaPass = forceCaptcha || chanName == null ? null : Preferences.getCaptchaPass(chanName);
+			String[] captchaPass = forceCaptcha || chan.name == null ? null : Preferences.getCaptchaPass(chan);
 			CaptchaPendingData pendingData = getPendingData(false);
 			if (pendingData == null) {
 				return null;
@@ -235,7 +235,7 @@ public class ForegroundManager implements Handler.Callback {
 			ReadCaptchaHolder holder = new ReadCaptchaHolder();
 			ReadCaptchaTask task = new ReadCaptchaTask(holder, pendingData.captchaReader,
 					args.getString(EXTRA_CAPTCHA_TYPE), args.getString(EXTRA_REQUIREMENT), captchaPass,
-					mayShowLoadButton, chanName, args.getString(EXTRA_BOARD_NAME), args.getString(EXTRA_THREAD_NUMBER));
+					mayShowLoadButton, chan, args.getString(EXTRA_BOARD_NAME), args.getString(EXTRA_THREAD_NUMBER));
 			task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);
 			return holder.attach(task);
 		}
@@ -295,8 +295,8 @@ public class ForegroundManager implements Handler.Callback {
 				ChanConfiguration.Captcha.Input input, Bitmap image, boolean large, boolean blackAndWhite) {
 			this.captchaState = captchaState;
 			if (captchaType != null && input == null) {
-				input = ChanConfiguration.get(requireArguments().getString(EXTRA_CHAN_NAME)).safe()
-						.obtainCaptcha(captchaType).input;
+				Chan chan = Chan.get(requireArguments().getString(EXTRA_CHAN_NAME));
+				input = chan.configuration.safe().obtainCaptcha(captchaType).input;
 			}
 			loadedInput = input;
 			if (this.image != null && this.image != image) {
@@ -340,7 +340,8 @@ public class ForegroundManager implements Handler.Callback {
 			} else {
 				comment.setVisibility(View.GONE);
 			}
-			ChanConfiguration.Captcha captcha = ChanConfiguration.get(args.getString(EXTRA_CHAN_NAME))
+			Chan chan = Chan.get(args.getString(EXTRA_CHAN_NAME));
+			ChanConfiguration.Captcha captcha = chan.configuration
 					.safe().obtainCaptcha(args.getString(EXTRA_CAPTCHA_TYPE));
 			EditText captchaInputView = container.findViewById(R.id.captcha_input);
 			captchaForm = new CaptchaForm(this, false, true, container, null, captchaInputView, captcha);
@@ -1033,12 +1034,10 @@ public class ForegroundManager implements Handler.Callback {
 		}
 	}
 
-	public ChanPerformer.CaptchaData requireUserCaptcha(ChanManager.Linked linked, String requirement,
+	public ChanPerformer.CaptchaData requireUserCaptcha(Chan chan, String requirement,
 			String boardName, String threadNumber, boolean retry) {
-		ChanConfiguration configuration = ChanConfiguration.get(linked);
-		String captchaType = configuration.getCaptchaType();
-		String chanName = linked.getChanName();
-		return requireUserCaptcha(null, captchaType, requirement, chanName, boardName, threadNumber, null, retry);
+		return requireUserCaptcha(null, chan.configuration.getCaptchaType(), requirement,
+				chan.name, boardName, threadNumber, null, retry);
 	}
 
 	public ChanPerformer.CaptchaData requireUserCaptcha(ReadCaptchaTask.CaptchaReader captchaReader,

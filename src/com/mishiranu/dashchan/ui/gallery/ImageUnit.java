@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Pair;
+import chan.content.Chan;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.Preferences;
@@ -89,8 +90,9 @@ public class ImageUnit {
 		PagerInstance.ViewHolder nextHolder = instance.scrollingLeft ? instance.leftHolder : instance.rightHolder;
 		if (nextHolder != null && Preferences.isLoadNearestImage()) {
 			GalleryItem nextGalleryItem = nextHolder.galleryItem;
-			if (nextGalleryItem.isImage(instance.galleryInstance.locator)) {
-				Uri nextUri = nextGalleryItem.getFileUri(instance.galleryInstance.locator);
+			Chan chan = Chan.get(instance.galleryInstance.chanName);
+			if (nextGalleryItem.isImage(chan)) {
+				Uri nextUri = nextGalleryItem.getFileUri(chan);
 				File nextCachedFile = CacheManager.getInstance().getMediaFile(nextUri, true);
 				if (nextCachedFile != null && !nextCachedFile.exists()) {
 					loadImage(nextUri, nextCachedFile, nextHolder);
@@ -107,8 +109,9 @@ public class ImageUnit {
 			readFileTask.cancel();
 		}
 		readBitmapCallback = new ReadBitmapCallback(holder.galleryItem);
+		Chan chan = Chan.getPreferred(instance.galleryInstance.chanName, uri);
 		readFileTask = ReadFileTask.createCachedMediaFile(instance.galleryInstance.context, readBitmapCallback,
-				instance.galleryInstance.chanName, uri, cachedFile);
+				chan, uri, cachedFile);
 		readFileTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
 	}
 
@@ -210,7 +213,8 @@ public class ImageUnit {
 				.setPositiveButton(android.R.string.ok, null);
 		String geolocation = instance.currentHolder.jpegData.getGeolocation(false);
 		if (geolocation != null) {
-			String fileName = instance.currentHolder.galleryItem.getFileName(instance.galleryInstance.locator);
+			String fileName = instance.currentHolder.galleryItem
+					.getFileName(Chan.get(instance.galleryInstance.chanName));
 			Uri uri = new Uri.Builder().scheme("geo").appendQueryParameter("q",
 					geolocation + "(" + fileName + ")").build();
 			final Intent intent = new Intent(Intent.ACTION_VIEW).setData(uri);

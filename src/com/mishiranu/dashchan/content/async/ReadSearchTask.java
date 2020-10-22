@@ -1,7 +1,7 @@
 package com.mishiranu.dashchan.content.async;
 
+import chan.content.Chan;
 import chan.content.ChanConfiguration;
-import chan.content.ChanLocator;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
@@ -23,7 +23,7 @@ import java.util.Locale;
 
 public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostItem>> {
 	private final Callback callback;
-	private final String chanName;
+	private final Chan chan;
 	private final String boardName;
 	private final String searchQuery;
 	private final int pageNumber;
@@ -35,9 +35,10 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 		void onReadSearchFail(ErrorItem errorItem);
 	}
 
-	public ReadSearchTask(Callback callback, String chanName, String boardName, String searchQuery, int pageNumber) {
+	public ReadSearchTask(Callback callback, Chan chan, String boardName, String searchQuery, int pageNumber) {
+		super(chan);
 		this.callback = callback;
-		this.chanName = chanName;
+		this.chan = chan;
 		this.boardName = boardName;
 		this.searchQuery = searchQuery;
 		this.pageNumber = pageNumber;
@@ -49,14 +50,12 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 	@Override
 	protected ArrayList<PostItem> doInBackground(HttpHolder holder, Void... params) {
 		try {
-			ChanPerformer performer = ChanPerformer.get(chanName);
-			ChanConfiguration configuration = ChanConfiguration.get(chanName);
-			ChanConfiguration.Board board = configuration.safe().obtainBoard(boardName);
+			ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(boardName);
 			ArrayList<SinglePost> posts = new ArrayList<>();
 			HashSet<PostNumber> postNumbers = new HashSet<>();
 
 			if (board.allowSearch) {
-				ChanPerformer.ReadSearchPostsResult result = performer.safe().onReadSearchPosts(new ChanPerformer
+				ChanPerformer.ReadSearchPostsResult result = chan.performer.safe().onReadSearchPosts(new ChanPerformer
 						.ReadSearchPostsData(boardName, searchQuery, pageNumber, holder));
 				if (result != null) {
 					posts.addAll(result.posts);
@@ -69,7 +68,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 			if (board.allowCatalog && board.allowCatalogSearch && pageNumber == 0) {
 				ChanPerformer.ReadThreadsResult result;
 				try {
-					result = performer.safe().onReadThreads(new ChanPerformer.ReadThreadsData(boardName,
+					result = chan.performer.safe().onReadThreads(new ChanPerformer.ReadThreadsData(boardName,
 							ChanPerformer.ReadThreadsData.PAGE_NUMBER_CATALOG, holder, null));
 				} catch (RedirectException e) {
 					result = null;
@@ -96,11 +95,11 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 				ArrayList<PostItem> postItems = new ArrayList<>(posts.size());
 				for (int i = 0; i < posts.size() && !Thread.interrupted(); i++) {
 					SinglePost post = posts.get(i);
-					PostItem postItem = PostItem.createPost(post.post, ChanLocator.get(chanName),
-							chanName, boardName, post.threadNumber, post.originalPostNumber);
+					PostItem postItem = PostItem.createPost(post.post, chan,
+							boardName, post.threadNumber, post.originalPostNumber);
 					postItem.setOrdinalIndex(i);
 					// Preload
-					ConcurrentUtils.mainGet(postItem::getComment);
+					ConcurrentUtils.mainGet(() -> postItem.getComment(chan));
 					postItems.add(postItem);
 				}
 				return postItems;
@@ -110,7 +109,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 			errorItem = e.getErrorItemAndHandle();
 			return null;
 		} finally {
-			ChanConfiguration.get(chanName).commit();
+			chan.configuration.commit();
 		}
 	}
 

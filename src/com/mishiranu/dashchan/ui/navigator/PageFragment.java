@@ -29,6 +29,7 @@ import com.mishiranu.dashchan.widget.CustomSearchView;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.MenuExpandListener;
 import com.mishiranu.dashchan.widget.PullableRecyclerView;
+import java.util.Collection;
 import java.util.UUID;
 
 public final class PageFragment extends Fragment implements ActivityHandler, ListPage.Callback {
@@ -230,6 +231,14 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 			}
 		}
 		currentMenu = null;
+	}
+
+	@Override
+	public void onChansChanged(Collection<String> changed, Collection<String> removed) {
+		Page page = getPage();
+		if (changed.contains(page.chanName)) {
+			updateOptionsMenu();
+		}
 	}
 
 	private CustomSearchView getSearchView(boolean required) {

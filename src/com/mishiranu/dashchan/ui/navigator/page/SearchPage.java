@@ -75,10 +75,11 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 	protected void onCreate() {
 		PullableRecyclerView recyclerView = getRecyclerView();
 		recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
+		Page page = getPage();
 		UiManager uiManager = getUiManager();
 		float density = ResourceUtils.obtainDensity(getResources());
 		int dividerPadding = (int) (12f * density);
-		SearchAdapter adapter = new SearchAdapter(getContext(), this, uiManager, getPage().searchQuery);
+		SearchAdapter adapter = new SearchAdapter(getContext(), this, page.chanName, uiManager, page.searchQuery);
 		recyclerView.setAdapter(adapter);
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				(c, position) -> adapter.configureDivider(c, position).horizontal(dividerPadding, dividerPadding)));
@@ -145,7 +146,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 	@Override
 	public boolean onItemLongClick(PostItem postItem) {
 		return postItem != null && getUiManager().interaction()
-				.handlePostContextMenu(postItem, null, false, false, false, false);
+				.handlePostContextMenu(getChan(), postItem, null, false, false, false, false);
 	}
 
 	@Override
@@ -219,7 +220,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 				pageNumber = retainExtra.pageNumber + 1;
 			}
 		}
-		readTask = new ReadSearchTask(this, page.chanName, page.boardName, page.searchQuery, pageNumber);
+		readTask = new ReadSearchTask(this, getChan(), page.boardName, page.searchQuery, pageNumber);
 		readTask.executeOnExecutor(ReadSearchTask.THREAD_POOL_EXECUTOR);
 		if (showPull) {
 			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
