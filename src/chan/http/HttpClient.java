@@ -21,6 +21,8 @@ import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.FileNotFoundException;
@@ -28,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.io.SequenceInputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -56,6 +59,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
+import java.util.zip.ZipException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -64,6 +70,7 @@ import javax.net.ssl.SSLProtocolException;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.X509TrustManager;
+import org.brotli.dec.BrotliInputStream;
 
 public class HttpClient {
 	private static final int MAX_ATTEMPS_COUNT = 10;
@@ -269,6 +276,37 @@ public class HttpClient {
 	private static final class RetryException extends Exception {}
 	private static final class HandshakeTimeoutException extends IOException {}
 
+	enum Encoding {
+		IDENTITY("identity", false),
+		GZIP("gzip", true),
+		DEFLATE("deflate", true),
+		BROTLI("br", true),
+		UNKNOWN("", false);
+
+		public final String name;
+		public final boolean use;
+
+		Encoding(String name, boolean use) {
+			this.name = name;
+			this.use = use;
+		}
+
+		public static Encoding get(HttpURLConnection connection) {
+			if (connection != null) {
+				String contentEncoding = connection.getContentEncoding();
+				if (!StringUtils.isEmpty(contentEncoding)) {
+					for (Encoding encoding : values()) {
+						if (contentEncoding.equals(encoding.name)) {
+							return encoding;
+						}
+					}
+					return UNKNOWN;
+				}
+			}
+			return IDENTITY;
+		}
+	}
+
 	SSLSocketFactory getSSLSocketFactory(boolean verifyCertificate) {
 		synchronized (this) {
 			if (sslSocketFactory == null) {
@@ -424,7 +462,16 @@ public class HttpClient {
 						.getUserAgent(request.holder.chan.name));
 			}
 			if (!acceptEncodingSet) {
-				connection.setRequestProperty("Accept-Encoding", "gzip");
+				StringBuilder acceptEncoding = new StringBuilder();
+				for (Encoding encoding : Encoding.values()) {
+					if (encoding.use) {
+						if (acceptEncoding.length() > 0) {
+							acceptEncoding.append(", ");
+						}
+						acceptEncoding.append(encoding.name);
+					}
+				}
+				connection.setRequestProperty("Accept-Encoding", acceptEncoding.toString());
 			}
 			CookieBuilder cookieBuilder = request.checkRelayBlock == HttpRequest.CheckRelayBlock.SKIP
 					? request.cookieBuilder : obtainModifiedCookieBuilder(request.cookieBuilder, request.holder.chan);
@@ -618,30 +665,42 @@ public class HttpClient {
 				throw new InterruptedHttpException();
 			}
 			response.session.checkInterrupted();
-			InputStream commonInput;
+			InputStream input;
 			try {
-				commonInput = connection.getInputStream();
+				input = connection.getInputStream();
 			} catch (FileNotFoundException e) {
-				commonInput = connection.getErrorStream();
+				input = connection.getErrorStream();
 			}
-			if (commonInput == null) {
+			if (input == null) {
 				throw new HttpException(ErrorItem.Type.EMPTY_RESPONSE, false, false);
 			}
-			commonInput = new BufferedInputStream(commonInput, 8192);
-			if (isGzipEncoded(connection)) {
-				commonInput = new GZIPInputStream(commonInput);
+			input = new BufferedInputStream(input, 8192);
+			switch (Encoding.get(connection)) {
+				case IDENTITY: {
+					break;
+				}
+				case GZIP: {
+					input = new GZIPInputStream(input);
+					break;
+				}
+				case DEFLATE: {
+					input = new DeflateInputStream(input);
+					break;
+				}
+				case BROTLI: {
+					input = new BrotliInputStream(input);
+					break;
+				}
+				default: {
+					throw new HttpException(ErrorItem.Type.DOWNLOAD, false, false);
+				}
 			}
-			return new ClientInputStream(commonInput, response.session);
+			return new ClientInputStream(input, response.session);
 		} catch (InterruptedHttpException e) {
 			throw e.toHttp();
 		} catch (IOException e) {
 			throw transformIOException(e);
 		}
-	}
-
-	static boolean isGzipEncoded(HttpURLConnection connection) {
-		String encoding = connection.getContentEncoding();
-		return "gzip".equals(encoding);
 	}
 
 	CookieBuilder obtainModifiedCookieBuilder(CookieBuilder cookieBuilder, Chan chan) {
@@ -783,6 +842,84 @@ public class HttpClient {
 		} catch (InterruptedHttpException e) {
 			IOUtils.close(closeable);
 			throw e;
+		}
+	}
+
+	private static class DeflateInputStream extends InputStream {
+		private final InputStream input;
+		private InputStream workInput;
+
+		public DeflateInputStream(InputStream input) {
+			this.input = input;
+		}
+
+		public static InputStream createWorkInput(InputStream input) throws IOException {
+			// Check zlib header and create a proper Inflater
+			ByteArrayOutputStream[] output = {new ByteArrayOutputStream()};
+			InputStream workInput = new InflaterInputStream(new InputStream() {
+				@Override
+				public int read() throws IOException {
+					int result = input.read();
+					if (result >= 0 && output[0] != null) {
+						output[0].write(result);
+					}
+					return result;
+				}
+
+				@Override
+				public int read(byte[] b, int off, int len) throws IOException {
+					int result = input.read(b, off, len);
+					if (result > 0 && output[0] != null) {
+						output[0].write(b, off, result);
+					}
+					return result;
+				}
+			}, new Inflater(false));
+			boolean success = false;
+			int firstByte = -1;
+			try {
+				firstByte = workInput.read();
+				success = true;
+			} catch (ZipException e) {
+				// Ignore exception
+			}
+			if (success) {
+				output[0] = null;
+				if (firstByte >= 0) {
+					return new SequenceInputStream(new ByteArrayInputStream(new byte[] {(byte) firstByte}), workInput);
+				} else {
+					workInput.close();
+					return new ByteArrayInputStream(new byte[0]);
+				}
+			} else {
+				workInput.close();
+				byte[] head = output[0].toByteArray();
+				InputStream newInput = new SequenceInputStream(new ByteArrayInputStream(head), input);
+				return new InflaterInputStream(newInput, new Inflater(true));
+			}
+		}
+
+		private void ensureWorkInput() throws IOException {
+			if (workInput == null) {
+				workInput = createWorkInput(input);
+			}
+		}
+
+		@Override
+		public int read() throws IOException {
+			ensureWorkInput();
+			return workInput.read();
+		}
+
+		@Override
+		public int read(byte[] b, int off, int len) throws IOException {
+			ensureWorkInput();
+			return workInput.read(b, off, len);
+		}
+
+		@Override
+		public void close() throws IOException {
+			input.close();
 		}
 	}
 

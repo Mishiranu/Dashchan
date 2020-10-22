@@ -184,6 +184,7 @@ public final class HttpSession {
 
 	long getLength() {
 		HttpURLConnection connection = getConnectionForHeaders();
-		return connection != null && !HttpClient.isGzipEncoded(connection) ? connection.getContentLength() : -1;
+		return connection != null && HttpClient.Encoding.get(connection) == HttpClient.Encoding.IDENTITY
+				? connection.getContentLength() : -1;
 	}
 }
