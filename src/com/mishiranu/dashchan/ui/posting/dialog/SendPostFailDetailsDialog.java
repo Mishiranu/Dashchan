@@ -10,8 +10,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.PostDateFormatter;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.StringBlockBuilder;
-import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.widget.SummaryLayout;
 
 public class SendPostFailDetailsDialog extends DialogFragment {
 	public static final String TAG = SendPostFailDetailsDialog.class.getName();
@@ -29,32 +28,31 @@ public class SendPostFailDetailsDialog extends DialogFragment {
 	@NonNull
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-		String message = null;
 		ApiException.Extra extra = requireArguments().getParcelable(EXTRA_EXTRA);
+		AlertDialog dialog = new AlertDialog.Builder(requireContext())
+				.setTitle(R.string.details)
+				.setPositiveButton(android.R.string.ok, null)
+				.create();
 		if (extra instanceof ApiException.BanExtra) {
-			StringBlockBuilder builder = new StringBlockBuilder();
+			SummaryLayout layout = new SummaryLayout(dialog);
 			PostDateFormatter formatter = new PostDateFormatter(requireContext());
 			ApiException.BanExtra banExtra = (ApiException.BanExtra) extra;
 			if (!StringUtils.isEmpty(banExtra.id)) {
-				builder.appendLine(ResourceUtils.getColonString(getResources(), R.string.ban_id, banExtra.id));
+				layout.add(getString(R.string.ban_id), banExtra.id);
 			}
 			if (banExtra.startDate > 0L) {
-				builder.appendLine(ResourceUtils.getColonString(getResources(),
-						R.string.filed_on, formatter.format(banExtra.startDate)));
+				layout.add(getString(R.string.filed_on), formatter.format(banExtra.startDate));
 			}
 			if (banExtra.expireDate > 0L) {
-				builder.appendLine(ResourceUtils.getColonString(getResources(),
-						R.string.expires, banExtra.expireDate == Long.MAX_VALUE
-								? getString(R.string.never) : formatter.format(banExtra.expireDate)));
+				layout.add(getString(R.string.expires), banExtra.expireDate == Long.MAX_VALUE
+						? getString(R.string.never) : formatter.format(banExtra.expireDate));
 			}
 			if (!StringUtils.isEmpty(banExtra.message)) {
-				builder.appendLine(ResourceUtils.getColonString(getResources(),
-						R.string.reason, banExtra.message));
+				layout.add(getString(R.string.reason), banExtra.message);
 			}
-			message = builder.toString();
 		} else if (extra instanceof ApiException.WordsExtra) {
 			ApiException.WordsExtra words = (ApiException.WordsExtra) extra;
-			message = "";
+			String message = "";
 			boolean first = true;
 			for (String word : words.words) {
 				if (first) {
@@ -64,14 +62,8 @@ public class SendPostFailDetailsDialog extends DialogFragment {
 					message = getString(R.string.__enumeration_format, message, word);
 				}
 			}
-			message = ResourceUtils.getColonString(getResources(), R.string.rejected_words, message);
+			dialog.setMessage(ResourceUtils.getColonString(getResources(), R.string.rejected_words, message));
 		}
-		AlertDialog dialog = new AlertDialog.Builder(requireContext())
-				.setTitle(R.string.details)
-				.setMessage(message)
-				.setPositiveButton(android.R.string.ok, null)
-				.create();
-		dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_MESSAGE_SELECTABLE);
 		return dialog;
 	}
 }

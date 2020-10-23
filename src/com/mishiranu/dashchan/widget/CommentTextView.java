@@ -61,7 +61,8 @@ public class CommentTextView extends TextView {
 	private Menu currentActionModeMenu;
 
 	private LimitListener limitListener;
-	private CommentListener commentListener;
+	private SpanStateListener spanStateListener;
+	private PrepareToCopyListener prepareToCopyListener;
 	private LinkListener linkListener;
 	private List<ExtraButton> extraButtons;
 	private boolean spoilersEnabled;
@@ -134,8 +135,11 @@ public class CommentTextView extends TextView {
 		void onApplyLimit(boolean limited);
 	}
 
-	public interface CommentListener {
+	public interface SpanStateListener {
 		void onSpanStateChanged(CommentTextView view);
+	}
+
+	public interface PrepareToCopyListener {
 		String onPrepareToCopy(CommentTextView view, Spannable text, int start, int end);
 	}
 
@@ -201,8 +205,12 @@ public class CommentTextView extends TextView {
 		limitListener = listener;
 	}
 
-	public void setCommentListener(CommentListener listener) {
-		commentListener = listener;
+	public void setSpanStateListener(SpanStateListener listener) {
+		spanStateListener = listener;
+	}
+
+	public void setPrepareToCopyListener(PrepareToCopyListener listener) {
+		prepareToCopyListener = listener;
 	}
 
 	public void setLinkListener(LinkListener listener, String chanName, String boardName, String threadNumber) {
@@ -424,8 +432,8 @@ public class CommentTextView extends TextView {
 	public void setCustomSelectionActionModeCallback(ActionMode.Callback actionModeCallback) {}
 
 	private String getPartialCommentString(Spannable text, int start, int end) {
-		return commentListener != null ? commentListener.onPrepareToCopy(CommentTextView.this, text, start, end)
-				: text.subSequence(start, end).toString();
+		return prepareToCopyListener != null ? prepareToCopyListener
+				.onPrepareToCopy(CommentTextView.this, text, start, end) : text.subSequence(start, end).toString();
 	}
 
 	private static final int[] EXTRA_BUTTON_IDS = {android.R.id.button1, android.R.id.button2, android.R.id.button3};
@@ -664,7 +672,10 @@ public class CommentTextView extends TextView {
 		} else if (spanToClick instanceof SpoilerSpan) {
 			SpoilerSpan spoilerSpan = ((SpoilerSpan) spanToClick);
 			spoilerSpan.setVisible(!spoilerSpan.isVisible());
-			post(() -> commentListener.onSpanStateChanged(CommentTextView.this));
+			SpanStateListener listener = spanStateListener;
+			if (listener != null) {
+				post(() -> listener.onSpanStateChanged(CommentTextView.this));
+			}
 		}
 	}
 

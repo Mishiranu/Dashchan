@@ -68,6 +68,7 @@ import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PostsLayoutManager;
 import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
+import com.mishiranu.dashchan.widget.SummaryLayout;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -710,28 +711,25 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 						}
 					}
 				}
-				StringBuilder builder = new StringBuilder();
-				String boardName = page.boardName;
-				if (boardName != null) {
-					builder.append(getString(R.string.board)).append(": ");
-					String title = getChan().configuration.getBoardTitle(boardName);
-					builder.append(StringUtils.formatBoardTitle(page.chanName, boardName, title));
-					builder.append('\n');
-				}
-				builder.append(ResourceUtils.getColonString(getResources(), R.string.files__genitive, files));
-				builder.append('\n').append(ResourceUtils.getColonString(getResources(),
-						R.string.posts_with_files__genitive, postsWithFiles));
-				builder.append('\n').append(ResourceUtils.getColonString(getResources(),
-						R.string.links_attachments__genitive, links));
-				if (retainExtra.uniquePosters > 0) {
-					builder.append('\n').append(ResourceUtils.getColonString(getResources(),
-							R.string.unique_posters__genitive, retainExtra.uniquePosters));
-				}
 				AlertDialog dialog = new AlertDialog.Builder(getContext())
 						.setTitle(R.string.summary)
-						.setMessage(builder)
 						.setPositiveButton(android.R.string.ok, null)
-						.show();
+						.create();
+				SummaryLayout layout = new SummaryLayout(dialog);
+				String boardName = page.boardName;
+				if (boardName != null) {
+					String title = getChan().configuration.getBoardTitle(boardName);
+					title = StringUtils.formatBoardTitle(page.chanName, boardName, title);
+					layout.add(getString(R.string.board), title);
+				}
+				layout.add(getString(R.string.files__genitive), Integer.toString(files));
+				layout.add(getString(R.string.posts_with_files__genitive), Integer.toString(postsWithFiles));
+				layout.add(getString(R.string.links_attachments__genitive), Integer.toString(links));
+				if (retainExtra.uniquePosters > 0) {
+					layout.add(getString(R.string.unique_posters__genitive),
+							Integer.toString(retainExtra.uniquePosters));
+				}
+				dialog.show();
 				getUiManager().getConfigurationLock().lockConfiguration(dialog);
 				return true;
 			}

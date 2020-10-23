@@ -23,15 +23,6 @@ import com.mishiranu.dashchan.content.Preferences;
 import java.lang.reflect.Field;
 
 public class ViewUtils {
-	public static final DialogInterface.OnShowListener ALERT_DIALOG_MESSAGE_SELECTABLE = dialog -> {
-		if (dialog instanceof AlertDialog) {
-			TextView textView = ((AlertDialog) dialog).findViewById(android.R.id.message);
-			if (textView != null) {
-				textView.setTextIsSelectable(true);
-			}
-		}
-	};
-
 	public static final DialogInterface.OnShowListener ALERT_DIALOG_LONGER_TITLE = dialog -> {
 		if (dialog instanceof AlertDialog) {
 			View view = ((AlertDialog) dialog).getWindow().getDecorView();

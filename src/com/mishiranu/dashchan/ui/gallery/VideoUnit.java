@@ -38,8 +38,8 @@ import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.StringBlockBuilder;
 import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.widget.SummaryLayout;
 import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
@@ -456,8 +456,13 @@ public class VideoUnit {
 
 	public void viewTechnicalInfo() {
 		if (initialized) {
+			AlertDialog dialog = new AlertDialog
+					.Builder(instance.galleryInstance.callback.getWindow().getContext())
+					.setTitle(R.string.technical_info)
+					.setPositiveButton(android.R.string.ok, null)
+					.create();
+			SummaryLayout layout = new SummaryLayout(dialog);
 			Map<String, String> technicalInfo = player.getTechnicalInfo();
-			StringBlockBuilder builder = new StringBlockBuilder();
 			String videoFormat = technicalInfo.get("video_format");
 			String width = technicalInfo.get("width");
 			String height = technicalInfo.get("height");
@@ -471,51 +476,42 @@ public class VideoUnit {
 			String encoder = technicalInfo.get("encoder");
 			String title = technicalInfo.get("title");
 			if (videoFormat != null) {
-				builder.appendLine("Video: " + videoFormat);
+				layout.add("Video", videoFormat);
 			}
 			if (width != null && height != null) {
-				builder.appendLine("Resolution: " + width + '×' + height);
+				layout.add("Resolution", width + '×' + height);
 			}
 			if (frameRate != null) {
-				builder.appendLine("Frame rate: " + frameRate);
+				layout.add("Frame rate", StringUtils.stripTrailingZeros(frameRate) + " FPS");
 			}
 			if (pixelFormat != null) {
-				builder.appendLine("Pixels: " + pixelFormat);
+				layout.add("Pixels", pixelFormat);
 			}
 			if (surfaceFormat != null) {
-				builder.appendLine("Surface: " + surfaceFormat);
+				layout.add("Surface", surfaceFormat);
 			}
 			if (frameConversion != null) {
-				builder.appendLine("Frame conversion: " + frameConversion);
+				layout.add("Frame conversion", frameConversion);
 			}
-			builder.appendEmptyLine();
+			layout.addDivider();
 			if (audioFormat != null) {
-				builder.appendLine("Audio: " + audioFormat);
+				layout.add("Audio", audioFormat);
 			}
 			if (channels != null) {
-				builder.appendLine("Channels: " + channels);
+				layout.add("Channels", channels);
 			}
 			if (sampleRate != null) {
-				builder.appendLine("Sample rate: " + sampleRate + " Hz");
+				layout.add("Sample rate", sampleRate + " Hz");
 			}
-			builder.appendEmptyLine();
+			layout.addDivider();
 			if (encoder != null) {
-				builder.appendLine("Encoder: " + encoder);
+				layout.add("Encoder", encoder);
 			}
 			if (!StringUtils.isEmptyOrWhitespace(title)) {
-				builder.appendLine("Title: " + title);
+				layout.add("Title", title);
 			}
-			String message = builder.toString();
-			if (message.length() > 0) {
-				AlertDialog dialog = new AlertDialog
-						.Builder(instance.galleryInstance.callback.getWindow().getContext())
-						.setTitle(R.string.technical_info).setMessage(message)
-						.setPositiveButton(android.R.string.ok, null)
-						.create();
-				dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_MESSAGE_SELECTABLE);
-				instance.galleryInstance.callback.getConfigurationLock().lockConfiguration(dialog);
-				dialog.show();
-			}
+			instance.galleryInstance.callback.getConfigurationLock().lockConfiguration(dialog);
+			dialog.show();
 		}
 	}
 

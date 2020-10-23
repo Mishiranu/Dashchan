@@ -182,6 +182,22 @@ public class StringUtils {
 				: size + (upperCase ? " KB" : " kB");
 	}
 
+	public static String stripTrailingZeros(String string) {
+		int length = string.length();
+		for (int i = length - 1; i >= 0; i--) {
+			char c = string.charAt(i);
+			if (c == '0') {
+				length = i;
+			} else if (c == '.') {
+				length = i;
+				break;
+			} else {
+				break;
+			}
+		}
+		return length < string.length() ? string.substring(0, length) : string;
+	}
+
 	public static SpannableStringBuilder appendSpan(SpannableStringBuilder builder, CharSequence text,
 			Object... spans) {
 		int start = builder.length();

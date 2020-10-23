@@ -210,12 +210,7 @@ public class JpegData {
 	}
 
 	private static String formatDoubleSimple(double value) {
-		String valueString = String.format(Locale.US, "%.1f", value);
-		if (valueString.endsWith(".0")) {
-			return valueString.substring(0, valueString.length() - 2);
-		} else {
-			return valueString;
-		}
+		return StringUtils.stripTrailingZeros(String.format(Locale.US, "%.1f", value));
 	}
 
 	private enum Ifd {GENERAL, GPS}

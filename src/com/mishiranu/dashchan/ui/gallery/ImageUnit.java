@@ -23,9 +23,8 @@ import com.mishiranu.dashchan.media.GifDecoder;
 import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.Log;
-import com.mishiranu.dashchan.util.StringBlockBuilder;
-import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.PhotoView;
+import com.mishiranu.dashchan.widget.SummaryLayout;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Executor;
@@ -198,18 +197,9 @@ public class ImageUnit {
 	}
 
 	public void viewTechnicalInfo() {
-		StringBlockBuilder builder = new StringBlockBuilder();
-		for (Pair<String, String> pair : instance.currentHolder.jpegData.getUserMetadata()) {
-			if (pair != null) {
-				builder.appendLine(pair.first + ": " + pair.second);
-			} else {
-				builder.appendEmptyLine();
-			}
-		}
-		String message = builder.toString();
 		AlertDialog.Builder dialogBuilder = new AlertDialog
 				.Builder(instance.galleryInstance.callback.getWindow().getContext())
-				.setTitle(R.string.technical_info).setMessage(message)
+				.setTitle(R.string.technical_info)
 				.setPositiveButton(android.R.string.ok, null);
 		String geolocation = instance.currentHolder.jpegData.getGeolocation(false);
 		if (geolocation != null) {
@@ -225,7 +215,14 @@ public class ImageUnit {
 			}
 		}
 		AlertDialog dialog = dialogBuilder.create();
-		dialog.setOnShowListener(ViewUtils.ALERT_DIALOG_MESSAGE_SELECTABLE);
+		SummaryLayout layout = new SummaryLayout(dialog);
+		for (Pair<String, String> pair : instance.currentHolder.jpegData.getUserMetadata()) {
+			if (pair != null) {
+				layout.add(pair.first, pair.second);
+			} else {
+				layout.addDivider();
+			}
+		}
 		instance.galleryInstance.callback.getConfigurationLock().lockConfiguration(dialog);
 		dialog.show();
 	}

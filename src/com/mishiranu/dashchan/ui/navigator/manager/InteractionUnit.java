@@ -426,11 +426,11 @@ public class InteractionUnit {
 		}
 	}
 
-	private String getCopyReadyComment(CharSequence text) {
+	private static String getCopyReadyComment(CharSequence text) {
 		return getCopyReadyComment(text, 0, text.length());
 	}
 
-	String getCopyReadyComment(CharSequence text, int start, int end) {
+	static String getCopyReadyComment(CharSequence text, int start, int end) {
 		if (text instanceof Spanned) {
 			SpannableStringBuilder builder = new SpannableStringBuilder(text.subSequence(start, end));
 			LinkSuffixSpan[] spans = builder.getSpans(0, builder.length(), LinkSuffixSpan.class);

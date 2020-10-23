@@ -12,7 +12,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.text.Layout;
-import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.BackgroundColorSpan;
 import android.util.SparseIntArray;
@@ -179,17 +178,14 @@ public class ViewUnit {
 		}
 	};
 
-	private final CommentTextView.CommentListener commentListener = new CommentTextView.CommentListener() {
-		@Override
-		public void onSpanStateChanged(CommentTextView view) {
-			uiManager.sendPostItemMessage(view, UiManager.Message.INVALIDATE_COMMENT_VIEW);
-		}
+	private void onSpanStateChanged(CommentTextView view) {
+		uiManager.sendPostItemMessage(view, UiManager.Message.INVALIDATE_COMMENT_VIEW);
+	}
 
-		@Override
-		public String onPrepareToCopy(CommentTextView view, Spannable text, int start, int end) {
-			return uiManager.interaction().getCopyReadyComment(text, start, end);
-		}
-	};
+	private final CommentTextView.SpanStateListener spanStateListener = this::onSpanStateChanged;
+
+	private final CommentTextView.PrepareToCopyListener prepareToCopyListener =
+			(view, text, start, end) -> InteractionUnit.getCopyReadyComment(text, start, end);
 
 	public RecyclerView.ViewHolder createThreadViewHolder(ViewGroup parent,
 			UiManager.ConfigurationSet configurationSet, boolean cell) {
@@ -1099,7 +1095,8 @@ public class ViewUnit {
 
 			head.setOnTouchListener(uiManager.view().headContentTouchListener);
 			comment.setLimitListener(this);
-			comment.setCommentListener(uiManager.view().commentListener);
+			comment.setSpanStateListener(uiManager.view().spanStateListener);
+			comment.setPrepareToCopyListener(uiManager.view().prepareToCopyListener);
 			comment.setExtraButtons(uiManager.view().extraButtons);
 			thumbnail.setOnClickListener(thumbnailClickListener);
 			thumbnail.setOnLongClickListener(thumbnailLongClickListener);
