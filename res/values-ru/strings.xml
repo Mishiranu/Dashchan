@@ -160,6 +160,7 @@
 	<string name="files_only">Только файлы</string>
 	<string name="filter">Фильтр</string>
 	<string name="find_in_comments">Искать в комментариях</string>
+	<string name="find_in_file_names">Искать в названиях файлов</string>
 	<string name="find_in_names">Искать в именах</string>
 	<string name="find_in_subjects">Искать в темах</string>
 	<string name="flags_are_enabled">Флаги включены</string>

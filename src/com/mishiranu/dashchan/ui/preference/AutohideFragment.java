@@ -297,6 +297,9 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 			if (autohideItem.optionName) {
 				orCount++;
 			}
+			if (autohideItem.optionFileName) {
+				orCount++;
+			}
 			if (orCount > 0) {
 				if (and) {
 					builder.append(" & ");
@@ -321,6 +324,12 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 						builder.append(" | ");
 					}
 					builder.append("name");
+				}
+				if (autohideItem.optionFileName) {
+					if (or) {
+						builder.append(" | ");
+					}
+					builder.append("file");
 				}
 				if (and && orCount > 1) {
 					builder.append(')');
@@ -350,6 +359,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		private CheckBox autohideSubject;
 		private CheckBox autohideComment;
 		private CheckBox autohideName;
+		private CheckBox autohideFileName;
 		private EditText valueEdit;
 		private TextView errorText;
 		private TextView matcherText;
@@ -379,6 +389,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 			autohideSubject = view.findViewById(R.id.autohide_subject);
 			autohideComment = view.findViewById(R.id.autohide_comment);
 			autohideName = view.findViewById(R.id.autohide_name);
+			autohideFileName = view.findViewById(R.id.autohide_file_name);
 			valueEdit = view.findViewById(R.id.value);
 			errorText = view.findViewById(R.id.error_text);
 			matcherText = view.findViewById(R.id.matcher_result);
@@ -408,6 +419,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 				autohideSubject.setChecked(autohideItem.optionSubject);
 				autohideComment.setChecked(autohideItem.optionComment);
 				autohideName.setChecked(autohideItem.optionName);
+				autohideFileName.setChecked(autohideItem.optionFileName);
 				valueEdit.setText(autohideItem.value);
 			} else {
 				chanNameSelector.setText(R.string.all_forums);
@@ -418,6 +430,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 				autohideSubject.setChecked(true);
 				autohideComment.setChecked(true);
 				autohideName.setChecked(true);
+				autohideFileName.setChecked(false);
 				valueEdit.setText(null);
 			}
 			updateTestResult();
@@ -477,10 +490,11 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 			boolean optionSubject = autohideSubject.isChecked();
 			boolean optionComment = autohideComment.isChecked();
 			boolean optionName = autohideName.isChecked();
+			boolean optionFileName = autohideFileName.isChecked();
 			String value = valueEdit.getText().toString();
 			return new AutohideStorage.AutohideItem(selectedChanNames.size() > 0 ? selectedChanNames : null,
 					boardName, threadNumber, optionOriginalPost, optionSage,
-					optionSubject, optionComment, optionName, value);
+					optionSubject, optionComment, optionName, optionFileName, value);
 		}
 
 		private void onChansSelected(ArrayList<String> selected) {

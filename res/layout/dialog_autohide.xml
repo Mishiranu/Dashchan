@@ -102,6 +102,13 @@
 				android:text="@string/find_in_names"
 				android:textAppearance="?android:attr/textAppearanceSmall" />
 
+			<CheckBox
+				android:id="@+id/autohide_file_name"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/find_in_file_names"
+				android:textAppearance="?android:attr/textAppearanceSmall" />
+
 		</LinearLayout>
 
 		<com.mishiranu.dashchan.widget.SafePasteEditText

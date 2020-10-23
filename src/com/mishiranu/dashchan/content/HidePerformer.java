@@ -6,6 +6,7 @@ import chan.text.JsonSerial;
 import chan.text.ParseException;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.Post;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
@@ -161,6 +162,15 @@ public class HidePerformer {
 									if ((result = autohideItem.find(name)) != null) {
 										return autohideItem.getReason(AutohideStorage.AutohideItem
 												.ReasonSource.NAME, name, result);
+									}
+								}
+							}
+							if (autohideItem.optionFileName && postItem.hasAttachments()) {
+								for (AttachmentItem attachmentItem : postItem.getAttachmentItems()) {
+									String originalName = StringUtils.emptyIfNull(attachmentItem.getOriginalName());
+									if ((result = autohideItem.find(originalName)) != null) {
+										return autohideItem.getReason(AutohideStorage.AutohideItem
+												.ReasonSource.FILE, originalName, result);
 									}
 								}
 							}

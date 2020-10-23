@@ -161,6 +161,7 @@
 	<string name="files_only">Files only</string>
 	<string name="filter">Filter</string>
 	<string name="find_in_comments">Find in comments</string>
+	<string name="find_in_file_names">Find in file names</string>
 	<string name="find_in_names">Find in names</string>
 	<string name="find_in_subjects">Find in subjects</string>
 	<string name="flags_are_enabled">Flags are enabled</string>
