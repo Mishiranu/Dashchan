@@ -354,21 +354,35 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 			try {
 				GroupParser.parse(source, callback);
 			} catch (ParseException e) {
-				Log.persistent().stack(e);
+				if (StringUtils.isEmpty(callback.result)) {
+					Log.persistent().stack(e);
+				}
 			}
 			return callback.result;
 		}
 
 		@Override
+		public boolean onStartElement(GroupParser parser, String tagName, GroupParser.Attributes attributes) {
+			return "div".equals(tagName) && "markdown-body".equals(attributes.get("class"));
+		}
+
+		@Deprecated
+		@Override
 		public boolean onStartElement(GroupParser parser, String tagName, String attrs) {
-			return "div".equals(tagName) && "markdown-body".equals(parser.getAttr(attrs, "class"));
+			throw new IllegalStateException();
 		}
 
 		@Override
 		public void onEndElement(GroupParser parser, String tagName) {}
 
 		@Override
-		public void onText(GroupParser parser, String source, int start, int end) {}
+		public void onText(GroupParser parser, CharSequence text) {}
+
+		@Deprecated
+		@Override
+		public void onText(GroupParser parser, String source, int start, int end) {
+			throw new IllegalStateException();
+		}
 
 		@Override
 		public void onGroupComplete(GroupParser parser, String text) throws ParseException {

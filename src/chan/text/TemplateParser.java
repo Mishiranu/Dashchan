@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 // TODO CHAN
-// Remove this class after updating
+// Remove this class and ChanManger.CompatPathClassLoader after updating
 // alphachan alterchan brchan candydollchan chaosach chiochan dangeru dobrochan erlach exach fiftyfive fourplebs haibane
 // kropyvach lainchan local lolifox nulltirech onechanca ponyach randomarchive sevenchan synch taima tiretirech
 // twentyseven uboachan valkyria wizardchan
@@ -210,26 +210,24 @@ public final class TemplateParser<H> {
 
 	@Public
 	public static final class Attributes {
-		private static final Object NULL = new Object();
+		private static final String NULL = "null";
 
-		private GroupParser parser;
-		private String attributes;
+		private GroupParser.Attributes attributes;
 
-		private final HashMap<String, Object> lastValues = new HashMap<>();
+		private final HashMap<String, String> lastValues = new HashMap<>();
 
 		@Public
+		@SuppressWarnings("StringEquality")
 		public String get(String attribute) {
-			Object value = lastValues.get(attribute);
-			if (value != null) {
-				return value == NULL ? null : (String) value;
+			String value = lastValues.get(attribute);
+			if (value == null) {
+				value = attributes.get(attribute);
+				lastValues.put(attribute, value != null ? value : NULL);
 			}
-			String stringValue = parser.getAttr(attributes, attribute);
-			lastValues.put(attribute, stringValue != null ? stringValue : NULL);
-			return stringValue;
+			return value == NULL ? null : value;
 		}
 
-		public void set(GroupParser parser, String attributes) {
-			this.parser = parser;
+		public void set(GroupParser.Attributes attributes) {
 			this.attributes = attributes;
 			lastValues.clear();
 		}
@@ -297,15 +295,16 @@ public final class TemplateParser<H> {
 		}
 
 		@Override
-		public boolean onStartElement(GroupParser parser, String tagName, String attrs) throws ParseException {
+		public boolean onStartElement(GroupParser parser, String tagName,
+				GroupParser.Attributes attributes) throws ParseException {
 			ArrayList<AttributeMatcher<H>> matchers = this.parser.openMatchers.get(tagName);
 			if (matchers != null) {
-				attributes.set(parser, attrs);
+				this.attributes.set(attributes);
 				for (AttributeMatcher<H> matcher : matchers) {
-					if (matcher.match(attributes)) {
+					if (matcher.match(this.attributes)) {
 						boolean readContent;
 						if (matcher.openCallback != null) {
-							readContent = matcher.openCallback.onOpen(instance, holder, tagName, attributes);
+							readContent = matcher.openCallback.onOpen(instance, holder, tagName, this.attributes);
 							checkFinish();
 						} else {
 							readContent = true;
@@ -318,6 +317,12 @@ public final class TemplateParser<H> {
 				}
 			}
 			return false;
+		}
+
+		@Deprecated
+		@Override
+		public boolean onStartElement(GroupParser parser, String tagName, String attrs) {
+			throw new IllegalStateException();
 		}
 
 		@Override
@@ -340,12 +345,22 @@ public final class TemplateParser<H> {
 		}
 
 		@Override
-		public void onText(GroupParser parser, String source, int start, int end) throws ParseException {
+		public void onText(GroupParser parser, CharSequence text) throws ParseException {
+			String textString = null;
 			ArrayList<TextCallback<H>> textCallbacks = this.parser.textCallbacks;
 			for (int i = 0, size = textCallbacks.size(); i < size; i++) {
-				textCallbacks.get(i).onText(instance, holder, source, start, end);
+				if (textString == null) {
+					textString = text.toString();
+				}
+				textCallbacks.get(i).onText(instance, holder, textString, 0, textString.length());
 				checkFinish();
 			}
+		}
+
+		@Deprecated
+		@Override
+		public void onText(GroupParser parser, String source, int start, int end) {
+			throw new IllegalStateException();
 		}
 	}
 

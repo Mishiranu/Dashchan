@@ -198,8 +198,8 @@ public final class HttpResponse {
 				break;
 			}
 			String attrs = builder.substring(start + 5, end).toLowerCase(Locale.US);
-			if ("content-type".equals(GroupParser.getInstance().getAttr(attrs, "http-equiv"))) {
-				String contentType = GroupParser.getInstance().getAttr(attrs, "content");
+			if ("content-type".equals(GroupParser.extractAttr(attrs, "http-equiv"))) {
+				String contentType = GroupParser.extractAttr(attrs, "content");
 				charsetName = HttpClient.extractCharsetName(contentType);
 				break;
 			}

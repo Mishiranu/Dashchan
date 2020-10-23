@@ -424,8 +424,8 @@ public class ChanManager {
 		}
 	}
 
-	private static class LegacyPathClassLoader extends PathClassLoader {
-		public LegacyPathClassLoader(String dexPath, String librarySearchPath, ClassLoader parent) {
+	private static class CompatPathClassLoader extends PathClassLoader {
+		public CompatPathClassLoader(String dexPath, String librarySearchPath, ClassLoader parent) {
 			super(dexPath, librarySearchPath, parent);
 		}
 
@@ -433,7 +433,7 @@ public class ChanManager {
 		protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
 			if ("chan.text.TemplateParser".equals(name) ||
 					name != null && name.startsWith("chan.text.TemplateParser$")) {
-				// TemplateParser is moved to the library, workaround is required for 4.4 or lower
+				// TemplateParser is moved to the library, which resolution should have higher priority
 				try {
 					return findClass(name);
 				} catch (ClassNotFoundException e) {
@@ -550,16 +550,8 @@ public class ChanManager {
 				if (nativeLibraryDir != null && !new File(nativeLibraryDir).exists()) {
 					nativeLibraryDir = null;
 				}
-				ClassLoader classLoader;
-				if (C.API_LOLLIPOP) {
-					// Don't use LegacyPathClassLoader on Lollipop,
-					// overriding loadClass method leads to incomprehensible failures
-					classLoader = new PathClassLoader(chanItem.applicationInfo.sourceDir, nativeLibraryDir,
-							ChanManager.class.getClassLoader());
-				} else {
-					classLoader = new LegacyPathClassLoader(chanItem.applicationInfo.sourceDir, nativeLibraryDir,
-							ChanManager.class.getClassLoader());
-				}
+				ClassLoader classLoader = new CompatPathClassLoader(chanItem.applicationInfo.sourceDir,
+						nativeLibraryDir, ChanManager.class.getClassLoader());
 				Resources resources = packageManager.getResourcesForApplication(chanItem.applicationInfo);
 				Chan.Provider chanProvider = new Chan.Provider(null);
 				ChanConfiguration configuration = ChanConfiguration.INITIALIZER.initialize(classLoader,

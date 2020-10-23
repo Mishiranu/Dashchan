@@ -89,15 +89,37 @@ public class StringUtils {
 	}
 
 	@Public
-	public static int nearestIndexOf(String string, int start, char... what) {
-		int index = -1;
-		for (char itWhat : what) {
-			int itIndex = string.indexOf(itWhat, start);
-			if (itIndex >= 0 && (itIndex < index || index == -1)) {
-				index = itIndex;
+	public static int nearestIndexOf(CharSequence string, int start, char... what) {
+		int length = string.length();
+		for (int i = start; i < length; i++) {
+			char c = string.charAt(i);
+			for (char check : what) {
+				if (check == c) {
+					return i;
+				}
 			}
 		}
-		return index;
+		return -1;
+	}
+
+	public static int indexOf(CharSequence string, int fromIndex, CharSequence what) {
+		int target = what.length();
+		if (target == 0) {
+			return fromIndex;
+		}
+		int length = string.length();
+		int count = 0;
+		for (int i = fromIndex; i < length; i++) {
+			char c = string.charAt(i);
+			if (c == what.charAt(count)) {
+				if (++count == target) {
+					return i - target + 1;
+				}
+			} else {
+				count = 0;
+			}
+		}
+		return -1;
 	}
 
 	@Extendable
