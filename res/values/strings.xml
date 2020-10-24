@@ -53,7 +53,7 @@
 	<string name="board_doesnt_exist">The board doesn\'t exist</string>
 	<string name="boards">Boards</string>
 	<string name="build_version">Build version</string>
-	<string name="bump_limit_posts__colon_format">Bump limit: %d posts</string>
+	<string name="bump_limit">Bump limit</string>
 	<string name="cache_is_unavailable">Cache is unavailable</string>
 	<string name="cache_size">Cache size</string>
 	<string name="cached_files">Cached files</string>
@@ -64,6 +64,7 @@
 	<string name="captcha_pass">Captcha pass</string>
 	<string name="captcha_pass__summary">Allows to skip captcha</string>
 	<string name="captcha_type">Captcha type</string>
+	<string name="cards">Cards</string>
 	<string name="catalog">Catalog</string>
 	<string name="change_theme">Change theme</string>
 	<string name="changelog">Changelog</string>
@@ -105,6 +106,7 @@
 	<string name="crop_thumbnails">Crop thumbnails</string>
 	<string name="crop_thumbnails__summary">Thumbnails will fit square</string>
 	<string name="cyclical_thread">Cyclical thread</string>
+	<string name="date_created">Date created</string>
 	<string name="ddos_protection_bypass_failed">DDoS-protection bypass failed</string>
 	<string name="default_name_cant_be_hidden">Default name can\'t be hidden</string>
 	<string name="default_starting_board">Default starting board</string>
@@ -216,7 +218,9 @@
 	<string name="keep_all">Keep all</string>
 	<string name="keep_current_version">Keep current version</string>
 	<string name="language">Language</string>
+	<string name="large_grid">Large grid</string>
 	<string name="links_attachments__genitive">Links-attachments</string>
+	<string name="list">List</string>
 	<string name="load_captcha">Load captcha</string>
 	<string name="load_catalog">Load catalog</string>
 	<string name="load_catalog__summary">Catalog will be loaded when a threads page is opened</string>
@@ -290,6 +294,10 @@
 	</plurals>
 	<string name="number_page__format">%d page</string>
 	<string name="number_page_doesnt_exist__format">The %d page doesn\'t exist</string>
+	<plurals name="number_posts__format">
+		<item quantity="one">%d post</item>
+		<item quantity="other">%d posts</item>
+	</plurals>
 	<plurals name="number_posts_per_hour__format">
 		<item quantity="one">%d post per hour</item>
 		<item quantity="other">%d posts per hour</item>
@@ -374,6 +382,7 @@
 	<string name="rename">Rename</string>
 	<string name="repeated_files_are_prohibited">Repeated files are prohibited</string>
 	<string name="replace">Replace</string>
+	<string name="replies_count">Replies count</string>
 	<string name="replies_to_number__format">Replies to %s</string>
 	<string name="replies_tree">Replies tree</string>
 	<string name="reply">Reply</string>
@@ -429,13 +438,11 @@
 	<string name="similar_to_number__format">Similar to %s</string>
 	<string name="since_date__format">Since %s</string>
 	<string name="skip">Skip</string>
+	<string name="small_grid">Small grid</string>
 	<string name="some_posts_have_been_edited">Some posts have been edited</string>
-	<string name="sort_by_date_created">Sort by date created</string>
-	<string name="sort_by_replies">Sort by replies</string>
 	<string name="sorting">Sorting</string>
 	<string name="specific_to_internal_services__sentence">The following option is specific to some internal services
 		such as captchas or client updating. HTTPS for forums can be managed at the respective settings page.</string>
-	<string name="speed">Speed</string>
 	<string name="spoiler">Spoiler</string>
 	<string name="spoilers">Spoilers</string>
 	<string name="ssl_https_error">SSL/HTTPS error</string>
@@ -465,8 +472,8 @@
 	<string name="threads">Threads</string>
 	<string name="threads_auto_refreshing">Threads auto refreshing</string>
 	<string name="threads_created">Threads created</string>
-	<string name="threads_grid">Threads grid</string>
 	<string name="threads_list">Threads list</string>
+	<string name="threads_view">Threads view</string>
 	<string name="threads_will_be_deleted__sentence">The following threads will be deleted.</string>
 	<string name="thumbnail_scale">Thumbnail scale</string>
 	<string name="thumbnails">Thumbnails</string>

@@ -13,8 +13,10 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.text.Layout;
 import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 import android.text.style.BackgroundColorSpan;
-import android.util.SparseIntArray;
+import android.text.style.RelativeSizeSpan;
+import android.text.style.TypefaceSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -24,6 +26,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
@@ -188,8 +191,9 @@ public class ViewUnit {
 			(view, text, start, end) -> InteractionUnit.getCopyReadyComment(text, start, end);
 
 	public RecyclerView.ViewHolder createThreadViewHolder(ViewGroup parent,
-			UiManager.ConfigurationSet configurationSet, boolean cell) {
-		return new ThreadViewHolder(parent, configurationSet, uiManager, cell);
+			UiManager.ConfigurationSet configurationSet, boolean card, boolean cell) {
+		return new ThreadViewHolder(parent, configurationSet, uiManager, cell ? ThreadViewHolder.ViewType.CELL
+				: card ? ThreadViewHolder.ViewType.CARD : ThreadViewHolder.ViewType.LIST);
 	}
 
 	public void bindThreadView(RecyclerView.ViewHolder viewHolder, PostItem postItem) {
@@ -199,10 +203,13 @@ public class ViewUnit {
 		Chan chan = Chan.get(holder.configurationSet.chanName);
 		holder.postItem = postItem;
 
-		holder.stateSage.setVisibility(postItem.getBumpLimitReachedState(chan, 0) ==
-				PostItem.BumpLimitState.REACHED ? View.VISIBLE : View.GONE);
-		holder.stateSticky.setVisibility(postItem.isSticky() ? View.VISIBLE : View.GONE);
-		holder.stateClosed.setVisibility(postItem.isClosed() ? View.VISIBLE : View.GONE);
+		boolean bumpLimitReached = postItem.getBumpLimitReachedState(chan, 0) == PostItem.BumpLimitState.REACHED;
+		PostState.Predicate.Data stateData = new PostState.Predicate
+				.Data(postItem, holder.configurationSet, bumpLimitReached);
+		for (int i = 0; i < PostState.THREAD_ITEM_STATES.size(); i++) {
+			boolean visible = PostState.THREAD_ITEM_STATES.get(i).predicate.apply(stateData);
+			holder.stateImages[i].setVisibility(visible ? View.VISIBLE : View.GONE);
+		}
 
 		String subject = postItem.getSubject();
 		if (!StringUtils.isEmpty(subject)) {
@@ -241,7 +248,8 @@ public class ViewUnit {
 		holder.thumbnail.setOnLongClickListener(holder.thumbnailLongClickListener);
 	}
 
-	public void bindThreadCellView(RecyclerView.ViewHolder viewHolder, PostItem postItem, int contentHeight) {
+	public void bindThreadCellView(RecyclerView.ViewHolder viewHolder, PostItem postItem,
+			boolean small, int contentHeight) {
 		Context context = uiManager.getContext();
 		ColorScheme colorScheme = ThemeEngine.getColorScheme(context);
 		ThreadViewHolder holder = (ThreadViewHolder) viewHolder;
@@ -254,15 +262,22 @@ public class ViewUnit {
 		String subject = postItem.getSubject();
 		if (!StringUtils.isEmptyOrWhitespace(subject) && !hidden) {
 			holder.subject.setVisibility(View.VISIBLE);
-			holder.subject.setText(subject.trim());
+			holder.subject.setSingleLine(!small);
+			SpannableStringBuilder builder = new SpannableStringBuilder(subject.trim());
+			if (!small) {
+				builder.setSpan(new RelativeSizeSpan(4f / 3f), 0, builder.length(),
+						SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+				builder.setSpan(new TypefaceSpan("sans-serif-light"), 0, builder.length(),
+						SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+			}
+			holder.subject.setText(builder);
 		} else {
 			holder.subject.setVisibility(View.GONE);
 		}
 		CharSequence comment = null;
 		if (hidden) {
 			comment = postItem.getHideReason();
-		}
-		if (comment == null) {
+		} else if (!small || attachmentItems == null) {
 			int parentWidth = (int) (ResourceUtils.obtainDensity(holder.itemView) *
 					holder.itemView.getResources().getConfiguration().screenWidthDp);
 			comment = postItem.getThreadCommentShort(parentWidth / 2,
@@ -293,8 +308,8 @@ public class ViewUnit {
 	}
 
 	public RecyclerView.ViewHolder createThreadHiddenView(ViewGroup parent,
-			UiManager.ConfigurationSet configurationSet) {
-		return new HiddenViewHolder(parent, configurationSet, true);
+			UiManager.ConfigurationSet configurationSet, boolean card) {
+		return new HiddenViewHolder(parent, configurationSet, card, true);
 	}
 
 	public void bindThreadHiddenView(RecyclerView.ViewHolder viewHolder, PostItem postItem) {
@@ -337,18 +352,11 @@ public class ViewUnit {
 			bumpLimitReached = postItem.getBumpLimitReachedState(chan, postsCount) == PostItem.BumpLimitState.REACHED;
 		}
 		holder.number.setText("#" + postNumber);
-		holder.states[0] = Preferences.isShowMyPosts() &&
-				holder.configurationSet.postStateProvider.isUserPost(postNumber);
-		holder.states[1] = postItem.isOriginalPoster();
-		holder.states[2] = postItem.isSage() || bumpLimitReached;
-		holder.states[3] = !StringUtils.isEmpty(postItem.getEmail());
-		holder.states[4] = postItem.isSticky();
-		holder.states[5] = postItem.isClosed();
-		holder.states[6] = postItem.isCyclical();
-		holder.states[7] = postItem.isPosterWarned();
-		holder.states[8] = postItem.isPosterBanned();
-		for (int i = 0; i < holder.stateImages.length; i++) {
-			holder.stateImages[i].setVisibility(holder.states[i] ? View.VISIBLE : View.GONE);
+		PostState.Predicate.Data stateData = new PostState.Predicate
+				.Data(postItem, holder.configurationSet, bumpLimitReached);
+		for (int i = 0; i < PostState.POST_ITEM_STATES.size(); i++) {
+			boolean visible = PostState.POST_ITEM_STATES.get(i).predicate.apply(stateData);
+			holder.stateImages[i].setVisibility(visible ? View.VISIBLE : View.GONE);
 		}
 		viewHolder.itemView.setAlpha(postItem.isDeleted() ? ALPHA_DELETED_POST : 1f);
 
@@ -469,7 +477,7 @@ public class ViewUnit {
 
 	public RecyclerView.ViewHolder createPostHiddenView(ViewGroup parent,
 			UiManager.ConfigurationSet configurationSet) {
-		return new HiddenViewHolder(parent, configurationSet, false);
+		return new HiddenViewHolder(parent, configurationSet, false, false);
 	}
 
 	public void bindPostHiddenView(RecyclerView.ViewHolder viewHolder, PostItem postItem) {
@@ -799,20 +807,12 @@ public class ViewUnit {
 									break;
 								}
 								case TYPE_STATES: {
-									for (int i = 0; i < holder.states.length; i++) {
-										if (holder.states[i]) {
-											int attr = STATE_ATTRS[i];
-											String title;
-											if (attr == R.attr.iconPostEmail) {
-												title = holder.postItem.getEmail();
-												if (title.startsWith("mailto:")) {
-													title = title.substring(7);
-												}
-												emailToCopy = title;
-											} else {
-												title = context.getString(STATE_TEXTS.get(attr));
-											}
-											icons.add(new DialogUnit.IconData(title, attr));
+									for (int i = 0; i < PostState.POST_ITEM_STATES.size(); i++) {
+										if (holder.stateImages[i].getVisibility() == View.VISIBLE) {
+											PostState postState = PostState.POST_ITEM_STATES.get(i);
+											String title = postState.titleProvider
+													.get(uiManager.getContext(), holder.postItem);
+											icons.add(new DialogUnit.IconData(title, postState.iconAttrResId));
 										}
 									}
 									break;
@@ -830,21 +830,68 @@ public class ViewUnit {
 		}
 	};
 
-	private static final int[] STATE_ATTRS = {R.attr.iconPostUserPost, R.attr.iconPostOriginalPoster,
-			R.attr.iconPostSage, R.attr.iconPostEmail, R.attr.iconPostSticky, R.attr.iconPostClosed,
-			R.attr.iconPostCyclical, R.attr.iconPostWarned, R.attr.iconPostBanned};
+	private enum PostState {
+		USER_POST(R.attr.iconPostUserPost, R.string.my_post,
+				data -> Preferences.isShowMyPosts() && data.configurationSet.postStateProvider
+						.isUserPost(data.postItem.getPostNumber())),
+		ORIGINAL_POSTER(R.attr.iconPostOriginalPoster, R.string.original_poster,
+				data -> data.postItem.isOriginalPoster()),
+		SAGE(R.attr.iconPostSage, R.string.doesnt_bring_up_thread,
+				data -> data.postItem.isSage() || data.bumpLimitReached),
+		EMAIL(R.attr.iconPostEmail,
+				(context, postItem) -> {
+					String email = postItem.getEmail();
+					if (email != null && email.startsWith("mailto:")) {
+						email = email.substring(7);
+					}
+					return email;
+				},
+				data -> !StringUtils.isEmpty(data.postItem.getEmail())),
+		STICKY(R.attr.iconPostSticky, R.string.sticky_thread, data -> data.postItem.isSticky()),
+		CLOSED(R.attr.iconPostClosed, R.string.thread_is_closed, data -> data.postItem.isClosed()),
+		CYCLICAL(R.attr.iconPostCyclical, R.string.cyclical_thread, data -> data.postItem.isCyclical()),
+		WARNED(R.attr.iconPostWarned, R.string.user_is_warned, data -> data.postItem.isPosterWarned()),
+		BANNED(R.attr.iconPostBanned, R.string.user_is_banned, data -> data.postItem.isPosterBanned());
 
-	private static final SparseIntArray STATE_TEXTS = new SparseIntArray();
+		public interface TitleProvider {
+			String get(Context context, PostItem postItem);
+		}
 
-	static {
-		STATE_TEXTS.put(R.attr.iconPostUserPost, R.string.my_post);
-		STATE_TEXTS.put(R.attr.iconPostOriginalPoster, R.string.original_poster);
-		STATE_TEXTS.put(R.attr.iconPostSage, R.string.doesnt_bring_up_thread);
-		STATE_TEXTS.put(R.attr.iconPostSticky, R.string.sticky_thread);
-		STATE_TEXTS.put(R.attr.iconPostClosed, R.string.thread_is_closed);
-		STATE_TEXTS.put(R.attr.iconPostCyclical, R.string.cyclical_thread);
-		STATE_TEXTS.put(R.attr.iconPostWarned, R.string.user_is_warned);
-		STATE_TEXTS.put(R.attr.iconPostBanned, R.string.user_is_banned);
+		public interface Predicate {
+			class Data {
+				public final PostItem postItem;
+				public final UiManager.ConfigurationSet configurationSet;
+				public final boolean bumpLimitReached;
+
+				public Data(PostItem postItem, UiManager.ConfigurationSet configurationSet, boolean bumpLimitReached) {
+					this.postItem = postItem;
+					this.configurationSet = configurationSet;
+					this.bumpLimitReached = bumpLimitReached;
+				}
+			}
+
+			boolean apply(Data data);
+		}
+
+		public static final List<PostState> POST_ITEM_STATES = Arrays
+				.asList(USER_POST, ORIGINAL_POSTER, SAGE, EMAIL, STICKY, CLOSED, CYCLICAL, WARNED, BANNED);
+
+		public static final List<PostState> THREAD_ITEM_STATES = Arrays
+				.asList(SAGE, STICKY, CLOSED, CYCLICAL);
+
+		public final int iconAttrResId;
+		public final TitleProvider titleProvider;
+		public final Predicate predicate;
+
+		PostState(int iconAttrResId, int titleResId, Predicate predicate) {
+			this(iconAttrResId, (c, p) -> c.getString(titleResId), predicate);
+		}
+
+		PostState(int iconAttrResId, TitleProvider titleProvider, Predicate predicate) {
+			this.iconAttrResId = iconAttrResId;
+			this.titleProvider = titleProvider;
+			this.predicate = predicate;
+		}
 	}
 
 	private class AttachmentHolder {
@@ -873,14 +920,51 @@ public class ViewUnit {
 		return cardView;
 	}
 
+	private static void fillStateImages(ViewGroup parent, int anchorIndex,
+			ImageView[] images, List<PostState> states, float topDp, float startDp, float endDp) {
+		float density = ResourceUtils.obtainDensity(parent);
+		int size = (int) (12f * density + 0.5f);
+		int top = (int) (topDp * density + 0.5f);
+		int start = (int) (startDp * density + 0.5f);
+		int end = (int) (endDp * density + 0.5f);
+		boolean rtl = ViewCompat.getLayoutDirection(parent) == ViewCompat.LAYOUT_DIRECTION_RTL;
+		int left = rtl ? end : start;
+		int right = rtl ? start : end;
+		int[] attrs = new int[states.size()];
+		for (int i = 0; i < attrs.length; i++) {
+			attrs[i] = states.get(i).iconAttrResId;
+		}
+		TypedArray typedArray = parent.getContext().obtainStyledAttributes(attrs);
+		for (int i = 0; i < images.length; i++) {
+			ImageView imageView = new ImageView(parent.getContext());
+			imageView.setImageDrawable(typedArray.getDrawable(i));
+			parent.addView(imageView, anchorIndex + i, new ViewGroup.LayoutParams(size, size));
+			ViewGroup.LayoutParams layoutParams = imageView.getLayoutParams();
+			if (layoutParams instanceof ViewGroup.MarginLayoutParams) {
+				ViewGroup.MarginLayoutParams marginLayoutParams = (ViewGroup.MarginLayoutParams) layoutParams;
+				marginLayoutParams.topMargin = top;
+				marginLayoutParams.leftMargin = left;
+				marginLayoutParams.rightMargin = right;
+			}
+			images[i] = imageView;
+		}
+		typedArray.recycle();
+		if (C.API_LOLLIPOP && images.length > 0) {
+			ColorStateList tint = ColorStateList.valueOf(ThemeEngine.getTheme(images[0].getContext()).meta);
+			for (ImageView image : images) {
+				image.setImageTintList(tint);
+			}
+		}
+	}
+
 	private static class ThreadViewHolder extends RecyclerView.ViewHolder implements UiManager.Holder {
+		public enum ViewType {LIST, CARD, CELL}
+
 		public final AttachmentView thumbnail;
 		public final TextView subject;
 		public final TextView comment;
 		public final TextView description;
-		public final ImageView stateSage;
-		public final ImageView stateSticky;
-		public final ImageView stateClosed;
+		public final ImageView[] stateImages;
 		public final View threadContent;
 		public final View showOriginalPost;
 
@@ -891,24 +975,31 @@ public class ViewUnit {
 		public PostItem postItem;
 
 		public ThreadViewHolder(ViewGroup parent, UiManager.ConfigurationSet configurationSet,
-				UiManager uiManager, boolean cell) {
-			super(createCardLayout(parent));
+				UiManager uiManager, ViewType viewType) {
+			super(viewType != ViewType.LIST ? createCardLayout(parent)
+					: LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_thread, parent, false));
 
-			CardView cardView = (CardView) itemView;
-			ViewGroup cardContent = (ViewGroup) cardView.getChildAt(0);
-			LayoutInflater inflater = LayoutInflater.from(itemView.getContext());
-			inflater.inflate(cell ? R.layout.list_item_thread_grid : R.layout.list_item_thread, cardContent);
+			int thumbnailBackground;
+			if (viewType != ViewType.LIST) {
+				CardView cardView = (CardView) itemView;
+				ViewGroup cardContent = (ViewGroup) cardView.getChildAt(0);
+				LayoutInflater inflater = LayoutInflater.from(itemView.getContext());
+				inflater.inflate(viewType == ViewType.CELL ? R.layout.list_item_thread_cell
+						: R.layout.list_item_thread_card, cardContent);
+				thumbnailBackground = cardView.getBackgroundColor();
+			} else {
+				ViewUtils.setSelectableItemBackground(itemView);
+				thumbnailBackground = getPostBackgroundColor(uiManager, configurationSet);
+			}
 
 			thumbnail = itemView.findViewById(R.id.thumbnail);
 			subject = itemView.findViewById(R.id.subject);
 			comment = itemView.findViewById(R.id.comment);
 			description = itemView.findViewById(R.id.thread_description);
-			stateSage = itemView.findViewById(R.id.state_sage);
-			stateSticky = itemView.findViewById(R.id.state_sticky);
-			stateClosed = itemView.findViewById(R.id.state_closed);
 			threadContent = itemView.findViewById(R.id.thread_content);
-			showOriginalPost = itemView.findViewById(R.id.show_original_post);
-			(cell ? description : showOriginalPost).setOnClickListener(uiManager.view()
+			ViewGroup showOriginalPost = itemView.findViewById(R.id.show_original_post);
+			this.showOriginalPost = showOriginalPost;
+			(viewType == ViewType.CELL ? description : showOriginalPost).setOnClickListener(uiManager.view()
 					.threadShowOriginalPostClickListener);
 
 			this.configurationSet = configurationSet;
@@ -916,23 +1007,21 @@ public class ViewUnit {
 			thumbnailLongClickListener = uiManager.interaction().createThumbnailLongClickListener();
 
 			thumbnail.setDrawTouching(true);
-			if (cell) {
+			if (viewType == ViewType.CELL) {
 				thumbnail.setFitSquare(true);
-				thumbnail.applyRoundedCorners(cardView.getBackgroundColor());
+				thumbnail.applyRoundedCorners(thumbnailBackground);
 				ViewUtils.applyScaleSize(comment, subject, description);
+				stateImages = null;
 			} else {
-				if (C.API_LOLLIPOP) {
-					ColorStateList colors = ColorStateList.valueOf(ThemeEngine
-							.getTheme(itemView.getContext()).meta);
-					for (ImageView imageView : Arrays.asList(stateSage, stateSticky, stateClosed)) {
-						imageView.setImageTintList(colors);
-					}
-				}
-				thumbnail.applyRoundedCorners(cardView.getBackgroundColor());
+				stateImages = new ImageView[PostState.THREAD_ITEM_STATES.size()];
+				fillStateImages(showOriginalPost, viewType == ViewType.CARD ? 1 : 0,
+						stateImages, PostState.THREAD_ITEM_STATES, 0.5f,
+						viewType == ViewType.CARD ? 8 : 0, viewType == ViewType.CARD ? 0 : 8);
+				thumbnail.applyRoundedCorners(thumbnailBackground);
 				ViewGroup.MarginLayoutParams thumbnailLayoutParams =
 						(ViewGroup.MarginLayoutParams) thumbnail.getLayoutParams();
-				ViewUtils.applyScaleSize(comment, subject, description,
-						stateSage, stateSticky, stateClosed);
+				ViewUtils.applyScaleSize(comment, subject, description);
+				ViewUtils.applyScaleSize(stateImages);
 				if (ResourceUtils.isTablet(itemView.getResources().getConfiguration())) {
 					float density = ResourceUtils.obtainDensity(itemView);
 					description.setGravity(Gravity.START);
@@ -945,7 +1034,7 @@ public class ViewUnit {
 							description.getPaddingRight(), description.getPaddingBottom());
 					comment.setMaxLines(8);
 				} else {
-					description.setGravity(Gravity.END);
+					description.setGravity(viewType == ViewType.LIST ? Gravity.START : Gravity.END);
 					comment.setMaxLines(6);
 				}
 				int thumbnailsScale = Preferences.getThumbnailsScale();
@@ -1039,8 +1128,7 @@ public class ViewUnit {
 		public ArrayList<AttachmentHolder> attachmentHolders;
 		public int attachmentViewCount = 1;
 		public ArrayList<ImageView> badgeImages;
-		public final ImageView[] stateImages = new ImageView[STATE_ATTRS.length];
-		public final boolean[] states = new boolean[STATE_ATTRS.length];
+		public final ImageView[] stateImages = new ImageView[PostState.POST_ITEM_STATES.size()];
 
 		public final UiManager.ConfigurationSet configurationSet;
 		public final UiManager.ThumbnailClickListener thumbnailClickListener;
@@ -1063,21 +1151,7 @@ public class ViewUnit {
 			name = itemView.findViewById(R.id.name);
 			index = itemView.findViewById(R.id.index);
 			date = itemView.findViewById(R.id.date);
-			int anchorIndex = head.indexOfChild(number) + 1;
-			float density = ResourceUtils.obtainDensity(parent);
-			int size = (int) (12f * density);
-			TypedArray typedArray = parent.getContext().obtainStyledAttributes(STATE_ATTRS);
-			for (int i = 0; i < stateImages.length; i++) {
-				ImageView imageView = new ImageView(parent.getContext());
-				imageView.setImageDrawable(typedArray.getDrawable(i));
-				head.addView(imageView, anchorIndex + i, new ViewGroup.LayoutParams(size, size));
-				stateImages[i] = imageView;
-				if (C.API_LOLLIPOP) {
-					imageView.setImageTintList(ColorStateList.valueOf(ThemeEngine
-							.getTheme(imageView.getContext()).meta));
-				}
-			}
-			typedArray.recycle();
+			fillStateImages(head, head.indexOfChild(number) + 1, stateImages, PostState.POST_ITEM_STATES, 0, 0, 0);
 			attachments = itemView.findViewById(R.id.attachments);
 			thumbnail = itemView.findViewById(R.id.thumbnail);
 			attachmentInfo = itemView.findViewById(R.id.attachment_info);
@@ -1234,8 +1308,8 @@ public class ViewUnit {
 
 		public PostItem postItem;
 
-		private static View createBaseView(ViewGroup parent, boolean thread) {
-			if (thread) {
+		private static View createBaseView(ViewGroup parent, boolean card) {
+			if (card) {
 				CardView cardView = createCardLayout(parent);
 				ViewGroup cardContent = (ViewGroup) cardView.getChildAt(0);
 				LayoutInflater.from(cardView.getContext()).inflate(R.layout.list_item_hidden, cardContent);
@@ -1245,8 +1319,9 @@ public class ViewUnit {
 			}
 		}
 
-		public HiddenViewHolder(ViewGroup parent, UiManager.ConfigurationSet configurationSet, boolean thread) {
-			super(createBaseView(parent, thread));
+		public HiddenViewHolder(ViewGroup parent, UiManager.ConfigurationSet configurationSet,
+				boolean card, boolean thread) {
+			super(createBaseView(parent, card));
 
 			index = itemView.findViewById(R.id.index);
 			number = itemView.findViewById(R.id.number);
@@ -1257,7 +1332,8 @@ public class ViewUnit {
 			if (thread) {
 				index.setVisibility(View.GONE);
 				number.setVisibility(View.GONE);
-			} else {
+			}
+			if (!card) {
 				ViewUtils.setSelectableItemBackground(itemView);
 			}
 

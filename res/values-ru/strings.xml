@@ -51,7 +51,7 @@
 	<string name="board_doesnt_exist">Раздел не существует</string>
 	<string name="boards">Разделы</string>
 	<string name="build_version">Версия сборки</string>
-	<string name="bump_limit_posts__colon_format">Бамплимит: %d сообщений</string>
+	<string name="bump_limit">Бамплимит</string>
 	<string name="cache_is_unavailable">Кэш недоступен</string>
 	<string name="cache_size">Размер кэша</string>
 	<string name="cached_files">Кэшированные файлы</string>
@@ -62,6 +62,7 @@
 	<string name="captcha_pass">Пропуск капчи</string>
 	<string name="captcha_pass__summary">Код для пропуска капчи</string>
 	<string name="captcha_type">Тип капчи</string>
+	<string name="cards">Карточки</string>
 	<string name="catalog">Каталог</string>
 	<string name="change_theme">Сменить тему</string>
 	<string name="changelog">Список изменений</string>
@@ -104,6 +105,7 @@
 	<string name="crop_thumbnails">Обрезать миниатюры</string>
 	<string name="crop_thumbnails__summary">Миниатюры будут заполнять квадрат</string>
 	<string name="cyclical_thread">Цикличный тред</string>
+	<string name="date_created">Дата создания</string>
 	<string name="ddos_protection_bypass_failed">Не удалось обойти DDoS-защиту</string>
 	<string name="default_name_cant_be_hidden">Нельзя скрыть имя по умолчанию</string>
 	<string name="default_starting_board">Раздел по умолчанию</string>
@@ -215,7 +217,9 @@
 	<string name="keep_all">Сохранить все</string>
 	<string name="keep_current_version">Без обновления</string>
 	<string name="language">Язык</string>
+	<string name="large_grid">Крупная сетка</string>
 	<string name="links_attachments__genitive">Вложений-ссылок</string>
+	<string name="list">Список</string>
 	<string name="load_captcha">Загрузить капчу</string>
 	<string name="load_catalog">Загружать каталог</string>
 	<string name="load_catalog__summary">При открытии списка тредов будет загружен каталог</string>
@@ -302,6 +306,12 @@
 	</plurals>
 	<string name="number_page__format">%d страница</string>
 	<string name="number_page_doesnt_exist__format">%d страница не существует</string>
+	<plurals name="number_posts__format">
+		<item quantity="one">%d сообщение</item>
+		<item quantity="few">%d сообщения</item>
+		<item quantity="many">%d сообщений</item>
+		<item quantity="other">%d сообщений</item>
+	</plurals>
 	<plurals name="number_posts_per_hour__format">
 		<item quantity="one">%d сообщение в час</item>
 		<item quantity="few">%d сообщения в час</item>
@@ -389,6 +399,7 @@
 	<string name="rename">Переименовать</string>
 	<string name="repeated_files_are_prohibited">Повторные файлы запрещены</string>
 	<string name="replace">Заменить</string>
+	<string name="replies_count">Количество ответов</string>
 	<string name="replies_to_number__format">Ответы на %s</string>
 	<string name="replies_tree">Дерево ответов</string>
 	<string name="reply">Ответить</string>
@@ -444,14 +455,12 @@
 	<string name="similar_to_number__format">Похожие на %s</string>
 	<string name="since_date__format">Начиная с %s</string>
 	<string name="skip">Пропустить</string>
+	<string name="small_grid">Мелкая сетка</string>
 	<string name="some_posts_have_been_edited">Есть изменённые сообщения</string>
-	<string name="sort_by_date_created">Сортировать по дате создания</string>
-	<string name="sort_by_replies">Сортировать по ответам</string>
 	<string name="sorting">Сортировка</string>
 	<string name="specific_to_internal_services__sentence">Следующая опция является частной для некоторых сервисов,
 		таких как капчи и обновление приложения. Вы можете настроить HTTPS для форумов в соответствующих
 		категориях настроек.</string>
-	<string name="speed">Скорость</string>
 	<string name="spoiler">Спойлер</string>
 	<string name="spoilers">Спойлеры</string>
 	<string name="ssl_https_error">Ошибка SSL/HTTPS</string>
@@ -480,8 +489,8 @@
 	<string name="thread_title">Заголовок треда</string>
 	<string name="threads">Треды</string>
 	<string name="threads_auto_refreshing">Автообновление тредов</string>
-	<string name="threads_grid">Сетка тредов</string>
 	<string name="threads_list">Список тредов</string>
+	<string name="threads_view">Вид тредов</string>
 	<string name="threads_will_be_deleted__sentence">Будут удалены следующие треды.</string>
 	<string name="thumbnail_scale">Масштаб превью</string>
 	<string name="thumbnails">Миниатюры</string>

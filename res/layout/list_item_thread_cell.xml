@@ -31,7 +31,7 @@
 			android:layout_marginRight="10dp"
 			android:layout_marginBottom="8dp">
 
-			<TextView
+			<com.mishiranu.dashchan.widget.CutTextView
 				android:id="@+id/subject"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
@@ -39,9 +39,7 @@
 				android:layout_marginBottom="2dp"
 				android:textColor="?attr/colorTextPost"
 				android:tag="theme.textColor=post"
-				android:fontFamily="sans-serif-light"
-				android:textSize="16sp"
-				android:singleLine="true"
+				android:textSize="12sp"
 				android:ellipsize="end" />
 
 			<com.mishiranu.dashchan.widget.CutTextView
@@ -68,7 +66,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:paddingTop="8dp"
-		android:paddingBottom="8.99dp"
+		android:paddingBottom="8dp"
 		android:paddingLeft="10dp"
 		android:paddingRight="10dp"
 		android:gravity="end"

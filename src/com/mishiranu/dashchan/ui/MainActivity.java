@@ -1348,8 +1348,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 						R.string.my_posts).setCheckable(true);
 				appearanceOptionsMenu.add(0, R.id.menu_drawer, 0,
 						R.string.lock_navigation).setCheckable(true);
-				appearanceOptionsMenu.add(0, R.id.menu_threads_grid, 0,
-						R.string.threads_grid).setCheckable(true);
 				appearanceOptionsMenu.add(0, R.id.menu_sfw_mode, 0,
 						R.string.sfw_mode).setCheckable(true);
 			}
@@ -1362,8 +1360,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			appearanceOptionsMenu.findItem(R.id.menu_drawer)
 					.setVisible(ViewUtils.isDrawerLockable(getResources().getConfiguration()))
 					.setChecked(Preferences.isDrawerLocked());
-			appearanceOptionsMenu.findItem(R.id.menu_threads_grid)
-					.setChecked(Preferences.isThreadsGridMode());
 			appearanceOptionsMenu.findItem(R.id.menu_sfw_mode)
 					.setChecked(Preferences.isSfwMode());
 		}
@@ -1416,7 +1412,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			case R.id.menu_spoilers:
 			case R.id.menu_my_posts:
 			case R.id.menu_drawer:
-			case R.id.menu_threads_grid:
 			case R.id.menu_sfw_mode: {
 				try {
 					switch (item.getItemId()) {
@@ -1448,10 +1443,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 						case R.id.menu_drawer: {
 							Preferences.setDrawerLocked(!item.isChecked());
 							updateWideConfiguration(false);
-							return true;
-						}
-						case R.id.menu_threads_grid: {
-							Preferences.setThreadsGridMode(!item.isChecked());
 							return true;
 						}
 						case R.id.menu_sfw_mode: {
@@ -2066,8 +2057,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
-	public void setPageTitle(String title) {
-		setTitleSubtitle(title, null);
+	public void setPageTitle(String title, String subtitle) {
+		setTitleSubtitle(title, subtitle);
 		if (((PageFragment) getCurrentFragment()).getPage().content == Page.Content.POSTS) {
 			currentPageItem.threadTitle = title;
 		}

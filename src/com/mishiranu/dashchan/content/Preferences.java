@@ -998,15 +998,52 @@ public class Preferences {
 		PREFERENCES.edit().putString(KEY_THEME, value).commit();
 	}
 
-	public static final String KEY_THREADS_GRID_MODE = "threads_grid_mode";
-	public static final boolean DEFAULT_THREADS_GRID_MODE = false;
+	public enum ThreadsView {
+		LIST("list", R.id.menu_list, R.string.list),
+		CARDS("cards", R.id.menu_cards, R.string.cards),
+		LARGE_GRID("large_grid", R.id.menu_large_grid, R.string.large_grid),
+		SMALL_GRID("small_grid", R.id.menu_small_grid, R.string.small_grid);
 
-	public static boolean isThreadsGridMode() {
-		return PREFERENCES.getBoolean(KEY_THREADS_GRID_MODE, DEFAULT_THREADS_GRID_MODE);
+		private final String value;
+		public final int menuItemId;
+		public final int titleResId;
+
+		ThreadsView(String value, int menuItemId, int titleResId) {
+			this.value = value;
+			this.menuItemId = menuItemId;
+			this.titleResId = titleResId;
+		}
 	}
 
-	public static void setThreadsGridMode(boolean threadsGridMode) {
-		PREFERENCES.edit().putBoolean(KEY_THREADS_GRID_MODE, threadsGridMode).commit();
+	public static final String KEY_THREADS_VIEW = "threads_view";
+	public static final ThreadsView DEFAULT_THREADS_VIEW = ThreadsView.CARDS;
+
+	public static ThreadsView getThreadsView() {
+		String value = PREFERENCES.getString(KEY_THREADS_VIEW, DEFAULT_THREADS_VIEW.value);
+		for (ThreadsView threadsView : ThreadsView.values()) {
+			if (threadsView.value.equals(value)) {
+				return threadsView;
+			}
+		}
+		return DEFAULT_THREADS_VIEW;
+	}
+
+	public static void setThreadsView(ThreadsView threadsView) {
+		SharedPreferences.Editor editor = PREFERENCES.edit();
+		if (threadsView != null) {
+			editor.putString(KEY_THREADS_VIEW, threadsView.value);
+		} else {
+			editor.remove(KEY_THREADS_VIEW);
+		}
+		editor.commit();
+	}
+
+	static {
+		Object threadsGridMode = PREFERENCES.getAll().get("threads_grid_mode");
+		if (threadsGridMode instanceof Boolean) {
+			String value = (boolean) threadsGridMode ? ThreadsView.LARGE_GRID.value : ThreadsView.CARDS.value;
+			PREFERENCES.edit().remove("threads_grid_mode").putString(KEY_THREADS_VIEW, value).commit();
+		}
 	}
 
 	public static final String KEY_THUMBNAILS_SCALE = "thumbnails_scale";

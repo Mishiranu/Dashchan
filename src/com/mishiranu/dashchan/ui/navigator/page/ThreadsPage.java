@@ -6,8 +6,10 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -39,8 +41,10 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
+import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
+import com.mishiranu.dashchan.widget.SummaryLayout;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -62,8 +66,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	private static class ParcelableExtra implements Parcelable {
 		public static final ExtraFactory<ParcelableExtra> FACTORY = ParcelableExtra::new;
 
-		public boolean headerExpanded = false;
-		public int catalogSortIndex = -1;
+		public ThreadsAdapter.CatalogSort catalogSort = ThreadsAdapter.CatalogSort.UNSORTED;
 
 		@Override
 		public int describeContents() {
@@ -72,16 +75,14 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 
 		@Override
 		public void writeToParcel(Parcel dest, int flags) {
-			dest.writeByte((byte) (headerExpanded ? 1 : 0));
-			dest.writeInt(catalogSortIndex);
+			dest.writeString(catalogSort.name());
 		}
 
 		public static final Creator<ParcelableExtra> CREATOR = new Creator<ParcelableExtra>() {
 			@Override
-			public ParcelableExtra createFromParcel(Parcel in) {
+			public ParcelableExtra createFromParcel(Parcel source) {
 				ParcelableExtra parcelableExtra = new ParcelableExtra();
-				parcelableExtra.headerExpanded = in.readByte() != 0;
-				parcelableExtra.catalogSortIndex = in.readInt();
+				parcelableExtra.catalogSort = ThreadsAdapter.CatalogSort.valueOf(source.readString());
 				return parcelableExtra;
 			}
 
@@ -133,15 +134,9 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		UiManager uiManager = getUiManager();
-		ThreadsAdapter adapter = new ThreadsAdapter(context, this, page.chanName, page.boardName, uiManager,
-				postStateProvider, parcelableExtra.headerExpanded, parcelableExtra.catalogSortIndex);
+		ThreadsAdapter adapter = new ThreadsAdapter(context, this, page.chanName, uiManager,
+				postStateProvider, parcelableExtra.catalogSort);
 		recyclerView.setAdapter(adapter);
-		layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-			@Override
-			public int getSpanSize(int position) {
-				return adapter.getSpanSize(position);
-			}
-		});
 		recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
 			@Override
 			public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent,
@@ -150,8 +145,9 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 				adapter.applyItemPadding(view, parent.getChildAdapterPosition(view), column, outRect);
 			}
 		});
+		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), adapter::configureDivider));
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
-		layoutManager.setSpanCount(adapter.setGridMode(Preferences.isThreadsGridMode()));
+		layoutManager.setSpanCount(adapter.setThreadsView(Preferences.getThreadsView()));
 		adapter.applyFilter(getInitSearch().currentQuery);
 		InitRequest initRequest = getInitRequest();
 		if (initRequest.shouldLoad || retainExtra.cachedPostItems.isEmpty()) {
@@ -161,7 +157,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 					? PAGE_NUMBER_CATALOG : 0;
 			refreshThreads(RefreshPage.CURRENT, false);
 		} else  {
-			adapter.setItems(retainExtra.cachedPostItems, retainExtra.startPageNumber, retainExtra.boardSpeed);
+			adapter.setItems(retainExtra.cachedPostItems, retainExtra.startPageNumber == PAGE_NUMBER_CATALOG);
 			restoreListPosition();
 			if (retainExtra.dialogsState != null) {
 				uiManager.dialog().restoreState(adapter.getConfigurationSet(), retainExtra.dialogsState);
@@ -202,16 +198,24 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		ThreadsAdapter adapter = getAdapter();
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		retainExtra.dialogsState = adapter.getConfigurationSet().stackInstance.collectState();
-		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
-		parcelableExtra.headerExpanded = adapter.isHeaderExpanded();
-		parcelableExtra.catalogSortIndex = adapter.getCatalogSortIndex();
 	}
 
 	@Override
-	public String obtainTitle() {
+	public Pair<String, String> obtainTitleSubtitle() {
 		Page page = getPage();
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		String title = getChan().configuration.getBoardTitle(page.boardName);
-		return StringUtils.formatBoardTitle(page.chanName, page.boardName, title);
+		title = StringUtils.formatBoardTitle(page.chanName, page.boardName, title);
+		String subtitle = null;
+		if (retainExtra.startPageNumber > 0) {
+			subtitle = getString(R.string.number_page__format, retainExtra.startPageNumber);
+		} else if (retainExtra.startPageNumber == PAGE_NUMBER_CATALOG) {
+			subtitle = getString(R.string.catalog);
+		} else if (retainExtra.boardSpeed > 0) {
+			subtitle = getResources().getQuantityString(R.plurals.number_posts_per_hour__format,
+					retainExtra.boardSpeed, retainExtra.boardSpeed);
+		}
+		return new Pair<>(title, subtitle);
 	}
 
 	@Override
@@ -279,9 +283,20 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
 		menu.add(0, R.id.menu_catalog, 0, R.string.catalog);
 		menu.add(0, R.id.menu_pages, 0, R.string.pages);
+		SubMenu sorting = menu.addSubMenu(0, R.id.menu_sorting, 0, R.string.sorting);
+		for (ThreadsAdapter.CatalogSort catalogSort : ThreadsAdapter.CatalogSort.values()) {
+			sorting.add(R.id.menu_sorting, catalogSort.menuItemId, 0, catalogSort.titleResId);
+		}
+		sorting.setGroupCheckable(R.id.menu_sorting, true, true);
 		menu.add(0, R.id.menu_archive, 0, R.string.archive);
 		menu.add(0, R.id.menu_new_thread, 0, R.string.new_thread);
+		menu.add(0, R.id.menu_summary, 0, R.string.summary);
 		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.appearance);
+		SubMenu viewOptions = menu.addSubMenu(0, R.id.menu_threads_view, 0, R.string.threads_view);
+		for (Preferences.ThreadsView threadsView : Preferences.ThreadsView.values()) {
+			viewOptions.add(R.id.menu_threads_view, threadsView.menuItemId, 0, threadsView.titleResId);
+		}
+		viewOptions.setGroupCheckable(R.id.menu_threads_view, true, true);
 		menu.add(0, R.id.menu_star_text, 0, R.string.add_to_favorites);
 		menu.add(0, R.id.menu_unstar_text, 0, R.string.remove_from_favorites);
 		menu.add(0, R.id.menu_star_icon, 0, R.string.add_to_favorites)
@@ -297,6 +312,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	public void onPrepareOptionsMenu(Menu menu) {
 		Page page = getPage();
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		Chan chan = getChan();
 		ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(page.boardName);
 		boolean search = board.allowSearch;
@@ -308,8 +324,11 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		menu.findItem(R.id.menu_search).setTitle(canSearch ? R.string.search : R.string.filter);
 		menu.findItem(R.id.menu_catalog).setVisible(catalog && !isCatalogOpen);
 		menu.findItem(R.id.menu_pages).setVisible(catalog && isCatalogOpen);
+		menu.findItem(R.id.menu_sorting).setVisible(catalog && isCatalogOpen);
+		menu.findItem(parcelableExtra.catalogSort.menuItemId).setChecked(true);
 		menu.findItem(R.id.menu_archive).setVisible(board.allowArchive);
 		menu.findItem(R.id.menu_new_thread).setVisible(board.allowPosting);
+		menu.findItem(Preferences.getThreadsView().menuItemId).setChecked(true);
 		boolean singleBoardMode = chan.configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE);
 		boolean isFavorite = FavoritesStorage.getInstance().hasFavorite(page.chanName, page.boardName, null);
 		boolean iconFavorite = ResourceUtils.isTabletOrLandscape(getResources().getConfiguration());
@@ -345,6 +364,71 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 				getUiManager().navigator().navigatePosting(page.chanName, page.boardName, null);
 				return true;
 			}
+			case R.id.menu_summary: {
+				Chan chan = getChan();
+				AlertDialog dialog = new AlertDialog.Builder(getContext())
+						.setTitle(R.string.summary)
+						.setPositiveButton(android.R.string.ok, null)
+						.create();
+				SummaryLayout layout = new SummaryLayout(dialog);
+				String boardName = page.boardName;
+				if (boardName != null) {
+					String title = chan.configuration.getBoardTitle(boardName);
+					title = StringUtils.formatBoardTitle(page.chanName, boardName, title);
+					layout.add(getString(R.string.board), title);
+					String description = chan.configuration.getBoardDescription(boardName);
+					if (!StringUtils.isEmpty(description)) {
+						layout.add(getString(R.string.description), description);
+					}
+				}
+				int pagesCount = Math.max(chan.configuration.getPagesCount(boardName), 1);
+				if (pagesCount != ChanConfiguration.PAGES_COUNT_INVALID) {
+					layout.add(getString(R.string.pages_count), Integer.toString(pagesCount));
+				}
+				ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(boardName);
+				ChanConfiguration.Posting posting = board.allowPosting
+						? chan.configuration.safe().obtainPosting(boardName, true) : null;
+				if (posting != null) {
+					int bumpLimit = chan.configuration.getBumpLimit(boardName);
+					if (bumpLimit != ChanConfiguration.BUMP_LIMIT_INVALID) {
+						layout.add(getString(R.string.bump_limit), getResources()
+								.getQuantityString(R.plurals.number_posts__format, bumpLimit, bumpLimit));
+					}
+				}
+				layout.addDivider();
+				if (posting != null) {
+					StringBuilder builder = new StringBuilder();
+					if (!posting.allowSubject) {
+						builder.append("\u2022 ").append(getString(R.string.subjects_are_disabled)).append('\n');
+					}
+					if (!posting.allowName) {
+						builder.append("\u2022 ").append(getString(R.string.names_are_disabled)).append('\n');
+					} else if (!posting.allowTripcode) {
+						builder.append("\u2022 ").append(getString(R.string.tripcodes_are_disabled)).append('\n');
+					}
+					if (posting.attachmentCount <= 0) {
+						builder.append("\u2022 ").append(getString(R.string.images_are_disabled)).append('\n');
+					}
+					if (!posting.optionSage) {
+						builder.append("\u2022 ").append(getString(R.string.sage_is_disabled)).append('\n');
+					}
+					if (posting.hasCountryFlags) {
+						builder.append("\u2022 ").append(getString(R.string.flags_are_enabled)).append('\n');
+					}
+					if (posting.userIcons.size() > 0) {
+						builder.append("\u2022 ").append(getString(R.string.icons_are_enabled)).append('\n');
+					}
+					if (builder.length() > 0) {
+						builder.setLength(builder.length() - 1);
+						layout.add(getString(R.string.configuration), builder);
+					}
+				} else {
+					layout.add(getString(R.string.configuration), getString(R.string.read_only));
+				}
+				dialog.show();
+				getUiManager().getConfigurationLock().lockConfiguration(dialog);
+				return true;
+			}
 			case R.id.menu_star_text:
 			case R.id.menu_star_icon: {
 				FavoritesStorage.getInstance().add(page.chanName, page.boardName);
@@ -358,6 +442,23 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			case R.id.menu_make_home_page: {
 				Preferences.setDefaultBoardName(page.chanName, page.boardName);
 				item.setVisible(false);
+				return true;
+			}
+		}
+		for (ThreadsAdapter.CatalogSort catalogSort : ThreadsAdapter.CatalogSort.values()) {
+			if (item.getItemId() == catalogSort.menuItemId) {
+				ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
+				parcelableExtra.catalogSort = catalogSort;
+				getAdapter().setCatalogSort(catalogSort);
+				return true;
+			}
+		}
+		for (Preferences.ThreadsView threadsView : Preferences.ThreadsView.values()) {
+			if (item.getItemId() == threadsView.menuItemId) {
+				Preferences.setThreadsView(threadsView);
+				GridLayoutManager gridLayoutManager = (GridLayoutManager) getRecyclerView().getLayoutManager();
+				gridLayoutManager.setSpanCount(getAdapter().setThreadsView(threadsView));
+				getAdapter().notifyDataSetChanged();
 				return true;
 			}
 		}
@@ -384,11 +485,6 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			case R.id.menu_spoilers:
 			case R.id.menu_sfw_mode: {
 				notifyAllAdaptersChanged();
-				break;
-			}
-			case R.id.menu_threads_grid: {
-				GridLayoutManager gridLayoutManager = (GridLayoutManager) getRecyclerView().getLayoutManager();
-				gridLayoutManager.setSpanCount(getAdapter().setGridMode(Preferences.isThreadsGridMode()));
 				break;
 			}
 		}
@@ -552,11 +648,10 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 						recyclerView.getHeight() - recyclerView.getPaddingBottom() - child.getBottom() >= 0;
 			}
 			if (append) {
-				adapter.appendItems(postItems, pageNumber, retainExtra.boardSpeed);
+				adapter.appendItems(postItems);
 			} else {
-				adapter.setItems(Collections.singleton(postItems), pageNumber, boardSpeed);
+				adapter.setItems(Collections.singleton(postItems), pageNumber == PAGE_NUMBER_CATALOG);
 			}
-			notifyTitleChanged();
 			if (!append) {
 				recyclerView.scrollToPosition(0);
 			} else if (needScroll) {
@@ -569,6 +664,8 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 				retainExtra.boardSpeed = boardSpeed;
 			}
 			retainExtra.cachedPostItems.add(postItems);
+			notifyTitleChanged();
+			updateOptionsMenu();
 			if (oldCount == 0 && !adapter.isRealEmpty()) {
 				showScaleAnimation();
 			}

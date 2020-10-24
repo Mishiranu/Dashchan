@@ -8,11 +8,13 @@
 	<item type="id" name="menu_appearance" />
 	<item type="id" name="menu_archive" />
 	<item type="id" name="menu_attach" />
+	<item type="id" name="menu_cards" />
 	<item type="id" name="menu_catalog" />
 	<item type="id" name="menu_change_theme" />
 	<item type="id" name="menu_check_on_start" />
 	<item type="id" name="menu_clear" />
 	<item type="id" name="menu_copy_link" />
+	<item type="id" name="menu_date_created" />
 	<item type="id" name="menu_delete" />
 	<item type="id" name="menu_download" />
 	<item type="id" name="menu_drawer" />
@@ -20,6 +22,8 @@
 	<item type="id" name="menu_gallery" />
 	<item type="id" name="menu_group" />
 	<item type="id" name="menu_hidden_posts" />
+	<item type="id" name="menu_large_grid" />
+	<item type="id" name="menu_list" />
 	<item type="id" name="menu_make_home_page" />
 	<item type="id" name="menu_make_threadshot" />
 	<item type="id" name="menu_my_posts" />
@@ -29,6 +33,7 @@
 	<item type="id" name="menu_pages" />
 	<item type="id" name="menu_refresh" />
 	<item type="id" name="menu_reload" />
+	<item type="id" name="menu_replies" />
 	<item type="id" name="menu_reply" />
 	<item type="id" name="menu_report" />
 	<item type="id" name="menu_save" />
@@ -37,12 +42,15 @@
 	<item type="id" name="menu_select_all" />
 	<item type="id" name="menu_sfw_mode" />
 	<item type="id" name="menu_share_link" />
+	<item type="id" name="menu_small_grid" />
+	<item type="id" name="menu_sorting" />
 	<item type="id" name="menu_spoilers" />
 	<item type="id" name="menu_star_icon" />
 	<item type="id" name="menu_star_text" />
 	<item type="id" name="menu_summary" />
 	<item type="id" name="menu_thread_options" />
-	<item type="id" name="menu_threads_grid" />
+	<item type="id" name="menu_threads_view" />
+	<item type="id" name="menu_unsorted" />
 	<item type="id" name="menu_unstar_icon" />
 	<item type="id" name="menu_unstar_text" />
 

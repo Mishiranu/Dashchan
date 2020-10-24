@@ -230,6 +230,10 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		return null;
 	}
 
+	public Pair<String, String> obtainTitleSubtitle() {
+		return new Pair<>(obtainTitle(), null);
+	}
+
 	public void onCreateOptionsMenu(Menu menu) {}
 
 	public void onPrepareOptionsMenu(Menu menu) {}

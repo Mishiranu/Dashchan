@@ -7,7 +7,7 @@ import android.util.AttributeSet;
 import android.widget.TextView;
 import com.mishiranu.dashchan.text.style.OverlineSpan;
 
-// Allows to cut lines that doesn't fit to view's height.
+// Allows to cut lines that don't fit to view's height.
 public class CutTextView extends TextView {
 	public CutTextView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -15,25 +15,28 @@ public class CutTextView extends TextView {
 	}
 
 	@Override
-	protected void onDraw(Canvas canvas) {
-		int height = getHeight();
+	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+
+		int removeHeight = getMeasuredHeight() - getPaddingTop() - getPaddingBottom();
 		Layout layout = getLayout();
-		int maxHeight = 0;
-		for (int i = 0; i < layout.getLineCount(); i++) {
-			int bottom = layout.getLineBottom(i);
-			if (bottom > height) {
-				maxHeight = layout.getLineTop(i);
+		int count = layout.getLineCount();
+		for (int i = 0; i < count; i++) {
+			int lineHeight = layout.getLineTop(i + 1) - layout.getLineTop(i);
+			if (removeHeight >= lineHeight) {
+				removeHeight -= lineHeight;
+			} else {
 				break;
 			}
 		}
-		if (maxHeight > 0) {
-			canvas.save();
-			canvas.clipRect(0, 0, getWidth(), maxHeight);
+		if (removeHeight > 0) {
+			setMeasuredDimension(getMeasuredWidth(), getMeasuredHeight() - removeHeight);
 		}
+	}
+
+	@Override
+	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		OverlineSpan.draw(this, canvas);
-		if (maxHeight > 0) {
-			canvas.restore();
-		}
 	}
 }

@@ -33,7 +33,6 @@
 	<string name="board_doesnt_exist">Essa board não existe</string>
 	<string name="boards">Boards</string>
 	<string name="build_version">Versão</string>
-	<string name="bump_limit_posts__colon_format">Limite de bump: %d posts</string>
 	<string name="cache_is_unavailable">Cache não disponível</string>
 	<string name="cached_files">Arquivos em cache</string>
 	<string name="captcha">Captcha</string>
@@ -324,12 +323,9 @@
 	<string name="similar_posts">Posts similares</string>
 	<string name="similar_to_number__format">Similar a %s</string>
 	<string name="some_posts_have_been_edited">Alguns posts foram editados</string>
-	<string name="sort_by_date_created">Ordenar por data de criação</string>
-	<string name="sort_by_replies">Ordenar por quantidade respostas</string>
 	<string name="sorting">Ordenar</string>
 	<string name="specific_to_internal_services__sentence">A configuração a seguir só funciona no captcha ou
 		na atualização do aplicativo. Você pode configurar HTTPS para boards individuas.</string>
-	<string name="speed">Velocidade</string>
 	<string name="spoiler">Spoiler</string>
 	<string name="spoilers">Spoilers</string>
 	<string name="ssl_https_error">Erro de SSL/HTTPS</string>
@@ -353,7 +349,6 @@
 	<string name="thread_options">Opções do fio</string>
 	<string name="thread_title">Título do fio</string>
 	<string name="threads_auto_refreshing">Fios auto-atualizáveis</string>
-	<string name="threads_grid">Fios em grades</string>
 	<string name="threads_list">Lista de fios</string>
 	<string name="thumbnail_scale">Escala da miniatura</string>
 	<string name="thumbnails">Miniaturas</string>

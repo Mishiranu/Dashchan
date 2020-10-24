@@ -51,7 +51,6 @@
     <string name="board_doesnt_exist">La board non esiste</string>
     <string name="boards">Board</string>
     <string name="build_version">Versione build</string>
-    <string name="bump_limit_posts__colon_format">Limite bump: %d post</string>
     <string name="cache_is_unavailable">Cache non disponibile</string>
     <string name="cache_size">Dimensione cache</string>
     <string name="cached_files">File in cache</string>
@@ -430,13 +429,10 @@
     <string name="since_date__format">Dal %s</string>
     <string name="skip">Salta</string>
     <string name="some_posts_have_been_edited">Alcuni post sono stati modificati</string>
-    <string name="sort_by_date_created">Ordina per data creazione</string>
-    <string name="sort_by_replies">Ordina per risposte</string>
     <string name="sorting">Ordina</string>
     <string name="specific_to_internal_services__sentence">Questa opzione riguarda unicamente alcuni servizi interni
 		come captcha e aggiornamenti client. L\'HTTPS per i forum va gestito
 		nelle impostazioni delle rispettive board.</string>
-    <string name="speed">Velocità</string>
     <string name="spoiler">Spoiler</string>
     <string name="spoilers">Spoiler</string>
     <string name="ssl_https_error">Errore SSL/HTTPS</string>
@@ -466,7 +462,6 @@
     <string name="threads">Thread</string>
     <string name="threads_auto_refreshing">Aggiornamento automatico thread</string>
     <string name="threads_created">Thread creati</string>
-    <string name="threads_grid">Griglia thread</string>
     <string name="threads_list">Lista thread</string>
     <string name="threads_will_be_deleted__sentence">I seguenti thread saranno cancellati.</string>
     <string name="thumbnail_scale">Dimensione anteprima</string>

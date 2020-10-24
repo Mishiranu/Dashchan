@@ -47,7 +47,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		Object getRetainExtra(String retainId);
 		void storeRetainExtra(String retainId, Object extra);
 		ActionBar getActionBar();
-		void setPageTitle(String title);
+		void setPageTitle(String title, String subtitle);
 		void invalidateHomeUpState();
 		void handleRedirect(Page page, String chanName, String boardName, String threadNumber, PostNumber postNumber);
 	}
@@ -419,7 +419,9 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 	@Override
 	public void notifyTitleChanged() {
-		getCallback().setPageTitle(listPage.obtainTitle());
+		Pair<String, String> titleSubtitle = listPage.obtainTitleSubtitle();
+		getCallback().setPageTitle(titleSubtitle != null ? titleSubtitle.first : null,
+				titleSubtitle != null ? titleSubtitle.second : null);
 	}
 
 	@Override
