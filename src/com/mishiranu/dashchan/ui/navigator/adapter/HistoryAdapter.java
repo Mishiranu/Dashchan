@@ -1,5 +1,6 @@
 package com.mishiranu.dashchan.ui.navigator.adapter;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.view.View;
@@ -13,6 +14,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.database.HistoryDatabase;
 import com.mishiranu.dashchan.util.ListViewUtils;
+import com.mishiranu.dashchan.util.PostDateFormatter;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
@@ -48,14 +50,16 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 	private final Callback callback;
 	private final String chanName;
+	private final PostDateFormatter postDateFormatter;
 	private final HistoryDatabase.HistoryItem historyItem = new HistoryDatabase.HistoryItem();
 
 	private HistoryDatabase.HistoryCursor cursor;
 	private long queryDayStart;
 
-	public HistoryAdapter(Callback callback, String chanName) {
+	public HistoryAdapter(Context context, Callback callback, String chanName) {
 		this.callback = callback;
 		this.chanName = chanName;
+		postDateFormatter = new PostDateFormatter(context);
 		setHasStableIds(true);
 	}
 
@@ -100,9 +104,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	@NonNull
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-		View view = ViewFactory.makeTwoLinesListItem(parent);
-		((ViewFactory.TwoLinesViewHolder) view.getTag()).text2.setSingleLine(true);
-		return ListViewUtils.bind(new SimpleViewHolder(view), true, this::copyItem, callback);
+		return ListViewUtils.bind(new SimpleViewHolder(ViewFactory.makeTwoLinesListItem(parent,
+				ViewFactory.FEATURE_TEXT2_END).view), true, this::copyItem, callback);
 	}
 
 	@Override
@@ -120,6 +123,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 			title = chan.configuration.getTitle() + " — " + title;
 		}
 		viewHolder.text2.setText(title);
+		viewHolder.text2End.setText(postDateFormatter.formatDate(historyItem.time));
 	}
 
 	public DividerItemDecoration.Configuration configureDivider

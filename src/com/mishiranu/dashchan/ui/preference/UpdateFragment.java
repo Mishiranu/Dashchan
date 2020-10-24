@@ -659,8 +659,7 @@ public class UpdateFragment extends BaseListFragment implements ActivityHandler,
 			List<String> repositories = requireArguments().getStringArrayList(EXTRA_REPOSITORIES);
 			CharSequence[] titles = new CharSequence[targets.size()];
 			FrameLayout referenceParent = new FrameLayout(requireContext());
-			TextView referenceSubtitle = ((ViewFactory.TwoLinesViewHolder)
-					ViewFactory.makeTwoLinesListItem(referenceParent).getTag()).text2;
+			TextView referenceSubtitle = ViewFactory.makeTwoLinesListItem(referenceParent, 0).text2;
 			for (int i = 0; i < titles.length; i++) {
 				String target = targets.get(i);
 				String repository = repositories.get(i);

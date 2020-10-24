@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.ui.preference.core;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -10,8 +9,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
-import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.widget.ViewFactory;
 
 public abstract class Preference<T> {
 	public enum ViewType {NORMAL, CATEGORY, HEADER, CHECK}
@@ -40,15 +39,17 @@ public abstract class Preference<T> {
 		public final View view;
 		public final TextView title;
 		public final TextView summary;
+		public final LinearLayout widgetFrame;
 
-		public ViewHolder(View view, TextView title, TextView summary) {
+		public ViewHolder(View view, TextView title, TextView summary, LinearLayout widgetFrame) {
 			this.view = view;
 			this.title = title;
 			this.summary = summary;
+			this.widgetFrame = widgetFrame;
 		}
 
 		public ViewHolder(ViewHolder viewHolder) {
-			this(viewHolder.view, viewHolder.title, viewHolder.summary);
+			this(viewHolder.view, viewHolder.title, viewHolder.summary, viewHolder.widgetFrame);
 		}
 	}
 
@@ -80,10 +81,8 @@ public abstract class Preference<T> {
 	}
 
 	public ViewHolder createViewHolder(ViewGroup parent) {
-		View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_preference, parent, false);
-		TextView title = view.findViewById(android.R.id.text1);
-		TextView summary = view.findViewById(android.R.id.text2);
-		return new ViewHolder(view, title, summary);
+		ViewFactory.TwoLinesViewHolder holder = ViewFactory.makeTwoLinesListItem(parent, ViewFactory.FEATURE_WIDGET);
+		return new ViewHolder(holder.view, holder.text1, holder.text2, holder.widgetFrame);
 	}
 
 	public void bindViewHolder(ViewHolder viewHolder) {

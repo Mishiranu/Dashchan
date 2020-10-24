@@ -36,7 +36,7 @@ public class StatisticsFragment extends BaseListFragment {
 		long startTime = StatisticsStorage.getInstance().getStartTime();
 		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.statistics),
 				startTime > 0 ? getString(R.string.since_date__format,
-						new PostDateFormatter(requireContext()).format(startTime)) : null);
+						new PostDateFormatter(requireContext()).formatDateTime(startTime)) : null);
 
 		ArrayList<Adapter.ListItem> listItems = new ArrayList<>();
 		listItems.add(new Adapter.ListItem(null, getString(R.string.views),

@@ -18,6 +18,7 @@ import android.view.ViewParent;
 import android.widget.EdgeEffect;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import androidx.core.view.ViewCompat;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.Preferences;
 import java.lang.reflect.Field;
@@ -260,6 +261,14 @@ public class ViewUtils {
 		}
 		if (changed) {
 			view.requestLayout();
+		}
+	}
+
+	public static void setNewMarginRelative(View view, Integer start, Integer top, Integer end, Integer bottom) {
+		if (ViewCompat.getLayoutDirection(view) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+			setNewMargin(view, end, top, start, bottom);
+		} else {
+			setNewMargin(view, start, top, end, bottom);
 		}
 	}
 

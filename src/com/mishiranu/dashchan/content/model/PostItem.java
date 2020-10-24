@@ -704,7 +704,7 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 	public String getDateTime(PostDateFormatter formatter) {
 		long time = getTimestamp();
 		if (time > 0L) {
-			dateTimeHolder = formatter.format(getTimestamp(), dateTimeHolder);
+			dateTimeHolder = formatter.formatDateTime(getTimestamp(), dateTimeHolder);
 			return dateTimeHolder.text;
 		} else {
 			return null;

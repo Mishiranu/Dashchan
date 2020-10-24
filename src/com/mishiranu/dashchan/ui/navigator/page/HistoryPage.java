@@ -44,7 +44,7 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback, Ge
 		chanName = Preferences.isMergeChans() ? null : getPage().chanName;
 		searchQuery = getInitSearch().currentQuery;
 		CommonDatabase.getInstance().getHistory().registerObserver(updateHistoryRunnable);
-		HistoryAdapter adapter = new HistoryAdapter(this, chanName);
+		HistoryAdapter adapter = new HistoryAdapter(getContext(), this, chanName);
 		recyclerView.setAdapter(adapter);
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				adapter::configureDivider));

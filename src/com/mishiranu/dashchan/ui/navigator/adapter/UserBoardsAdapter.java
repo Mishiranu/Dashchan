@@ -95,7 +95,7 @@ public class UserBoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 	@NonNull
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-		return ListViewUtils.bind(new SimpleViewHolder(ViewFactory.makeTwoLinesListItem(parent)),
+		return ListViewUtils.bind(new SimpleViewHolder(ViewFactory.makeTwoLinesListItem(parent, 0).view),
 				true, this::getBoardName, callback);
 	}
 

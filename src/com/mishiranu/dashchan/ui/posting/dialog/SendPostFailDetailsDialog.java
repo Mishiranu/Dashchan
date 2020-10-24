@@ -41,11 +41,11 @@ public class SendPostFailDetailsDialog extends DialogFragment {
 				layout.add(getString(R.string.ban_id), banExtra.id);
 			}
 			if (banExtra.startDate > 0L) {
-				layout.add(getString(R.string.filed_on), formatter.format(banExtra.startDate));
+				layout.add(getString(R.string.filed_on), formatter.formatDateTime(banExtra.startDate));
 			}
 			if (banExtra.expireDate > 0L) {
 				layout.add(getString(R.string.expires), banExtra.expireDate == Long.MAX_VALUE
-						? getString(R.string.never) : formatter.format(banExtra.expireDate));
+						? getString(R.string.never) : formatter.formatDateTime(banExtra.expireDate));
 			}
 			if (!StringUtils.isEmpty(banExtra.message)) {
 				layout.add(getString(R.string.reason), banExtra.message);

@@ -1,40 +1,24 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.util;
 
+import android.content.Context;
+import chan.util.StringUtils;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-import android.content.Context;
-
-import chan.util.StringUtils;
-
 public class PostDateFormatter {
 	private final String instance;
-	private final DateFormat dateFormat, dateFormatLong, timeFormat;
+	private final DateFormat dateFormat;
+	private final DateFormat dateFormatLong;
+	private final DateFormat timeFormat;
 
 	public PostDateFormatter(Context context) {
 		SimpleDateFormat systemFormat = (SimpleDateFormat) android.text.format.DateFormat.getDateFormat(context);
 		String systemPattern = systemFormat.toPattern();
 		String dayFormat = systemPattern.contains("dd") ? "dd" : "d";
 		String monthFormat = systemPattern.contains("MM") ? "MM" : "M";
-		int index = StringUtils.nearestIndexOf(systemPattern, '.', '/', '-');
+		int index = StringUtils.nearestIndexOf(systemPattern, 0, '.', '/', '-');
 		char divider = index >= 0 ? systemPattern.charAt(index) : '.';
 		String shortDateFormat = systemPattern.indexOf('d') > systemPattern.indexOf('M')
 				? monthFormat + divider + dayFormat : dayFormat + divider + monthFormat;
@@ -47,7 +31,14 @@ public class PostDateFormatter {
 		this.timeFormat = new SimpleDateFormat(timeFormat, Locale.US);
 	}
 
-	public String format(long timestamp) {
+	public String formatDate(long timestamp) {
+		Calendar calendar = Calendar.getInstance();
+		int year = calendar.get(Calendar.YEAR);
+		calendar.setTimeInMillis(timestamp);
+		return (calendar.get(Calendar.YEAR) != year ? dateFormatLong : dateFormat).format(timestamp);
+	}
+
+	public String formatDateTime(long timestamp) {
 		Calendar calendar = Calendar.getInstance();
 		int year = calendar.get(Calendar.YEAR);
 		calendar.setTimeInMillis(timestamp);
@@ -55,11 +46,11 @@ public class PostDateFormatter {
 				+ " " + timeFormat.format(timestamp);
 	}
 
-	public Holder format(long timestamp, Holder holder) {
+	public Holder formatDateTime(long timestamp, Holder holder) {
 		if (holder != null && holder.instance.equals(instance)) {
 			return holder;
 		}
-		return new Holder(format(timestamp), instance);
+		return new Holder(formatDateTime(timestamp), instance);
 	}
 
 	public static class Holder {

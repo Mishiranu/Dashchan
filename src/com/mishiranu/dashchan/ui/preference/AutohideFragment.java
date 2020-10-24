@@ -247,9 +247,8 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		@NonNull
 		@Override
 		public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-			View view = ViewFactory.makeTwoLinesListItem(parent);
-			((ViewFactory.TwoLinesViewHolder) view.getTag()).text2.setSingleLine(true);
-			return ListViewUtils.bind(new SimpleViewHolder(view), false, null, this);
+			return ListViewUtils.bind(new SimpleViewHolder(ViewFactory.makeTwoLinesListItem(parent,
+					ViewFactory.FEATURE_SINGLE_LINE).view), false, null, this);
 		}
 
 		@Override

@@ -326,12 +326,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		EditText captchaInputView = footerContainer.findViewById(R.id.captcha_input);
 		if (C.API_LOLLIPOP) {
 			captchaInputParentView.setPadding(0, longFooter ? (int) (8f * density) : 0, 0, (int) (8f * density));
-			LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) captchaInputView.getLayoutParams();
-			if (captchaInputView.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL) {
-				layoutParams.leftMargin = (int) (4f * density);
-			} else {
-				layoutParams.rightMargin = (int) (4f * density);
-			}
+			ViewUtils.setNewMarginRelative(captchaInputView, null, null, (int) (4f * density), null);
 		} else {
 			int[] attrs = {android.R.attr.dividerHorizontal, android.R.attr.dividerVertical};
 			TypedArray typedArray = view.getContext().obtainStyledAttributes(null, attrs);
@@ -342,9 +337,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 			captchaInputParentView.setDividerDrawable(typedArray.getDrawable(1));
 			captchaInputParentView.setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
 			typedArray.recycle();
-			LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) captchaInputView.getLayoutParams();
-			layoutParams.leftMargin = (int) (8f * density);
-			layoutParams.rightMargin = (int) (8f * density);
+			ViewUtils.setNewMargin(captchaInputView, (int) (8f * density), null, (int) (8f * density), null);
 		}
 		ChanConfiguration.Captcha captcha = chan.configuration.safe().obtainCaptcha(captchaType);
 		captchaForm = new CaptchaForm(this, true, !longFooter,
@@ -1459,12 +1452,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) imageView.getLayoutParams();
 		layoutParams.gravity = Gravity.CENTER_VERTICAL;
 		if (C.API_LOLLIPOP) {
-			int margin = (int) (-8f * density);
-			if (imageView.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL) {
-				layoutParams.rightMargin = margin;
-			} else {
-				layoutParams.leftMargin = margin;
-			}
+			ViewUtils.setNewMarginRelative(imageView, (int) (-8f * density), 0, 0, 0);
 		}
 		imageView.setScaleType(ImageView.ScaleType.CENTER);
 		imageView.setImageDrawable(ResourceUtils.getDrawable(imageView.getContext(), attrResId, 0));

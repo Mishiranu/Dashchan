@@ -40,13 +40,13 @@ public class CheckPreference extends Preference<Boolean> {
 	@Override
 	public CheckViewHolder createViewHolder(ViewGroup parent) {
 		ViewHolder viewHolder = super.createViewHolder(parent);
-		ViewGroup widgetFrame = viewHolder.view.findViewById(android.R.id.widget_frame);
-		widgetFrame.setVisibility(View.VISIBLE);
-		CheckBox check = new CheckBox(widgetFrame.getContext());
+		viewHolder.widgetFrame.setVisibility(View.VISIBLE);
+		CheckBox check = new CheckBox(viewHolder.widgetFrame.getContext());
 		ThemeEngine.applyStyle(check);
 		check.setClickable(false);
 		check.setFocusable(false);
-		widgetFrame.addView(check, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+		viewHolder.widgetFrame.addView(check, ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
 		return new CheckViewHolder(viewHolder, check);
 	}
 

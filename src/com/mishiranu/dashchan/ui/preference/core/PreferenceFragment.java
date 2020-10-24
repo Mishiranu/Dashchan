@@ -448,7 +448,7 @@ public abstract class PreferenceFragment extends Fragment {
 			layout.addView(header);
 			layout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 					ViewGroup.LayoutParams.WRAP_CONTENT));
-			return new ViewHolder(layout, header, null);
+			return new ViewHolder(layout, header, null, null);
 		}
 	}
 
