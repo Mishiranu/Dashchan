@@ -1,21 +1,16 @@
 package com.mishiranu.dashchan.graphics;
 
-import android.annotation.TargetApi;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
-import android.graphics.PixelFormat;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.os.SystemClock;
+import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.util.AnimationUtils;
 
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-public class SelectorCheckDrawable extends Drawable {
+public class SelectorCheckDrawable extends BaseDrawable {
 	private static final int DURATION = 200;
 
 	private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -33,7 +28,7 @@ public class SelectorCheckDrawable extends Drawable {
 	}
 
 	@Override
-	public void draw(Canvas canvas) {
+	public void draw(@NonNull Canvas canvas) {
 		long dt = SystemClock.elapsedRealtime() - start;
 		float value = start == 0L ? 1f : dt < 0 ? 0f : Math.min((float) dt / DURATION, 1f);
 		value = AnimationUtils.DECELERATE_INTERPOLATOR.getInterpolation(value);
@@ -90,17 +85,6 @@ public class SelectorCheckDrawable extends Drawable {
 			invalidateSelf();
 		}
 	}
-
-	@Override
-	public int getOpacity() {
-		return PixelFormat.TRANSLUCENT;
-	}
-
-	@Override
-	public void setAlpha(int alpha) {}
-
-	@Override
-	public void setColorFilter(ColorFilter cf) {}
 
 	public boolean isSelected() {
 		return selected;

@@ -1,47 +1,27 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.graphics;
-
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.concurrent.Executor;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapRegionDecoder;
 import android.graphics.Canvas;
-import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.view.View;
-
+import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.LruCache;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.concurrent.Executor;
 
-public class DecoderDrawable extends Drawable {
+public class DecoderDrawable extends BaseDrawable {
 	private static final Executor EXECUTOR = ConcurrentUtils.newSingleThreadPool(20000, "DecoderDrawable", null, 0);
 	private static final Bitmap NULL_BITMAP = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
 
@@ -77,7 +57,7 @@ public class DecoderDrawable extends Drawable {
 	}
 
 	@Override
-	public void draw(Canvas canvas) {
+	public void draw(@NonNull Canvas canvas) {
 		Rect bounds = getBounds();
 		Rect rect = this.rect;
 		Rect dstRect = this.dstRect;
@@ -166,17 +146,6 @@ public class DecoderDrawable extends Drawable {
 			}
 		}
 	}
-
-	@Override
-	public int getOpacity() {
-		return PixelFormat.TRANSLUCENT;
-	}
-
-	@Override
-	public void setAlpha(int alpha) {}
-
-	@Override
-	public void setColorFilter(ColorFilter colorFilter) {}
 
 	@Override
 	public int getIntrinsicWidth() {

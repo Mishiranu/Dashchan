@@ -16,6 +16,10 @@ allprojects {
 	}
 }
 
+tasks.withType(JavaCompile) {
+	options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
+}
+
 apply plugin: 'com.android.application'
 
 android {

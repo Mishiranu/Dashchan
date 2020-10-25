@@ -50,10 +50,7 @@ public class AttachmentView extends View {
 	public AttachmentView(Context context, AttributeSet attrs) {
 		super(new ContextThemeWrapper(context, R.style.Theme_Gallery), attrs);
 
-		if (!C.API_PIE) {
-			// noinspection deprecation
-			setDrawingCacheEnabled(false);
-		}
+		disableDrawingCacheCompat();
 		ViewUtils.setSelectableItemBackground(this);
 		// Use old context to obtain background color.
 		backgroundColor = ResourceUtils.getColor(context, R.attr.colorAttachmentBackground);
@@ -65,6 +62,13 @@ public class AttachmentView extends View {
 			workColorMatrix = null;
 			colorMatrix1 = null;
 			colorMatrix2 = null;
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	private void disableDrawingCacheCompat() {
+		if (!C.API_PIE) {
+			setDrawingCacheEnabled(false);
 		}
 	}
 

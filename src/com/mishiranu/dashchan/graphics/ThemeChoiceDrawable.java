@@ -2,18 +2,15 @@ package com.mishiranu.dashchan.graphics;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.Outline;
 import android.graphics.Paint;
-import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-public class ThemeChoiceDrawable extends Drawable {
+public class ThemeChoiceDrawable extends BaseDrawable {
 	private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private final RectF rectF = new RectF();
 
@@ -48,17 +45,6 @@ public class ThemeChoiceDrawable extends Drawable {
 		paint.setColor(background);
 		canvas.drawCircle(cx, cy, radius * 0.5f, paint);
 	}
-
-	@Override
-	public int getOpacity() {
-		return PixelFormat.TRANSLUCENT;
-	}
-
-	@Override
-	public void setAlpha(int alpha) {}
-
-	@Override
-	public void setColorFilter(ColorFilter cf) {}
 
 	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 	@Override

@@ -5,7 +5,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
-import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
@@ -15,6 +14,7 @@ import android.os.Looper;
 import android.os.SystemClock;
 import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.content.model.FileHolder;
+import com.mishiranu.dashchan.graphics.BaseDrawable;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import java.io.BufferedInputStream;
@@ -420,7 +420,7 @@ public class AnimatedPngDecoder implements Runnable {
 
 	public Drawable getDrawable() {
 		if (drawable == null) {
-			drawable = new Drawable() {
+			drawable = new BaseDrawable() {
 				private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
 
 				@Override
@@ -441,11 +441,6 @@ public class AnimatedPngDecoder implements Runnable {
 				@Override
 				public void setAlpha(int alpha) {
 					paint.setAlpha(alpha);
-				}
-
-				@Override
-				public int getOpacity() {
-					return PixelFormat.TRANSPARENT;
 				}
 
 				@Override

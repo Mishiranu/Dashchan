@@ -1,26 +1,5 @@
-/*
- * Copyright (C) 2014 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * ************************************************************************
- *
- * Copyright 2014-2016 Fukurou Mishiranu
- */
-
 package com.mishiranu.dashchan.widget;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Canvas;
@@ -29,18 +8,17 @@ import android.graphics.LinearGradient;
 import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.PixelFormat;
 import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.widget.FrameLayout;
-
+import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.graphics.BaseDrawable;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class CardView extends FrameLayout {
@@ -117,13 +95,12 @@ public class CardView extends FrameLayout {
 	}
 
 	private interface Implementation {
-		public void initialize(CardView cardView, Context context, int backgroundColor, float size);
-		public void measure(CardView cardView, int[] measureSpecs);
-		public void setBackgroundColor(CardView cardView, int color);
+		void initialize(CardView cardView, Context context, int backgroundColor, float size);
+		void measure(CardView cardView, int[] measureSpecs);
+		void setBackgroundColor(CardView cardView, int color);
 	}
 
 	private static class CardViewJellyBean implements CardView.Implementation {
-		@SuppressWarnings("deprecation")
 		@Override
 		public void initialize(CardView cardView, Context context, int backgroundColor, float size) {
 			RoundRectDrawableWithShadow background = new RoundRectDrawableWithShadow(context.getResources(),
@@ -173,9 +150,7 @@ public class CardView extends FrameLayout {
 		}
 	}
 
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	private static class CardViewLollipop implements CardView.Implementation {
-		@SuppressWarnings("deprecation")
 		@Override
 		public void initialize(CardView cardView, Context context, int backgroundColor, float size) {
 			RoundRectDrawable backgroundDrawable = new RoundRectDrawable(backgroundColor, size);
@@ -199,8 +174,8 @@ public class CardView extends FrameLayout {
 		}
 	}
 
-	private static class RoundRectDrawable extends Drawable {
-		private float radius;
+	private static class RoundRectDrawable extends BaseDrawable {
+		private final float radius;
 		private final Paint paint;
 		private final RectF boundsF;
 		private final Rect boundsI;
@@ -228,7 +203,7 @@ public class CardView extends FrameLayout {
 		}
 
 		@Override
-		public void draw(Canvas canvas) {
+		public void draw(@NonNull Canvas canvas) {
 			canvas.drawRoundRect(boundsF, radius, radius, paint);
 		}
 
@@ -250,30 +225,9 @@ public class CardView extends FrameLayout {
 			updateBounds(bounds);
 		}
 
-		@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 		@Override
 		public void getOutline(Outline outline) {
 			outline.setRoundRect(boundsI, radius);
-		}
-
-		void setRadius(float radius) {
-			if (radius == this.radius) {
-				return;
-			}
-			this.radius = radius;
-			updateBounds(null);
-			invalidateSelf();
-		}
-
-		@Override
-		public void setAlpha(int alpha) {}
-
-		@Override
-		public void setColorFilter(ColorFilter cf) {}
-
-		@Override
-		public int getOpacity() {
-			return PixelFormat.TRANSLUCENT;
 		}
 
 		public float getRadius() {
@@ -286,16 +240,16 @@ public class CardView extends FrameLayout {
 		}
 	}
 
-	private static class RoundRectDrawableWithShadow extends Drawable {
+	private static class RoundRectDrawableWithShadow extends BaseDrawable {
 		private final int insetShadow;
 
-		private Paint paint;
-		private Paint cornerShadowPaint;
-		private Paint edgeShadowPaint;
+		private final Paint paint;
+		private final Paint cornerShadowPaint;
+		private final Paint edgeShadowPaint;
 
 		private final RectF cardBounds;
-		private float cornerRadius;
-		private Path cornerShadowPath;
+		private final float cornerRadius;
+		private final Path cornerShadowPath = new Path();
 
 		private float rawMaxShadowSize;
 		private float shadowSize;
@@ -374,12 +328,7 @@ public class CardView extends FrameLayout {
 		}
 
 		@Override
-		public int getOpacity() {
-			return PixelFormat.TRANSLUCENT;
-		}
-
-		@Override
-		public void draw(Canvas canvas) {
+		public void draw(@NonNull Canvas canvas) {
 			if (dirty) {
 				buildComponents(getBounds());
 				dirty = false;
@@ -435,11 +384,7 @@ public class CardView extends FrameLayout {
 			RectF innerBounds = new RectF(-cornerRadius, -cornerRadius, cornerRadius, cornerRadius);
 			RectF outerBounds = new RectF(innerBounds);
 			outerBounds.inset(-shadowSize, -shadowSize);
-			if (cornerShadowPath == null) {
-				cornerShadowPath = new Path();
-			} else {
-				cornerShadowPath.reset();
-			}
+			cornerShadowPath.reset();
 			cornerShadowPath.setFillType(Path.FillType.EVEN_ODD);
 			cornerShadowPath.moveTo(-cornerRadius, 0);
 			cornerShadowPath.rLineTo(-shadowSize, 0);

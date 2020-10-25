@@ -10,10 +10,8 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -25,6 +23,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.graphics.BaseDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -198,24 +197,13 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener,
 	private final ForegroundDrawable statusBarContentForeground;
 	private final ForegroundDrawable statusBarDrawerForeground;
 
-	private static abstract class ForegroundDrawable extends Drawable {
+	private static abstract class ForegroundDrawable extends BaseDrawable {
 		protected int alpha = 0xff;
 
 		public final void applyAlpha(float value) {
 			alpha = (int) (0xff * value);
 			invalidateSelf();
 		}
-
-		@Override
-		public final int getOpacity() {
-			return 0;
-		}
-
-		@Override
-		public final void setAlpha(int alpha) {}
-
-		@Override
-		public final void setColorFilter(ColorFilter cf) {}
 	}
 
 	private class KitKatContentForeground extends ForegroundDrawable {

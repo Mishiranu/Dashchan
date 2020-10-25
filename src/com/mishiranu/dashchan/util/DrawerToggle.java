@@ -23,6 +23,7 @@ import androidx.core.view.GravityCompat;
 import androidx.customview.widget.ViewDragHelper;
 import androidx.drawerlayout.widget.DrawerLayout;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.graphics.BaseDrawable;
 import java.lang.reflect.Field;
 
 public class DrawerToggle implements DrawerLayout.DrawerListener {
@@ -173,7 +174,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 
 	private static final float ARROW_HEAD_ANGLE = (float) Math.toRadians(45);
 
-	private class ArrowDrawable extends Drawable {
+	private class ArrowDrawable extends BaseDrawable {
 		private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		private final Path path = new Path();
 
@@ -225,7 +226,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 		}
 
 		@Override
-		public void draw(Canvas canvas) {
+		public void draw(@NonNull Canvas canvas) {
 			Rect bounds = getBounds();
 			boolean rtl = isLayoutRtl();
 			float position = this.position;
@@ -253,17 +254,6 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 			canvas.drawPath(path, paint);
 			canvas.restore();
 		}
-
-		@Override
-		public void setAlpha(int alpha) {}
-
-		@Override
-		public void setColorFilter(ColorFilter colorFilter) {}
-
-		@Override
-		public int getOpacity() {
-			return PixelFormat.TRANSLUCENT;
-		}
 	}
 
 	private class StateArrowAnimatorListener implements ValueAnimator.AnimatorUpdateListener {
@@ -280,7 +270,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 		}
 	}
 
-	private class SlideDrawable extends Drawable {
+	private class SlideDrawable extends BaseDrawable {
 		private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		private final int size;
 
@@ -312,7 +302,7 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 		}
 
 		@Override
-		public void draw(Canvas canvas) {
+		public void draw(@NonNull Canvas canvas) {
 			Rect bounds = getBounds();
 			canvas.save();
 			canvas.translate(bounds.left, bounds.top);
@@ -327,17 +317,6 @@ public class DrawerToggle implements DrawerLayout.DrawerListener {
 			canvas.drawRect(0, 22, 30, 30, paint);
 			canvas.drawRect(0, 40, 30, 48, paint);
 			canvas.restore();
-		}
-
-		@Override
-		public void setAlpha(int alpha) {}
-
-		@Override
-		public void setColorFilter(ColorFilter colorFilter) {}
-
-		@Override
-		public int getOpacity() {
-			return PixelFormat.TRANSLUCENT;
 		}
 	}
 

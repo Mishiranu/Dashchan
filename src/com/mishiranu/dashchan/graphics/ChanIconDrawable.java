@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.graphics;
 
 import android.content.res.ColorStateList;
 import android.graphics.Canvas;
-import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -10,7 +9,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import androidx.annotation.NonNull;
 
-public class ChanIconDrawable extends Drawable {
+public class ChanIconDrawable extends BaseDrawable {
 	private final Drawable drawable;
 	private final Paint paint;
 
@@ -44,7 +43,7 @@ public class ChanIconDrawable extends Drawable {
 	}
 
 	@Override
-	public void setTintMode(@SuppressWarnings("NullableProblems") PorterDuff.Mode tintMode) {
+	public void setTintMode(PorterDuff.Mode tintMode) {
 		super.setTintMode(tintMode);
 
 		colorFilter = null;
@@ -89,13 +88,8 @@ public class ChanIconDrawable extends Drawable {
 		}
 	}
 
-	@Override
-	public void setAlpha(int alpha) {}
-
-	@Override
-	public void setColorFilter(ColorFilter colorFilter) {}
-
 	@SuppressWarnings("deprecation")
+	@Deprecated
 	@Override
 	public int getOpacity() {
 		return drawable.getOpacity();

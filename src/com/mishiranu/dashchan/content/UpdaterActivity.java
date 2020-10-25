@@ -55,8 +55,9 @@ public class UpdaterActivity extends StateActivity {
 				performInstallation();
 			} else {
 				Uri uri = FileProvider.convertUpdatesUri(Uri.fromFile(file));
-				// noinspection deprecation
-				startActivityForResult(new Intent(Intent.ACTION_INSTALL_PACKAGE)
+				@SuppressWarnings("deprecation")
+				String action = Intent.ACTION_INSTALL_PACKAGE;
+				startActivityForResult(new Intent(action)
 						.setDataAndType(uri, "application/vnd.android.package-archive")
 						.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 						.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true)

@@ -5,7 +5,6 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.SystemClock;
 import android.telephony.TelephonyManager;
@@ -55,9 +54,10 @@ public class NetworkObserver {
 				}
 			});
 		} else {
-			// noinspection deprecation
+			@SuppressWarnings("deprecation")
+			String action = ConnectivityManager.CONNECTIVITY_ACTION;
 			context.registerReceiver(AndroidUtils.createReceiver((r, c, i) -> onActiveNetworkChange()),
-					new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+					new IntentFilter(action));
 		}
 	}
 
@@ -98,15 +98,14 @@ public class NetworkObserver {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@RequiresApi(Build.VERSION_CODES.M)
 	private void update3GConnected28() {
 		boolean is3GAvailable = false;
 		Pair<Network, NetworkCapabilities> pair = getNetwork28();
 		if (pair.second != null && pair.second.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
 			// Is there a non-deprecated way to get network subtype without READ_PHONE_STATE permission?
-			@SuppressWarnings("deprecation")
-			NetworkInfo networkInfo = connectivityManager.getNetworkInfo(pair.first);
-			// noinspection deprecation
+			android.net.NetworkInfo networkInfo = connectivityManager.getNetworkInfo(pair.first);
 			is3GAvailable = isNetworkType3G(networkInfo.getSubtype());
 		}
 		last3GAvailable = is3GAvailable;
@@ -115,7 +114,7 @@ public class NetworkObserver {
 	@SuppressWarnings("deprecation")
 	private void update3GConnectedPre28() {
 		boolean is3GAvailable = false;
-		NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+		android.net.NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 		if (networkInfo != null && networkInfo.isConnected()) {
 			int type = networkInfo.getType();
 			if (type == ConnectivityManager.TYPE_MOBILE ||
@@ -180,7 +179,7 @@ public class NetworkObserver {
 	@SuppressWarnings("deprecation")
 	private void updateNetworkStatePre28() {
 		NetworkState networkState = NetworkState.UNDEFINED;
-		NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+		android.net.NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
 		if (networkInfo != null && networkInfo.isConnected()) {
 			int type = networkInfo.getType();
 			switch (type) {

@@ -25,6 +25,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.graphics.BaseDrawable;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -254,13 +255,15 @@ public class ClickableToast {
 			// TYPE_TOAST is prohibited on 7.1 when target API is > 7.1 (excuse me, wtf?)
 			// TYPE_PHONE requires SYSTEM_ALERT_WINDOW permission
 			if (Settings.canDrawOverlays(container.getContext())) {
-				// noinspection deprecation
-				added = addContainerToWindowManager(WindowManager.LayoutParams.TYPE_PHONE);
+				@SuppressWarnings("deprecation")
+				int type = WindowManager.LayoutParams.TYPE_PHONE;
+				added = addContainerToWindowManager(type);
 			}
 		} else if (C.API_LOLLIPOP && !IS_MIUI) {
 			// TYPE_TOAST works well only on Android 5.0-7.1, but doesn't work on MIUI
-			// noinspection deprecation
-			added = addContainerToWindowManager(WindowManager.LayoutParams.TYPE_TOAST);
+			@SuppressWarnings("deprecation")
+			int type = WindowManager.LayoutParams.TYPE_TOAST;
+			added = addContainerToWindowManager(type);
 		}
 		if (!added) {
 			// TYPE_APPLICATION can't even properly overlay dialogs, used as fallback option
@@ -368,7 +371,7 @@ public class ClickableToast {
 		container.post(cancelRunnable);
 	}
 
-	private class PartialClickDrawable extends Drawable implements View.OnTouchListener, Drawable.Callback {
+	private class PartialClickDrawable extends BaseDrawable implements View.OnTouchListener, Drawable.Callback {
 		private final Drawable drawable;
 		private final ColorFilter colorFilter = new ColorMatrixColorFilter(BRIGHTNESS_MATRIX);
 
@@ -457,9 +460,6 @@ public class ClickableToast {
 		public void setAlpha(int alpha) {
 			drawable.setAlpha(alpha);
 		}
-
-		@Override
-		public void setColorFilter(ColorFilter cf) {}
 
 		@Override
 		public int getIntrinsicWidth() {

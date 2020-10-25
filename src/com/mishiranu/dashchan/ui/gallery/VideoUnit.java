@@ -6,12 +6,10 @@ import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.view.Gravity;
 import android.view.View;
@@ -31,6 +29,7 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadFileTask;
 import com.mishiranu.dashchan.content.async.ReadVideoTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.graphics.BaseDrawable;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.AudioFocus;
@@ -761,7 +760,7 @@ public class VideoUnit {
 		}
 	}
 
-	private static class BackgroundDrawable extends Drawable {
+	private static class BackgroundDrawable extends BaseDrawable {
 		public int width;
 		public int height;
 
@@ -808,12 +807,6 @@ public class VideoUnit {
 		public int getOpacity() {
 			return PixelFormat.TRANSPARENT;
 		}
-
-		@Override
-		public void setAlpha(int alpha) {}
-
-		@Override
-		public void setColorFilter(ColorFilter colorFilter) {}
 
 		@Override
 		public int getIntrinsicWidth() {

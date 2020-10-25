@@ -2,12 +2,10 @@ package com.mishiranu.dashchan.graphics;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.ColorFilter;
 import android.graphics.Paint;
-import android.graphics.PixelFormat;
-import android.graphics.drawable.Drawable;
+import androidx.annotation.NonNull;
 
-public class SimpleBitmapDrawable extends Drawable {
+public class SimpleBitmapDrawable extends BaseDrawable {
 	private final Bitmap bitmap;
 	private final int width;
 	private final int height;
@@ -27,20 +25,9 @@ public class SimpleBitmapDrawable extends Drawable {
 	}
 
 	@Override
-	public void draw(Canvas canvas) {
+	public void draw(@NonNull Canvas canvas) {
 		canvas.drawBitmap(bitmap, null, getBounds(), paint);
 	}
-
-	@Override
-	public int getOpacity() {
-		return PixelFormat.TRANSLUCENT;
-	}
-
-	@Override
-	public void setAlpha(int alpha) {}
-
-	@Override
-	public void setColorFilter(ColorFilter colorFilter) {}
 
 	@Override
 	public int getIntrinsicWidth() {

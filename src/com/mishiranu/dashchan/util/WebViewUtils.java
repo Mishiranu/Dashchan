@@ -155,9 +155,10 @@ public class WebViewUtils {
 				if (proxyChangeListener != null) {
 					Intent intent = new Intent(Proxy.PROXY_CHANGE_ACTION);
 					if (C.API_LOLLIPOP) {
-						// noinspection deprecation
-						intent.putExtra(Proxy.EXTRA_PROXY_INFO,
-								proxy != null ? ProxyInfo.buildDirectProxy(proxy.first, proxy.second) : null);
+						@SuppressWarnings("deprecation")
+						String name = Proxy.EXTRA_PROXY_INFO;
+						intent.putExtra(name, proxy != null ? ProxyInfo
+								.buildDirectProxy(proxy.first, proxy.second) : null);
 					} else {
 						Parcelable proxyProperties = null;
 						if (proxy != null) {

@@ -417,10 +417,16 @@ public class ThemeEngine {
 				int statusBarColor = GraphicsUtils.mixColors(theme.primary,
 						ColorUtils.blendARGB(STATUS_OVERLAY_DARK, STATUS_OVERLAY_LIGHT, lightness));
 				activity.getWindow().setStatusBarColor(statusBarColor);
-				// noinspection deprecation
-				activity.setTaskDescription(C.API_PIE
-						? new ActivityManager.TaskDescription(null, R.mipmap.ic_launcher, toolbarColor)
-						: new ActivityManager.TaskDescription(null, null, toolbarColor));
+				ActivityManager.TaskDescription taskDescription;
+				if (C.API_PIE) {
+					taskDescription = new ActivityManager.TaskDescription(null, R.mipmap.ic_launcher, toolbarColor);
+				} else {
+					@SuppressWarnings("deprecation")
+					ActivityManager.TaskDescription deprecatedTaskDescription = new ActivityManager
+							.TaskDescription(null, null, toolbarColor);
+					taskDescription = deprecatedTaskDescription;
+				}
+				activity.setTaskDescription(taskDescription);
 			}
 		}
 	}
@@ -750,15 +756,15 @@ public class ThemeEngine {
 	}
 
 	private static class ThemeBuilder {
-		public static interface Setter {
+		public interface Setter {
 			void setColor(ThemeBuilder builder, int color);
 		}
 
-		public static interface Getter {
+		public interface Getter {
 			Integer getColor(ThemeBuilder builder);
 		}
 
-		public static interface Transform {
+		public interface Transform {
 			Integer getTransformed(ThemeBuilder builder);
 		}
 

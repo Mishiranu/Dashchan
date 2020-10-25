@@ -1,32 +1,4 @@
-/*
- * Copyright 2014-2017 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.content.model;
-
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-import org.xmlpull.v1.XmlPullParserFactory;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -39,14 +11,22 @@ import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
-
 import chan.util.StringUtils;
-
 import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.media.WebViewBitmapDecoder;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.MimeTypes;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 public abstract class FileHolder implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -57,7 +37,7 @@ public abstract class FileHolder implements Serializable {
 	public abstract Descriptor openDescriptor() throws IOException;
 
 	public interface Descriptor extends Closeable {
-		public FileDescriptor getFileDescriptor() throws IOException;
+		FileDescriptor getFileDescriptor() throws IOException;
 	}
 
 	public String getExtension() {
@@ -114,17 +94,13 @@ public abstract class FileHolder implements Serializable {
 				options.inJustDecodeBounds = true;
 				readBitmapSimple(options);
 				if (options.outWidth > 0 && options.outHeight > 0) {
-					InputStream input = null;
 					byte[] signature = null;
 					boolean success = false;
-					try {
-						input = openInputStream();
+					try (InputStream input = openInputStream()) {
 						signature = new byte[12];
 						success = IOUtils.readExactlyCheck(input, signature, 0, signature.length);
 					} catch (IOException e) {
 						// Ignore exception
-					} finally {
-						IOUtils.close(input);
 					}
 					if (success) {
 						ImageType type = null;
@@ -157,9 +133,7 @@ public abstract class FileHolder implements Serializable {
 						}
 					}
 				} else {
-					InputStream input = null;
-					try {
-						input = openInputStream();
+					try (InputStream input = openInputStream()) {
 						XmlPullParser parser = PARSER_FACTORY.newPullParser();
 						parser.setInput(input, null);
 						int type;
@@ -187,8 +161,6 @@ public abstract class FileHolder implements Serializable {
 						}
 					} catch (IOException | XmlPullParserException e) {
 						// Ignore exception
-					} finally {
-						IOUtils.close(input);
 					}
 				}
 			}
@@ -224,10 +196,6 @@ public abstract class FileHolder implements Serializable {
 
 	public int getImageHeight() {
 		return getImageData().height;
-	}
-
-	public Bitmap readImageBitmap() {
-		return readImageBitmap(Integer.MAX_VALUE, false, false);
 	}
 
 	public Bitmap readImageBitmap(int maxSize, boolean mayUseRegionDecoder, boolean mayUseWebViewDecoder) {
@@ -505,7 +473,9 @@ public abstract class FileHolder implements Serializable {
 						String name = cursor.getString(nameIndex);
 						int size = cursor.getInt(sizeIndex);
 						if (StringUtils.isEmpty(name)) {
-							int dataIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DATA);
+							@SuppressWarnings("deprecation")
+							String column = MediaStore.MediaColumns.DATA;
+							int dataIndex = cursor.getColumnIndex(column);
 							if (dataIndex >= 0) {
 								String data = cursor.getString(dataIndex);
 								if (data != null) {
