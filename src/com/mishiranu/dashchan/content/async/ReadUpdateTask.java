@@ -33,7 +33,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
+public class ReadUpdateTask extends HttpHolderTask<Void, Boolean> {
 	private final Context context;
 	private final Callback callback;
 
@@ -344,12 +344,12 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 	}
 
 	@Override
-	protected Void doInBackground(HttpHolder holder, Void... params) {
+	protected Boolean run(HttpHolder holder) {
 		long timeThreshold = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000; // One week left
 		File directory = FileProvider.getUpdatesDirectory();
 		if (directory == null) {
 			errorItem = new ErrorItem(ErrorItem.Type.NO_ACCESS_TO_MEMORY);
-			return null;
+			return false;
 		}
 		File[] files = directory.listFiles();
 		if (files != null) {
@@ -391,16 +391,16 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 			}
 		}
 		if (isCancelled()) {
-			return null;
+			return false;
 		}
 
 		Iterable<Response> responses = readData(holder, extensionItems);
 		if (!responses.iterator().hasNext()) {
 			errorItem = new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE);
-			return null;
+			return false;
 		}
 		if (isCancelled()) {
-			return null;
+			return false;
 		}
 
 		for (Response response : responses) {
@@ -431,7 +431,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 				Log.persistent().stack(e);
 			}
 			if (isCancelled()) {
-				return null;
+				return false;
 			}
 		}
 
@@ -464,21 +464,22 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Long, Void> {
 				Log.persistent().stack(e);
 			}
 			if (isCancelled()) {
-				return null;
+				return false;
 			}
 		}
 
 		if (updateDataMap.size() > 0) {
 			this.updateDataMap = updateDataMap;
 			this.installDataMap = installDataMap;
+			return true;
 		} else {
 			this.errorItem = new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE);
+			return false;
 		}
-		return null;
 	}
 
 	@Override
-	protected void onPostExecute(Void result) {
+	protected void onComplete(Boolean success) {
 		callback.onReadUpdateComplete(updateDataMap != null && installDataMap != null
 				? new UpdateDataMap(updateDataMap, installDataMap) : null, errorItem);
 	}

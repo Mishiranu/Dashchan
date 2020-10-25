@@ -14,7 +14,7 @@ import com.mishiranu.dashchan.content.model.PostNumber;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean> {
+public class SendMultifunctionalTask extends HttpHolderTask<Void, Boolean> {
 	private final State state;
 	private final String type;
 	private final String text;
@@ -84,7 +84,7 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 	}
 
 	@Override
-	protected Boolean doInBackground(HttpHolder holder, Void... params) {
+	protected Boolean run(HttpHolder holder) {
 		Chan chan = state.chan;
 		try {
 			switch (state.operation) {
@@ -137,8 +137,8 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Void, Boolean>
 	}
 
 	@Override
-	protected void onPostExecute(Boolean result) {
-		if (result) {
+	protected void onComplete(Boolean success) {
+		if (success) {
 			callback.onSendSuccess(state, archiveBoardName, archiveThreadNumber);
 		} else {
 			callback.onSendFail(state, type, text, options, errorItem);

@@ -34,6 +34,7 @@ import com.mishiranu.dashchan.ui.preference.core.CheckPreference;
 import com.mishiranu.dashchan.ui.preference.core.MultipleEditTextPreference;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.util.ArrayList;
@@ -381,7 +382,7 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 			CheckAuthorizationTask task = new CheckAuthorizationTask(chan,
 					AuthorizationType.valueOf(args.getString(EXTRA_AUTHORIZATION_TYPE)),
 					args.getStringArray(EXTRA_AUTHORIZATION_DATA));
-			task.executeOnExecutor(CheckAuthorizationTask.THREAD_POOL_EXECUTOR);
+			task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 			return task.getHolder();
 		}
 
@@ -447,7 +448,7 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 		}
 
 		@Override
-		public Void doInBackground() {
+		public Void run() {
 			try (HttpHolder.Use ignored = holder.use()) {
 				int type = -1;
 				switch (authorizationType) {
@@ -479,7 +480,7 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 
 		@Override
 		public void cancel() {
-			cancel(true);
+			super.cancel();
 			holder.interrupt();
 		}
 	}

@@ -8,10 +8,10 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.os.AsyncTask;
 import android.view.View;
 import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.Log;
@@ -22,7 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.concurrent.Executor;
 
 public class DecoderDrawable extends BaseDrawable {
-	private static final Executor EXECUTOR = ConcurrentUtils.newSingleThreadPool(20000, "DecoderDrawable", null, 0);
+	private static final Executor EXECUTOR = ConcurrentUtils.newSingleThreadPool(20000, "DecoderDrawable", null);
 	private static final Bitmap NULL_BITMAP = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
 
 	private static final int FRAGMENT_SIZE = 512;
@@ -115,7 +115,7 @@ public class DecoderDrawable extends BaseDrawable {
 							DecodeTask task = tasks.get(key);
 							if (task == null) {
 								task = new DecodeTask(key, x, y, scale);
-								task.executeOnExecutor(EXECUTOR);
+								task.execute(EXECUTOR);
 								tasks.put(key, task);
 							}
 							drawScaledFragment = true;
@@ -202,7 +202,7 @@ public class DecoderDrawable extends BaseDrawable {
 		return x << 18 | y << 4 | scale;
 	}
 
-	private class DecodeTask extends AsyncTask<Void, Void, Bitmap> {
+	private class DecodeTask extends ExecutorTask<Void, Bitmap> {
 		private final int key;
 		private final Rect rect;
 		private final BitmapFactory.Options options = new BitmapFactory.Options();
@@ -231,7 +231,7 @@ public class DecoderDrawable extends BaseDrawable {
 		}
 
 		@Override
-		protected Bitmap doInBackground(Void... params) {
+		protected Bitmap run() {
 			try {
 				synchronized (DecoderDrawable.this) {
 					Bitmap bitmap = decoder.decodeRegion(rect, options);
@@ -254,29 +254,29 @@ public class DecoderDrawable extends BaseDrawable {
 
 		@SuppressWarnings("deprecation")
 		public void cancel() {
-			cancel(false);
+			super.cancel();
 			if (!C.API_NOUGAT) {
 				options.mCancel = true;
 			}
 		}
 
 		@Override
-		protected void onCancelled(Bitmap result) {
-			if (result != null) {
-				result.recycle();
+		protected void onCancel(Bitmap bitmap) {
+			if (bitmap != null) {
+				bitmap.recycle();
 			}
 		}
 
 		@Override
-		protected void onPostExecute(Bitmap result) {
+		protected void onComplete(Bitmap bitmap) {
 			tasks.remove(key);
 			if (error) {
 				recycle(false);
 			} else {
-				if (result == null) {
-					result = NULL_BITMAP;
+				if (bitmap == null) {
+					bitmap = NULL_BITMAP;
 				}
-				fragments.put(key, result);
+				fragments.put(key, bitmap);
 				invalidateSelf();
 			}
 		}

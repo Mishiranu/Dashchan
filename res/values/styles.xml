@@ -114,6 +114,8 @@
 
 	<style name="Theme.Main.Light" parent="@style/Theme.Base.Main.Light">
 
+		<item name="overlayTheme">@style/Theme.Overlay.Light</item>
+
 		<item name="android:colorBackground">@color/background_popup_light</item>
 		<item name="colorWindowBackground">@color/background_window_light</item>
 		<item name="colorBlockBackground">@color/background_block_light</item>
@@ -140,6 +142,8 @@
 
 	<style name="Theme.Main.Dark" parent="@style/Theme.Base.Main.Dark">
 
+		<item name="overlayTheme">@style/Theme.Overlay.Dark</item>
+
 		<item name="android:colorBackground">@color/background_popup_dark</item>
 		<item name="colorWindowBackground">@color/background_window_dark</item>
 		<item name="colorBlockBackground">@color/background_block_dark</item>
@@ -164,8 +168,15 @@
 
 	</style>
 
-	<style name="Theme.Extended.Gallery" parent="@style/Theme.Main.Dark">
+	<style name="Widget.Gallery.ActionBar" parent="@android:style/Widget.Holo.ActionBar">
 
+		<item name="android:background">@android:color/transparent</item>
+
+	</style>
+
+	<style name="Theme.Overlay.Dark" parent="@style/Theme.Main.Dark">
+
+		<item name="android:windowNoTitle">true</item>
 		<item name="android:windowBackground">@android:color/transparent</item>
 		<item name="android:windowActionBarOverlay">true</item>
 		<item name="android:colorBackgroundCacheHint">@null</item>
@@ -176,21 +187,33 @@
 
 	</style>
 
-	<style name="Theme.Gallery" parent="@style/Theme.Extended.Gallery">
+	<style name="Theme.Overlay.Light" parent="@style/Theme.Main.Light">
 
+		<item name="android:windowNoTitle">true</item>
+		<item name="android:windowBackground">@android:color/transparent</item>
+		<item name="android:windowActionBarOverlay">true</item>
+		<item name="android:colorBackgroundCacheHint">@null</item>
+		<item name="android:windowFrame">@null</item>
+		<item name="android:windowContentOverlay">@null</item>
+		<item name="android:windowAnimationStyle">@null</item>
+		<item name="android:windowIsTranslucent">true</item>
+
+	</style>
+
+	<style name="Theme.Extended.Gallery" parent="@style/Theme.Overlay.Dark">
+
+		<item name="android:windowNoTitle">false</item>
+		<item name="android:windowActionBarOverlay">true</item>
+		<item name="android:windowActionModeOverlay">false</item>
 		<item name="android:actionBarStyle">@style/Widget.Gallery.ActionBar</item>
 
 	</style>
 
+	<style name="Theme.Gallery" parent="@style/Theme.Extended.Gallery" />
+
 	<style name="Theme.Launcher" parent="@android:style/Theme.Holo.NoActionBar">
 
 		<item name="android:windowBackground">@color/background_window_dark</item>
-
-	</style>
-
-	<style name="Widget.Gallery.ActionBar" parent="@android:style/Widget.Holo.ActionBar">
-
-		<item name="android:background">@android:color/transparent</item>
 
 	</style>
 

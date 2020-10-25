@@ -15,6 +15,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.adapter.ArchiveAdapter;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -23,13 +24,14 @@ import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
+import java.util.List;
 
 public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 		ReadThreadSummariesTask.Callback {
 	private static class RetainExtra {
 		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
 
-		public ThreadSummary[] threadSummaries;
+		public List<ThreadSummary> threadSummaries;
 		public int pageNumber;
 	}
 
@@ -150,7 +152,7 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 		}
 		readTask = new ReadThreadSummariesTask(this, getChan(), page.boardName, pageNumber,
 				ChanPerformer.ReadThreadSummariesData.TYPE_ARCHIVED_THREADS);
-		readTask.executeOnExecutor(ReadThreadSummariesTask.THREAD_POOL_EXECUTOR);
+		readTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 		if (showPull) {
 			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 			switchView(ViewType.LIST, null);
@@ -161,7 +163,7 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 	}
 
 	@Override
-	public void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries, int pageNumber) {
+	public void onReadThreadSummariesSuccess(List<ThreadSummary> threadSummaries, int pageNumber) {
 		readTask = null;
 		PullableRecyclerView recyclerView = getRecyclerView();
 		recyclerView.getWrapper().cancelBusyState();
@@ -186,8 +188,8 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 				}
 			} else {
 				threadSummaries = ReadThreadSummariesTask.concatenate(retainExtra.threadSummaries, threadSummaries);
-				int oldCount = retainExtra.threadSummaries.length;
-				if (threadSummaries.length > oldCount) {
+				int oldCount = retainExtra.threadSummaries.size();
+				if (threadSummaries.size() > oldCount) {
 					boolean needScroll = false;
 					int childCount = recyclerView.getChildCount();
 					if (childCount > 0) {

@@ -31,6 +31,7 @@ import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.ProgressDialog;
@@ -230,7 +231,7 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 			switch (name) {
 				case TASK_READ_CHANGELOG: {
 					ReadChangelogTask task = new ReadChangelogTask(requireContext());
-					task.executeOnExecutor(ReadChangelogTask.THREAD_POOL_EXECUTOR);
+					task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 					return task.getHolder();
 				}
 			}
@@ -295,7 +296,7 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 		}
 
 		@Override
-		public Boolean doInBackground() {
+		public Boolean run() {
 			try {
 				String result = null;
 				try (HttpHolder.Use ignored = holder.use()) {
@@ -341,7 +342,7 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 
 		@Override
 		public void cancel() {
-			cancel(true);
+			super.cancel();
 			holder.interrupt();
 		}
 	}

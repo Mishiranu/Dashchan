@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
+public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 	private static final int CONNECT_TIMEOUT = 15000;
 	private static final int READ_TIMEOUT = 15000;
 
@@ -60,7 +60,7 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 	private final TimedProgressHandler progressHandler = new TimedProgressHandler() {
 		@Override
 		public void onProgressChange(long progress, long progressMax) {
-			publishProgress(progress, progressMax);
+			notifyProgress(new long[] {progress, progressMax});
 		}
 	};
 
@@ -92,12 +92,12 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 	}
 
 	@Override
-	public void onPreExecute() {
+	protected void onPrepare() {
 		callback.onStartDownloading();
 	}
 
 	@Override
-	protected Boolean doInBackground(HttpHolder holder, String... params) {
+	protected Boolean run(HttpHolder holder) {
 		boolean success = false;
 		try {
 			loadingStarted = true;
@@ -183,13 +183,13 @@ public class ReadFileTask extends HttpHolderTask<String, Long, Boolean> {
 	}
 
 	@Override
-	public void onPostExecute(Boolean success) {
-		callback.onFinishDownloading(success, fromUri, toFile, errorItem);
+	protected void onProgress(long[] values) {
+		callback.onUpdateProgress(values[0], values[1]);
 	}
 
 	@Override
-	protected void onProgressUpdate(Long... values) {
-		callback.onUpdateProgress(values[0], values[1]);
+	protected void onComplete(Boolean success) {
+		callback.onFinishDownloading(success, fromUri, toFile, errorItem);
 	}
 
 	public boolean isDownloadingFromCache() {

@@ -13,7 +13,7 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import java.net.HttpURLConnection;
 
-public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem> {
+public class ReadSinglePostTask extends HttpHolderTask<Void, PostItem> {
 	private final Callback callback;
 	private final Chan chan;
 	private final String boardName;
@@ -38,7 +38,7 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem> {
 	}
 
 	@Override
-	protected PostItem doInBackground(HttpHolder holder, Void... params) {
+	protected PostItem run(HttpHolder holder) {
 		long startTime = SystemClock.elapsedRealtime();
 		try {
 			String postNumber;
@@ -71,7 +71,7 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, Void, PostItem> {
 	}
 
 	@Override
-	protected void onPostExecute(PostItem result) {
+	protected void onComplete(PostItem result) {
 		if (result != null) {
 			callback.onReadSinglePostSuccess(result);
 		} else {

@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.util.Pair;
+import androidx.annotation.NonNull;
 import chan.content.Chan;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.util.AndroidUtils;
@@ -97,6 +98,7 @@ public class CacheManager implements Runnable {
 			this.type = type;
 		}
 
+		@NonNull
 		@Override
 		public String toString() {
 			return "CacheItem [\"" + name + "\", " + length + "]";

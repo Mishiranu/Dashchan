@@ -20,6 +20,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -41,6 +43,7 @@ import com.mishiranu.dashchan.graphics.GalleryBackgroundDrawable;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.AnimationUtils;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
@@ -68,7 +71,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 	private static final String EXTRA_SELECTED = "selected";
 	private static final String EXTRA_GALLERY_WINDOW = "galleryWindow";
 	private static final String EXTRA_GALLERY_MODE = "galleryMode";
-	private static final String EXTRA_SYSTEM_UI_VISIBILITY = "systemUIVisibility";
+	private static final String EXTRA_SYSTEM_UI_VISIBILITY = "systemUiVisibility";
 
 	private List<GalleryItem> queuedGalleryItems;
 	private WeakReference<View> queuedFromView;
@@ -197,10 +200,20 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 		dialog.setContentView(rootView);
 		dialog.show();
 		dialog.getActionBar().setDisplayHomeAsUpEnabled(true);
+		Runnable invalidateSystemUiFlags = () -> {
+			if (dialog.isShowing()) {
+				invalidateSystemUiFlags();
+			}
+		};
 		dialog.setOnFocusChangeListener(hasFocus -> {
 			if (pagerUnit != null) {
 				// Block touch events when dialogs are opened
 				pagerUnit.setHasFocus(hasFocus);
+			}
+			ConcurrentUtils.HANDLER.removeCallbacks(invalidateSystemUiFlags);
+			if (hasFocus) {
+				// Re-apply visibility flags after dialogs closed
+				ConcurrentUtils.HANDLER.postDelayed(invalidateSystemUiFlags, 100);
 			}
 		});
 
@@ -287,8 +300,16 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 		if (titleSubtitle != null) {
 			dialog.setTitleSubtitle(titleSubtitle.first, titleSubtitle.second);
 		}
+		if (C.API_LOLLIPOP) {
+			Window window = getWindow();
+			if (window != null) {
+				int color = ACTION_BAR_COLOR;
+				window.setStatusBarColor(color);
+				window.setNavigationBarColor(color);
+				ViewUtils.setWindowLayoutFullscreen(window);
+			}
+		}
 		setScreenOnFixed(screenOnFixed);
-		applyStatusNavigationTranslucency();
 		invalidateSystemUiVisibility();
 	}
 
@@ -645,17 +666,8 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 		return galleryMode;
 	}
 
-	private void applyStatusNavigationTranslucency() {
-		if (C.API_LOLLIPOP) {
-			Window window = getWindow();
-			if (window != null) {
-				int color = ACTION_BAR_COLOR;
-				window.setStatusBarColor(color);
-				window.setNavigationBarColor(color);
-				window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-						| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-			}
-		}
+	private void postInvalidateSystemUIVisibility() {
+		rootView.post(this::invalidateSystemUiVisibility);
 	}
 
 	private void invalidateSystemUiVisibility() {
@@ -669,13 +681,7 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 			} else {
 				actionBar.hide();
 			}
-			if (C.API_LOLLIPOP) {
-				View decorView = getWindow().getDecorView();
-				int visibility = decorView.getSystemUiVisibility();
-				visibility = FlagUtils.set(visibility, View.SYSTEM_UI_FLAG_FULLSCREEN |
-						View.SYSTEM_UI_FLAG_IMMERSIVE | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION, !visible);
-				decorView.setSystemUiVisibility(visibility);
-			}
+			invalidateSystemUiFlags();
 			if (pagerUnit != null) {
 				pagerUnit.invalidateControlsVisibility();
 				if (changed) {
@@ -685,8 +691,31 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 		}
 	}
 
-	private void postInvalidateSystemUIVisibility() {
-		rootView.post(this::invalidateSystemUiVisibility);
+	private void invalidateSystemUiFlags() {
+		if (C.API_LOLLIPOP) {
+			boolean visible = isSystemUiVisible();
+			Window window = getWindow();
+			if (C.API_R) {
+				WindowInsetsController controller = window.getInsetsController();
+				controller.setSystemBarsBehavior(WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+				if (visible) {
+					controller.show(WindowInsets.Type.systemBars());
+				} else {
+					controller.hide(WindowInsets.Type.systemBars());
+				}
+			} else {
+				View decorView = window.getDecorView();
+				@SuppressWarnings("deprecation")
+				Runnable runnable = () -> {
+					@SuppressWarnings("deprecation")
+					int visibility = decorView.getSystemUiVisibility();
+					visibility = FlagUtils.set(visibility, View.SYSTEM_UI_FLAG_FULLSCREEN |
+							View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION, !visible);
+					decorView.setSystemUiVisibility(visibility);
+				};
+				runnable.run();
+			}
+		}
 	}
 
 	@Override
@@ -706,7 +735,9 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 	}
 
 	@Override
-	public void onApplyWindowPaddings(WindowControlFrameLayout view, Rect rect) {
+	public void onApplyWindowPaddings(WindowControlFrameLayout view, Rect rect, Rect imeRect30) {
+		rect = new Rect(rect);
+		rect.bottom = Math.max(rect.bottom, imeRect30.bottom);
 		if (listUnit != null) {
 			boolean invalidate = listUnit.onApplyWindowPaddings(rect);
 			if (invalidate) {

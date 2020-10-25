@@ -2,12 +2,14 @@ package com.mishiranu.dashchan.ui.gallery;
 
 import android.app.ActionBar;
 import android.app.Dialog;
+import android.graphics.Insets;
 import android.media.AudioManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.Toolbar;
 import androidx.annotation.NonNull;
@@ -15,6 +17,7 @@ import androidx.fragment.app.Fragment;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.ui.ActivityHandler;
+import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ViewFactory;
 
 public class GalleryDialog extends Dialog {
@@ -33,6 +36,23 @@ public class GalleryDialog extends Dialog {
 		layoutParams.setTitle(getContext().getPackageName() + "/" + getClass().getName());
 		getWindow().setAttributes(layoutParams);
 		setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+		if (C.API_R) {
+			// ActionBarOverlayLayout relies on SYSTEM_UI_FLAG_LAYOUT_STABLE and uses deprecated
+			// getSystemWindowInsetsAsRect instead of getInsetsIgnoringVisibility
+			View decorView = getWindow().getDecorView();
+			View overlay = decorView.findViewById(fragment.getResources()
+					.getIdentifier("decor_content_parent", "id", "android"));
+			View container = decorView.findViewById(fragment.getResources()
+					.getIdentifier("action_bar_container", "id", "android"));
+			if (overlay != null && container != null) {
+				overlay.setOnApplyWindowInsetsListener((v, insets) -> {
+					Insets systemInsets = insets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
+					ViewUtils.setNewMargin(container, systemInsets.left, systemInsets.top, systemInsets.right, null);
+					return insets;
+				});
+			}
+		}
 	}
 
 	private boolean actionBarAnimationsFixed = false;

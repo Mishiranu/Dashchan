@@ -34,6 +34,7 @@ import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
@@ -250,7 +251,7 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 	@Override
 	public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
 		ReadThemesTask task = new ReadThemesTask();
-		task.executeOnExecutor(ReadThemesTask.THREAD_POOL_EXECUTOR);
+		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 		return task.getHolder();
 	}
 
@@ -420,7 +421,7 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 		private ErrorItem errorItem;
 
 		@Override
-		protected Boolean doInBackground() {
+		protected Boolean run() {
 			ArrayList<JSONObject> themes = new ArrayList<>();
 			try (HttpHolder.Use ignored = holder.use()) {
 				Uri uri = Chan.getFallback().locator.setScheme(Uri.parse(BuildConfig.URI_THEMES));
@@ -461,7 +462,7 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 
 		@Override
 		public void cancel() {
-			cancel(true);
+			super.cancel();
 			holder.interrupt();
 		}
 	}

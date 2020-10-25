@@ -147,8 +147,9 @@ public class ListUnit implements ActionMode.Callback {
 
 	public boolean onApplyWindowPaddings(Rect rect) {
 		if (C.API_LOLLIPOP) {
+			int top = rect.top + (C.API_R ? getActionBarHeight() : 0);
 			ViewUtils.setNewMargin(recyclerView, rect.left, null, rect.right, null);
-			ViewUtils.setNewPadding(recyclerView, null, rect.top, null, rect.bottom);
+			ViewUtils.setNewPadding(recyclerView, null, top, null, rect.bottom);
 			return true;
 		}
 		return false;
@@ -301,6 +302,15 @@ public class ListUnit implements ActionMode.Callback {
 		updateAllGalleryItemsChecked();
 	}
 
+	private int getActionBarHeight() {
+		TypedArray typedArray = instance.context.obtainStyledAttributes(new int[] {android.R.attr.actionBarSize});
+		try {
+			return typedArray.getDimensionPixelSize(0, 0);
+		} finally {
+			typedArray.recycle();
+		}
+	}
+
 	private void updateGridMetrics(Configuration configuration) {
 		// Items count in row must fit to this inequality: (widthDp - (i + 1) * GRID_SPACING_DP) / i >= SIZE
 		// Where SIZE - size of item in grid, i - items count in row, unknown quantity
@@ -311,10 +321,7 @@ public class ListUnit implements ActionMode.Callback {
 		((GridLayoutManager) recyclerView.getLayoutManager()).setSpanCount(spanCount);
 		if (!C.API_LOLLIPOP) {
 			// Update top padding on old devices, on new devices paddings will be updated in onApplyWindowPaddings
-			TypedArray typedArray = instance.context.obtainStyledAttributes(new int[] {android.R.attr.actionBarSize});
-			int height = typedArray.getDimensionPixelSize(0, 0);
-			typedArray.recycle();
-			recyclerView.setPadding(0, height, 0, 0);
+			recyclerView.setPadding(0, getActionBarHeight(), 0, 0);
 		}
 	}
 

@@ -13,7 +13,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.RecaptchaReader;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 
-public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
+public class ReadCaptchaTask extends HttpHolderTask<Void, Boolean> {
 	public static final String RECAPTCHA_SKIP_RESPONSE = "recaptcha_skip_response";
 
 	private final Callback callback;
@@ -96,7 +96,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	@Override
-	protected Boolean doInBackground(HttpHolder holder, Void... params) {
+	protected Boolean run(HttpHolder holder) {
 		Result result;
 		try {
 			result = captchaReader.onReadCaptcha(new ChanPerformer.ReadCaptchaData(captchaType,
@@ -165,8 +165,8 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	@Override
-	protected void onPostExecute(Boolean result) {
-		if (result) {
+	protected void onComplete(Boolean success) {
+		if (success) {
 			callback.onReadCaptchaSuccess(captchaState, captchaData, loadedCaptchaType, input, validity,
 					image, large, blackAndWhite);
 		} else {

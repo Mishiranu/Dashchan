@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.view.View;
@@ -12,6 +11,7 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.widget.DropdownView;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
 import java.util.ArrayList;
@@ -106,7 +106,7 @@ public class MultipleEditTextPreference extends DialogPreference<String[]> {
 		}
 		pair.second.setId(android.R.id.widget_frame);
 		return super.configureDialog(savedInstanceState, builder).setView(pair.first)
-				.setPositiveButton(android.R.string.ok, (d, which) -> new Handler().post(() -> {
+				.setPositiveButton(android.R.string.ok, (d, which) -> ConcurrentUtils.HANDLER.post(() -> {
 					String[] value = new String[viewHolders.size()];
 					for (int i = 0; i < viewHolders.size(); i++) {
 						value[i] = StringUtils.nullIfEmpty(viewHolders.get(i).getValue());
@@ -130,10 +130,10 @@ public class MultipleEditTextPreference extends DialogPreference<String[]> {
 	}
 
 	private interface ViewHolder {
-		public String getValue();
-		public View getView();
-		public void restoreState(Bundle bundle, int index);
-		public void saveState(Bundle bundle, int index);
+		String getValue();
+		View getView();
+		void restoreState(Bundle bundle, int index);
+		void saveState(Bundle bundle, int index);
 	}
 
 	private static class EditTextViewHolder implements ViewHolder {

@@ -4,9 +4,12 @@ import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
+import android.graphics.Canvas;
 import android.graphics.Outline;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -15,15 +18,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.ViewParent;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EdgeEffect;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.core.view.ViewCompat;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
 import java.lang.reflect.Field;
 
 public class ViewUtils {
+	public static final int STATUS_OVERLAY_TRANSPARENT = 0x4d000000;
+
+	@SuppressWarnings("deprecation")
+	public static final int SOFT_INPUT_ADJUST_RESIZE_COMPAT = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
+
 	public static final DialogInterface.OnShowListener ALERT_DIALOG_LONGER_TITLE = dialog -> {
 		if (dialog instanceof AlertDialog) {
 			View view = ((AlertDialog) dialog).getWindow().getDecorView();
@@ -269,6 +280,51 @@ public class ViewUtils {
 			setNewMargin(view, end, top, start, bottom);
 		} else {
 			setNewMargin(view, start, top, end, bottom);
+		}
+	}
+
+	public static void setWindowLayoutFullscreen(Window window) {
+		if (C.API_R) {
+			window.setDecorFitsSystemWindows(false);
+		} else {
+			setWindowLayoutFullscreen21(window);
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	private static void setWindowLayoutFullscreen21(Window window) {
+		window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+				View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+	}
+
+	public static void drawSystemInsetsOver(View view, Canvas canvas) {
+		Paint paint = (Paint) view.getTag(R.id.tag_insets_draw_data);
+		if (paint == null) {
+			paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+			paint.setColor(STATUS_OVERLAY_TRANSPARENT);
+			paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_ATOP));
+			view.setTag(R.id.tag_insets_draw_data, paint);
+		}
+		int x = view.getScrollX();
+		int y = view.getScrollY();
+		boolean translate = x != 0 || y != 0;
+		if (translate) {
+			canvas.save();
+			canvas.translate(x, y);
+		}
+		int left = view.getPaddingLeft();
+		int top = view.getPaddingTop();
+		int right = view.getPaddingRight();
+		int bottom = view.getPaddingBottom();
+		int width = view.getWidth();
+		int height = view.getHeight();
+		// Draw system insets over dialogs
+		canvas.drawRect(0, 0, width, top, paint);
+		canvas.drawRect(0, height - bottom, width, height, paint);
+		canvas.drawRect(0, top, left, height - bottom, paint);
+		canvas.drawRect(width - right, top, width, height - bottom, paint);
+		if (translate) {
+			canvas.restore();
 		}
 	}
 

@@ -8,11 +8,13 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
+import android.content.res.TypedArray;
+import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.text.InputType;
 import android.util.Pair;
-import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -40,7 +42,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.async.CancellableTask;
+import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.async.ReadSinglePostTask;
 import com.mishiranu.dashchan.content.async.SendLocalArchiveTask;
 import com.mishiranu.dashchan.content.async.SendMultifunctionalTask;
@@ -56,6 +58,7 @@ import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.AnimationUtils;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
@@ -72,6 +75,7 @@ import com.mishiranu.dashchan.widget.PostsLayoutManager;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
 import com.mishiranu.dashchan.widget.ThemeEngine;
+import com.mishiranu.dashchan.widget.WindowControlFrameLayout;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -667,7 +671,7 @@ public class DialogUnit {
 			} else {
 				switchState(State.LOADING, null);
 				readTask = new ReadSinglePostTask(this, Chan.get(chanName), boardName, threadNumber, postNumber);
-				readTask.executeOnExecutor(ReadSinglePostTask.THREAD_POOL_EXECUTOR);
+				readTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 			}
 		}
 
@@ -925,8 +929,8 @@ public class DialogUnit {
 			stackInstance.attachmentDialog = null;
 		}
 		Context context = uiManager.getContext();
-		Context styledContext = new ContextThemeWrapper(context, R.style.Theme_Gallery);
-		final Dialog dialog = new Dialog(styledContext);
+		Dialog dialog = new Dialog(context, R.style.Theme_Gallery);
+		Context styledContext = dialog.getContext();
 		Pair<StackInstance.AttachmentDialog, Dialog> attachmentDialog = new Pair<>(new StackInstance
 				.AttachmentDialog(attachmentItems, startImageIndex, navigatePostMode, gallerySet), dialog);
 		stackInstance.attachmentDialog = attachmentDialog;
@@ -945,11 +949,27 @@ public class DialogUnit {
 		});
 		View.OnClickListener closeListener = v -> dialog.cancel();
 		LayoutInflater inflater = LayoutInflater.from(styledContext);
-		FrameLayout rootView = new FrameLayout(styledContext);
+		WindowControlFrameLayout rootView = new WindowControlFrameLayout(styledContext);
 		rootView.setOnClickListener(closeListener);
-		rootView.setFitsSystemWindows(true);
-		ScrollView scrollView = new ScrollView(styledContext);
+		ScrollView scrollView = new ScrollView(styledContext) {
+			@Override
+			public void draw(Canvas canvas) {
+				super.draw(canvas);
+				if (C.API_LOLLIPOP) {
+					ViewUtils.drawSystemInsetsOver(this, canvas);
+				}
+			}
+		};
+		if (C.API_LOLLIPOP) {
+			scrollView.setWillNotDraw(false);
+		}
 		scrollView.setVerticalScrollBarEnabled(false);
+		scrollView.setClipToPadding(false);
+		rootView.setOnApplyWindowPaddingsListener((view, rect, imeRect30) -> {
+			rect = new Rect(rect);
+			rect.bottom = Math.max(rect.bottom, imeRect30.bottom);
+			scrollView.setPadding(rect.left, rect.top, rect.right, rect.bottom);
+		});
 		rootView.addView(scrollView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
 				FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
 		LinearLayout container = new LinearLayout(styledContext);
@@ -1022,17 +1042,20 @@ public class DialogUnit {
 		dialog.setContentView(rootView);
 		Window window = dialog.getWindow();
 		WindowManager.LayoutParams layoutParams = window.getAttributes();
-		layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
-		layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;
 		layoutParams.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-		if (C.API_LOLLIPOP) {
-			layoutParams.flags |= WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
+		int[] attrs = new int[] {android.R.attr.windowAnimationStyle, android.R.attr.backgroundDimAmount};
+		TypedArray typedArray = styledContext.obtainStyledAttributes(null, attrs, android.R.attr.dialogTheme, 0);
+		try {
+			layoutParams.windowAnimations = typedArray.getResourceId(0, 0);
+			layoutParams.dimAmount = typedArray.getFloat(1, 0.6f);
+		} finally {
+			typedArray.recycle();
 		}
-		View decorView = window.getDecorView();
-		decorView.setBackground(null);
-		decorView.setPadding(0, 0, 0, 0);
-		decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-				View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+		if (C.API_LOLLIPOP) {
+			window.setStatusBarColor(0x00000000);
+			window.setNavigationBarColor(0x00000000);
+			ViewUtils.setWindowLayoutFullscreen(window);
+		}
 		dialog.show();
 	}
 
@@ -1222,7 +1245,7 @@ public class DialogUnit {
 		showPerformSendDialog(state, null, null, null, posts, true);
 	}
 
-	private CancellableTask<?, ?, ?> sendTask;
+	private ExecutorTask<?, ?> sendTask;
 
 	private void showPerformSendDialog(SendMultifunctionalTask.State state, String defaultType,
 			String defaultText, List<String> defaultOptions, Collection<Post> posts, boolean firstTime) {
@@ -1365,13 +1388,13 @@ public class DialogUnit {
 					SendLocalArchiveTask task = new SendLocalArchiveTask(new PerformSendCallback(posts.size()),
 							state.chan, state.boardName, state.threadNumber, posts,
 							options.contains(OPTION_THUMBNAILS), options.contains(OPTION_FILES));
-					task.executeOnExecutor(SendMultifunctionalTask.THREAD_POOL_EXECUTOR);
+					task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 					sendTask = task;
 				}
 			} else {
 				SendMultifunctionalTask task = new SendMultifunctionalTask(new PerformSendCallback(-1),
 						state, type, text, options);
-				task.executeOnExecutor(SendMultifunctionalTask.THREAD_POOL_EXECUTOR);
+				task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 				sendTask = task;
 			}
 		}).setNegativeButton(android.R.string.cancel, null).show();

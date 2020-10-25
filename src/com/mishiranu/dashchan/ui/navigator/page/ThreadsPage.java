@@ -35,6 +35,7 @@ import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.adapter.ThreadsAdapter;
 import com.mishiranu.dashchan.ui.navigator.manager.DialogUnit;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
@@ -48,13 +49,14 @@ import com.mishiranu.dashchan.widget.SummaryLayout;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 
 public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		FavoritesStorage.Observer, ReadThreadsTask.Callback {
 	private static class RetainExtra {
 		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
 
-		public final ArrayList<ArrayList<PostItem>> cachedPostItems = new ArrayList<>();
+		public final ArrayList<List<PostItem>> cachedPostItems = new ArrayList<>();
 		public final PostItem.HideState.Map<String> hiddenThreads = new PostItem.HideState.Map<>();
 		public int startPageNumber;
 		public int boardSpeed;
@@ -590,7 +592,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			HttpValidator validator = !append && retainExtra.cachedPostItems.size() == 1
 					&& retainExtra.startPageNumber == pageNumber ? retainExtra.validator : null;
 			readTask = new ReadThreadsTask(this, chan, page.boardName, pageNumber, validator, append);
-			readTask.executeOnExecutor(ReadThreadsTask.THREAD_POOL_EXECUTOR);
+			readTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 			if (showPull) {
 				getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 				switchView(ViewType.LIST, null);
@@ -603,7 +605,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	}
 
 	@Override
-	public void onReadThreadsSuccess(ArrayList<PostItem> postItems, int pageNumber,
+	public void onReadThreadsSuccess(List<PostItem> postItems, int pageNumber,
 			int boardSpeed, boolean append, boolean checkModified, HttpValidator validator,
 			PostItem.HideState.Map<String> hiddenThreads) {
 		readTask = null;
@@ -625,13 +627,18 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		}
 		if (postItems != null && append) {
 			HashSet<String> threadNumbers = new HashSet<>();
-			for (ArrayList<PostItem> pagePostItems : retainExtra.cachedPostItems) {
+			for (List<PostItem> pagePostItems : retainExtra.cachedPostItems) {
 				for (PostItem postItem : pagePostItems) {
 					threadNumbers.add(postItem.getThreadNumber());
 				}
 			}
+			boolean newList = false;
 			for (int i = postItems.size() - 1; i >= 0; i--) {
 				if (threadNumbers.contains(postItems.get(i).getThreadNumber())) {
+					if (!newList) {
+						postItems = new ArrayList<>(postItems);
+						newList = true;
+					}
 					postItems.remove(i);
 				}
 			}

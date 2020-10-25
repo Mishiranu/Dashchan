@@ -334,6 +334,13 @@ public class WebViewService extends Service {
 		};
 	}
 
+	@SuppressWarnings("deprecation")
+	private static void disableCacheCompat(WebView webView) {
+		if (!C.API_R) {
+			webView.getSettings().setAppCacheEnabled(false);
+		}
+	}
+
 	@SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
 	@Override
 	public void onCreate() {
@@ -353,7 +360,7 @@ public class WebViewService extends Service {
 		webView = new WebView(this);
 		webView.getSettings().setJavaScriptEnabled(true);
 		webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-		webView.getSettings().setAppCacheEnabled(false);
+		disableCacheCompat(webView);
 		webView.addJavascriptInterface(javascriptInterface, "jsi");
 		webView.setWebViewClient(new ServiceClient());
 		webView.setWebChromeClient(new WebChromeClient() {

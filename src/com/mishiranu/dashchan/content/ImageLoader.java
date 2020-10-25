@@ -28,7 +28,7 @@ import java.io.ByteArrayOutputStream;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.Executor;
 
 public class ImageLoader {
 	private static final int CONNECT_TIMEOUT = 10000;
@@ -45,13 +45,12 @@ public class ImageLoader {
 	private final HashMap<String, LoaderTask> loaderTasks = new HashMap<>();
 	private final HashMap<String, Long> notFoundMap = new HashMap<>();
 
-	private final HashMap<String, ThreadPoolExecutor> executors = new HashMap<>();
+	private final HashMap<String, Executor> executors = new HashMap<>();
 
-	private ThreadPoolExecutor getExecutor(String chanName) {
-		ThreadPoolExecutor executor = executors.get(chanName);
+	private Executor getExecutor(String chanName) {
+		Executor executor = executors.get(chanName);
 		if (executor == null) {
-			executor = ConcurrentUtils.newThreadPool(3, 3, 0, "ImageLoader", chanName,
-					Process.THREAD_PRIORITY_DEFAULT);
+			executor = ConcurrentUtils.newThreadPool(3, 3, 0, "ImageLoader", chanName);
 			executors.put(chanName, executor);
 		}
 		return executor;
@@ -61,7 +60,7 @@ public class ImageLoader {
 		void onTaskFinished(String key, Bitmap bitmap, boolean error);
 	}
 
-	private class LoaderTask extends HttpHolderTask<Void, Void, Bitmap> {
+	private class LoaderTask extends HttpHolderTask<Void, Bitmap> {
 		public final Uri uri;
 		public final Chan chan;
 		public final String key;
@@ -82,7 +81,7 @@ public class ImageLoader {
 		}
 
 		@Override
-		protected Bitmap doInBackground(HttpHolder holder, Void... params) {
+		protected Bitmap run(HttpHolder holder) {
 			Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
 			// Debounce image requests, taking into account that
 			// a task can be executed much later than created.
@@ -165,18 +164,18 @@ public class ImageLoader {
 		}
 
 		@Override
-		protected void onPostExecute(Bitmap result) {
+		protected void onComplete(Bitmap bitmap) {
 			// Don't remove task but instead mark it as finished,
 			// so targets could be extracted later.
 			finished = true;
 			if (notFound) {
 				notFoundMap.put(key, SystemClock.elapsedRealtime());
 			}
-			if (result != null) {
-				bitmapCache.put(key, result);
+			if (bitmap != null) {
+				bitmapCache.put(key, bitmap);
 			}
 			for (TaskCallback callback : callbacks) {
-				callback.onTaskFinished(key, result, !fromCacheOnly);
+				callback.onTaskFinished(key, bitmap, !fromCacheOnly);
 			}
 		}
 	}
@@ -299,7 +298,7 @@ public class ImageLoader {
 			if (loaderTask != null) {
 				loaderTask.callbacks.remove(target.taskCallback);
 				if (loaderTask.callbacks.isEmpty()) {
-					loaderTask.cancel(true);
+					loaderTask.cancel();
 					loaderTasks.remove(key);
 				}
 			}
@@ -365,11 +364,11 @@ public class ImageLoader {
 			LoaderTask loaderTask = new LoaderTask(uri, chan, key, fromCacheOnly);
 			registerLoaderTask = loaderTask;
 			if (currentLoaderTask != null) {
-				currentLoaderTask.cancel(true);
+				currentLoaderTask.cancel();
 				loaderTask.callbacks.addAll(currentLoaderTask.callbacks);
 			}
 			loaderTasks.put(key, loaderTask);
-			loaderTask.executeOnExecutor(getExecutor(chan.name));
+			loaderTask.execute(getExecutor(chan.name));
 		}
 		registerLoaderTask.callbacks.add(target.taskCallback);
 		return false;

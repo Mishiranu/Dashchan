@@ -24,6 +24,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
 import chan.util.StringUtils;
@@ -180,6 +181,7 @@ public class CommentTextView extends TextView {
 				}
 			}
 
+			@NonNull
 			@Override
 			public String toString() {
 				return end > start ? text.toString().substring(start, end) : "";

@@ -65,9 +65,9 @@ public class UserAgentProvider {
 
 	private void loadChromiumUserAgentReference() {
 		Chan chan = Chan.getFallback();
-		new HttpHolderTask<Void, Void, String>(chan) {
+		new HttpHolderTask<Void, String>(chan) {
 			@Override
-			protected String doInBackground(HttpHolder holder, Void... params) {
+			protected String run(HttpHolder holder) {
 				try {
 					Uri uri = chan.locator.buildQueryWithHost("www.googleapis.com",
 							"storage/v1/b/chromium-browser-snapshots/o",
@@ -164,7 +164,7 @@ public class UserAgentProvider {
 			}
 
 			@Override
-			protected void onPostExecute(String version) {
+			protected void onComplete(String version) {
 				if (version != null) {
 					Preferences.setUserAgentReference(PREFIX + version);
 					String userAgent = formatChromiumUserAgent(version);
@@ -173,7 +173,7 @@ public class UserAgentProvider {
 					}
 				}
 			}
-		}.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
+		}.execute(ConcurrentUtils.SEPARATE_EXECUTOR);
 	}
 
 	public String getUserAgent() {

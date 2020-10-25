@@ -2,6 +2,7 @@ package com.mishiranu.dashchan.content.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import androidx.annotation.NonNull;
 import chan.content.ApiException;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
@@ -62,6 +63,7 @@ public final class ErrorItem implements Parcelable {
 		this(null, 0, httpResponseCode, StringUtils.removeSingleDot(message));
 	}
 
+	@NonNull
 	@Override
 	public String toString() {
 		if (!StringUtils.isEmpty(message)) {

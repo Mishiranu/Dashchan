@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
-public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
+public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 	private final Callback callback;
 	private final Chan chan;
 	private final String boardName;
@@ -69,7 +69,8 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 		return loadFullThread;
 	}
 
-	protected Boolean doInBackground(HttpHolder holder, Void... params) {
+	@Override
+	protected Boolean run(HttpHolder holder) {
 		boolean temporary = chan.configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
 		PagesDatabase.ThreadKey threadKey = new PagesDatabase.ThreadKey(chan.name, boardName, threadNumber);
 		PagesDatabase.Meta meta = PagesDatabase.getInstance().getMeta(threadKey, temporary);
@@ -234,7 +235,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Void, Boolean> {
 	}
 
 	@Override
-	public void onPostExecute(Boolean success) {
+	public void onComplete(Boolean success) {
 		if (success) {
 			if (target != null) {
 				callback.onReadPostsRedirect(target);

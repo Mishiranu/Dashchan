@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -26,6 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import chan.content.Chan;
 import chan.util.CommonUtils;
 import chan.util.DataFile;
@@ -34,11 +34,14 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.service.DownloadService;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.MimeTypes;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.io.File;
 import java.util.ArrayList;
@@ -46,8 +49,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Executor;
 
 public class DownloadDialog {
+	private static final Executor EXECUTOR = ConcurrentUtils.newSingleThreadPool(2000, "DownloadDialog", null);
+
 	public interface Callback {
 		void resolve(DownloadService.ChoiceRequest choiceRequest, DownloadService.DirectRequest directRequest);
 		void resolve(DownloadService.ReplaceRequest replaceRequest, DownloadService.ReplaceRequest.Action action);
@@ -222,8 +228,9 @@ public class DownloadDialog {
 						editText, detailNameCheckBox, originalNameCheckBox))
 				.setOnCancelListener(d -> callback.resolve(choiceRequest, null))
 				.create();
-		dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
-				| WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+		dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN |
+				(C.API_R ? WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
+						: ViewUtils.SOFT_INPUT_ADJUST_RESIZE_COMPAT));
 		editText.setOnEditorActionListener((v, actionId, event) -> {
 			handleChoiceResolve(choiceRequest, editText, detailNameCheckBox, originalNameCheckBox);
 			dialog.dismiss();
@@ -402,7 +409,7 @@ public class DownloadDialog {
 		private String lastDirectoryPath;
 		private final HashMap<String, DataFile> cachedDirectories = new HashMap<>();
 		private List<DialogDirectory> lastDirectoryItems;
-		private AsyncTask<Void, ?, ?> lastDirectoryTask;
+		private ExecutorTask<?, ?> lastDirectoryTask;
 
 		public static String buildPath(List<String> segments, int parent) {
 			StringBuilder directoryPathBuilder = new StringBuilder();
@@ -436,7 +443,7 @@ public class DownloadDialog {
 						lastDirectoryItems = Collections.emptyList();
 
 						if (lastDirectoryTask != null) {
-							lastDirectoryTask.cancel(true);
+							lastDirectoryTask.cancel();
 							lastDirectoryTask = null;
 						}
 
@@ -452,10 +459,9 @@ public class DownloadDialog {
 								}
 							}
 							Pair<DataFile, String> cachedDirectoryFinal = cachedDirectory;
-							lastDirectoryTask = new AsyncTask<Void, Void,
-									Pair<List<DataFile>, List<DialogDirectory>>>() {
+							lastDirectoryTask = new ExecutorTask<Void, Pair<List<DataFile>, List<DialogDirectory>>>() {
 								@Override
-								protected Pair<List<DataFile>, List<DialogDirectory>> doInBackground(Void... params) {
+								protected Pair<List<DataFile>, List<DialogDirectory>> run() {
 									DataFile directory = cachedDirectoryFinal != null
 											? cachedDirectoryFinal.first.getChild(cachedDirectoryFinal.second) :
 											StringUtils.isEmpty(directoryPath) ? root : root.getChild(directoryPath);
@@ -482,7 +488,7 @@ public class DownloadDialog {
 								}
 
 								@Override
-								protected void onPostExecute(Pair<List<DataFile>, List<DialogDirectory>> items) {
+								protected void onComplete(Pair<List<DataFile>, List<DialogDirectory>> items) {
 									synchronized (lastDirectoryLock) {
 										if (items.first != null) {
 											for (DataFile file : items.first) {
@@ -496,7 +502,7 @@ public class DownloadDialog {
 									}
 								}
 							};
-							lastDirectoryTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+							lastDirectoryTask.execute(EXECUTOR);
 						}
 					}
 
@@ -535,7 +541,7 @@ public class DownloadDialog {
 			synchronized (lastDirectoryLock) {
 				lastDirectoryCancel = true;
 				if (lastDirectoryTask != null) {
-					lastDirectoryTask.cancel(true);
+					lastDirectoryTask.cancel();
 					lastDirectoryTask = null;
 				}
 			}
@@ -589,6 +595,7 @@ public class DownloadDialog {
 			return convert(true);
 		}
 
+		@NonNull
 		@Override
 		public String toString() {
 			return convert(false);

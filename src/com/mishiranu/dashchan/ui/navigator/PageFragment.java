@@ -145,11 +145,12 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		FragmentHandler fragmentHandler = (FragmentHandler) requireActivity();
 		fragmentHandler.setActionBarLocked(actionBarLockerPull, false);
 		fragmentHandler.setActionBarLocked(actionBarLockerSearch, false);
-
-		listPage.cleanup();
 		getCallback().getUiManager().view().notifyUnbindListView(recyclerView);
 
-		listPage = null;
+		if (listPage != null) {
+			listPage.destroy();
+			listPage = null;
+		}
 		progressView = null;
 		errorView = null;
 		errorText = null;
@@ -193,7 +194,10 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 	@Override
 	public void onPause() {
 		super.onPause();
-		listPage.pause();
+
+		if (listPage != null) {
+			listPage.pause();
+		}
 	}
 
 	public void setSaveToStack(boolean saveToStack) {
@@ -231,6 +235,10 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 			}
 		}
 		currentMenu = null;
+		if (listPage != null) {
+			listPage.destroy();
+			listPage = null;
+		}
 	}
 
 	@Override
@@ -266,7 +274,9 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 				}
 			});
 			searchView.setOnChangeListener(query -> {
-				listPage.onSearchQueryChange(query);
+				if (listPage != null) {
+					listPage.onSearchQueryChange(query);
+				}
 				if (searchCurrentQuery != null) {
 					searchCurrentQuery = query;
 				}

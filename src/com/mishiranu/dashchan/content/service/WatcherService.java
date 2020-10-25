@@ -7,12 +7,11 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
-import android.os.Process;
 import android.os.SystemClock;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
-import chan.content.ChanManager;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
@@ -40,8 +39,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 	private static ExecutorService getExecutor(String chanName) {
 		ExecutorService executor = EXECUTORS.get(chanName);
 		if (executor == null) {
-			executor = ConcurrentUtils.newSingleThreadPool(60000, "ThreadsWatcher", chanName,
-					Process.THREAD_PRIORITY_BACKGROUND);
+			executor = ConcurrentUtils.newSingleThreadPool(60000, "ThreadsWatcher", chanName);
 			EXECUTORS.put(chanName, executor);
 		}
 		return executor;
@@ -51,7 +49,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 	private static final int MESSAGE_UPDATE = 1;
 	private static final int MESSAGE_RESULT = 2;
 
-	private final Handler handler = new Handler(this);
+	private final Handler handler = new Handler(Looper.getMainLooper(), this);
 	private final LinkedHashMap<String, WatcherItem> watching = new LinkedHashMap<>();
 	private final HashMap<String, WatcherTask> tasks = new HashMap<>();
 

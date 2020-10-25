@@ -6,12 +6,12 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Pair;
 import chan.content.Chan;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.async.ReadFileTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
@@ -53,7 +53,8 @@ public class ImageUnit {
 	private void interruptHolder(PagerInstance.ViewHolder holder) {
 		if (holder != null) {
 			if (holder.decodeBitmapTask != null) {
-				((DecodeBitmapTask) holder.decodeBitmapTask).cancel(holder);
+				((DecodeBitmapTask) holder.decodeBitmapTask).cancel();
+				holder.progressBar.setVisible(false, true);
 				holder.decodeBitmapTask = null;
 			}
 		}
@@ -67,7 +68,7 @@ public class ImageUnit {
 		}
 	}
 
-	private static final Executor EXECUTOR = ConcurrentUtils.newSingleThreadPool(20000, "DecodeBitmapTask", null, 0);
+	private static final Executor EXECUTOR = ConcurrentUtils.newSingleThreadPool(20000, "DecodeBitmapTask", null);
 
 	private void applyImageFromFile(File file) {
 		PagerInstance.ViewHolder holder = instance.currentHolder;
@@ -77,10 +78,11 @@ public class ImageUnit {
 		GalleryItem galleryItem = holder.galleryItem;
 		FileHolder fileHolder = FileHolder.obtain(file);
 		if (holder.decodeBitmapTask != null) {
-			((DecodeBitmapTask) holder.decodeBitmapTask).cancel(holder);
+			((DecodeBitmapTask) holder.decodeBitmapTask).cancel();
+			holder.progressBar.setVisible(false, true);
 		}
 		DecodeBitmapTask decodeBitmapTask = new DecodeBitmapTask(file, fileHolder);
-		decodeBitmapTask.executeOnExecutor(EXECUTOR);
+		decodeBitmapTask.execute(EXECUTOR);
 		holder.decodeBitmapTask = decodeBitmapTask;
 		if (galleryItem.size <= 0) {
 			galleryItem.size = (int) file.length();
@@ -111,7 +113,7 @@ public class ImageUnit {
 		Chan chan = Chan.getPreferred(instance.galleryInstance.chanName, uri);
 		readFileTask = ReadFileTask.createCachedMediaFile(instance.galleryInstance.context, readBitmapCallback,
 				chan, uri, cachedFile);
-		readFileTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
+		readFileTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 	}
 
 	private boolean attachReadBitmapCallback(PagerInstance.ViewHolder holder) {
@@ -227,7 +229,7 @@ public class ImageUnit {
 		dialog.show();
 	}
 
-	private class DecodeBitmapTask extends AsyncTask<Void, Void, Void> {
+	private class DecodeBitmapTask extends ExecutorTask<Void, Void> {
 		private final File file;
 		private final FileHolder fileHolder;
 		private final PhotoView photoView;
@@ -250,7 +252,7 @@ public class ImageUnit {
 		}
 
 		@Override
-		protected Void doInBackground(Void... params) {
+		protected Void run() {
 			if (!fileHolder.isImage()) {
 				errorMessageId = R.string.image_is_corrupted;
 				return null;
@@ -298,7 +300,7 @@ public class ImageUnit {
 		}
 
 		@Override
-		protected void onPostExecute(Void result) {
+		protected void onComplete(Void result) {
 			PagerInstance.ViewHolder holder = instance.currentHolder;
 			holder.decodeBitmapTask = null;
 			holder.progressBar.setVisible(false, false);
@@ -321,11 +323,6 @@ public class ImageUnit {
 			} else {
 				instance.callback.showError(holder, instance.galleryInstance.context.getString(errorMessageId));
 			}
-		}
-
-		public void cancel(PagerInstance.ViewHolder holder) {
-			cancel(true);
-			holder.progressBar.setVisible(false, true);
 		}
 
 		private void setPhotoViewImage(PagerInstance.ViewHolder holder, Drawable drawable, boolean hasAlpha) {

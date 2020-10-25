@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
+public class ReadVideoTask extends HttpHolderTask<long[], Boolean> {
 	private static final int CONNECT_TIMEOUT = 15000;
 	private static final int READ_TIMEOUT = 15000;
 
@@ -47,7 +47,7 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
 	private final TimedProgressHandler progressHandler = new TimedProgressHandler() {
 		@Override
 		public void onProgressChange(long progress, long progressMax) {
-			publishProgress(progress, progressMax);
+			notifyProgress(new long[] {progress, progressMax});
 		}
 	};
 
@@ -62,7 +62,7 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	@Override
-	protected Boolean doInBackground(HttpHolder holder, Void... params) {
+	protected Boolean run(HttpHolder holder) {
 		if (file == null || partialFile == null) {
 			errorItem = new ErrorItem(ErrorItem.Type.NO_ACCESS_TO_MEMORY);
 			return false;
@@ -130,7 +130,7 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
 					if (start <= 0) {
 						progressHandler.onProgressUpdate(read);
 					} else {
-						publishProgress(read);
+						notifyProgress(new long[] {read});
 					}
 				}
 			} catch (IOException e) {
@@ -167,7 +167,7 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	@Override
-	protected void onProgressUpdate(Long... values) {
+	protected void onProgress(long[] values) {
 		if (start > 0) {
 			callback.onReadVideoRangeUpdate(start, start + values[0]);
 		} else {
@@ -176,7 +176,7 @@ public class ReadVideoTask extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	@Override
-	public void onPostExecute(Boolean success) {
+	protected void onComplete(Boolean success) {
 		if (success) {
 			callback.onReadVideoSuccess(start > 0, file);
 		} else {

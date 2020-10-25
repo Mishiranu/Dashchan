@@ -16,6 +16,7 @@ import com.mishiranu.dashchan.content.async.ReadBoardsTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.ui.navigator.adapter.BoardsAdapter;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -140,7 +141,7 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback, Read
 			readTask.cancel();
 		}
 		readTask = new ReadBoardsTask(this, getChan());
-		readTask.executeOnExecutor(ReadBoardsTask.THREAD_POOL_EXECUTOR);
+		readTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 		if (showPull) {
 			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 			switchView(ViewType.LIST, null);

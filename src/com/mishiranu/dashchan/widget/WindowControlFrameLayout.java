@@ -1,33 +1,15 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.widget;
 
-import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Insets;
 import android.graphics.Rect;
-import android.os.Build;
 import android.view.WindowInsets;
 import android.widget.FrameLayout;
-
 import com.mishiranu.dashchan.C;
 
 public class WindowControlFrameLayout extends FrameLayout {
 	public interface OnApplyWindowPaddingsListener {
-		public void onApplyWindowPaddings(WindowControlFrameLayout view, Rect rect);
+		void onApplyWindowPaddings(WindowControlFrameLayout view, Rect rect, Rect imeRect30);
 	}
 
 	private OnApplyWindowPaddingsListener onApplyWindowPaddingsListener;
@@ -53,18 +35,22 @@ public class WindowControlFrameLayout extends FrameLayout {
 	}
 
 	private Rect previousRect;
+	private Rect previousRectIme30;
 
-	private void onSystemWindowInsetsChangedInternal(Rect rect) {
-		if (previousRect != null && previousRect.equals(rect)) {
+	private void onSystemWindowInsetsChangedInternal(Rect rect, Rect imeRect30) {
+		if (previousRect != null && previousRect.equals(rect) &&
+				previousRectIme30 != null && previousRectIme30.equals(imeRect30)) {
 			return;
 		}
 		previousRect = rect;
+		previousRectIme30 = imeRect30;
 		if (onApplyWindowPaddingsListener != null) {
-			onApplyWindowPaddingsListener.onApplyWindowPaddings(this, rect);
+			onApplyWindowPaddingsListener.onApplyWindowPaddings(this, rect, imeRect30);
 		}
 	}
 
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
+	private static final Rect DEFAULT_RECT = new Rect();
+
 	@Override
 	public WindowInsets onApplyWindowInsets(WindowInsets insets) {
 		try {
@@ -72,9 +58,30 @@ public class WindowControlFrameLayout extends FrameLayout {
 		} finally {
 			if (C.API_LOLLIPOP) {
 				setPadding(0, 0, 0, 0);
-				onSystemWindowInsetsChangedInternal(new Rect(insets.getSystemWindowInsetLeft(),
-						insets.getSystemWindowInsetTop(), insets.getSystemWindowInsetRight(),
-						insets.getSystemWindowInsetBottom()));
+				Rect rect;
+				Rect imeRect30;
+				if (C.API_R) {
+					Insets systemInsets = insets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
+					rect = new Rect(systemInsets.left, systemInsets.top, systemInsets.right, systemInsets.bottom);
+					Insets imeInsets = insets.getInsets(WindowInsets.Type.ime());
+					imeRect30 = new Rect(imeInsets.left, imeInsets.top, imeInsets.right, imeInsets.bottom);
+					if (imeRect30.bottom > rect.bottom) {
+						// Assume keyboard can be at the bottom only
+						rect.bottom = 0;
+					}
+				} else {
+					@SuppressWarnings("deprecation")
+					int left = insets.getSystemWindowInsetLeft();
+					@SuppressWarnings("deprecation")
+					int top = insets.getSystemWindowInsetTop();
+					@SuppressWarnings("deprecation")
+					int right = insets.getSystemWindowInsetRight();
+					@SuppressWarnings("deprecation")
+					int bottom = insets.getSystemWindowInsetBottom();
+					rect = new Rect(left, top, right, bottom);
+					imeRect30 = DEFAULT_RECT;
+				}
+				onSystemWindowInsetsChangedInternal(rect, imeRect30);
 			}
 		}
 	}
@@ -88,7 +95,7 @@ public class WindowControlFrameLayout extends FrameLayout {
 		} finally {
 			if (!C.API_LOLLIPOP) {
 				setPadding(0, 0, 0, 0);
-				onSystemWindowInsetsChangedInternal(rect);
+				onSystemWindowInsetsChangedInternal(rect, DEFAULT_RECT);
 			}
 		}
 	}

@@ -11,6 +11,7 @@ import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class UserBoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -76,7 +77,7 @@ public class UserBoardsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHol
 		return getItem(position).boardName;
 	}
 
-	public void setItems(Board[] boards) {
+	public void setItems(List<Board> boards) {
 		listItems.clear();
 		Chan chan = Chan.get(chanName);
 		if (boards != null) {

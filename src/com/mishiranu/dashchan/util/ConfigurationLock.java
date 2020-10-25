@@ -5,8 +5,10 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
+import com.mishiranu.dashchan.C;
 import java.util.HashSet;
 
 public class ConfigurationLock {
@@ -59,14 +61,22 @@ public class ConfigurationLock {
 		updateConfiguration();
 	}
 
+	@SuppressWarnings("deprecation")
+	private Display getDisplay() {
+		if (C.API_R) {
+			return activity.getDisplay();
+		} else {
+			return ((WindowManager) activity.getSystemService(Activity.WINDOW_SERVICE)).getDefaultDisplay();
+		}
+	}
+
 	private void updateConfiguration() {
 		boolean lockOrientation = !bindings.isEmpty();
 		if (this.lockOrientation != lockOrientation) {
 			this.lockOrientation = lockOrientation;
 			int orientation;
 			if (lockOrientation) {
-				int rotation = ((WindowManager) activity.getSystemService(Activity.WINDOW_SERVICE))
-						.getDefaultDisplay().getRotation();
+				int rotation = getDisplay().getRotation();
 				switch (rotation) {
 					case Surface.ROTATION_90: {
 						orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;

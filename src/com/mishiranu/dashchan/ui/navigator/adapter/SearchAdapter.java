@@ -20,6 +20,7 @@ import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 	public interface Callback extends ListViewUtils.SimpleCallback<PostItem> {}
@@ -115,7 +116,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		return configurationSet;
 	}
 
-	public void setItems(ArrayList<PostItem> postItems) {
+	public void setItems(List<PostItem> postItems) {
 		this.postItems.clear();
 		if (postItems != null) {
 			for (PostItem postItem : postItems) {

@@ -2,6 +2,7 @@
 <resources>
 
 	<attr name="isPopup" format="boolean" />
+	<attr name="overlayTheme" format="reference" />
 
 	<attr name="colorWindowBackground" format="color|reference" />
 	<attr name="colorBlockBackground" format="color|reference" />

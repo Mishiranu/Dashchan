@@ -19,9 +19,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 
-public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostItem>> {
+public class ReadSearchTask extends HttpHolderTask<Void, List<PostItem>> {
 	private final Callback callback;
 	private final Chan chan;
 	private final String boardName;
@@ -31,7 +32,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 	private ErrorItem errorItem;
 
 	public interface Callback {
-		void onReadSearchSuccess(ArrayList<PostItem> postItems, int pageNumber);
+		void onReadSearchSuccess(List<PostItem> postItems, int pageNumber);
 		void onReadSearchFail(ErrorItem errorItem);
 	}
 
@@ -48,7 +49,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 			(lhs, rhs) -> Long.compare(rhs.post.timestamp, lhs.post.timestamp);
 
 	@Override
-	protected ArrayList<PostItem> doInBackground(HttpHolder holder, Void... params) {
+	protected ArrayList<PostItem> run(HttpHolder holder) {
 		try {
 			ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(boardName);
 			ArrayList<SinglePost> posts = new ArrayList<>();
@@ -114,7 +115,7 @@ public class ReadSearchTask extends HttpHolderTask<Void, Void, ArrayList<PostIte
 	}
 
 	@Override
-	public void onPostExecute(ArrayList<PostItem> postItems) {
+	public void onComplete(List<PostItem> postItems) {
 		if (errorItem == null) {
 			callback.onReadSearchSuccess(postItems, pageNumber);
 		} else {

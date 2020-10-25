@@ -36,6 +36,7 @@ import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.ui.MainActivity;
 import com.mishiranu.dashchan.util.AndroidUtils;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.Hasher;
 import com.mishiranu.dashchan.util.WeakObservable;
 import com.mishiranu.dashchan.widget.ThemeEngine;
@@ -293,7 +294,7 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 				wakeLock.acquire();
 				Chan chan = Chan.get(chanName);
 				SendPostTask<Key> task = new SendPostTask<>(key, PostingService.this, chan, data);
-				task.executeOnExecutor(SendPostTask.THREAD_POOL_EXECUTOR);
+				task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 				TaskState taskState = new TaskState(key, task, PostingService.this, chan, data);
 				refreshNotification(NotificationData.Type.CREATE, taskState);
 				PostingService.this.taskState = taskState;

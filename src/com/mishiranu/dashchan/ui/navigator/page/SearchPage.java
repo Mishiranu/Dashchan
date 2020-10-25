@@ -15,6 +15,7 @@ import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.adapter.SearchAdapter;
 import com.mishiranu.dashchan.ui.navigator.manager.DialogUnit;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
@@ -23,6 +24,7 @@ import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 public class SearchPage extends ListPage implements SearchAdapter.Callback, ReadSearchTask.Callback {
 	private static class RetainExtra {
@@ -221,7 +223,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 			}
 		}
 		readTask = new ReadSearchTask(this, getChan(), page.boardName, page.searchQuery, pageNumber);
-		readTask.executeOnExecutor(ReadSearchTask.THREAD_POOL_EXECUTOR);
+		readTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 		if (showPull) {
 			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 			switchView(ViewType.LIST, null);
@@ -232,7 +234,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 	}
 
 	@Override
-	public void onReadSearchSuccess(ArrayList<PostItem> postItems, int pageNumber) {
+	public void onReadSearchSuccess(List<PostItem> postItems, int pageNumber) {
 		readTask = null;
 		PullableRecyclerView recyclerView = getRecyclerView();
 		recyclerView.getWrapper().cancelBusyState();

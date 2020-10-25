@@ -4,13 +4,13 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.util.CommonUtils;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
@@ -57,12 +57,12 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 		dialog.setOnCancelListener(this);
 		uiManager.getConfigurationLock().lockConfiguration(dialog);
 		dialog.show();
-		asyncTask.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
+		task.execute(ConcurrentUtils.SEPARATE_EXECUTOR);
 	}
 
-	private final AsyncTask<Void, Void, InputStream> asyncTask = new AsyncTask<Void, Void, InputStream>() {
+	private final ExecutorTask<Void, InputStream> task = new ExecutorTask<Void, InputStream>() {
 		@Override
-		protected InputStream doInBackground(Void... params) {
+		protected InputStream run() {
 			long time = SystemClock.elapsedRealtime();
 			UiManager.DemandSet demandSet = new UiManager.DemandSet();
 			demandSet.selection = UiManager.Selection.THREADSHOT;
@@ -122,7 +122,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 		}
 
 		@Override
-		protected void onPostExecute(InputStream result) {
+		protected void onComplete(InputStream result) {
 			dialog.dismiss();
 			if (result != null) {
 				DownloadService.Binder binder = uiManager.callback().getDownloadBinder();
@@ -138,6 +138,6 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 
 	@Override
 	public void onCancel(DialogInterface dialog) {
-		asyncTask.cancel(true);
+		task.cancel();
 	}
 }

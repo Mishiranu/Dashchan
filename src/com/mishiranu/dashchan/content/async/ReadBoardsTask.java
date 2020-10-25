@@ -9,7 +9,7 @@ import chan.http.HttpException;
 import chan.http.HttpHolder;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
-public class ReadBoardsTask extends HttpHolderTask<Void, Long, Boolean> {
+public class ReadBoardsTask extends HttpHolderTask<Void, Boolean> {
 	private final Callback callback;
 	private final Chan chan;
 
@@ -28,7 +28,7 @@ public class ReadBoardsTask extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	@Override
-	protected Boolean doInBackground(HttpHolder holder, Void... params) {
+	protected Boolean run(HttpHolder holder) {
 		try {
 			ChanPerformer.ReadBoardsResult result = chan.performer.safe()
 					.onReadBoards(new ChanPerformer.ReadBoardsData(holder));
@@ -50,7 +50,7 @@ public class ReadBoardsTask extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	@Override
-	public void onPostExecute(Boolean success) {
+	protected void onComplete(Boolean success) {
 		if (success) {
 			if (boardCategories != null) {
 				callback.onReadBoardsSuccess(boardCategories);

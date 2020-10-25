@@ -5,7 +5,7 @@ import android.os.OperationCanceledException;
 import com.mishiranu.dashchan.content.database.CommonDatabase;
 import com.mishiranu.dashchan.content.database.HistoryDatabase;
 
-public class GetHistoryTask extends CancellableTask<Void, Void, HistoryDatabase.HistoryCursor> {
+public class GetHistoryTask extends ExecutorTask<Void, HistoryDatabase.HistoryCursor> {
 	public interface Callback {
 		void onGetHistoryResult(HistoryDatabase.HistoryCursor cursor);
 	}
@@ -22,7 +22,7 @@ public class GetHistoryTask extends CancellableTask<Void, Void, HistoryDatabase.
 	}
 
 	@Override
-	protected HistoryDatabase.HistoryCursor doInBackground(Void... params) {
+	protected HistoryDatabase.HistoryCursor run() {
 		try {
 			return CommonDatabase.getInstance().getHistory().getHistory(chanName, searchQuery, signal);
 		} catch (OperationCanceledException e) {
@@ -32,7 +32,7 @@ public class GetHistoryTask extends CancellableTask<Void, Void, HistoryDatabase.
 
 	@Override
 	public void cancel() {
-		cancel(true);
+		super.cancel();
 		try {
 			signal.cancel();
 		} catch (Exception e) {
@@ -41,14 +41,14 @@ public class GetHistoryTask extends CancellableTask<Void, Void, HistoryDatabase.
 	}
 
 	@Override
-	protected void onCancelled(HistoryDatabase.HistoryCursor result) {
-		if (result != null) {
-			result.close();
+	protected void onCancel(HistoryDatabase.HistoryCursor cursor) {
+		if (cursor != null) {
+			cursor.close();
 		}
 	}
 
 	@Override
-	protected void onPostExecute(HistoryDatabase.HistoryCursor result) {
-		callback.onGetHistoryResult(result);
+	protected void onComplete(HistoryDatabase.HistoryCursor cursor) {
+		callback.onGetHistoryResult(cursor);
 	}
 }

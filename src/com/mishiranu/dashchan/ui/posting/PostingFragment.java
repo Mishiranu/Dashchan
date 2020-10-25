@@ -80,6 +80,7 @@ import com.mishiranu.dashchan.ui.posting.text.CommentEditWatcher;
 import com.mishiranu.dashchan.ui.posting.text.MarkupButtonProvider;
 import com.mishiranu.dashchan.ui.posting.text.NameEditWatcher;
 import com.mishiranu.dashchan.ui.posting.text.QuoteEditWatcher;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -1199,7 +1200,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		ReadCaptchaHolder holder = new ReadCaptchaHolder();
 		ReadCaptchaTask task = new ReadCaptchaTask(holder, null, captchaType, null, captchaPass,
 				mayShowLoadButton, chan, getBoardName(), getThreadNumber());
-		task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);
+		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 		return holder.attach(task);
 	}
 

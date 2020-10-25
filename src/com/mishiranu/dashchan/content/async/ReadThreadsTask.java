@@ -15,8 +15,9 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.util.Log;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.List;
 
-public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
+public class ReadThreadsTask extends HttpHolderTask<Void, Boolean> {
 	private final Callback callback;
 	private final Chan chan;
 	private final String boardName;
@@ -33,7 +34,7 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
 	private ErrorItem errorItem;
 
 	public interface Callback {
-		void onReadThreadsSuccess(ArrayList<PostItem> postItems, int pageNumber,
+		void onReadThreadsSuccess(List<PostItem> postItems, int pageNumber,
 				int boardSpeed, boolean append, boolean checkModified, HttpValidator validator,
 				PostItem.HideState.Map<String> hiddenThreads);
 		void onReadThreadsRedirect(RedirectException.Target target);
@@ -52,7 +53,7 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
 	}
 
 	@Override
-	protected Boolean doInBackground(HttpHolder holder, Void... params) {
+	protected Boolean run(HttpHolder holder) {
 		try {
 			ChanPerformer.ReadThreadsResult result;
 			try {
@@ -111,7 +112,7 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Void, Boolean> {
 	}
 
 	@Override
-	public void onPostExecute(Boolean success) {
+	public void onComplete(Boolean success) {
 		if (success) {
 			if (target != null) {
 				callback.onReadThreadsRedirect(target);

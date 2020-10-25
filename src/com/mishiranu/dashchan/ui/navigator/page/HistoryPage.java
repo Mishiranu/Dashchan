@@ -15,6 +15,7 @@ import com.mishiranu.dashchan.content.database.CommonDatabase;
 import com.mishiranu.dashchan.content.database.HistoryDatabase;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.ui.navigator.adapter.HistoryAdapter;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -141,7 +142,7 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback, Ge
 			task.cancel();
 		}
 		task = new GetHistoryTask(this, chanName, searchQuery);
-		task.executeOnExecutor(GetHistoryTask.THREAD_POOL_EXECUTOR);
+		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 	}
 
 	@Override

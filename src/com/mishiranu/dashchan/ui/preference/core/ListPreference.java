@@ -4,7 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import java.util.Arrays;
 
 public class ListPreference extends DialogPreference<String> {
@@ -48,7 +48,7 @@ public class ListPreference extends DialogPreference<String> {
 		return super.configureDialog(savedInstanceState, builder)
 				.setSingleChoiceItems(entries, getIndex(this), (d, which) -> {
 					d.dismiss();
-					new Handler().post(() -> setValue(values[which]));
+					ConcurrentUtils.HANDLER.post(() -> setValue(values[which]));
 				});
 	}
 }

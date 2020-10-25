@@ -288,7 +288,7 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		}
 	}
 
-	public final void cleanup() {
+	public final void destroy() {
 		if (state == State.RESUMED || state == State.PAUSED) {
 			if (state == State.RESUMED) {
 				onPause();

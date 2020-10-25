@@ -36,6 +36,7 @@ import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.CheckPreference;
 import com.mishiranu.dashchan.util.AndroidUtils;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
@@ -509,7 +510,7 @@ public class UpdateFragment extends BaseListFragment implements ActivityHandler,
 	public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
 		ReadUpdateHolder holder = new ReadUpdateHolder();
 		ReadUpdateTask task = new ReadUpdateTask(requireContext(), holder);
-		task.executeOnExecutor(ReadUpdateTask.THREAD_POOL_EXECUTOR);
+		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 		return holder.attach(task);
 	}
 

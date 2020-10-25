@@ -8,16 +8,19 @@ import chan.content.model.Board;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import com.mishiranu.dashchan.content.model.ErrorItem;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-public class ReadUserBoardsTask extends HttpHolderTask<Void, Long, Boolean> {
+public class ReadUserBoardsTask extends HttpHolderTask<Long, Boolean> {
 	private final Callback callback;
 	private final Chan chan;
 
-	private Board[] boards;
+	private List<Board> boards;
 	private ErrorItem errorItem;
 
 	public interface Callback {
-		void onReadUserBoardsSuccess(Board[] boards);
+		void onReadUserBoardsSuccess(List<Board> boards);
 		void onReadUserBoardsFail(ErrorItem errorItem);
 	}
 
@@ -28,7 +31,7 @@ public class ReadUserBoardsTask extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	@Override
-	protected Boolean doInBackground(HttpHolder holder, Void... params) {
+	protected Boolean run(HttpHolder holder) {
 		try {
 			ChanPerformer.ReadUserBoardsResult result = chan.performer.safe()
 					.onReadUserBoards(new ChanPerformer.ReadUserBoardsData(holder));
@@ -39,7 +42,7 @@ public class ReadUserBoardsTask extends HttpHolderTask<Void, Long, Boolean> {
 			if (boards != null) {
 				chan.configuration.updateFromBoards(boards);
 			}
-			this.boards = boards;
+			this.boards = boards != null ? Arrays.asList(boards) : Collections.emptyList();
 			return true;
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {
 			errorItem = e.getErrorItemAndHandle();
@@ -50,9 +53,9 @@ public class ReadUserBoardsTask extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	@Override
-	public void onPostExecute(Boolean success) {
+	public void onComplete(Boolean success) {
 		if (success) {
-			if (boards != null && boards.length > 0) {
+			if (boards != null && boards.size() > 0) {
 				callback.onReadUserBoardsSuccess(boards);
 			} else {
 				callback.onReadUserBoardsFail(new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE));

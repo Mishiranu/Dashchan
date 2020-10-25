@@ -51,8 +51,8 @@ import org.json.JSONObject;
 public class ThemeEngine {
 	private static final ThemeEngine INSTANCE = new ThemeEngine();
 
-	public static final int STATUS_OVERLAY_LIGHT = 0x22000000;
-	public static final int STATUS_OVERLAY_DARK = 0x33000000;
+	private static final int STATUS_OVERLAY_LIGHT = 0x22000000;
+	private static final int STATUS_OVERLAY_DARK = 0x33000000;
 
 	public static class Theme implements Comparable<Theme> {
 		public enum Base {

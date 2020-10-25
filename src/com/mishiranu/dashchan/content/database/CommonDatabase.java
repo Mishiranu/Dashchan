@@ -3,7 +3,6 @@ package com.mishiranu.dashchan.content.database;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Process;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -48,8 +47,7 @@ public class CommonDatabase {
 		return INSTANCE;
 	}
 
-	private final Executor executor = ConcurrentUtils.newSingleThreadPool(10000, "CommonDatabase", null,
-			Process.THREAD_PRIORITY_DEFAULT);
+	private final Executor executor = ConcurrentUtils.newSingleThreadPool(10000, "CommonDatabase", null);
 
 	private final HistoryDatabase historyDatabase;
 	private final ThreadsDatabase threadsDatabase;

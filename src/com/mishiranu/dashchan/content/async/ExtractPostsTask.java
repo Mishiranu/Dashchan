@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class ExtractPostsTask extends CancellableTask<Void, Void, ExtractPostsTask.Result> {
+public class ExtractPostsTask extends ExecutorTask<Void, ExtractPostsTask.Result> {
 	public interface Callback {
 		void onExtractPostsComplete(Result result);
 	}
@@ -89,7 +89,7 @@ public class ExtractPostsTask extends CancellableTask<Void, Void, ExtractPostsTa
 	}
 
 	@Override
-	protected Result doInBackground(Void... params) {
+	protected Result run() {
 		PagesDatabase.Diff diff;
 		PagesDatabase.ThreadKey threadKey = new PagesDatabase.ThreadKey(chan.name, boardName, threadNumber);
 		try {
@@ -129,13 +129,13 @@ public class ExtractPostsTask extends CancellableTask<Void, Void, ExtractPostsTa
 	}
 
 	@Override
-	public void onPostExecute(Result result) {
+	protected void onComplete(Result result) {
 		callback.onExtractPostsComplete(result);
 	}
 
 	@Override
 	public void cancel() {
-		cancel(true);
+		super.cancel();
 		try {
 			signal.cancel();
 		} catch (Exception e) {

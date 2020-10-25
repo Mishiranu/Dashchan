@@ -40,7 +40,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object> implements ChanMarkup.MarkupExtra {
+public class SendLocalArchiveTask extends ExecutorTask<Integer, SendLocalArchiveTask.Result>
+		implements ChanMarkup.MarkupExtra {
 	private static final String DIRECTORY_ARCHIVE = "Archive";
 	private static final String DIRECTORY_FILES = "src";
 	private static final String DIRECTORY_THUMBNAILS = "thumb";
@@ -94,7 +95,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 	}
 
 	@Override
-	protected Result doInBackground(Void... params) {
+	protected Result run() {
 		Chan chan = this.chan;
 		String boardName = this.boardName;
 		String threadNumber = this.threadNumber;
@@ -280,14 +281,13 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 	}
 
 	@Override
-	protected void onProgressUpdate(Integer... values) {
-		callback.onLocalArchivationProgressUpdate(values[0]);
+	protected void onProgress(Integer value) {
+		callback.onLocalArchivationProgressUpdate(value);
 	}
 
 	@SuppressWarnings("CharsetObjectCanBeUsed")
 	@Override
-	protected void onPostExecute(Object resultObject) {
-		Result result = (Result) resultObject;
+	protected void onComplete(Result result) {
 		if (result != null) {
 			byte[] htmlBytes;
 			try {
@@ -303,11 +303,6 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		callback.onLocalArchivationComplete(result != null);
 	}
 
-	@Override
-	public void cancel() {
-		cancel(true);
-	}
-
 	private long lastNotifyIncrement = 0L;
 	private int progress = 0;
 
@@ -316,7 +311,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		long t = SystemClock.elapsedRealtime();
 		if (t - lastNotifyIncrement >= 100) {
 			lastNotifyIncrement = t;
-			publishProgress(progress);
+			notifyProgress(progress);
 		}
 	}
 
@@ -336,7 +331,7 @@ public class SendLocalArchiveTask extends CancellableTask<Void, Integer, Object>
 		}
 	}
 
-	private static class Result {
+	public static class Result {
 		public final String html;
 		public final String archiveName;
 		public final List<DownloadService.DownloadItem> filesToDownload;

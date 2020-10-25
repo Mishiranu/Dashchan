@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +13,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
 
@@ -80,7 +80,7 @@ public class EditPreference extends DialogPreference<String> {
 		}
 		pair.second.addView(editText, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 		return super.configureDialog(savedInstanceState, builder).setView(pair.first)
-				.setPositiveButton(android.R.string.ok, (d, which) -> new Handler()
+				.setPositiveButton(android.R.string.ok, (d, which) -> ConcurrentUtils.HANDLER
 						.post(() -> setValue(editText.getText().toString())));
 	}
 

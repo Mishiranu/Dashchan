@@ -221,20 +221,6 @@
 
 	</style>
 
-	<style name="Theme.Gallery" parent="@style/Theme.Extended.Gallery">
-
-		<item name="android:actionBarStyle">@style/Widget.Gallery.ActionBar</item>
-		<item name="android:dialogTheme">@style/Theme.Gallery.Dialog</item>
-		<item name="android:alertDialogTheme">@style/Theme.Gallery.Dialog.Alert</item>
-
-		<item name="android:colorPrimary">@android:color/white</item>
-		<item name="android:colorPrimaryDark">@android:color/black</item>
-		<item name="android:colorAccent">@android:color/white</item>
-
-	</style>
-
-	<style name="Theme.Launcher" parent="@android:style/Theme.Material.NoActionBar" />
-
 	<style name="Theme.Gallery.Dialog" parent="@android:style/Theme.Material.Dialog">
 
 		<item name="android:colorPrimary">@android:color/white</item>
@@ -256,6 +242,19 @@
 		<item name="android:background">@android:color/transparent</item>
 
 	</style>
+
+	<style name="Theme.Gallery" parent="@style/Theme.Extended.Gallery">
+
+		<item name="android:dialogTheme">@style/Theme.Gallery.Dialog</item>
+		<item name="android:alertDialogTheme">@style/Theme.Gallery.Dialog.Alert</item>
+
+		<item name="android:colorPrimary">@android:color/white</item>
+		<item name="android:colorPrimaryDark">@android:color/black</item>
+		<item name="android:colorAccent">@android:color/white</item>
+
+	</style>
+
+	<style name="Theme.Launcher" parent="@android:style/Theme.Material.NoActionBar" />
 
 	<style name="Widget.OverlapPopupMenu" parent="@android:style/Widget.Material.PopupMenu">
 

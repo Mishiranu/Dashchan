@@ -4,8 +4,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import com.mishiranu.dashchan.ui.SeekBarForm;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 
 public class SeekPreference extends DialogPreference<Integer> {
 	private static final String STATE_CURRENT_VALUE = "currentValue";
@@ -37,7 +37,7 @@ public class SeekPreference extends DialogPreference<Integer> {
 		seekBarForm.setCurrentValue(currentValue);
 		return super.configureDialog(savedInstanceState, builder)
 				.setView(seekBarForm.inflate(builder.getContext()))
-				.setPositiveButton(android.R.string.ok, (d, which) -> new Handler()
+				.setPositiveButton(android.R.string.ok, (d, which) -> ConcurrentUtils.HANDLER
 						.post(() -> setValue(seekBarForm.getCurrentValue())));
 	}
 

@@ -23,8 +23,8 @@ tasks.withType(JavaCompile) {
 apply plugin: 'com.android.application'
 
 android {
-	compileSdkVersion 29
-	buildToolsVersion '29.0.3'
+	compileSdkVersion 30
+	buildToolsVersion '30.0.2'
 	ndkVersion '21.3.6528147'
 
 	defaultConfig {
@@ -32,7 +32,7 @@ android {
 		versionName '3.0.4'
 
 		minSdkVersion 16
-		targetSdkVersion 29
+		targetSdkVersion 30
 
 		buildConfigField 'String', 'URI_UPDATES', '"//raw.githubusercontent.com/' +
 				'Mishiranu/Dashchan/master/update/data.json"'

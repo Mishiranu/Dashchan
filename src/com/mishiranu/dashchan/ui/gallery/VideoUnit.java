@@ -26,7 +26,6 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.AdvancedPreferences;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.async.ReadFileTask;
 import com.mishiranu.dashchan.content.async.ReadVideoTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.graphics.BaseDrawable;
@@ -627,7 +626,7 @@ public class VideoUnit {
 			allowRangeRequests = !AdvancedPreferences.isSingleConnection(chanName);
 			Chan chan = Chan.getPreferred(chanName, uri);
 			downloadTask = new ReadVideoTask(this, chan, uri, 0);
-			downloadTask.executeOnExecutor(ReadVideoTask.THREAD_POOL_EXECUTOR);
+			downloadTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 		}
 
 		public void cancel() {
@@ -755,7 +754,7 @@ public class VideoUnit {
 			if (allowRangeRequests && start > 0) {
 				Chan chan = Chan.getPreferred(chanName, uri);
 				rangeTask = new ReadVideoTask(this, chan, uri, start);
-				rangeTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
+				rangeTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 			}
 		}
 	}

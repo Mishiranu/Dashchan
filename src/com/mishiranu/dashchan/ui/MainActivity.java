@@ -168,7 +168,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		ThemeEngine.applyTheme(this);
 		ExpandedScreen.Init expandedScreenInit = expandedScreenPreThemeInit.initAfterTheme();
 		super.onCreate(savedInstanceState);
-		getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+		// ExpandedScreen should handle this for R+
+		getWindow().setSoftInputMode(C.API_R ? WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING
+				: ViewUtils.SOFT_INPUT_ADJUST_RESIZE_COMPAT);
 		float density = ResourceUtils.obtainDensity(this);
 		setContentView(R.layout.activity_main);
 		ClickableToast.register(clickableToastHolder);
@@ -1948,7 +1950,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 					storageRequestState = StorageRequestState.PICKER;
 					Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
 							.putExtra("android.provider.extra.SHOW_ADVANCED", true)
-							.putExtra("android.content.extra.SHOW_ADVANCED", true);
+							.putExtra("android.content.extra.SHOW_ADVANCED", true)
+							.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
 					if (C.API_OREO) {
 						intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, DocumentsContract
 								.buildRootUri("com.android.externalstorage.documents", "primary"));
@@ -1997,7 +2000,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			return;
 		}
 		readUpdateTask = new ReadUpdateTask(this, this);
-		readUpdateTask.executeOnExecutor(ReadUpdateTask.THREAD_POOL_EXECUTOR);
+		readUpdateTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 	}
 
 	@Override

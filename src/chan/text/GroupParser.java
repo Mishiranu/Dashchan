@@ -88,6 +88,7 @@ public final class GroupParser {
 			}
 		}
 
+		@NonNull
 		@Override
 		public String toString() {
 			return builder.substring(start, end);

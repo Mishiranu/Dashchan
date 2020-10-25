@@ -24,6 +24,7 @@ import com.mishiranu.dashchan.ui.DrawerForm;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -307,7 +308,7 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 				}
 			}
 			ClearCacheTask task = new ClearCacheTask(thumbnails, media, oldPages, allPages, openThreads);
-			task.executeOnExecutor(ClearCacheTask.THREAD_POOL_EXECUTOR);
+			task.execute(ConcurrentUtils.SEPARATE_EXECUTOR);
 			return task.getHolder();
 		}
 
@@ -340,16 +341,25 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		}
 
 		@Override
-		protected Void doInBackground() {
+		protected Void run() {
 			try {
 				if (thumbnails) {
 					CacheManager.getInstance().eraseThumbnailsCache();
 				}
+				if (isCancelled()) {
+					return null;
+				}
 				if (media) {
 					CacheManager.getInstance().eraseMediaCache();
 				}
+				if (isCancelled()) {
+					return null;
+				}
 				if (oldPages && !allPages) {
 					PagesDatabase.getInstance().erase(openThreads);
+				}
+				if (isCancelled()) {
+					return null;
 				}
 				if (allPages) {
 					PagesDatabase.getInstance().eraseAll();
@@ -358,11 +368,6 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 				Thread.currentThread().interrupt();
 			}
 			return null;
-		}
-
-		@Override
-		public void cancel() {
-			cancel(true);
 		}
 	}
 }

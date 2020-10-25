@@ -1,5 +1,6 @@
 package chan.http;
 
+import androidx.annotation.NonNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -334,6 +335,7 @@ public class SSLSocketWrapper extends SSLSocket {
 		wrapped.shutdownOutput();
 	}
 
+	@NonNull
 	@Override
 	public String toString() {
 		return wrapped.toString();

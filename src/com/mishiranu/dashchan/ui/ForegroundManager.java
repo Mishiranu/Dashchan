@@ -43,6 +43,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.RecaptchaReader;
 import com.mishiranu.dashchan.graphics.SelectorBorderDrawable;
 import com.mishiranu.dashchan.graphics.SelectorCheckDrawable;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
@@ -236,7 +237,7 @@ public class ForegroundManager implements Handler.Callback {
 			ReadCaptchaTask task = new ReadCaptchaTask(holder, pendingData.captchaReader,
 					args.getString(EXTRA_CAPTCHA_TYPE), args.getString(EXTRA_REQUIREMENT), captchaPass,
 					mayShowLoadButton, chan, args.getString(EXTRA_BOARD_NAME), args.getString(EXTRA_THREAD_NUMBER));
-			task.executeOnExecutor(ReadCaptchaTask.THREAD_POOL_EXECUTOR);
+			task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 			return holder.attach(task);
 		}
 

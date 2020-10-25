@@ -21,6 +21,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.ui.MainActivity;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.AudioFocus;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
 import com.mishiranu.dashchan.widget.ThemeEngine;
@@ -140,7 +141,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 						} else {
 							Chan chan = Chan.getPreferred(chanName, uri);
 							readFileTask = ReadFileTask.createCachedMediaFile(this, this, chan, uri, cachedFile);
-							readFileTask.executeOnExecutor(ReadFileTask.THREAD_POOL_EXECUTOR);
+							readFileTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 						}
 					}
 				}

@@ -1279,7 +1279,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		retainExtra.removeDeleted = false;
 		extractTask = new ExtractPostsTask(this, retainExtra.cache,
 				getChan(), page.boardName, page.threadNumber, initial, newThread, removeDeleted);
-		extractTask.executeOnExecutor(ExtractPostsTask.THREAD_POOL_EXECUTOR);
+		extractTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 	}
 
 	private final Runnable refreshRunnable = () -> {
@@ -1320,7 +1320,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		Page page = getPage();
 		readTask = new ReadPostsTask(this, getChan(), page.boardName, page.threadNumber,
 				reload, PostingService.getPendingUserPosts(page.chanName, page.boardName, page.threadNumber));
-		readTask.executeOnExecutor(ReadPostsTask.THREAD_POOL_EXECUTOR);
+		readTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 		if (showPull) {
 			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTTOM);
 			switchView(ViewType.LIST, null);

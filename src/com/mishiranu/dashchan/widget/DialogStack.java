@@ -7,7 +7,7 @@ import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
@@ -21,6 +21,7 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -38,8 +39,10 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 
 	private final Context context;
 	private final Context styledContext;
+	private final View contentView;
 	private final SimpleLayout rootView;
-	private final float dimAmount;
+	private final int dialogAnimations;
+	private final float dialogDimAmount;
 
 	private WeakReference<ActionMode> currentActionMode;
 
@@ -48,16 +51,28 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 		styledContext = new ContextThemeWrapper(context, ResourceUtils.getResourceId(context,
 				android.R.attr.dialogTheme, 0));
 		ThemeEngine.addOnDialogCreatedListener(context, () -> switchBackground(true));
+		WindowControlFrameLayout contentView = new WindowControlFrameLayout(context);
+		this.contentView = contentView;
 		rootView = new SimpleLayout(context);
+		contentView.addView(rootView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+		contentView.setOnApplyWindowPaddingsListener((view, rect, imeRect30) -> {
+			rect = new Rect(rect);
+			rect.bottom = Math.max(rect.bottom, imeRect30.bottom);
+			rootView.setPadding(rect.left, rect.top, rect.right, rect.bottom);
+		});
 		rootView.setOnClickListener(v -> {
 			if (!visibleViews.isEmpty()) {
 				popInternal();
 			}
 		});
-		rootView.setFitsSystemWindows(true);
-		TypedArray typedArray = styledContext.obtainStyledAttributes(new int[] {android.R.attr.backgroundDimAmount});
-		dimAmount = typedArray.getFloat(0, 0.6f);
-		typedArray.recycle();
+		int[] attrs = {android.R.attr.windowAnimationStyle, android.R.attr.backgroundDimAmount};
+		TypedArray typedArray = styledContext.obtainStyledAttributes(attrs);
+		try {
+			dialogAnimations = typedArray.getResourceId(0, 0);
+			dialogDimAmount = typedArray.getFloat(1, 0.6f);
+		} finally {
+			typedArray.recycle();
+		}
 
 		if (C.API_LOLLIPOP) {
 			// Apply elevation to visible children only so their shadows didn't overlap each other too much
@@ -81,7 +96,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 			: new RegularKeyBackHandler();
 
 	private interface KeyBackHandler {
-		public boolean onBackKey(KeyEvent event, boolean allowPop);
+		boolean onBackKey(KeyEvent event, boolean allowPop);
 	}
 
 	private class RegularKeyBackHandler implements KeyBackHandler {
@@ -134,8 +149,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 
 	public void push(T viewFactory) {
 		if (dialog == null) {
-			Dialog dialog = new Dialog(C.API_LOLLIPOP ? context
-					: new ContextThemeWrapper(context, R.style.Theme_Gallery)) {
+			Dialog dialog = new Dialog(context, ResourceUtils.getResourceId(context, R.attr.overlayTheme, 0)) {
 				@Override
 				public void onWindowFocusChanged(boolean hasFocus) {
 					super.onWindowFocusChanged(hasFocus);
@@ -160,8 +174,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 					super.onActionModeFinished(mode);
 				}
 			};
-			dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-			dialog.setContentView(rootView);
+			dialog.setContentView(contentView);
 			dialog.setCancelable(false);
 			dialog.setOnKeyListener((d, keyCode, event) -> {
 				if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -171,21 +184,16 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 			});
 			Window window = dialog.getWindow();
 			WindowManager.LayoutParams layoutParams = window.getAttributes();
-			layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
-			layoutParams.height = WindowManager.LayoutParams.MATCH_PARENT;
-			// Activity theme might be opaque
-			layoutParams.format = PixelFormat.TRANSLUCENT;
+			layoutParams.windowAnimations = dialogAnimations;
 			layoutParams.flags |= WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-			layoutParams.dimAmount = dimAmount;
+			layoutParams.dimAmount = dialogDimAmount;
+			// For hierarchy view (layout inspector)
+			layoutParams.setTitle(context.getPackageName() + "/" + getClass().getName());
 			if (C.API_LOLLIPOP) {
-				layoutParams.flags |= WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
+				window.setStatusBarColor(0x00000000);
+				window.setNavigationBarColor(0x00000000);
+				ViewUtils.setWindowLayoutFullscreen(window);
 			}
-			layoutParams.setTitle(context.getPackageName() + "/" + getClass().getName()); // For hierarchy view
-			View decorView = window.getDecorView();
-			decorView.setBackground(null);
-			decorView.setPadding(0, 0, 0, 0);
-			decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
-					View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
 			dialog.show();
 			this.dialog = dialog;
 		}
@@ -259,7 +267,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 			dialog.dismiss();
 			dialog = null;
 			currentActionMode = null;
-			ViewUtils.removeFromParent(rootView);
+			ViewUtils.removeFromParent(contentView);
 		} else {
 			visibleViews.getLast().second.setActive(true);
 		}
@@ -268,7 +276,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 	}
 
 	private DialogView addDialogView(T viewFactory, int index) {
-		DialogView dialogView = new DialogView(context, styledContext, dimAmount, viewFactory.createView(this));
+		DialogView dialogView = new DialogView(context, styledContext, dialogDimAmount, viewFactory.createView(this));
 		rootView.addView(dialogView.getContainer(), index, new SimpleLayout
 				.LayoutParams(SimpleLayout.LayoutParams.MATCH_PARENT, SimpleLayout.LayoutParams.MATCH_PARENT));
 		return dialogView;

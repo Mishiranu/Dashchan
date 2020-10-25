@@ -12,6 +12,7 @@ import com.mishiranu.dashchan.content.async.ReadUserBoardsTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.ui.navigator.adapter.UserBoardsAdapter;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -19,13 +20,14 @@ import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
+import java.util.List;
 
 public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callback,
 		ReadUserBoardsTask.Callback {
 	private static class RetainExtra {
 		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
 
-		public Board[] boards;
+		public List<Board> boards;
 	}
 
 	private ReadUserBoardsTask readTask;
@@ -133,7 +135,7 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 			readTask.cancel();
 		}
 		readTask = new ReadUserBoardsTask(this, getChan());
-		readTask.executeOnExecutor(ReadUserBoardsTask.THREAD_POOL_EXECUTOR);
+		readTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 		if (showPull) {
 			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
 			switchView(ViewType.LIST, null);
@@ -144,7 +146,7 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 	}
 
 	@Override
-	public void onReadUserBoardsSuccess(Board[] boards) {
+	public void onReadUserBoardsSuccess(List<Board> boards) {
 		readTask = null;
 		getRecyclerView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);

@@ -12,7 +12,7 @@ import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 public class ArchiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -72,10 +72,10 @@ public class ArchiveAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		return getItem(position).getThreadNumber();
 	}
 
-	public void setItems(ThreadSummary[] threadSummaries) {
+	public void setItems(List<ThreadSummary> threadSummaries) {
 		archiveItems.clear();
 		if (threadSummaries != null) {
-			Collections.addAll(archiveItems, threadSummaries);
+			archiveItems.addAll(threadSummaries);
 		}
 		applyCurrentFilter();
 		notifyDataSetChanged();

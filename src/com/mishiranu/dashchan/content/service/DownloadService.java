@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -32,6 +31,7 @@ import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.async.ReadFileTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
@@ -270,7 +270,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 				ReadFileTask readFileTask = ReadFileTask.createShared(this, chan,
 						taskData.uri, getDataFile(taskData), taskData.overwrite);
 				activeTask = new Pair<>(taskData, readFileTask);
-				readFileTask.executeOnExecutor(SINGLE_THREAD_EXECUTOR);
+				readFileTask.execute(SINGLE_THREAD_EXECUTOR);
 			}
 		} else {
 			cachedDirectories.clear();
@@ -334,7 +334,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		refreshNotification(NotificationUpdate.SYNC);
 	}
 
-	private static class PrepareTask<T> extends AsyncTask<Void, Void, T> {
+	private static class PrepareTask<T> extends ExecutorTask<Void, T> {
 		public interface Task<T> {
 			void cleanup();
 			T run() throws InterruptedException;
@@ -348,7 +348,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		}
 
 		@Override
-		protected T doInBackground(Void... params) {
+		protected T run() {
 			try {
 				return task.run();
 			} catch (InterruptedException e) {
@@ -357,7 +357,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		}
 
 		@Override
-		protected void onPostExecute(T result) {
+		protected void onComplete(T result) {
 			task.onResult(result);
 		}
 	}
@@ -429,7 +429,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 				handleRequests();
 			}
 		});
-		task.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
+		task.execute(ConcurrentUtils.SEPARATE_EXECUTOR);
 		primaryRequest = new PrepareRequest(task);
 	}
 
@@ -498,7 +498,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 				handleRequests();
 			}
 		});
-		task.executeOnExecutor(ConcurrentUtils.SEPARATE_EXECUTOR);
+		task.execute(ConcurrentUtils.SEPARATE_EXECUTOR);
 		primaryRequest = new PrepareRequest(task);
 	}
 
@@ -1298,7 +1298,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		@Override
 		public void cleanup() {
 			task.task.cleanup();
-			task.cancel(true);
+			task.cancel();
 		}
 	}
 

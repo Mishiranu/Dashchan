@@ -7,13 +7,14 @@ import chan.content.InvalidResponseException;
 import chan.content.model.ThreadSummary;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
-import chan.util.CommonUtils;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 
-public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSummary[]> {
+public class ReadThreadSummariesTask extends HttpHolderTask<Void, List<ThreadSummary>> {
 	private final Callback callback;
 	private final Chan chan;
 	private final String boardName;
@@ -23,7 +24,7 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSu
 	private ErrorItem errorItem;
 
 	public interface Callback {
-		void onReadThreadSummariesSuccess(ThreadSummary[] threadSummaries, int pageNumber);
+		void onReadThreadSummariesSuccess(List<ThreadSummary> threadSummaries, int pageNumber);
 		void onReadThreadSummariesFail(ErrorItem errorItem);
 	}
 
@@ -37,13 +38,14 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSu
 	}
 
 	@Override
-	protected ThreadSummary[] doInBackground(HttpHolder holder, Void... params) {
+	protected List<ThreadSummary> run(HttpHolder holder) {
 		try {
 			ChanPerformer.ReadThreadSummariesResult result = chan.performer.safe()
 					.onReadThreadSummaries(new ChanPerformer
 							.ReadThreadSummariesData(boardName, pageNumber, type, holder));
 			ThreadSummary[] threadSummaries = result != null ? result.threadSummaries : null;
-			return threadSummaries != null && threadSummaries.length > 0 ? threadSummaries : null;
+			return threadSummaries != null && threadSummaries.length > 0
+					? Arrays.asList(threadSummaries) : Collections.emptyList();
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {
 			errorItem = e.getErrorItemAndHandle();
 			return null;
@@ -53,30 +55,31 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, Void, ThreadSu
 	}
 
 	@Override
-	public void onPostExecute(ThreadSummary[] threadSummaries) {
-		if (errorItem == null) {
+	public void onComplete(List<ThreadSummary> threadSummaries) {
+		if (threadSummaries != null) {
 			callback.onReadThreadSummariesSuccess(threadSummaries, pageNumber);
 		} else {
 			callback.onReadThreadSummariesFail(errorItem);
 		}
 	}
 
-	public static ThreadSummary[] concatenate(ThreadSummary[] threadSummaries1, ThreadSummary[] threadSummaries2) {
-		ArrayList<ThreadSummary> threadSummaries = new ArrayList<>();
-		if (threadSummaries1 != null) {
-			Collections.addAll(threadSummaries, threadSummaries1);
+	public static List<ThreadSummary> concatenate(List<ThreadSummary> threadSummaries1,
+			List<ThreadSummary> threadSummaries2) {
+		if (threadSummaries1 == null) {
+			return threadSummaries2 != null ? threadSummaries2 : Collections.emptyList();
+		} else if (threadSummaries2 == null) {
+			return threadSummaries1;
 		}
+		ArrayList<ThreadSummary> threadSummaries = new ArrayList<>(threadSummaries1);
 		HashSet<String> identifiers = new HashSet<>();
 		for (ThreadSummary threadSummary : threadSummaries) {
 			identifiers.add(threadSummary.getBoardName() + '/' + threadSummary.getThreadNumber());
 		}
-		if (threadSummaries2 != null) {
-			for (ThreadSummary threadSummary : threadSummaries2) {
-				if (!identifiers.contains(threadSummary.getBoardName() + '/' + threadSummary.getThreadNumber())) {
-					threadSummaries.add(threadSummary);
-				}
+		for (ThreadSummary threadSummary : threadSummaries2) {
+			if (!identifiers.contains(threadSummary.getBoardName() + '/' + threadSummary.getThreadNumber())) {
+				threadSummaries.add(threadSummary);
 			}
 		}
-		return CommonUtils.toArray(threadSummaries, ThreadSummary.class);
+		return threadSummaries;
 	}
 }

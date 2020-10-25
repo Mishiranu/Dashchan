@@ -33,6 +33,7 @@ import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.CustomSearchView;
 import com.mishiranu.dashchan.widget.ErrorEditTextSetter;
 import com.mishiranu.dashchan.widget.MenuExpandListener;
@@ -455,7 +456,8 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 						(d, which) -> ((AutohideFragment) getParentFragment()).onDelete(index));
 			}
 			AlertDialog dialog = builder.create();
-			dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+			dialog.getWindow().setSoftInputMode(C.API_R ? WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
+					: ViewUtils.SOFT_INPUT_ADJUST_RESIZE_COMPAT);
 			return dialog;
 		}
 

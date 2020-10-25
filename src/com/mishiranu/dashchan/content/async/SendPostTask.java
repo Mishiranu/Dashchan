@@ -19,7 +19,7 @@ import com.mishiranu.dashchan.text.SimilarTextEstimator;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
+public class SendPostTask<Key> extends HttpHolderTask<long[], Boolean> {
 	private final Key key;
 	private final Callback<Key> callback;
 	private final Chan chan;
@@ -37,7 +37,7 @@ public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 		@Override
 		public void onProgressChange(long progress, long progressMax) {
 			if (!progressMode) {
-				publishProgress(0L, progress, progressMax);
+				notifyProgress(new long[] {0L, progress, progressMax});
 			}
 		}
 
@@ -56,7 +56,7 @@ public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 					}
 					lastOpenable = openable;
 				}
-				publishProgress((long) completeOpenables.size(), progress, progressMax);
+				notifyProgress(new long[] {completeOpenables.size(), progress, progressMax});
 			}
 		}
 	};
@@ -115,7 +115,7 @@ public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	@Override
-	protected Boolean doInBackground(HttpHolder holder, Void... params) {
+	protected Boolean run(HttpHolder holder) {
 		try {
 			ChanPerformer.SendPostData data = this.data;
 			if (data.captchaData != null && (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(data.captchaType) ||
@@ -179,17 +179,17 @@ public class SendPostTask<Key> extends HttpHolderTask<Void, Long, Boolean> {
 	}
 
 	@Override
-	protected void onProgressUpdate(Long... values) {
-		int index = values[0].intValue();
+	protected void onProgress(long[] values) {
+		int index = (int) values[0];
 		long progress = values[1];
 		long progressMax = values[2];
 		updateProgressValue(index, progress, progressMax);
 	}
 
 	@Override
-	protected void onPostExecute(final Boolean result) {
+	protected void onComplete(Boolean success) {
 		if (callback != null) {
-			if (result) {
+			if (success) {
 				callback.onSendPostSuccess(key, data, chan.name,
 						this.result != null ? this.result.threadNumber : null,
 						this.result != null ? this.result.postNumber : null);

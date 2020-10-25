@@ -3,8 +3,7 @@ package com.mishiranu.dashchan.content.async;
 import chan.content.Chan;
 import chan.http.HttpHolder;
 
-@SuppressWarnings("unchecked")
-public abstract class HttpHolderTask<Params, Progress, Result> extends CancellableTask<Params, Progress, Result> {
+public abstract class HttpHolderTask<Progress, Result> extends ExecutorTask<Progress, Result> {
 	private final HttpHolder holder;
 
 	public HttpHolderTask(Chan chan) {
@@ -12,17 +11,17 @@ public abstract class HttpHolderTask<Params, Progress, Result> extends Cancellab
 	}
 
 	@Override
-	protected final Result doInBackground(Params... params) {
+	protected final Result run() {
 		try (HttpHolder.Use ignored = holder.use()) {
-			return doInBackground(holder, params);
+			return run(holder);
 		}
 	}
 
-	protected abstract Result doInBackground(HttpHolder holder, Params... params);
+	protected abstract Result run(HttpHolder holder);
 
 	@Override
 	public void cancel() {
-		cancel(true);
+		super.cancel();
 		holder.interrupt();
 	}
 }

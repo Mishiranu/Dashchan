@@ -225,9 +225,9 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		}
 	}
 
-	public void setItems(Collection<ArrayList<PostItem>> postItemsCollection, boolean catalog) {
+	public void setItems(Collection<List<PostItem>> postItemsCollection, boolean catalog) {
 		postItems.clear();
-		for (ArrayList<PostItem> postItems : postItemsCollection) {
+		for (List<PostItem> postItems : postItemsCollection) {
 			appendItemsInternal(postItems);
 		}
 		this.catalog = catalog;
@@ -235,7 +235,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		notifyDataSetChanged();
 	}
 
-	public void appendItems(ArrayList<PostItem> postItems) {
+	public void appendItems(List<PostItem> postItems) {
 		appendItemsInternal(postItems);
 		applyCurrentSortingAndFilter(true, true);
 		notifyDataSetChanged();
