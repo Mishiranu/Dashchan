@@ -198,7 +198,6 @@ public class DialogUnit {
 		public void destroyView(View view) {
 			saveState(view);
 			DialogHolder holder = (DialogHolder) view.getTag();
-			uiManager.view().notifyUnbindListView(holder.recyclerView);
 			uiManager.observable().unregister(holder);
 			holder.cancel();
 		}

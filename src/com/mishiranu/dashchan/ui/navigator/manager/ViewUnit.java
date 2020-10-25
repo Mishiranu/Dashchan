@@ -331,8 +331,9 @@ public class ViewUnit {
 		ColorScheme colorScheme = ThemeEngine.getColorScheme(uiManager.getContext());
 		PostViewHolder holder = (PostViewHolder) viewHolder;
 		Chan chan = Chan.get(holder.configurationSet.chanName);
-		holder.notifyUnbind();
+		holder.resetAnimations();
 		holder.postItem = postItem;
+		holder.selection = demandSet.selection;
 
 		String boardName = postItem.getBoardName();
 		String threadNumber = postItem.getThreadNumber();
@@ -446,28 +447,7 @@ public class ViewUnit {
 		holder.bottomBarExpand.setClickable(viewsEnabled);
 		holder.bottomBarOpenThread.setEnabled(viewsEnabled);
 		holder.bottomBarOpenThread.setClickable(viewsEnabled);
-		if (viewsEnabled && !holder.configurationSet.postStateProvider.isRead(postNumber)) {
-			switch (Preferences.getHighlightUnreadMode()) {
-				case Preferences.HIGHLIGHT_UNREAD_AUTOMATICALLY: {
-					holder.newPostAnimation = new NewPostAnimation(holder.layout,
-							holder.configurationSet.postStateProvider, postNumber,
-							colorScheme.highlightBackgroundColor);
-					break;
-				}
-				case Preferences.HIGHLIGHT_UNREAD_MANUALLY: {
-					holder.layout.setSecondaryBackgroundColor(colorScheme.highlightBackgroundColor);
-					break;
-				}
-				default: {
-					holder.layout.setSecondaryBackground(null);
-					break;
-				}
-			}
-		} else if (demandSet.selection == UiManager.Selection.SELECTED) {
-			holder.layout.setSecondaryBackgroundColor(colorScheme.highlightBackgroundColor);
-		} else {
-			holder.layout.setSecondaryBackground(null);
-		}
+		holder.installBackground();
 	}
 
 	public void bindPostViewInvalidateComment(RecyclerView.ViewHolder viewHolder) {
@@ -658,19 +638,6 @@ public class ViewUnit {
 			}
 		}
 		return text;
-	}
-
-	public void notifyUnbindListView(RecyclerView recyclerView) {
-		for (int i = 0; i < recyclerView.getChildCount(); i++) {
-			RecyclerView.ViewHolder holder = recyclerView.getChildViewHolder(recyclerView.getChildAt(i));
-			notifyUnbindView(holder);
-		}
-	}
-
-	public void notifyUnbindView(RecyclerView.ViewHolder holder) {
-		if (holder instanceof PostViewHolder) {
-			((PostViewHolder) holder).notifyUnbind();
-		}
 	}
 
 	boolean handlePostForDoubleClick(final View view) {
@@ -1106,7 +1073,7 @@ public class ViewUnit {
 	}
 
 	private static class PostViewHolder extends RecyclerView.ViewHolder implements UiManager.Holder,
-			CommentTextView.RecyclerKeeper.Holder, PostLinearLayout.OnTemporaryDetachListener,
+			CommentTextView.RecyclerKeeper.Holder, View.OnAttachStateChangeListener,
 			CommentTextView.LimitListener, View.OnClickListener {
 		public final PostLinearLayout layout;
 		public final LinebreakLayout head;
@@ -1129,12 +1096,14 @@ public class ViewUnit {
 		public int attachmentViewCount = 1;
 		public ArrayList<ImageView> badgeImages;
 		public final ImageView[] stateImages = new ImageView[PostState.POST_ITEM_STATES.size()];
+		public final int highlightBackgroundColor;
 
 		public final UiManager.ConfigurationSet configurationSet;
 		public final UiManager.ThumbnailClickListener thumbnailClickListener;
 		public final UiManager.ThumbnailLongClickListener thumbnailLongClickListener;
 
 		public PostItem postItem;
+		public UiManager.Selection selection;
 		public Animator expandAnimator;
 		public NewPostAnimation newPostAnimation;
 		public long lastCommentClick;
@@ -1144,7 +1113,7 @@ public class ViewUnit {
 			super(LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_post, parent, false));
 
 			layout = (PostLinearLayout) itemView;
-			layout.setOnTemporaryDetachListener(this);
+			layout.addOnAttachStateChangeListener(this);
 			ViewUtils.setSelectableItemBackground(layout);
 			head = itemView.findViewById(R.id.head);
 			number = itemView.findViewById(R.id.number);
@@ -1162,6 +1131,7 @@ public class ViewUnit {
 			bottomBarReplies = itemView.findViewById(R.id.bottom_bar_replies);
 			bottomBarExpand = itemView.findViewById(R.id.bottom_bar_expand);
 			bottomBarOpenThread = itemView.findViewById(R.id.bottom_bar_open_thread);
+			highlightBackgroundColor = ThemeEngine.getColorScheme(itemView.getContext()).highlightBackgroundColor;
 
 			this.configurationSet = configurationSet;
 			thumbnailClickListener = uiManager.interaction().createThumbnailClickListener();
@@ -1199,7 +1169,43 @@ public class ViewUnit {
 			}
 		}
 
-		public void notifyUnbind() {
+		public void installBackground() {
+			if (ViewCompat.isAttachedToWindow(itemView)) {
+				installBackgroundUnchecked();
+			}
+		}
+
+		private void installBackgroundUnchecked() {
+			if (newPostAnimation != null) {
+				newPostAnimation.cancel();
+				newPostAnimation = null;
+			}
+			if (selection == UiManager.Selection.DISABLED &&
+					!configurationSet.postStateProvider.isRead(postItem.getPostNumber())) {
+				switch (Preferences.getHighlightUnreadMode()) {
+					case Preferences.HIGHLIGHT_UNREAD_AUTOMATICALLY: {
+						newPostAnimation = new NewPostAnimation(layout,
+								configurationSet.postStateProvider, postItem.getPostNumber(),
+								highlightBackgroundColor);
+						break;
+					}
+					case Preferences.HIGHLIGHT_UNREAD_MANUALLY: {
+						layout.setSecondaryBackgroundColor(highlightBackgroundColor);
+						break;
+					}
+					default: {
+						layout.setSecondaryBackground(null);
+						break;
+					}
+				}
+			} else if (selection == UiManager.Selection.SELECTED) {
+				layout.setSecondaryBackgroundColor(highlightBackgroundColor);
+			} else {
+				layout.setSecondaryBackground(null);
+			}
+		}
+
+		public void resetAnimations() {
 			if (expandAnimator != null) {
 				expandAnimator.cancel();
 				expandAnimator = null;
@@ -1224,6 +1230,16 @@ public class ViewUnit {
 			boolean hasText = comment.getVisibility() == View.VISIBLE;
 			float density = ResourceUtils.obtainDensity(textBarPadding);
 			textBarPadding.getLayoutParams().height = (int) ((needBar ? 0f : hasText ? 10f : 6f) * density);
+		}
+
+		@Override
+		public void onViewAttachedToWindow(View v) {
+			installBackgroundUnchecked();
+		}
+
+		@Override
+		public void onViewDetachedFromWindow(View v) {
+			resetAnimations();
 		}
 
 		@Override
@@ -1268,13 +1284,6 @@ public class ViewUnit {
 					animator.setDuration((int) (200 * value));
 					animator.start();
 				}
-			}
-		}
-
-		@Override
-		public void onTemporaryDetach(PostLinearLayout view, boolean start) {
-			if (start) {
-				notifyUnbind();
 			}
 		}
 

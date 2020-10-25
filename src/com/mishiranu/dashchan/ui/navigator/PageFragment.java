@@ -145,7 +145,6 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		FragmentHandler fragmentHandler = (FragmentHandler) requireActivity();
 		fragmentHandler.setActionBarLocked(actionBarLockerPull, false);
 		fragmentHandler.setActionBarLocked(actionBarLockerSearch, false);
-		getCallback().getUiManager().view().notifyUnbindListView(recyclerView);
 
 		if (listPage != null) {
 			listPage.destroy();

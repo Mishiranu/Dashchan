@@ -81,30 +81,4 @@ public class PostLinearLayout extends LinearLayout {
 			secondaryBackground.draw(canvas);
 		}
 	}
-
-	public interface OnTemporaryDetachListener {
-		public void onTemporaryDetach(PostLinearLayout view, boolean start);
-	}
-
-	private OnTemporaryDetachListener onTemporaryDetachListener;
-
-	public void setOnTemporaryDetachListener(OnTemporaryDetachListener listener) {
-		onTemporaryDetachListener = listener;
-	}
-
-	@Override
-	public void onStartTemporaryDetach() {
-		super.onStartTemporaryDetach();
-		if (onTemporaryDetachListener != null) {
-			onTemporaryDetachListener.onTemporaryDetach(this, true);
-		}
-	}
-
-	@Override
-	public void onFinishTemporaryDetach() {
-		super.onFinishTemporaryDetach();
-		if (onTemporaryDetachListener != null) {
-			onTemporaryDetachListener.onTemporaryDetach(this, false);
-		}
-	}
 }
