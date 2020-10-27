@@ -205,30 +205,24 @@ public class PagerUnit implements PagerInstance.Callback {
 			available = true;
 			GalleryItem galleryItem = holder.galleryItem;
 			Chan chan = Chan.get(galleryInstance.chanName);
-			boolean fullLoaded = holder.fullLoaded;
 			boolean isVideo = galleryItem.isVideo(chan);
 			boolean isOpenableVideo = isVideo && galleryItem.isOpenableVideo(chan);
 			boolean isVideoInitialized = isOpenableVideo && videoUnit.isInitialized();
 			boolean imageHasMetadata = imageUnit.hasMetadata();
-			save = fullLoaded || isVideo && !isOpenableVideo;
-			if (!save && isOpenableVideo) {
-				File cachedFile = CacheManager.getInstance().getMediaFile(galleryItem.getFileUri(chan), false);
-				if (cachedFile != null && cachedFile.exists()) {
-					save = true;
-				}
-			}
-			refresh = !isOpenableVideo && !isVideo || isVideoInitialized;
+			save = holder.loadState == PagerInstance.LoadState.COMPLETE ||
+					isVideo && (!isOpenableVideo || holder.loadState == PagerInstance.LoadState.ERROR);
+			refresh = !isVideo || isVideoInitialized || holder.loadState == PagerInstance.LoadState.ERROR;
 			viewTechnicalInfo = isVideoInitialized || imageHasMetadata;
 			searchImage = galleryItem.getDisplayImageUri(chan) != null;
 			navigatePost = galleryItem.postNumber != null;
-			shareFile = fullLoaded;
+			shareFile = holder.loadState == PagerInstance.LoadState.COMPLETE;
 		}
 		return new OptionsMenuCapabilities(available, save, refresh, viewTechnicalInfo,
 				searchImage, navigatePost, shareFile);
 	}
 
-	public GalleryItem getCurrentGalleryItem() {
-		return pagerInstance.currentHolder != null ? pagerInstance.currentHolder.galleryItem : null;
+	public PagerInstance.ViewHolder getCurrentHolder() {
+		return pagerInstance.currentHolder;
 	}
 
 	private void interrupt(boolean force) {
@@ -259,7 +253,7 @@ public class PagerUnit implements PagerInstance.Callback {
 		GalleryItem galleryItem = holder.galleryItem;
 		Chan chan = Chan.get(galleryInstance.chanName);
 		interrupt(false);
-		holder.fullLoaded = false;
+		holder.loadState = PagerInstance.LoadState.PREVIEW_OR_LOADING;
 		galleryInstance.callback.invalidateOptionsMenu();
 		CacheManager cacheManager = CacheManager.getInstance();
 		if (!cacheManager.isCacheAvailable()) {
@@ -371,6 +365,8 @@ public class PagerUnit implements PagerInstance.Callback {
 			holder.errorText.setText(!StringUtils.isEmpty(message) ? message
 					: galleryInstance.context.getString(R.string.unknown_error));
 			holder.progressBar.cancelVisibilityTransient();
+			holder.loadState = PagerInstance.LoadState.ERROR;
+			galleryInstance.callback.invalidateOptionsMenu();
 		}
 	}
 
@@ -496,12 +492,12 @@ public class PagerUnit implements PagerInstance.Callback {
 			if (!active) {
 				holder.progressBar.setVisible(false, true);
 			}
-			boolean hasValidImage = holder.galleryItem == galleryItem && holder.fullLoaded &&
+			boolean hasValidImage = holder.galleryItem == galleryItem &&
+					holder.loadState == PagerInstance.LoadState.COMPLETE &&
 					!galleryItem.isVideo(Chan.get(galleryInstance.chanName));
 			if (hasValidImage) {
 				if (holder.animatedPngDecoder != null || holder.gifDecoder != null) {
 					holder.recyclePhotoView();
-					holder.fullLoaded = false;
 					hasValidImage = false;
 				} else {
 					if (holder.decoderDrawable != null) {
@@ -511,8 +507,9 @@ public class PagerUnit implements PagerInstance.Callback {
 				}
 			}
 			if (!hasValidImage) {
-				holder.fullLoaded = false;
+				holder.loadState = PagerInstance.LoadState.PREVIEW_OR_LOADING;
 				holder.galleryItem = galleryItem;
+				holder.mediaSummary = new PagerInstance.MediaSummary(galleryItem);
 				boolean success = presetThumbnail(holder, false);
 				if (!success) {
 					holder.recyclePhotoView();
@@ -545,20 +542,14 @@ public class PagerUnit implements PagerInstance.Callback {
 			}
 			applySideViewData(holder, index, true);
 			GalleryItem galleryItem = galleryItems.get(index);
-			if (holder.galleryItem != galleryItem || !holder.fullLoaded) {
+			if (holder.galleryItem != galleryItem || holder.loadState != PagerInstance.LoadState.COMPLETE) {
 				holder.galleryItem = galleryItem;
+				holder.mediaSummary = new PagerInstance.MediaSummary(galleryItem);
 				loadImageVideo(false, mayShowThumbnailOnly, waitBeforeVideo);
 				waitBeforeVideo = 0;
 			} else {
 				galleryInstance.callback.invalidateOptionsMenu();
 				galleryInstance.callback.modifySystemUiVisibility(GalleryInstance.Flags.LOCKED_ERROR, false);
-			}
-			if (galleryItem.size <= 0) {
-				Uri uri = galleryItem.getFileUri(Chan.get(galleryInstance.chanName));
-				File cachedFile = CacheManager.getInstance().getMediaFile(uri, false);
-				if (cachedFile != null && cachedFile.exists()) {
-					galleryItem.size = (int) cachedFile.length();
-				}
 			}
 			galleryInstance.callback.updateTitle();
 			if (galleryItem.postNumber != null && resumed && !galleryInstance.callback.isGalleryMode()) {
@@ -575,7 +566,7 @@ public class PagerUnit implements PagerInstance.Callback {
 			for (int i = 0; i < viewPager.getChildCount(); i++) {
 				PagerInstance.ViewHolder holder = (PagerInstance.ViewHolder) viewPager.getChildAt(i).getTag();
 				holder.recyclePhotoView();
-				holder.fullLoaded = false;
+				holder.loadState = PagerInstance.LoadState.PREVIEW_OR_LOADING;
 			}
 		}
 	}

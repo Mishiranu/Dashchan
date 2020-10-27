@@ -402,14 +402,14 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-		GalleryItem galleryItem = pagerUnit != null ? pagerUnit.getCurrentGalleryItem() : null;
+		PagerInstance.ViewHolder holder = pagerUnit != null ? pagerUnit.getCurrentHolder() : null;
 		switch (item.getItemId()) {
 			case android.R.id.home: {
 				dismiss();
 				break;
 			}
 			case R.id.menu_save: {
-				downloadGalleryItem(galleryItem);
+				downloadGalleryItem(holder.galleryItem);
 				break;
 			}
 			case R.id.menu_refresh: {
@@ -572,21 +572,24 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 
 	@Override
 	public void updateTitle() {
-		GalleryItem galleryItem = pagerUnit.getCurrentGalleryItem();
-		if (galleryItem != null) {
-			setTitle(galleryItem, pagerUnit.getCurrentIndex(), galleryItem.size);
+		PagerInstance.ViewHolder holder = pagerUnit.getCurrentHolder();
+		if (holder != null && holder.galleryItem != null) {
+			setTitle(holder.galleryItem, holder.mediaSummary, pagerUnit.getCurrentIndex());
 		}
 	}
 
-	private void setTitle(GalleryItem galleryItem, int position, int size) {
+	private void setTitle(GalleryItem galleryItem, PagerInstance.MediaSummary mediaSummary, int position) {
 		String fileName = galleryItem.getFileName(Chan.get(instance.chanName));
 		if (!StringUtils.isEmpty(galleryItem.originalName)) {
 			fileName = galleryItem.originalName;
 		}
 		int count = instance.galleryItems.size();
 		StringBuilder builder = new StringBuilder().append(position + 1).append('/').append(count);
-		if (size > 0) {
-			builder.append(", ").append(StringUtils.formatFileSize(size, false));
+		if (mediaSummary.width > 0 && mediaSummary.height > 0) {
+			builder.append(", ").append(mediaSummary.width).append('×').append(mediaSummary.height);
+		}
+		if (mediaSummary.size > 0) {
+			builder.append(", ").append(StringUtils.formatFileSize(mediaSummary.size, false));
 		}
 		titleSubtitle = new Pair<>(fileName, builder);
 		GalleryDialog dialog = getDialog();

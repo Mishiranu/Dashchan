@@ -75,7 +75,9 @@ public class ImageUnit {
 		if (attachReadBitmapCallback(holder)) {
 			return;
 		}
-		GalleryItem galleryItem = holder.galleryItem;
+		if (holder.mediaSummary.updateSize(file.length())) {
+			instance.galleryInstance.callback.updateTitle();
+		}
 		FileHolder fileHolder = FileHolder.obtain(file);
 		if (holder.decodeBitmapTask != null) {
 			((DecodeBitmapTask) holder.decodeBitmapTask).cancel();
@@ -84,10 +86,6 @@ public class ImageUnit {
 		DecodeBitmapTask decodeBitmapTask = new DecodeBitmapTask(file, fileHolder);
 		decodeBitmapTask.execute(EXECUTOR);
 		holder.decodeBitmapTask = decodeBitmapTask;
-		if (galleryItem.size <= 0) {
-			galleryItem.size = (int) file.length();
-			instance.galleryInstance.callback.updateTitle();
-		}
 		PagerInstance.ViewHolder nextHolder = instance.scrollingLeft ? instance.leftHolder : instance.rightHolder;
 		if (nextHolder != null && Preferences.isLoadNearestImage()) {
 			GalleryItem nextGalleryItem = nextHolder.galleryItem;
@@ -305,20 +303,35 @@ public class ImageUnit {
 			holder.decodeBitmapTask = null;
 			holder.progressBar.setVisible(false, false);
 			if (bitmap != null || decoderDrawable != null || animatedPngDecoder != null || gifDecoder != null) {
+				int width;
+				int height;
 				if (animatedPngDecoder != null) {
 					holder.animatedPngDecoder = animatedPngDecoder;
-					setPhotoViewImage(holder, animatedPngDecoder.getDrawable(), true);
+					Drawable drawable = animatedPngDecoder.getDrawable();
+					width = drawable.getIntrinsicWidth();
+					height = drawable.getIntrinsicHeight();
+					setPhotoViewImage(holder, drawable, true);
 				} else if (gifDecoder != null) {
 					holder.gifDecoder = gifDecoder;
-					setPhotoViewImage(holder, gifDecoder.getDrawable(), true);
+					Drawable drawable = gifDecoder.getDrawable();
+					width = drawable.getIntrinsicWidth();
+					height = drawable.getIntrinsicHeight();
+					setPhotoViewImage(holder, drawable, true);
 				} else if (decoderDrawable != null) {
 					holder.decoderDrawable = decoderDrawable;
+					width = decoderDrawable.getIntrinsicWidth();
+					height = decoderDrawable.getIntrinsicHeight();
 					setPhotoViewImage(holder, decoderDrawable, decoderDrawable.hasAlpha());
 				} else {
 					holder.simpleBitmapDrawable = new SimpleBitmapDrawable(bitmap, true);
+					width = bitmap.getWidth();
+					height = bitmap.getHeight();
 					setPhotoViewImage(holder, holder.simpleBitmapDrawable, bitmap.hasAlpha());
 				}
-				holder.fullLoaded = true;
+				if (holder.mediaSummary.updateDimensions(width, height)) {
+					instance.galleryInstance.callback.updateTitle();
+				}
+				holder.loadState = PagerInstance.LoadState.COMPLETE;
 				instance.galleryInstance.callback.invalidateOptionsMenu();
 			} else {
 				instance.callback.showError(holder, instance.galleryInstance.context.getString(errorMessageId));

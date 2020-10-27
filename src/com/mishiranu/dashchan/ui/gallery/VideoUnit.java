@@ -200,7 +200,10 @@ public class VideoUnit {
 		if (loadedFromFile) {
 			initializePlayer();
 			seekBar.setSecondaryProgress(seekBar.getMax());
-			instance.currentHolder.fullLoaded = true;
+			if (instance.currentHolder.mediaSummary.updateSize(file.length())) {
+				instance.galleryInstance.callback.updateTitle();
+			}
+			instance.currentHolder.loadState = PagerInstance.LoadState.COMPLETE;
 			instance.galleryInstance.callback.invalidateOptionsMenu();
 		} else {
 			instance.currentHolder.progressBar.setIndeterminate(true);
@@ -231,6 +234,9 @@ public class VideoUnit {
 		PagerInstance.ViewHolder holder = instance.currentHolder;
 		holder.progressBar.setVisible(false, false);
 		Point dimensions = player.getDimensions();
+		if (holder.mediaSummary.updateDimensions(dimensions.x, dimensions.y)) {
+			instance.galleryInstance.callback.updateTitle();
+		}
 		backgroundDrawable = new BackgroundDrawable();
 		backgroundDrawable.width = dimensions.x;
 		backgroundDrawable.height = dimensions.y;
@@ -690,6 +696,9 @@ public class VideoUnit {
 		public void onReadVideoProgressUpdate(long progress, long progressMax) {
 			if (workPlayer == player) {
 				workPlayer.setDownloadRange(progress, progressMax);
+				if (instance.currentHolder.mediaSummary.updateSize(progressMax)) {
+					instance.galleryInstance.callback.updateTitle();
+				}
 				if (initialized) {
 					int max = seekBar.getMax();
 					if (max > 0 && progressMax > 0) {
@@ -716,14 +725,13 @@ public class VideoUnit {
 					downloadTask = null;
 					long length = file.length();
 					workPlayer.setDownloadRange(length, length);
+					if (instance.currentHolder.mediaSummary.updateSize(length)) {
+						instance.galleryInstance.callback.updateTitle();
+					}
 					if (initialized) {
 						seekBar.setSecondaryProgress(seekBar.getMax());
-						holder.fullLoaded = true;
+						holder.loadState = PagerInstance.LoadState.COMPLETE;
 						instance.galleryInstance.callback.invalidateOptionsMenu();
-						if (holder.galleryItem.size <= 0) {
-							holder.galleryItem.size = (int) file.length();
-							instance.galleryInstance.callback.updateTitle();
-						}
 					}
 				}
 			}
@@ -740,7 +748,6 @@ public class VideoUnit {
 				} else {
 					holder.progressBar.setVisible(false, false);
 					instance.callback.showError(holder, errorItem.toString());
-					instance.galleryInstance.callback.invalidateOptionsMenu();
 				}
 			}
 		}

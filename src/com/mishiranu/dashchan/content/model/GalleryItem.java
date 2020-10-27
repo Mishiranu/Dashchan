@@ -24,8 +24,7 @@ public class GalleryItem implements Serializable {
 
 	public final int width;
 	public final int height;
-
-	public int size;
+	public final int size;
 
 	private transient Uri fileUri;
 	private transient Uri thumbnailUri;
