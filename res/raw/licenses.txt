@@ -10,7 +10,7 @@ Licensed under the Apache License, Version 2.0</pre>
 https://android.googlesource.com/platform/frameworks/support/+/androidx-master-dev</a>
 
 <h3>PhotoView</h3>
-<pre>Copyright 2011, 2012 Chris Banes.
+<pre>Copyright 2011, 2012 Chris Banes
 Licensed under the Apache License, Version 2.0</pre>
 <a href="https://github.com/chrisbanes/PhotoView">https://github.com/chrisbanes/PhotoView</a>
 
@@ -18,6 +18,11 @@ Licensed under the Apache License, Version 2.0</pre>
 <pre>Copyright 2000-2016 The FFmpeg developers
 Licensed under the GNU Lesser General Public License version 2.1 or later</pre>
 <a href="https://ffmpeg.org">https://ffmpeg.org</a>
+
+<h3>dav1d</h3>
+<pre>Copyright 2018-2019 VideoLAN and dav1d authors
+Licensed under the BSD 2-Clause License</pre>
+<a href="https://code.videolan.org/videolan/dav1d">https://code.videolan.org/videolan/dav1d</a>
 
 <h3>LibYuv</h3>
 <pre>Copyright 2011 The LibYuv Project Authors

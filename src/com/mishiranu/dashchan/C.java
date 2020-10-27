@@ -49,8 +49,8 @@ public class C {
 		IMAGE_EXTENSIONS = immutableSet("jpg", "jpe", "jpeg", "png", "apng", "gif", "webp", "bmp",
 				WEB_VIEW_BITMAP_DECODER_SUPPORTED ? "svg" : null);
 		AUDIO_EXTENSIONS = immutableSet("mp3", "ogg", "flac", "wav");
-		VIDEO_EXTENSIONS = immutableSet("webm", "mp4");
-		OPENABLE_VIDEO_EXTENSIONS = immutableSet("webm", "mp4");
+		VIDEO_EXTENSIONS = immutableSet("webm", "mkv", "mp4");
+		OPENABLE_VIDEO_EXTENSIONS = immutableSet("webm", "mkv", "mp4");
 		HashMap<String, String> extensionTransformation = new HashMap<>();
 		extensionTransformation.put("jpg", "jpeg");
 		extensionTransformation.put("jpe", "jpeg");

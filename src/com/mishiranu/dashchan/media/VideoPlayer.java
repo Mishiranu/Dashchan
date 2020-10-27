@@ -10,10 +10,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.ParcelFileDescriptor;
 import android.os.Process;
+import android.util.Pair;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import chan.content.ChanManager;
+import chan.util.StringUtils;
 import com.mishiranu.dashchan.util.Log;
 import dalvik.system.PathClassLoader;
 import java.io.File;
@@ -32,10 +34,10 @@ public class VideoPlayer {
 	private static boolean loaded = false;
 	private static HolderInterface holder;
 
-	public static boolean loadLibraries(Context context) {
+	public static Pair<Boolean, String> loadLibraries(Context context) {
 		synchronized (VideoPlayer.class) {
 			if (loaded) {
-				return true;
+				return new Pair<>(true, null);
 			}
 			ChanManager.ExtensionItem extensionItem = ChanManager.getInstance()
 					.getLibExtension(ChanManager.EXTENSION_NAME_LIB_WEBM);
@@ -57,13 +59,25 @@ public class VideoPlayer {
 						holder = (HolderInterface) Proxy.newProxyInstance(VideoPlayer.class.getClassLoader(),
 								new Class[] { HolderInterface.class }, handler);
 						loaded = true;
-						return true;
+						return new Pair<>(true, null);
 					} catch (Exception | LinkageError e) {
 						Log.persistent().stack(e);
+						String message = StringUtils.emptyIfNull(e.getMessage());
+						String path = context.getPackageCodePath();
+						if (path != null) {
+							File file = new File(path).getParentFile();
+							message = message.replace(file.getPath() + "/", "");
+						}
+						if (message.endsWith("...")) {
+							message = message.substring(0, message.length() - 3);
+						} else if (message.endsWith(".")) {
+							message = message.substring(0, message.length() - 1);
+						}
+						return new Pair<>(false, message);
 					}
 				}
 			}
-			return false;
+			return new Pair<>(false, null);
 		}
 	}
 
@@ -724,12 +738,6 @@ public class VideoPlayer {
 		@Override public native String[] getTechnicalInfo(long pointer);
 
 		static {
-			System.loadLibrary("avutil");
-			System.loadLibrary("swscale");
-			System.loadLibrary("swresample");
-			System.loadLibrary("avcodec");
-			System.loadLibrary("avformat");
-			System.loadLibrary("yuv");
 			System.loadLibrary("player");
 		}
 	}

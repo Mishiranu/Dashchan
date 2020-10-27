@@ -156,7 +156,7 @@ static inline size_t av_strnlen(const char *s, size_t len)
 char *av_asprintf(const char *fmt, ...) av_printf_format(1, 2);
 
 /**
- * Convert a number to a av_malloced string.
+ * Convert a number to an av_malloced string.
  */
 char *av_d2str(double d);
 
@@ -266,19 +266,29 @@ int av_strcasecmp(const char *a, const char *b);
  */
 int av_strncasecmp(const char *a, const char *b, size_t n);
 
+/**
+ * Locale-independent strings replace.
+ * @note This means only ASCII-range characters are replace
+ */
+char *av_strireplace(const char *str, const char *from, const char *to);
 
 /**
  * Thread safe basename.
- * @param path the path, on DOS both \ and / are considered separators.
+ * @param path the string to parse, on DOS both \ and / are considered separators.
  * @return pointer to the basename substring.
+ * If path does not contain a slash, the function returns a copy of path.
+ * If path is a NULL pointer or points to an empty string, a pointer
+ * to a string "." is returned.
  */
 const char *av_basename(const char *path);
 
 /**
  * Thread safe dirname.
- * @param path the path, on DOS both \ and / are considered separators.
- * @return the path with the separator replaced by the string terminator or ".".
- * @note the function may change the input string.
+ * @param path the string to parse, on DOS both \ and / are considered separators.
+ * @return A pointer to a string that's the parent directory of path.
+ * If path is a NULL pointer or points to an empty string, a pointer
+ * to a string "." is returned.
+ * @note the function may modify the contents of the path, so copies should be passed.
  */
 const char *av_dirname(char *path);
 
@@ -394,6 +404,12 @@ int av_utf8_decode(int32_t *codep, const uint8_t **bufp, const uint8_t *buf_end,
  *            list.
  */
 int av_match_list(const char *name, const char *list, char separator);
+
+/**
+ * See libc sscanf manual for more information.
+ * Locale-independent sscanf implementation.
+ */
+int av_sscanf(const char *string, const char *format, ...);
 
 /**
  * @}

@@ -1,8 +1,9 @@
 /* generated from libswresample.so */
-int LIBSWRESAMPLE_2;
+int LIBSWRESAMPLE_3;
 int swr_ffversion;
 void swr_alloc() {};
 void swr_alloc_set_opts() {};
+void swr_build_matrix() {};
 void swr_close() {};
 void swr_config_frame() {};
 void swr_convert() {};

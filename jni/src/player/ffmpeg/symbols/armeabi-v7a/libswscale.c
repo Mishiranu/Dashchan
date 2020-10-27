@@ -1,5 +1,5 @@
 /* generated from libswscale.so */
-int LIBSWSCALE_4;
+int LIBSWSCALE_5;
 void sws_addVec() {};
 void sws_alloc_context() {};
 void sws_alloc_set_opts() {};
