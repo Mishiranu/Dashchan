@@ -22,6 +22,7 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.posting.Replyable;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
@@ -163,6 +164,10 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 				break;
 			}
 		}
+	}
+
+	public List<PostItem> copyItems() {
+		return new ArrayList<>(postItemsMap.values());
 	}
 
 	public PostItem getItem(int position) {
@@ -446,9 +451,8 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 			// Take only 8ms per frame for preloading in main thread
 			PreloadIterator iterator = (PreloadIterator) msg.obj;
 			Chan chan = Chan.get(configurationSet.chanName);
-			final int ms = 8;
 			long time = SystemClock.elapsedRealtime();
-			while (SystemClock.elapsedRealtime() - time < ms && iterator.hasNext()) {
+			while (SystemClock.elapsedRealtime() - time < ConcurrentUtils.HALF_FRAME_TIME_MS && iterator.hasNext()) {
 				PostItem postItem = iterator.next();
 				configurationSet.postStateProvider.isHiddenResolve(postItem);
 				postItem.getComment(chan);

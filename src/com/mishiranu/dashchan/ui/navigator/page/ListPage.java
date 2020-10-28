@@ -13,6 +13,7 @@ import chan.content.Chan;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
+import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
@@ -21,10 +22,6 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 	private enum State {INIT, LOCKED, RESUMED, PAUSED, DESTROYED}
 
 	public enum ViewType {LIST, PROGRESS, ERROR}
-
-	public interface IconProvider {
-		Drawable get(int attr);
-	}
 
 	public interface ExtraFactory<T> {
 		T newExtra();
@@ -56,14 +53,11 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		}
 	}
 
-	public enum SearchSubmitResult {COLLAPSE, ACCEPT, DISCARD}
-
 	private Callback callback;
 	private Page page;
 	private PullableRecyclerView recyclerView;
 	private ListPosition listPosition;
 	private UiManager uiManager;
-	private IconProvider iconProvider;
 	private Object retainExtra;
 	private Parcelable parcelableExtra;
 	private InitRequest initRequest;
@@ -72,8 +66,8 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 	private State state = State.INIT;
 
 	public final void init(Callback callback, Page page, PullableRecyclerView recyclerView,
-			ListPosition listPosition, UiManager uiManager, IconProvider iconProvider,
-			Object retainExtra, Parcelable parcelableExtra, InitRequest initRequest, InitSearch initSearch) {
+			ListPosition listPosition, UiManager uiManager, Object retainExtra, Parcelable parcelableExtra,
+			InitRequest initRequest, InitSearch initSearch) {
 		if (state == State.INIT) {
 			state = State.LOCKED;
 			this.callback = callback;
@@ -81,7 +75,6 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 			this.recyclerView = recyclerView;
 			this.listPosition = listPosition;
 			this.uiManager = uiManager;
-			this.iconProvider = iconProvider;
 			this.retainExtra = retainExtra;
 			this.parcelableExtra = parcelableExtra;
 			this.initRequest = initRequest;
@@ -95,6 +88,10 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 
 	protected final Context getContext() {
 		return recyclerView.getContext();
+	}
+
+	protected final Context getToolbarContext() {
+		return callback.getToolbarContext();
 	}
 
 	protected final Resources getResources() {
@@ -156,7 +153,7 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 	}
 
 	protected final Drawable getActionBarIcon(int attr) {
-		return iconProvider != null ? iconProvider.get(attr) : null;
+		return ResourceUtils.getActionBarIcon(getToolbarContext(), attr);
 	}
 
 	protected final void notifyTitleChanged() {
@@ -171,6 +168,10 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 
 	protected final void setCustomSearchView(View view) {
 		callback.setCustomSearchView(view);
+	}
+
+	protected final void clearSearchFocus() {
+		callback.clearSearchFocus();
 	}
 
 	protected final ActionMode startActionMode(ActionMode.Callback callback) {
@@ -246,8 +247,8 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 
 	public void onSearchQueryChange(String query) {}
 
-	public SearchSubmitResult onSearchSubmit(String query) {
-		return SearchSubmitResult.DISCARD;
+	public boolean onSearchSubmit(String query) {
+		return false;
 	}
 
 	public void onSearchCancel() {}
@@ -323,6 +324,8 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		void notifyTitleChanged();
 		void updateOptionsMenu();
 		void setCustomSearchView(View view);
+		void clearSearchFocus();
+		Context getToolbarContext();
 		ActionMode startActionMode(ActionMode.Callback callback);
 		void switchView(ViewType viewType, String message);
 		void showScaleAnimation();

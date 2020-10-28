@@ -20,6 +20,9 @@ public class ConcurrentUtils {
 	public static final Executor SEPARATE_EXECUTOR = command -> new Thread(command).start();
 	public static final Executor PARALLEL_EXECUTOR = newThreadPool(1, 20, 3000, "ParallelExecutor", null);
 
+	// 60 frames per second -> frame time is 1000 / 60 -> divide by 2
+	public static final int HALF_FRAME_TIME_MS = 1000 / 60 / 2;
+
 	public static ExecutorService newSingleThreadPool(int lifeTimeMs, String componentName, String componentPart) {
 		return newThreadPool(lifeTimeMs > 0 ? 0 : 1, 1, lifeTimeMs, componentName, componentPart);
 	}

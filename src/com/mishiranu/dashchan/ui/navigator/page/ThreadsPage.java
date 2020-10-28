@@ -320,10 +320,10 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		boolean search = board.allowSearch;
 		boolean catalog = board.allowCatalog;
 		boolean catalogSearch = catalog && board.allowCatalogSearch;
-		boolean canSearch = search || catalogSearch;
-		allowSearch = canSearch;
+		boolean allowSearch = search || catalogSearch;
+		this.allowSearch = allowSearch;
 		boolean isCatalogOpen = retainExtra.startPageNumber == PAGE_NUMBER_CATALOG;
-		menu.findItem(R.id.menu_search).setTitle(canSearch ? R.string.search : R.string.filter);
+		menu.findItem(R.id.menu_search).setTitle(allowSearch ? R.string.search : R.string.filter);
 		menu.findItem(R.id.menu_catalog).setVisible(catalog && !isCatalogOpen);
 		menu.findItem(R.id.menu_pages).setVisible(catalog && isCatalogOpen);
 		menu.findItem(R.id.menu_sorting).setVisible(catalog && isCatalogOpen);
@@ -493,16 +493,16 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	}
 
 	@Override
-	public SearchSubmitResult onSearchSubmit(String query) {
+	public boolean onSearchSubmit(String query) {
 		if (allowSearch) {
 			// Collapse search view
 			getRecyclerView().post(() -> {
 				Page page = getPage();
 				getUiManager().navigator().navigateSearch(page.chanName, page.boardName, query);
 			});
-			return SearchSubmitResult.COLLAPSE;
+			return true;
 		}
-		return SearchSubmitResult.DISCARD;
+		return false;
 	}
 
 	@Override

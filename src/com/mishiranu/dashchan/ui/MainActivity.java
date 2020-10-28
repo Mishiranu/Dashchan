@@ -12,7 +12,6 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -491,8 +490,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
-	public Drawable getActionBarIcon(int attr) {
-		return ResourceUtils.getActionBarIcon(toolbarHolder != null ? toolbarHolder.toolbar.getContext() : this, attr);
+	public Context getToolbarContext() {
+		return toolbarHolder != null ? toolbarHolder.toolbar.getContext() : this;
 	}
 
 	@Override

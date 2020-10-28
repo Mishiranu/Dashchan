@@ -3,6 +3,7 @@ package com.mishiranu.dashchan.ui.navigator;
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
 import android.app.ActionBar;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Pair;
@@ -162,9 +163,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		super.onActivityCreated(savedInstanceState);
 
 		setHasOptionsMenu(true);
-		ListPage.IconProvider iconProvider = ((FragmentHandler) requireActivity())::getActionBarIcon;
-		listPage.init(this, getPage(), recyclerView,
-				listPosition, getCallback().getUiManager(), iconProvider,
+		listPage.init(this, getPage(), recyclerView, listPosition, getCallback().getUiManager(),
 				getCallback().getRetainExtra(getRetainId()), parcelableExtra, initRequest,
 				new ListPage.InitSearch(searchCurrentQuery, searchSubmitQuery));
 		initRequest = null;
@@ -253,23 +252,13 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 			searchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(requireContext(),
 					R.style.Theme_Special_White) : getCallback().getActionBar().getThemedContext());
 			searchView.setOnSubmitListener(query -> {
-				switch (listPage.onSearchSubmit(query)) {
-					case COLLAPSE: {
-						searchSubmitQuery = null;
-						setSearchMode(false);
-						return true;
-					}
-					case ACCEPT: {
-						searchSubmitQuery = query;
-						return true;
-					}
-					case DISCARD: {
-						searchSubmitQuery = null;
-						return false;
-					}
-					default: {
-						throw new IllegalStateException();
-					}
+				if (listPage.onSearchSubmit(query)) {
+					searchSubmitQuery = null;
+					setSearchMode(false);
+					return true;
+				} else {
+					searchSubmitQuery = query;
+					return false;
 				}
 			});
 			searchView.setOnChangeListener(query -> {
@@ -443,6 +432,19 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 	@Override
 	public void setCustomSearchView(View view) {
 		getSearchView(true).setCustomView(view);
+	}
+
+	@Override
+	public void clearSearchFocus() {
+		CustomSearchView searchView = getSearchView(false);
+		if (searchView != null) {
+			searchView.clearFocus();
+		}
+	}
+
+	@Override
+	public Context getToolbarContext() {
+		return ((FragmentHandler) requireActivity()).getToolbarContext();
 	}
 
 	@Override

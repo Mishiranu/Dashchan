@@ -6,6 +6,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import chan.content.ChanConfiguration;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.ReadSearchTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
@@ -151,6 +152,8 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 				.handlePostContextMenu(getChan(), postItem, null, false, false, false, false);
 	}
 
+	private boolean allowSearch = false;
+
 	@Override
 	public void onCreateOptionsMenu(Menu menu) {
 		menu.add(0, R.id.menu_search, 0, R.string.search)
@@ -163,6 +166,14 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
+		ChanConfiguration.Board board = getChan().configuration.safe().obtainBoard(getPage().boardName);
+		boolean search = board.allowSearch;
+		boolean catalog = board.allowCatalog;
+		boolean catalogSearch = catalog && board.allowCatalogSearch;
+		boolean allowSearch = search || catalogSearch;
+		this.allowSearch = allowSearch;
+		menu.findItem(R.id.menu_search).setVisible(allowSearch);
+		menu.findItem(R.id.menu_refresh).setVisible(allowSearch);
 		menu.findItem(R.id.menu_group).setChecked(getAdapter().isGroupMode());
 	}
 
@@ -196,13 +207,16 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 	}
 
 	@Override
-	public SearchSubmitResult onSearchSubmit(String query) {
-		// Collapse search view
-		getRecyclerView().post(() -> {
-			Page page = getPage();
-			getUiManager().navigator().navigateSearch(page.chanName, page.boardName, query);
-		});
-		return SearchSubmitResult.COLLAPSE;
+	public boolean onSearchSubmit(String query) {
+		if (allowSearch) {
+			// Collapse search view
+			getRecyclerView().post(() -> {
+				Page page = getPage();
+				getUiManager().navigator().navigateSearch(page.chanName, page.boardName, query);
+			});
+			return true;
+		}
+		return false;
 	}
 
 	@Override

@@ -2,21 +2,24 @@ package com.mishiranu.dashchan.ui.navigator.page;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.SystemClock;
 import android.util.Pair;
 import android.view.ActionMode;
-import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -102,9 +105,9 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		public Uri archivedThreadUri;
 		public int uniquePosters;
 
-		public final ArrayList<Integer> searchFoundPosts = new ArrayList<>();
+		public List<PostNumber> searchPostNumbers = Collections.emptyList();
 		public boolean searching = false;
-		public int searchLastPosition;
+		public int searchLastIndex;
 
 		public DialogUnit.StackInstance.State dialogsState;
 	}
@@ -117,7 +120,6 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		public boolean isAddedToHistory = false;
 		public QueuedRefresh queuedRefresh = QueuedRefresh.NONE;
 		public String threadTitle;
-		public PostNumber newPostNumber;
 		public PostNumber scrollToPostNumber;
 		public Set<PostNumber> selectedPosts;
 
@@ -139,10 +141,6 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			dest.writeByte((byte) (isAddedToHistory ? 1 : 0));
 			dest.writeString(queuedRefresh.name());
 			dest.writeString(threadTitle);
-			dest.writeByte((byte) (newPostNumber != null ? 1 : 0));
-			if (newPostNumber != null) {
-				newPostNumber.writeToParcel(dest, flags);
-			}
 			dest.writeByte((byte) (scrollToPostNumber != null ? 1 : 0));
 			if (scrollToPostNumber != null) {
 				scrollToPostNumber.writeToParcel(dest, flags);
@@ -171,9 +169,6 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				parcelableExtra.queuedRefresh = QueuedRefresh.valueOf(source.readString());
 				parcelableExtra.threadTitle = source.readString();
 				if (source.readByte() != 0) {
-					parcelableExtra.newPostNumber = PostNumber.CREATOR.createFromParcel(source);
-				}
-				if (source.readByte() != 0) {
 					parcelableExtra.scrollToPostNumber = PostNumber.CREATOR.createFromParcel(source);
 				}
 				int selectedPostsCount = source.readInt();
@@ -196,16 +191,19 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 	private ExtractPostsTask extractTask;
 	private ReadPostsTask readTask;
+	private SearchWorker searchWorker;
 
 	private Replyable replyable;
 	private HidePerformer hidePerformer;
 
 	private ActionMode selectionMode;
 
-	private LinearLayout searchController;
-	private Button searchTextResult;
+	private View searchControlView;
+	private View searchProcessView;
+	private Button searchResultText;
 
-	private final ArrayList<PostNumber> lastEditedPostNumbers = new ArrayList<>();
+	private Set<PostNumber> lastNewPostNumbers = Collections.emptySet();
+	private Set<PostNumber> lastEditedPostNumbers = Collections.emptySet();
 
 	private final UiManager.PostStateProvider postStateProvider = new UiManager.PostStateProvider() {
 		@Override
@@ -293,48 +291,62 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		uiManager.observable().register(this);
 		hidePerformer.setPostsProvider(adapter);
 
-		Context darkStyledContext = new ContextThemeWrapper(context, R.style.Theme_Main_Dark);
-		searchController = new LinearLayout(darkStyledContext);
-		searchController.setOrientation(LinearLayout.HORIZONTAL);
-		searchController.setGravity(Gravity.CENTER_VERTICAL);
+		Context toolbarContext = getToolbarContext();
+		LinearLayout searchControlLayout = new LinearLayout(toolbarContext);
+		this.searchControlView = searchControlLayout;
+		searchControlLayout.setOrientation(LinearLayout.HORIZONTAL);
+		searchControlLayout.setGravity(Gravity.CENTER_VERTICAL);
 		int buttonPadding = (int) (10f * density);
-		searchTextResult = new Button(darkStyledContext, null, android.R.attr.borderlessButtonStyle);
-		ViewUtils.setTextSizeScaled(searchTextResult, 11);
+		searchResultText = new Button(toolbarContext, null, android.R.attr.borderlessButtonStyle);
+		ViewUtils.setTextSizeScaled(searchResultText, 11);
 		if (!C.API_LOLLIPOP) {
-			searchTextResult.setTypeface(null, Typeface.BOLD);
+			searchResultText.setTypeface(null, Typeface.BOLD);
 		}
-		searchTextResult.setPadding((int) (14f * density), 0, (int) (14f * density), 0);
-		searchTextResult.setMinimumWidth(0);
-		searchTextResult.setMinWidth(0);
-		searchTextResult.setOnClickListener(v -> showSearchDialog());
-		searchController.addView(searchTextResult, LinearLayout.LayoutParams.WRAP_CONTENT,
+		searchResultText.setPadding((int) (14f * density), 0, (int) (14f * density), 0);
+		searchResultText.setMinimumWidth(0);
+		searchResultText.setMinWidth(0);
+		searchResultText.setOnClickListener(v -> showSearchDialog());
+		searchControlLayout.addView(searchResultText, LinearLayout.LayoutParams.WRAP_CONTENT,
 				LinearLayout.LayoutParams.WRAP_CONTENT);
-		ImageView backButtonView = new ImageView(darkStyledContext, null, android.R.attr.borderlessButtonStyle);
+		ImageView backButtonView = new ImageView(toolbarContext, null, android.R.attr.borderlessButtonStyle);
 		backButtonView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 		backButtonView.setImageDrawable(getActionBarIcon(R.attr.iconActionBack));
 		backButtonView.setPadding(buttonPadding, buttonPadding, buttonPadding, buttonPadding);
-		backButtonView.setOnClickListener(v -> findBack());
-		searchController.addView(backButtonView, (int) (48f * density), (int) (48f * density));
-		ImageView forwardButtonView = new ImageView(darkStyledContext, null, android.R.attr.borderlessButtonStyle);
+		backButtonView.setOnClickListener(v -> findNext(-1));
+		searchControlLayout.addView(backButtonView, (int) (48f * density), (int) (48f * density));
+		ImageView forwardButtonView = new ImageView(toolbarContext, null, android.R.attr.borderlessButtonStyle);
 		forwardButtonView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
 		forwardButtonView.setImageDrawable(getActionBarIcon(R.attr.iconActionForward));
 		forwardButtonView.setPadding(buttonPadding, buttonPadding, buttonPadding, buttonPadding);
-		forwardButtonView.setOnClickListener(v -> findForward());
-		searchController.addView(forwardButtonView, (int) (48f * density), (int) (48f * density));
+		forwardButtonView.setOnClickListener(v -> findNext(1));
+		searchControlLayout.addView(forwardButtonView, (int) (48f * density), (int) (48f * density));
 		if (C.API_LOLLIPOP) {
-			for (int i = 0, last = searchController.getChildCount() - 1; i <= last; i++) {
-				View view = searchController.getChildAt(i);
-				LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) view.getLayoutParams();
+			for (int i = 0, last = searchControlLayout.getChildCount() - 1; i <= last; i++) {
+				View view = searchControlLayout.getChildAt(i);
 				if (i == 0) {
-					layoutParams.leftMargin = (int) (-6f * density);
+					ViewUtils.setNewMarginRelative(view, (int) (-6f * density), null, null, null);
 				}
 				if (i == last) {
-					layoutParams.rightMargin = (int) (6f * density);
+					ViewUtils.setNewMarginRelative(view, null, null, (int) (6f * density), null);
 				} else {
-					layoutParams.rightMargin = (int) (-6f * density);
+					ViewUtils.setNewMarginRelative(view, null, null, (int) (-6f * density), null);
 				}
 			}
 		}
+		FrameLayout searchProcessLayout = new FrameLayout(toolbarContext);
+		ProgressBar searchProgress = new ProgressBar(toolbarContext, null, android.R.attr.progressBarStyleSmall);
+		if (C.API_LOLLIPOP) {
+			int color = ResourceUtils.getColor(toolbarContext, android.R.attr.textColorPrimary);
+			searchProgress.setIndeterminateTintList(ColorStateList.valueOf(color));
+		}
+		searchProcessLayout.addView(searchProgress, (int) (20f * density), (int) (20f * density));
+		((FrameLayout.LayoutParams) searchProgress.getLayoutParams()).gravity = Gravity.CENTER;
+		if (C.API_LOLLIPOP) {
+			ViewUtils.setNewMarginRelative(searchProgress, (int) (12f * density), 0, (int) (16f * density), 0);
+		} else {
+			ViewUtils.setNewMarginRelative(searchProgress, (int) (8f * density), 0, (int) (12f * density), 0);
+		}
+		searchProcessView = searchProcessLayout;
 
 		InitRequest initRequest = getInitRequest();
 		if (initRequest.threadTitle != null && parcelableExtra.threadTitle == null) {
@@ -353,8 +365,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			if (searchSubmitQuery == null) {
 				retainExtra.searching = false;
 			}
-			if (retainExtra.searching && !retainExtra.searchFoundPosts.isEmpty()) {
-				setCustomSearchView(searchController);
+			if (retainExtra.searching && !retainExtra.searchPostNumbers.isEmpty()) {
+				setCustomSearchView(searchControlView);
 				updateSearchTitle();
 			}
 			decodeThreadExtra();
@@ -395,6 +407,10 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		getUiManager().dialog().closeDialogs(getAdapter().getConfigurationSet().stackInstance);
 		getUiManager().observable().unregister(this);
 		cancelTasks();
+		if (searchWorker != null) {
+			searchWorker.cancel();
+			searchWorker = null;
+		}
 		getRecyclerView().removeOnScrollListener(scrollListener);
 		if (AndroidUtils.hasCallbacks(ConcurrentUtils.HANDLER, storePositionRunnable)) {
 			ConcurrentUtils.HANDLER.removeCallbacks(storePositionRunnable);
@@ -871,120 +887,19 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	}
 
 	@Override
-	public SearchSubmitResult onSearchSubmit(String query) {
+	public boolean onSearchSubmit(String query) {
 		PostsAdapter adapter = getAdapter();
 		if (adapter.getItemCount() == 0) {
-			return SearchSubmitResult.COLLAPSE;
+			return true;
 		}
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
-		retainExtra.searchFoundPosts.clear();
-		int listPosition = ((LinearLayoutManager) getRecyclerView().getLayoutManager())
-				.findFirstVisibleItemPosition();
-		retainExtra.searchLastPosition = 0;
-		boolean positionDefined = false;
-		Chan chan = getChan();
-		Locale locale = Locale.getDefault();
-		SearchHelper helper = new SearchHelper(Preferences.isAdvancedSearch());
-		helper.setFlags("m", "r", "a", "d", "e", "n", "op");
-		HashSet<String> queries = helper.handleQueries(locale, query);
-		HashSet<String> fileNames = new HashSet<>();
-		int newPostPosition = -1;
-		if (parcelableExtra.newPostNumber != null) {
-			newPostPosition = adapter.positionOfPostNumber(parcelableExtra.newPostNumber);
+		List<PostItem> postItems = adapter.copyItems();
+		if (searchWorker != null) {
+			searchWorker.cancel();
 		}
-		OUTER: for (int i = 0; i < adapter.getItemCount(); i++) {
-			PostItem postItem = adapter.getItem(i);
-			if (!postStateProvider.isHiddenResolve(postItem)) {
-				PostNumber postNumber = postItem.getPostNumber();
-				String comment = postItem.getComment(chan).toString().toLowerCase(locale);
-				int postPosition = getAdapter().positionOfPostNumber(postNumber);
-				boolean userPost = retainExtra.userPosts.contains(postNumber);
-				boolean reply = false;
-				for (PostNumber referenceTo : postItem.getReferencesTo()) {
-					if (retainExtra.userPosts.contains(referenceTo)) {
-						reply = true;
-						break;
-					}
-				}
-				boolean hasAttachments = postItem.hasAttachments();
-				boolean deleted = postItem.isDeleted();
-				boolean edited = lastEditedPostNumbers.contains(postNumber);
-				boolean newPost = newPostPosition >= 0 && postPosition >= newPostPosition;
-				boolean originalPoster = postItem.isOriginalPoster();
-				if (!helper.checkFlags("m", userPost, "r", reply, "a", hasAttachments, "d", deleted, "e", edited,
-						"n", newPost, "op", originalPoster)) {
-					continue;
-				}
-				for (String lowQuery : helper.getExcluded()) {
-					if (comment.contains(lowQuery)) {
-						continue OUTER;
-					}
-				}
-				String subject = postItem.getSubject().toLowerCase(locale);
-				String name = postItem.getFullName(chan).toString().toLowerCase(locale);
-				fileNames.clear();
-				List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
-				if (attachmentItems != null) {
-					for (AttachmentItem attachmentItem : attachmentItems) {
-						String fileName = attachmentItem.getFileName(chan);
-						if (!StringUtils.isEmpty(fileName)) {
-							fileNames.add(fileName.toLowerCase(locale));
-							String originalName = attachmentItem.getOriginalName();
-							if (!StringUtils.isEmpty(originalName)) {
-								fileNames.add(originalName.toLowerCase(locale));
-							}
-						}
-					}
-				}
-				boolean found = false;
-				if (helper.hasIncluded()) {
-					QUERIES: for (String lowQuery : helper.getIncluded()) {
-						if (comment.contains(lowQuery)) {
-							found = true;
-							break;
-						} else if (subject.contains(lowQuery)) {
-							found = true;
-							break;
-						} else if (name.contains(lowQuery)) {
-							found = true;
-							break;
-						} else {
-							for (String fileName : fileNames) {
-								if (fileName.contains(lowQuery)) {
-									found = true;
-									break QUERIES;
-								}
-							}
-						}
-					}
-				} else {
-					found = true;
-				}
-				if (found) {
-					if (!positionDefined && i > listPosition) {
-						retainExtra.searchLastPosition = retainExtra.searchFoundPosts.size();
-						positionDefined = true;
-					}
-					retainExtra.searchFoundPosts.add(i);
-				}
-			}
-		}
-		boolean found = !retainExtra.searchFoundPosts.isEmpty();
-		getAdapter().setHighlightText(found ? queries : Collections.emptyList());
-		retainExtra.searching = true;
-		if (found) {
-			setCustomSearchView(searchController);
-			retainExtra.searchLastPosition--;
-			findForward();
-			return SearchSubmitResult.ACCEPT;
-		} else {
-			setCustomSearchView(null);
-			ToastUtils.show(getContext(), R.string.not_found);
-			retainExtra.searchLastPosition = -1;
-			updateSearchTitle();
-			return SearchSubmitResult.DISCARD;
-		}
+		searchWorker = new SearchWorker(postStateProvider, getChan(), postItems, query,
+				lastEditedPostNumbers, lastNewPostNumbers, this::onSearchResult);
+		setCustomSearchView(searchProcessView);
+		return false;
 	}
 
 	@Override
@@ -998,50 +913,61 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		}
 	}
 
+	private void onSearchResult(List<PostNumber> foundPostNumbers, Set<String> queries) {
+		searchWorker = null;
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		retainExtra.searchPostNumbers = foundPostNumbers;
+		retainExtra.searching = true;
+		if (foundPostNumbers.isEmpty()) {
+			setCustomSearchView(null);
+			getAdapter().setHighlightText(Collections.emptyList());
+			ToastUtils.show(getContext(), R.string.not_found);
+			updateSearchTitle();
+		} else {
+			setCustomSearchView(searchControlView);
+			getAdapter().setHighlightText(queries);
+			int listPosition = ((LinearLayoutManager) getRecyclerView().getLayoutManager())
+					.findFirstVisibleItemPosition();
+			clearSearchFocus();
+			PostNumber postNumber = listPosition >= 0 ? getAdapter().getItem(listPosition).getPostNumber() : null;
+			int index = 0;
+			if (postNumber != null) {
+				for (int i = 0; i < foundPostNumbers.size(); i++) {
+					if (foundPostNumbers.get(i).compareTo(postNumber) >= 0) {
+						index = i;
+						break;
+					}
+				}
+			}
+			retainExtra.searchLastIndex = index;
+			findNext(index);
+		}
+	}
+
 	private void showSearchDialog() {
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		if (!retainExtra.searchFoundPosts.isEmpty()) {
-			PostsAdapter adapter = getAdapter();
-			HashSet<PostNumber> postNumbers = new HashSet<>();
-			for (Integer position : retainExtra.searchFoundPosts) {
-				PostItem postItem = adapter.getItem(position);
-				postNumbers.add(postItem.getPostNumber());
-			}
-			getUiManager().dialog().displayList(adapter.getConfigurationSet(), postNumbers);
+		if (!retainExtra.searchPostNumbers.isEmpty()) {
+			getUiManager().dialog().displayList(getAdapter().getConfigurationSet(), retainExtra.searchPostNumbers);
 		}
 	}
 
-	private void findBack() {
+	private void findNext(int addIndex) {
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		int count = retainExtra.searchFoundPosts.size();
+		int count = retainExtra.searchPostNumbers.size();
 		if (count > 0) {
-			retainExtra.searchLastPosition--;
-			if (retainExtra.searchLastPosition < 0) {
-				retainExtra.searchLastPosition += count;
+			retainExtra.searchLastIndex = (retainExtra.searchLastIndex + addIndex + count) % count;
+			int position = getAdapter().positionOfPostNumber(retainExtra.searchPostNumbers
+					.get(retainExtra.searchLastIndex));
+			if (position >= 0) {
+				ListViewUtils.smoothScrollToPosition(getRecyclerView(), position);
 			}
-			ListViewUtils.smoothScrollToPosition(getRecyclerView(),
-					retainExtra.searchFoundPosts.get(retainExtra.searchLastPosition));
-			updateSearchTitle();
-		}
-	}
-
-	private void findForward() {
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		int count = retainExtra.searchFoundPosts.size();
-		if (count > 0) {
-			retainExtra.searchLastPosition++;
-			if (retainExtra.searchLastPosition >= count) {
-				retainExtra.searchLastPosition -= count;
-			}
-			ListViewUtils.smoothScrollToPosition(getRecyclerView(),
-					retainExtra.searchFoundPosts.get(retainExtra.searchLastPosition));
 			updateSearchTitle();
 		}
 	}
 
 	private void updateSearchTitle() {
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		searchTextResult.setText((retainExtra.searchLastPosition + 1) + "/" + retainExtra.searchFoundPosts.size());
+		searchResultText.setText((retainExtra.searchLastIndex + 1) + "/" + retainExtra.searchPostNumbers.size());
 	}
 
 	private boolean consumeNewPostData() {
@@ -1402,16 +1328,13 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					message = getString(R.string.some_posts_have_been_edited);
 				}
 				if (newCount > 0) {
-					parcelableExtra.newPostNumber = Collections.min(result.newPosts);
-					adapter.preloadPosts(parcelableExtra.newPostNumber);
+					PostNumber newPostNumber = Collections.min(result.newPosts);
+					adapter.preloadPosts(newPostNumber);
 					ClickableToast.show(getContext(), message, getString(R.string.show), true, () -> {
 						if (!isDestroyed()) {
-							PostNumber newPostNumber = parcelableExtra.newPostNumber;
-							if (newPostNumber != null) {
-								int newPostIndex = adapter.positionOfPostNumber(newPostNumber);
-								if (newPostIndex >= 0) {
-									ListViewUtils.smoothScrollToPosition(getRecyclerView(), newPostIndex);
-								}
+							int newPostIndex = adapter.positionOfPostNumber(newPostNumber);
+							if (newPostIndex >= 0) {
+								ListViewUtils.smoothScrollToPosition(getRecyclerView(), newPostIndex);
 							}
 						}
 					});
@@ -1420,9 +1343,12 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				}
 
 				if (deletedCount > 0 || !result.editedPosts.isEmpty()) {
-					lastEditedPostNumbers.clear();
+					lastEditedPostNumbers = new HashSet<>();
 					lastEditedPostNumbers.addAll(result.deletedPosts);
 					lastEditedPostNumbers.addAll(result.editedPosts);
+				}
+				if (newCount > 0) {
+					lastNewPostNumbers = result.newPosts;
 				}
 			}
 		}
@@ -1643,6 +1569,133 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				ListViewUtils.smoothScrollToPosition(recyclerView, position);
 				break;
 			}
+		}
+	}
+
+	private static class SearchWorker implements Runnable {
+		public interface Callback {
+			void onResult(List<PostNumber> foundPostNumbers, Set<String> queries);
+		}
+
+		private final UiManager.PostStateProvider postStateProvider;
+		private final Chan chan;
+		private final List<PostItem> postItems;
+		private final Set<PostNumber> editedPostNumbers;
+		private final Set<PostNumber> newPostNumbers;
+		private final Callback callback;
+
+		private final SearchHelper helper;
+		private final Set<String> queries;
+		private final HashSet<String> fileNames = new HashSet<>();
+		private final ArrayList<PostNumber> foundPostNumbers = new ArrayList<>();
+
+		private int start = 0;
+
+		public SearchWorker(UiManager.PostStateProvider postStateProvider, Chan chan, List<PostItem> postItems,
+				String query, Set<PostNumber> editedPostNumbers, Set<PostNumber> newPostNumbers, Callback callback) {
+			this.postStateProvider = postStateProvider;
+			this.chan = chan;
+			this.postItems = postItems;
+			this.newPostNumbers = newPostNumbers;
+			this.editedPostNumbers = editedPostNumbers;
+			this.callback = callback;
+			helper = new SearchHelper(Preferences.isAdvancedSearch());
+			helper.setFlags("m", "r", "a", "d", "e", "n", "op");
+			queries = helper.handleQueries(Locale.getDefault(), query);
+			ConcurrentUtils.HANDLER.post(this);
+		}
+
+		@Override
+		public void run() {
+			long time = SystemClock.elapsedRealtime();
+			Locale locale = Locale.getDefault();
+			HashSet<String> fileNames = this.fileNames;
+			OUTER: while (true) {
+				if (SystemClock.elapsedRealtime() - time >= ConcurrentUtils.HALF_FRAME_TIME_MS) {
+					ConcurrentUtils.HANDLER.post(this);
+					break;
+				}
+				int index = start++;
+				if (index >= postItems.size()) {
+					Collections.sort(foundPostNumbers);
+					callback.onResult(foundPostNumbers, queries);
+					break;
+				}
+				PostItem postItem = postItems.get(index);
+				if (!postStateProvider.isHiddenResolve(postItem)) {
+					PostNumber postNumber = postItem.getPostNumber();
+					String comment = postItem.getComment(chan).toString().toLowerCase(locale);
+					boolean userPost = postStateProvider.isUserPost(postNumber);
+					boolean reply = false;
+					for (PostNumber referenceTo : postItem.getReferencesTo()) {
+						if (postStateProvider.isUserPost(referenceTo)) {
+							reply = true;
+							break;
+						}
+					}
+					boolean hasAttachments = postItem.hasAttachments();
+					boolean deleted = postItem.isDeleted();
+					boolean edited = editedPostNumbers.contains(postNumber);
+					boolean newPost = newPostNumbers.contains(postNumber);
+					boolean originalPoster = postItem.isOriginalPoster();
+					if (!helper.checkFlags("m", userPost, "r", reply, "a", hasAttachments, "d", deleted, "e", edited,
+							"n", newPost, "op", originalPoster)) {
+						continue;
+					}
+					for (String lowQuery : helper.getExcluded()) {
+						if (comment.contains(lowQuery)) {
+							continue OUTER;
+						}
+					}
+					String subject = postItem.getSubject().toLowerCase(locale);
+					String name = postItem.getFullName(chan).toString().toLowerCase(locale);
+					fileNames.clear();
+					List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
+					if (attachmentItems != null) {
+						for (AttachmentItem attachmentItem : attachmentItems) {
+							String fileName = attachmentItem.getFileName(chan);
+							if (!StringUtils.isEmpty(fileName)) {
+								fileNames.add(fileName.toLowerCase(locale));
+								String originalName = attachmentItem.getOriginalName();
+								if (!StringUtils.isEmpty(originalName)) {
+									fileNames.add(originalName.toLowerCase(locale));
+								}
+							}
+						}
+					}
+					boolean found = false;
+					if (helper.hasIncluded()) {
+						QUERIES: for (String lowQuery : helper.getIncluded()) {
+							if (comment.contains(lowQuery)) {
+								found = true;
+								break;
+							} else if (subject.contains(lowQuery)) {
+								found = true;
+								break;
+							} else if (name.contains(lowQuery)) {
+								found = true;
+								break;
+							} else {
+								for (String fileName : fileNames) {
+									if (fileName.contains(lowQuery)) {
+										found = true;
+										break QUERIES;
+									}
+								}
+							}
+						}
+					} else {
+						found = true;
+					}
+					if (found) {
+						foundPostNumbers.add(postNumber);
+					}
+				}
+			}
+		}
+
+		public void cancel() {
+			ConcurrentUtils.HANDLER.removeCallbacks(this);
 		}
 	}
 }

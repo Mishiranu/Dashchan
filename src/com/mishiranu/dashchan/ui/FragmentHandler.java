@@ -1,5 +1,6 @@
 package com.mishiranu.dashchan.ui;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -8,14 +9,18 @@ import chan.content.ChanLocator;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.util.ConfigurationLock;
+import com.mishiranu.dashchan.util.ResourceUtils;
 import java.util.Collection;
 
 public interface FragmentHandler {
 	void setTitleSubtitle(CharSequence title, CharSequence subtitle);
 	ViewGroup getToolbarView();
 	FrameLayout getToolbarExtra();
+	Context getToolbarContext();
 
-	Drawable getActionBarIcon(int attr);
+	default Drawable getActionBarIcon(int attr) {
+		return ResourceUtils.getActionBarIcon(getToolbarContext(), attr);
+	}
 
 	void pushFragment(Fragment fragment);
 	void removeFragment();
