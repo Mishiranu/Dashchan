@@ -105,6 +105,7 @@
 	<string name="crop_thumbnails">Crop thumbnails</string>
 	<string name="crop_thumbnails__summary">Thumbnails will fit square</string>
 	<string name="cyclical_thread">Cyclical thread</string>
+	<string name="cyclical_threads_refresh_mode">Cyclical threads refresh mode</string>
 	<string name="date_created">Date created</string>
 	<string name="ddos_protection_bypass_failed">DDoS-protection bypass failed</string>
 	<string name="default_name_cant_be_hidden">Default name can\'t be hidden</string>
@@ -224,6 +225,8 @@
 	<string name="load_captcha">Load captcha</string>
 	<string name="load_catalog">Load catalog</string>
 	<string name="load_catalog__summary">Catalog will be loaded when a threads page is opened</string>
+	<string name="load_full_thread">Load full thread</string>
+	<string name="load_full_thread_and_clear_old_posts">Load full thread and clear old posts</string>
 	<string name="load_nearest_image">Load nearest image</string>
 	<string name="load_thumbnails">Load thumbnails</string>
 	<string name="loading__ellipsis">Loading…</string>
@@ -499,6 +502,7 @@
 	<string name="updates_available__genitive">Updates available</string>
 	<string name="use_built_in_video_player">Use built-in video player</string>
 	<string name="use_built_in_video_player__summary">Play WebM video attachments</string>
+	<string name="use_forum_settings">Use forum settings</string>
 	<string name="use_gms_security_provider">Use GMS security provider</string>
 	<string name="use_gms_security_provider__summary">Google Play Services security provider adds support for newer
 		SSL/TLS implementation, which may be important for old Android devices</string>

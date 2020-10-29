@@ -76,15 +76,19 @@ public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 		PagesDatabase.Meta meta = PagesDatabase.getInstance().getMeta(threadKey, temporary);
 		PostNumber originalPostNumber;
 		PostNumber lastExistingPostNumber;
+		boolean allowPartialThreadLoading;
 		if (loadFullThread) {
 			originalPostNumber = null;
 			lastExistingPostNumber = null;
+			allowPartialThreadLoading = false;
 		} else {
 			PagesDatabase.ThreadSummary threadSummary = PagesDatabase.getInstance().getThreadSummary(threadKey);
 			originalPostNumber = threadSummary.originalPostNumber;
 			lastExistingPostNumber = threadSummary.lastExistingPostNumber;
+			allowPartialThreadLoading = !threadSummary.cyclical ||
+					Preferences.getCyclicalRefreshMode() == Preferences.CyclicalRefreshMode.DEFAULT;
 		}
-		boolean partial = !loadFullThread && Preferences.isPartialThreadLoading(chan);
+		boolean partial = !loadFullThread && allowPartialThreadLoading && Preferences.isPartialThreadLoading(chan);
 		HttpValidator useValidator = !loadFullThread && meta != null ? meta.validator : null;
 		try {
 			ChanPerformer.ReadPostsResult result;

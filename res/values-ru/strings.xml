@@ -104,6 +104,7 @@
 	<string name="crop_thumbnails">Обрезать миниатюры</string>
 	<string name="crop_thumbnails__summary">Миниатюры будут заполнять квадрат</string>
 	<string name="cyclical_thread">Цикличный тред</string>
+	<string name="cyclical_threads_refresh_mode">Режим обновления цикличных тредов</string>
 	<string name="date_created">Дата создания</string>
 	<string name="ddos_protection_bypass_failed">Не удалось обойти DDoS-защиту</string>
 	<string name="default_name_cant_be_hidden">Нельзя скрыть имя по умолчанию</string>
@@ -223,6 +224,8 @@
 	<string name="load_captcha">Загрузить капчу</string>
 	<string name="load_catalog">Загружать каталог</string>
 	<string name="load_catalog__summary">При открытии списка тредов будет загружен каталог</string>
+	<string name="load_full_thread">Загружать тред целиком</string>
+	<string name="load_full_thread_and_clear_old_posts">Загружать тред целиком и удалять старые сообщения</string>
 	<string name="load_nearest_image">Загружать ближайшее изображение</string>
 	<string name="load_thumbnails">Загружать миниатюры</string>
 	<string name="loading__ellipsis">Загрузка…</string>
@@ -516,6 +519,7 @@
 	<string name="updates_available__genitive">Доступно обновлений</string>
 	<string name="use_built_in_video_player">Использовать встроенный видеоплеер</string>
 	<string name="use_built_in_video_player__summary">Воспроизводить вложенные WebM видео</string>
+	<string name="use_forum_settings">Использовать настройки форума</string>
 	<string name="use_gms_security_provider">Использ. постав. безопасности GMS</string>
 	<string name="use_gms_security_provider__summary">Поставщик безопасности сервисов Google Play добавляет поддержку
 		более новой реализации SSL/TLS, что может быть полезно на старых Android устройствах</string>

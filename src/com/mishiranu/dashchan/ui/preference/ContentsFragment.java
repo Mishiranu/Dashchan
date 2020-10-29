@@ -64,6 +64,9 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 				new Pair<>(Preferences.DISABLED_AUTO_REFRESH_INTERVAL, R.string.disabled),
 				Preferences.MIN_AUTO_REFRESH_INTERVAL, Preferences.MAX_AUTO_REFRESH_INTERVAL,
 				Preferences.STEP_AUTO_REFRESH_INTERVAL);
+		addList(Preferences.KEY_CYCLICAL_REFRESH, enumList(Preferences.CyclicalRefreshMode.values(), v -> v.value),
+				Preferences.DEFAULT_CYCLICAL_REFRESH.value, R.string.cyclical_threads_refresh_mode,
+				enumResList(Preferences.CyclicalRefreshMode.values(), v -> v.titleResId));
 
 		addHeader(R.string.images);
 		addList(Preferences.KEY_LOAD_THUMBNAILS, enumList(Preferences.NetworkMode.values(), v -> v.value),

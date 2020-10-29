@@ -1227,6 +1227,10 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		PagesDatabase.Cleanup cleanup = parcelableExtra.queuedCleanup;
 		parcelableExtra.queuedCleanup = PagesDatabase.Cleanup.NONE;
+		if (cleanup == PagesDatabase.Cleanup.NONE && Preferences.getCyclicalRefreshMode() ==
+				Preferences.CyclicalRefreshMode.FULL_LOAD_CLEANUP) {
+			cleanup = PagesDatabase.Cleanup.OLD;
+		}
 		extractTask = new ExtractPostsTask(this, retainExtra.cache,
 				getChan(), page.boardName, page.threadNumber, initial, newThread, cleanup);
 		extractTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);

@@ -356,6 +356,30 @@ public class Preferences {
 		return PREFERENCES.getBoolean(KEY_CUT_THUMBNAILS, DEFAULT_CUT_THUMBNAILS);
 	}
 
+	public enum CyclicalRefreshMode {
+		DEFAULT("default", R.string.use_forum_settings),
+		FULL_LOAD("full_load", R.string.load_full_thread),
+		FULL_LOAD_CLEANUP("full_load_cleanup", R.string.load_full_thread_and_clear_old_posts);
+
+		private static final EnumValueProvider<CyclicalRefreshMode> VALUE_PROVIDER = o -> o.value;
+
+		public final String value;
+		public final int titleResId;
+
+		CyclicalRefreshMode(String value, int titleResId) {
+			this.value = value;
+			this.titleResId = titleResId;
+		}
+	}
+
+	public static final String KEY_CYCLICAL_REFRESH = "cyclical_refresh";
+	public static final CyclicalRefreshMode DEFAULT_CYCLICAL_REFRESH = CyclicalRefreshMode.DEFAULT;
+
+	public static CyclicalRefreshMode getCyclicalRefreshMode() {
+		return getEnumValue(KEY_CYCLICAL_REFRESH, CyclicalRefreshMode.values(),
+				DEFAULT_CYCLICAL_REFRESH, CyclicalRefreshMode.VALUE_PROVIDER);
+	}
+
 	public static final ChanKey KEY_DEFAULT_BOARD_NAME = new ChanKey("default_board_name");
 
 	public static String getDefaultBoardName(Chan chan) {

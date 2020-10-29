@@ -144,10 +144,12 @@ public class PagesDatabase {
 	public static class ThreadSummary {
 		public final PostNumber originalPostNumber;
 		public final PostNumber lastExistingPostNumber;
+		public final boolean cyclical;
 
-		public ThreadSummary(PostNumber originalPostNumber, PostNumber lastExistingPostNumber) {
+		public ThreadSummary(PostNumber originalPostNumber, PostNumber lastExistingPostNumber, boolean cyclical) {
 			this.originalPostNumber = originalPostNumber;
 			this.lastExistingPostNumber = lastExistingPostNumber;
+			this.cyclical = cyclical;
 		}
 	}
 
@@ -505,24 +507,36 @@ public class PagesDatabase {
 
 	public ThreadSummary getThreadSummary(@NonNull ThreadKey threadKey) {
 		Objects.requireNonNull(threadKey);
-		String[] postProjection = {Schema.Posts.Columns.POST_NUMBER_MAJOR, Schema.Posts.Columns.POST_NUMBER_MINOR};
+		String[] lastPostProjection = {Schema.Posts.Columns.POST_NUMBER_MAJOR, Schema.Posts.Columns.POST_NUMBER_MINOR};
 		Expression.Filter lastPostFilter = threadKey.filterPosts()
 				.raw("NOT (" + Schema.Posts.Columns.FLAGS + " & " + Schema.Posts.Flags.DELETED + ")")
 				.build();
 		PostNumber lastExistingPostNumber;
-		try (Cursor cursor = database.query(Schema.Posts.TABLE_NAME, postProjection, lastPostFilter.value,
+		try (Cursor cursor = database.query(Schema.Posts.TABLE_NAME, lastPostProjection, lastPostFilter.value,
 				lastPostFilter.args, null, null, Schema.Posts.Columns.POST_NUMBER_MAJOR + " DESC, " +
 						Schema.Posts.Columns.POST_NUMBER_MINOR + " DESC", "1")) {
 			lastExistingPostNumber = cursor.moveToFirst() ? new PostNumber(cursor.getInt(0), cursor.getInt(1)) : null;
 		}
+		String[] originalPostProjection = {Schema.Posts.Columns.POST_NUMBER_MAJOR,
+				Schema.Posts.Columns.POST_NUMBER_MINOR, Schema.Posts.Columns.DATA};
 		Expression.Filter originalPostFilter = threadKey.filterPosts().build();
-		PostNumber originalPostNumber;
-		try (Cursor cursor = database.query(Schema.Posts.TABLE_NAME, postProjection, originalPostFilter.value,
+		PostNumber originalPostNumber = null;
+		boolean cyclical = false;
+		try (Cursor cursor = database.query(Schema.Posts.TABLE_NAME, originalPostProjection, originalPostFilter.value,
 				originalPostFilter.args, null, null, Schema.Posts.Columns.POST_NUMBER_MAJOR + " ASC, " +
 						Schema.Posts.Columns.POST_NUMBER_MINOR + " ASC", "1")) {
-			originalPostNumber = cursor.moveToFirst() ? new PostNumber(cursor.getInt(0), cursor.getInt(1)) : null;
+			if (cursor.moveToFirst()) {
+				originalPostNumber = new PostNumber(cursor.getInt(0), cursor.getInt(1));
+				try (JsonSerial.Reader reader = JsonSerial.reader(cursor.getBlob(2))) {
+					cyclical = Post.deserialize(originalPostNumber, false, reader).isCyclical();
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				} catch (ParseException e) {
+					// Ignore
+				}
+			}
 		}
-		return new ThreadSummary(originalPostNumber, lastExistingPostNumber);
+		return new ThreadSummary(originalPostNumber, lastExistingPostNumber, cyclical);
 	}
 
 	public List<PostNumber> getPostNumbers(@NonNull ThreadKey threadKey) {
