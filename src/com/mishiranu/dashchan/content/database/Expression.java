@@ -15,7 +15,11 @@ public class Expression {
 	private Expression() {}
 
 	public static Filter.Builder filter() {
-		return new Filter.Builder();
+		return new Filter.Builder(false);
+	}
+
+	public static Filter.Builder filterOr() {
+		return new Filter.Builder(true);
 	}
 
 	public static class Filter {
@@ -28,14 +32,17 @@ public class Expression {
 		}
 
 		public static class Builder {
+			private final boolean or;
 			private final StringBuilder builder = new StringBuilder();
 			private final ArrayList<String> args = new ArrayList<>();
 
-			private Builder() {}
+			private Builder(boolean or) {
+				this.or = or;
+			}
 
 			private void append() {
 				if (builder.length() > 0) {
-					builder.append(" AND ");
+					builder.append(or ? " OR " : " AND ");
 				}
 			}
 
@@ -83,6 +90,13 @@ public class Expression {
 			public Builder raw(String name) {
 				append();
 				builder.append(name);
+				return this;
+			}
+
+			public Builder append(Builder builder) {
+				append();
+				this.builder.append('(').append(builder.builder).append(')');
+				args.addAll(builder.args);
 				return this;
 			}
 

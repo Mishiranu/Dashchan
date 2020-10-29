@@ -13,11 +13,15 @@
 	<item type="id" name="menu_change_theme" />
 	<item type="id" name="menu_check_on_start" />
 	<item type="id" name="menu_clear" />
+	<item type="id" name="menu_clear_deleted" />
+	<item type="id" name="menu_clear_old" />
+	<item type="id" name="menu_contents" />
 	<item type="id" name="menu_copy_link" />
 	<item type="id" name="menu_date_created" />
 	<item type="id" name="menu_delete" />
 	<item type="id" name="menu_download" />
 	<item type="id" name="menu_drawer" />
+	<item type="id" name="menu_erase" />
 	<item type="id" name="menu_expanded_screen" />
 	<item type="id" name="menu_gallery" />
 	<item type="id" name="menu_group" />
@@ -48,7 +52,6 @@
 	<item type="id" name="menu_star_icon" />
 	<item type="id" name="menu_star_text" />
 	<item type="id" name="menu_summary" />
-	<item type="id" name="menu_thread_options" />
 	<item type="id" name="menu_threads_view" />
 	<item type="id" name="menu_unsorted" />
 	<item type="id" name="menu_unstar_icon" />

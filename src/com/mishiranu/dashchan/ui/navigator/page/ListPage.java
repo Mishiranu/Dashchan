@@ -195,6 +195,10 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		callback.handleRedirect(chanName, boardName, threadNumber, postNumber);
 	}
 
+	protected final void closePage() {
+		callback.closePage();
+	}
+
 	@SuppressWarnings("unchecked")
 	protected final <T> T getRetainExtra(ExtraFactory<T> factory) {
 		if (retainExtra == null && factory != null) {
@@ -330,5 +334,6 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		void switchView(ViewType viewType, String message);
 		void showScaleAnimation();
 		void handleRedirect(String chanName, String boardName, String threadNumber, PostNumber postNumber);
+		void closePage();
 	}
 }

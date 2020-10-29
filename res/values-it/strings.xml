@@ -457,7 +457,6 @@
     <string name="thread_doesnt_exist">Il thread non esiste</string>
     <string name="thread_is_closed">Thread chiuso</string>
     <string name="thread_number">Numero thread</string>
-    <string name="thread_options">Opzioni thread</string>
     <string name="thread_title">Titolo thread</string>
     <string name="threads">Thread</string>
     <string name="threads_auto_refreshing">Aggiornamento automatico thread</string>

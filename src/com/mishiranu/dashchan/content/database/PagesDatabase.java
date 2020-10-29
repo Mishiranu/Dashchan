@@ -281,6 +281,8 @@ public class PagesDatabase {
 		}
 	}
 
+	public enum Cleanup {NONE, ERASE, OLD, DELETED}
+
 	private enum MigrationRequest {GET_META, COLLECT_DIFF_POSTS}
 
 	private static final PagesDatabase INSTANCE = new PagesDatabase();
@@ -692,23 +694,67 @@ public class PagesDatabase {
 
 	private final Expression.KeyLock<ThreadKey> collectLocks = new Expression.KeyLock<>();
 
-	public Diff collectDiffPosts(@NonNull ThreadKey threadKey, Cache cache, boolean removeDeleted,
+	public Diff collectDiffPosts(@NonNull ThreadKey threadKey, Cache cache, @NonNull Cleanup cleanup,
 			CancellationSignal signal) throws ParseException, OperationCanceledException {
 		Objects.requireNonNull(threadKey);
-		Diff diff = collectLocks.lock(threadKey, () -> collectDiffPostsLocked(threadKey, cache, removeDeleted, signal));
+		Objects.requireNonNull(cleanup);
+		Diff diff = collectLocks.lock(threadKey, () -> collectDiffPostsLocked(threadKey, cache, cleanup, signal));
 		if (cache == null && diff.cache.isEmpty() && migratePosts(threadKey, MigrationRequest.COLLECT_DIFF_POSTS)) {
-			return collectDiffPosts(threadKey, cache, removeDeleted, signal);
+			return collectDiffPosts(threadKey, cache, cleanup, signal);
 		}
 		return diff;
 	}
 
-	private Diff collectDiffPostsLocked(ThreadKey threadKey, Cache cache, boolean removeDeleted,
+	private Diff collectDiffPostsLocked(ThreadKey threadKey, Cache cache, Cleanup cleanup,
 			CancellationSignal signal) throws ParseException, OperationCanceledException {
-		if (removeDeleted) {
-			Expression.Filter filter = threadKey.filterPosts()
-					.raw(Schema.Posts.Columns.FLAGS + " & " + Schema.Posts.Flags.DELETED)
-					.build();
-			database.delete(Schema.Posts.TABLE_NAME, filter.value, filter.args);
+		switch (cleanup) {
+			case NONE: {
+				break;
+			}
+			case ERASE: {
+				Expression.Filter filter = threadKey.filterMeta().build();
+				database.delete(Schema.Meta.TABLE_NAME, filter.value, filter.args);
+				break;
+			}
+			case OLD: {
+				if (cache != null && !cache.diffItems.isEmpty() && cache.originalPostNumber != null) {
+					PostNumber firstExistingPostNumber = null;
+					for (Map.Entry<PostNumber, DiffItem> entry : cache.diffItems.entrySet()) {
+						if (!entry.getValue().deleted) {
+							PostNumber postNumber = entry.getKey();
+							if (!postNumber.equals(cache.originalPostNumber) && (firstExistingPostNumber == null ||
+									postNumber.compareTo(firstExistingPostNumber) < 0)) {
+								firstExistingPostNumber = postNumber;
+							}
+						}
+					}
+					if (firstExistingPostNumber != null) {
+						Expression.Filter filter = threadKey.filterPosts()
+								.append(Expression.filterOr()
+										.raw(Schema.Posts.Columns.POST_NUMBER_MAJOR + " < " +
+												firstExistingPostNumber.major)
+										.append(Expression.filter()
+												.raw(Schema.Posts.Columns.POST_NUMBER_MAJOR + " = " +
+														firstExistingPostNumber.major)
+												.raw(Schema.Posts.Columns.POST_NUMBER_MINOR + " < " +
+														firstExistingPostNumber.minor)))
+								.raw(Schema.Posts.Columns.FLAGS + " & " + Schema.Posts.Flags.DELETED)
+								.build();
+						database.delete(Schema.Posts.TABLE_NAME, filter.value, filter.args);
+					}
+				}
+				break;
+			}
+			case DELETED: {
+				Expression.Filter filter = threadKey.filterPosts()
+						.raw(Schema.Posts.Columns.FLAGS + " & " + Schema.Posts.Flags.DELETED)
+						.build();
+				database.delete(Schema.Posts.TABLE_NAME, filter.value, filter.args);
+				break;
+			}
+			default: {
+				throw new IllegalArgumentException();
+			}
 		}
 
 		List<Extracted> extractedList = null;

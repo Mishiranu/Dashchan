@@ -76,6 +76,7 @@
 	<string name="clear_deleted">Clear deleted</string>
 	<string name="clear_history">Clear history</string>
 	<string name="clear_history__sentence">Clear history?</string>
+	<string name="clear_old">Clear old</string>
 	<string name="clearing__ellipsis">Clearing…</string>
 	<string name="close_pages">Close pages</string>
 	<string name="close_pages__summary">Close pages by clicking the \"Back\" button</string>
@@ -141,6 +142,7 @@
 	<string name="empty_response">Empty response</string>
 	<string name="enabled">Enabled</string>
 	<string name="enter_valid_data">Enter a valid data</string>
+	<string name="erase">Erase</string>
 	<string name="every_number_sec__format">Every %d sec.</string>
 	<string name="exif_metadata">Exif metadata</string>
 	<string name="expand">Expand</string>
@@ -467,8 +469,8 @@
 	<string name="thread_doesnt_exist">The thread doesn\'t exist</string>
 	<string name="thread_is_closed">Thread is closed</string>
 	<string name="thread_number">Thread number</string>
-	<string name="thread_options">Thread options</string>
 	<string name="thread_title">Thread title</string>
+	<string name="thread_will_be_deleted_from_cache__sentence">The thread will be deleted from cache.</string>
 	<string name="threads">Threads</string>
 	<string name="threads_auto_refreshing">Threads auto refreshing</string>
 	<string name="threads_created">Threads created</string>

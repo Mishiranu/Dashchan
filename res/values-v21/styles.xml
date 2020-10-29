@@ -104,6 +104,7 @@
 		<item name="iconActionSearch">@drawable/ic_search</item>
 		<item name="iconActionSelect">@drawable/ic_custom_select</item>
 		<item name="iconActionSelectAll">@drawable/ic_select_all</item>
+		<item name="iconActionSync">@drawable/ic_custom_sync</item>
 		<item name="iconActionVolumeOff">@drawable/ic_volume_off</item>
 
 		<item name="iconButtonCancel">@drawable/ic_close</item>
@@ -174,6 +175,7 @@
 		<item name="iconActionSearch">@drawable/ic_search</item>
 		<item name="iconActionSelect">@drawable/ic_custom_select</item>
 		<item name="iconActionSelectAll">@drawable/ic_select_all</item>
+		<item name="iconActionSync">@drawable/ic_custom_sync</item>
 		<item name="iconActionVolumeOff">@drawable/ic_volume_off</item>
 
 		<item name="iconButtonCancel">@drawable/ic_close</item>

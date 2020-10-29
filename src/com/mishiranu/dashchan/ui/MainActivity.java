@@ -2068,14 +2068,35 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
-	public void handleRedirect(Page page, String chanName,
-			String boardName, String threadNumber, PostNumber postNumber) {
+	public void handleRedirect(String chanName, String boardName, String threadNumber, PostNumber postNumber) {
+		PageFragment currentFragment = (PageFragment) getCurrentFragment();
+		Page page = currentFragment.getPage();
 		if (page.isThreadsOrPosts()) {
 			currentPageItem = null;
 			if (threadNumber == null) {
 				navigateBoardsOrThreads(chanName, boardName, false, false);
 			} else {
 				navigatePosts(chanName, boardName, threadNumber, postNumber, null, false, false);
+			}
+		}
+	}
+
+	@Override
+	public void closeCurrentPage() {
+		PageFragment currentFragment = (PageFragment) getCurrentFragment();
+		Page page = currentFragment.getPage();
+		SavedPageItem savedPageItem = prepareTargetPreviousPage(true);
+		currentPageItem = null;
+		if (savedPageItem != null) {
+			navigateSavedPage(savedPageItem, false);
+		} else {
+			Chan chan = Chan.get(page.chanName);
+			if (isSingleBoardMode(chan)) {
+				navigatePage(Page.Content.THREADS, page.chanName,
+						getSingleBoardName(chan), null, null, null, null, 0);
+			} else {
+				navigatePage(Page.Content.BOARDS, page.chanName,
+						null, null, null, null, null, FLAG_PAGE_FROM_CACHE);
 			}
 		}
 	}

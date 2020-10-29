@@ -50,7 +50,8 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		ActionBar getActionBar();
 		void setPageTitle(String title, String subtitle);
 		void invalidateHomeUpState();
-		void handleRedirect(Page page, String chanName, String boardName, String threadNumber, PostNumber postNumber);
+		void handleRedirect(String chanName, String boardName, String threadNumber, PostNumber postNumber);
+		void closeCurrentPage();
 	}
 
 	public PageFragment() {}
@@ -470,11 +471,19 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 	@Override
 	public void handleRedirect(String chanName, String boardName, String threadNumber, PostNumber postNumber) {
-		if (isResumed()) {
-			getCallback().handleRedirect(getPage(), chanName, boardName, threadNumber, postNumber);
-		} else {
-			// Fragment transactions allowed in resumed state only
+		if (isStateSaved()) {
 			doOnResume = () -> handleRedirect(chanName, boardName, threadNumber, postNumber);
+		} else {
+			getCallback().handleRedirect(chanName, boardName, threadNumber, postNumber);
+		}
+	}
+
+	@Override
+	public void closePage() {
+		if (isStateSaved()) {
+			doOnResume = () -> getCallback().closeCurrentPage();
+		} else {
+			getCallback().closeCurrentPage();
 		}
 	}
 }

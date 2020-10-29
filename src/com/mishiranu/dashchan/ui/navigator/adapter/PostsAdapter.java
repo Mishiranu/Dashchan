@@ -343,6 +343,10 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		return removed;
 	}
 
+	public boolean hasOldPosts() {
+		return getItemCount() >= 2 && getItem(0).isCyclical() && getItem(1).isDeleted();
+	}
+
 	public boolean hasDeletedPosts() {
 		for (PostItem postItem : this) {
 			if (postItem.isDeleted()) {

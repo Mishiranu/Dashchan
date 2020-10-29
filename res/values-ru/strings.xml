@@ -74,6 +74,7 @@
 	<string name="clear_deleted">Очистить удалённые</string>
 	<string name="clear_history">Очистить историю</string>
 	<string name="clear_history__sentence">Очистить историю?</string>
+	<string name="clear_old">Очистить старые</string>
 	<string name="clearing__ellipsis">Очистка…</string>
 	<string name="close_pages">Закрытие страниц</string>
 	<string name="close_pages__summary">Закрывать страницы нажатием кнопки \"Назад\"</string>
@@ -140,6 +141,7 @@
 	<string name="empty_response">Пустой ответ сервера</string>
 	<string name="enabled">Включено</string>
 	<string name="enter_valid_data">Введите корректные данные</string>
+	<string name="erase">Стереть</string>
 	<string name="every_number_sec__format">Каждые %d сек.</string>
 	<string name="exif_metadata">Метаданные Exif</string>
 	<string name="expand">Развернуть</string>
@@ -485,8 +487,8 @@
 	<string name="thread_doesnt_exist">Тред не существует</string>
 	<string name="thread_is_closed">Тред закрыт</string>
 	<string name="thread_number">Номер треда</string>
-	<string name="thread_options">Опции треда</string>
 	<string name="thread_title">Заголовок треда</string>
+	<string name="thread_will_be_deleted_from_cache__sentence">Тред будет удалён из кэша.</string>
 	<string name="threads">Треды</string>
 	<string name="threads_auto_refreshing">Автообновление тредов</string>
 	<string name="threads_list">Список тредов</string>

@@ -99,7 +99,6 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		public final HashMap<PostNumber, PostItem> postItems = new HashMap<>();
 		public final PostItem.HideState.Map<PostNumber> hiddenPosts = new PostItem.HideState.Map<>();
 		public final HashSet<PostNumber> userPosts = new HashSet<>();
-		public boolean removeDeleted;
 		public byte[] threadExtra;
 
 		public Uri archivedThreadUri;
@@ -119,6 +118,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		public final HashSet<PostNumber> unreadPosts = new HashSet<>();
 		public boolean isAddedToHistory = false;
 		public QueuedRefresh queuedRefresh = QueuedRefresh.NONE;
+		public PagesDatabase.Cleanup queuedCleanup = PagesDatabase.Cleanup.NONE;
 		public String threadTitle;
 		public PostNumber scrollToPostNumber;
 		public Set<PostNumber> selectedPosts;
@@ -525,11 +525,17 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
 		menu.add(0, R.id.menu_gallery, 0, R.string.gallery);
 		menu.add(0, R.id.menu_select, 0, R.string.select);
-		menu.add(0, R.id.menu_refresh, 0, R.string.refresh)
-				.setIcon(getActionBarIcon(R.attr.iconActionRefresh))
+		SubMenu contentsMenu = menu.addSubMenu(0, R.id.menu_contents, 0, R.string.contents);
+		contentsMenu.getItem().setIcon(getActionBarIcon(R.attr.iconActionSync))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+		contentsMenu.add(0, R.id.menu_refresh, 0, R.string.refresh);
+		contentsMenu.add(0, R.id.menu_reload, 0, R.string.reload);
+		contentsMenu.add(0, R.id.menu_erase, 0, R.string.erase);
+		contentsMenu.add(0, R.id.menu_clear_old, 0, R.string.clear_old);
+		contentsMenu.add(0, R.id.menu_clear_deleted, 0, R.string.clear_deleted);
+		menu.add(0, R.id.menu_summary, 0, R.string.summary);
+		menu.add(0, R.id.menu_hidden_posts, 0, R.string.hidden_posts);
 		menu.addSubMenu(0, R.id.menu_appearance, 0, R.string.appearance);
-		SubMenu threadOptions = menu.addSubMenu(0, R.id.menu_thread_options, 0, R.string.thread_options);
 		menu.add(0, R.id.menu_star_text, 0, R.string.add_to_favorites);
 		menu.add(0, R.id.menu_unstar_text, 0, R.string.remove_from_favorites);
 		menu.add(0, R.id.menu_star_icon, 0, R.string.add_to_favorites)
@@ -540,18 +546,18 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		menu.add(0, R.id.menu_open_original_thread, 0, R.string.open_original);
 		menu.add(0, R.id.menu_archive, 0, R.string.archive__verb);
-
-		threadOptions.add(0, R.id.menu_reload, 0, R.string.reload);
-		threadOptions.add(0, R.id.menu_hidden_posts, 0, R.string.hidden_posts);
-		threadOptions.add(0, R.id.menu_clear, 0, R.string.clear_deleted);
-		threadOptions.add(0, R.id.menu_summary, 0, R.string.summary);
 	}
 
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
 		Page page = getPage();
+		PostsAdapter adapter = getAdapter();
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		menu.findItem(R.id.menu_add_post).setVisible(replyable != null && replyable.onRequestReply(false));
+		menu.findItem(R.id.menu_erase).setVisible(adapter.getItemCount() > 0);
+		menu.findItem(R.id.menu_clear_old).setVisible(adapter.hasOldPosts());
+		menu.findItem(R.id.menu_clear_deleted).setVisible(adapter.hasDeletedPosts());
+		menu.findItem(R.id.menu_hidden_posts).setVisible(hidePerformer.hasLocalFilters());
 		boolean isFavorite = FavoritesStorage.getInstance().hasFavorite(page.chanName, page.boardName,
 				page.threadNumber);
 		boolean iconFavorite = ResourceUtils.isTabletOrLandscape(getResources().getConfiguration());
@@ -564,8 +570,6 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		boolean canBeArchived = !ChanManager.getInstance().getArchiveChanNames(page.chanName).isEmpty() ||
 				!getChan().configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
 		menu.findItem(R.id.menu_archive).setVisible(canBeArchived);
-		menu.findItem(R.id.menu_hidden_posts).setEnabled(hidePerformer.hasLocalFilters());
-		menu.findItem(R.id.menu_clear).setEnabled(getAdapter().hasDeletedPosts());
 	}
 
 	@Override
@@ -582,7 +586,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				int imageIndex = -1;
 				RecyclerView recyclerView = getRecyclerView();
 				View child = recyclerView.getChildAt(0);
-				GalleryItem.Set gallerySet = getAdapter().getConfigurationSet().gallerySet;
+				GalleryItem.Set gallerySet = adapter.getConfigurationSet().gallerySet;
 				if (child != null) {
 					int position = recyclerView.getChildAdapterPosition(child);
 					OUTER: for (int v = 0; v <= 1; v++) {
@@ -606,93 +610,31 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				refreshPosts(false);
 				return true;
 			}
-			case R.id.menu_star_text:
-			case R.id.menu_star_icon: {
-				FavoritesStorage.getInstance().add(page.chanName, page.boardName,
-						page.threadNumber, getParcelableExtra(ParcelableExtra.FACTORY).threadTitle,
-						adapter.getExistingPostsCount());
-				updateOptionsMenu();
-				return true;
-			}
-			case R.id.menu_unstar_text:
-			case R.id.menu_unstar_icon: {
-				FavoritesStorage.getInstance().remove(page.chanName, page.boardName,
-						page.threadNumber);
-				updateOptionsMenu();
-				return true;
-			}
-			case R.id.menu_open_original_thread: {
-				RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-				Chan chan = Chan.getPreferred(null, retainExtra.archivedThreadUri);
-				if (chan.name != null) {
-					Uri uri = retainExtra.archivedThreadUri;
-					String boardName = chan.locator.safe(true).getBoardName(uri);
-					String threadNumber = chan.locator.safe(true).getThreadNumber(uri);
-					if (threadNumber != null) {
-						String threadTitle = getAdapter().getItem(0).getSubjectOrComment();
-						getUiManager().navigator().navigatePosts(chan.name, boardName, threadNumber, null, threadTitle);
-					}
-				}
-				return true;
-			}
-			case R.id.menu_archive: {
-				String threadTitle = null;
-				ArrayList<Post> posts = new ArrayList<>();
-				for (PostItem postItem : adapter) {
-					if (threadTitle == null) {
-						threadTitle = StringUtils.emptyIfNull(postItem.getSubjectOrComment());
-					}
-					posts.add(postItem.getPost());
-				}
-				if (!posts.isEmpty()) {
-					getUiManager().dialog().performSendArchiveThread(page.chanName, page.boardName,
-							page.threadNumber, threadTitle, posts);
-				}
-				return true;
-			}
 			case R.id.menu_reload: {
 				refreshPosts(true);
 				return true;
 			}
-			case R.id.menu_hidden_posts: {
-				List<String> localFilters = hidePerformer.getReadableLocalFilters(getContext());
-				final boolean[] checked = new boolean[localFilters.size()];
+			case R.id.menu_erase: {
 				AlertDialog dialog = new AlertDialog.Builder(getContext())
-						.setTitle(R.string.remove_rules)
-						.setMultiChoiceItems(CommonUtils.toArray(localFilters, String.class),
-								checked, (d, which, isChecked) -> checked[which] = isChecked)
-						.setPositiveButton(android.R.string.ok, (d, which) -> {
-							boolean hasDeleted = false;
-							for (int i = 0, j = 0; i < checked.length; i++, j++) {
-								if (checked[i]) {
-									hidePerformer.removeLocalFilter(j--);
-									hasDeleted = true;
-								}
-							}
-							if (hasDeleted) {
-								adapter.invalidateHidden();
-								notifyAllAdaptersChanged();
-								encodeAndStoreThreadExtra();
-								adapter.preloadPosts(((LinearLayoutManager) getRecyclerView().getLayoutManager())
-										.findFirstVisibleItemPosition());
-							}
-						})
+						.setTitle(R.string.erase)
+						.setMessage(R.string.thread_will_be_deleted_from_cache__sentence)
+						.setPositiveButton(android.R.string.ok,
+								(d, which) -> enqueueCleanup(PagesDatabase.Cleanup.ERASE))
 						.setNegativeButton(android.R.string.cancel, null)
 						.show();
 				getUiManager().getConfigurationLock().lockConfiguration(dialog);
 				return true;
 			}
-			case R.id.menu_clear: {
+			case R.id.menu_clear_old: {
+				enqueueCleanup(PagesDatabase.Cleanup.OLD);
+				return true;
+			}
+			case R.id.menu_clear_deleted: {
 				AlertDialog dialog = new AlertDialog.Builder(getContext())
+						.setTitle(R.string.clear_deleted)
 						.setMessage(R.string.deleted_posts_will_be_deleted__sentence)
-						.setPositiveButton(android.R.string.ok, (d, which) -> {
-							RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-							retainExtra.removeDeleted = true;
-							if (extractTask == null && readTask == null) {
-								extractPosts(false, false);
-								getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTTOM);
-							}
-						})
+						.setPositiveButton(android.R.string.ok,
+								(d, which) -> enqueueCleanup(PagesDatabase.Cleanup.DELETED))
 						.setNegativeButton(android.R.string.cancel, null)
 						.show();
 				getUiManager().getConfigurationLock().lockConfiguration(dialog);
@@ -703,7 +645,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				int files = 0;
 				int postsWithFiles = 0;
 				int links = 0;
-				for (PostItem postItem : getAdapter()) {
+				for (PostItem postItem : adapter) {
 					List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 					if (attachmentItems != null) {
 						int itFiles = 0;
@@ -747,6 +689,78 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				}
 				dialog.show();
 				getUiManager().getConfigurationLock().lockConfiguration(dialog);
+				return true;
+			}
+			case R.id.menu_hidden_posts: {
+				List<String> localFilters = hidePerformer.getReadableLocalFilters(getContext());
+				final boolean[] checked = new boolean[localFilters.size()];
+				AlertDialog dialog = new AlertDialog.Builder(getContext())
+						.setTitle(R.string.remove_rules)
+						.setMultiChoiceItems(CommonUtils.toArray(localFilters, String.class),
+								checked, (d, which, isChecked) -> checked[which] = isChecked)
+						.setPositiveButton(android.R.string.ok, (d, which) -> {
+							boolean hasDeleted = false;
+							for (int i = 0, j = 0; i < checked.length; i++, j++) {
+								if (checked[i]) {
+									hidePerformer.removeLocalFilter(j--);
+									hasDeleted = true;
+								}
+							}
+							if (hasDeleted) {
+								adapter.invalidateHidden();
+								notifyAllAdaptersChanged();
+								encodeAndStoreThreadExtra();
+								adapter.preloadPosts(((LinearLayoutManager) getRecyclerView().getLayoutManager())
+										.findFirstVisibleItemPosition());
+							}
+						})
+						.setNegativeButton(android.R.string.cancel, null)
+						.show();
+				getUiManager().getConfigurationLock().lockConfiguration(dialog);
+				return true;
+			}
+			case R.id.menu_star_text:
+			case R.id.menu_star_icon: {
+				FavoritesStorage.getInstance().add(page.chanName, page.boardName,
+						page.threadNumber, getParcelableExtra(ParcelableExtra.FACTORY).threadTitle,
+						adapter.getExistingPostsCount());
+				updateOptionsMenu();
+				return true;
+			}
+			case R.id.menu_unstar_text:
+			case R.id.menu_unstar_icon: {
+				FavoritesStorage.getInstance().remove(page.chanName, page.boardName,
+						page.threadNumber);
+				updateOptionsMenu();
+				return true;
+			}
+			case R.id.menu_open_original_thread: {
+				RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+				Chan chan = Chan.getPreferred(null, retainExtra.archivedThreadUri);
+				if (chan.name != null) {
+					Uri uri = retainExtra.archivedThreadUri;
+					String boardName = chan.locator.safe(true).getBoardName(uri);
+					String threadNumber = chan.locator.safe(true).getThreadNumber(uri);
+					if (threadNumber != null) {
+						String threadTitle = adapter.getItem(0).getSubjectOrComment();
+						getUiManager().navigator().navigatePosts(chan.name, boardName, threadNumber, null, threadTitle);
+					}
+				}
+				return true;
+			}
+			case R.id.menu_archive: {
+				String threadTitle = null;
+				ArrayList<Post> posts = new ArrayList<>();
+				for (PostItem postItem : adapter) {
+					if (threadTitle == null) {
+						threadTitle = StringUtils.emptyIfNull(postItem.getSubjectOrComment());
+					}
+					posts.add(postItem.getPost());
+				}
+				if (!posts.isEmpty()) {
+					getUiManager().dialog().performSendArchiveThread(page.chanName, page.boardName,
+							page.threadNumber, threadTitle, posts);
+				}
 				return true;
 			}
 		}
@@ -1186,6 +1200,15 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		}
 	}
 
+	private void enqueueCleanup(PagesDatabase.Cleanup cleanup) {
+		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
+		parcelableExtra.queuedCleanup = cleanup;
+		if (cleanup != PagesDatabase.Cleanup.NONE && extractTask == null && readTask == null) {
+			extractPosts(false, false);
+			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTTOM);
+		}
+	}
+
 	private void cancelTasks() {
 		if (extractTask != null) {
 			extractTask.cancel();
@@ -1201,10 +1224,11 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		cancelTasks();
 		Page page = getPage();
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		boolean removeDeleted = retainExtra.removeDeleted;
-		retainExtra.removeDeleted = false;
+		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
+		PagesDatabase.Cleanup cleanup = parcelableExtra.queuedCleanup;
+		parcelableExtra.queuedCleanup = PagesDatabase.Cleanup.NONE;
 		extractTask = new ExtractPostsTask(this, retainExtra.cache,
-				getChan(), page.boardName, page.threadNumber, initial, newThread, removeDeleted);
+				getChan(), page.boardName, page.threadNumber, initial, newThread, cleanup);
 		extractTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 	}
 
@@ -1269,6 +1293,12 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		Pair<PostNumber, Integer> keepPositionPair = null;
 
 		if (result != null) {
+			if (result.erased) {
+				Page page = getPage();
+				FavoritesStorage.getInstance().remove(page.chanName, page.boardName, page.threadNumber);
+				closePage();
+				return;
+			}
 			if (result.newThread) {
 				parcelableExtra.unreadPosts.addAll(result.postItems.keySet());
 			} else {
@@ -1429,7 +1459,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				}
 			}
 
-			if (retainExtra.removeDeleted) {
+			if (parcelableExtra.queuedCleanup != PagesDatabase.Cleanup.NONE) {
 				extractPosts(false, false);
 				getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTTOM);
 			} else if (parcelableExtra.queuedRefresh != QueuedRefresh.NONE ||
@@ -1451,7 +1481,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			Set<PendingUserPost> removedPendingUserPosts) {
 		readTask = null;
 		Page page = getPage();
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		if (newThread) {
 			StatisticsStorage.getInstance().incrementThreadsViewed(page.chanName);
 		}
@@ -1459,7 +1489,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			PostingService.consumePendingUserPosts(page.chanName, page.boardName, page.threadNumber,
 					removedPendingUserPosts);
 		}
-		if (shouldExtract || retainExtra.removeDeleted) {
+		if (shouldExtract || parcelableExtra.queuedCleanup != PagesDatabase.Cleanup.NONE) {
 			extractPosts(false, newThread);
 		} else {
 			getRecyclerView().getWrapper().cancelBusyState();
@@ -1482,6 +1512,9 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		displayDownloadError(true, errorItem.toString());
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		parcelableExtra.scrollToPostNumber = null;
+		if (parcelableExtra.queuedCleanup != PagesDatabase.Cleanup.NONE && getAdapter().getItemCount() > 0) {
+			extractPosts(false, false);
+		}
 	}
 
 	private void displayDownloadError(boolean show, String message) {

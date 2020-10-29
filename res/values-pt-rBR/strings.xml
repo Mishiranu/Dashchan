@@ -346,7 +346,6 @@
 	<string name="thread">Fio</string>
 	<string name="thread_doesnt_exist">Esse fio não existe</string>
 	<string name="thread_is_closed">Fio fechado</string>
-	<string name="thread_options">Opções do fio</string>
 	<string name="thread_title">Título do fio</string>
 	<string name="threads_auto_refreshing">Fios auto-atualizáveis</string>
 	<string name="threads_list">Lista de fios</string>
