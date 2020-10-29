@@ -543,14 +543,17 @@ public class VideoUnit {
 		@Override
 		public void onComplete(VideoPlayer player) {
 			switch (Preferences.getVideoCompletionMode()) {
-				case Preferences.VIDEO_COMPLETION_MODE_NOTHING: {
+				case NOTHING: {
 					finishedPlayback = true;
 					updatePlayState();
 					break;
 				}
-				case Preferences.VIDEO_COMPLETION_MODE_LOOP: {
+				case LOOP: {
 					player.setPosition(0L);
 					break;
+				}
+				default: {
+					throw new IllegalStateException();
 				}
 			}
 		}

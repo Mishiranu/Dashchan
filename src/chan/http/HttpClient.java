@@ -222,8 +222,8 @@ public class HttpClient {
 		}
 	}
 
-	public boolean checkProxyValid(String[] array) {
-		ProxyData proxyData = getProxyData(array);
+	public boolean checkProxyValid(Map<String, String> map) {
+		ProxyData proxyData = getProxyData(map);
 		return proxyData == null || proxyData.getProxy() != null;
 	}
 
@@ -231,16 +231,16 @@ public class HttpClient {
 		return getProxyData(Preferences.getProxy(chan));
 	}
 
-	private ProxyData getProxyData(String[] array) {
-		if (array != null && array.length >= 2 && array[0] != null && array[1] != null) {
-			String host = array[0];
+	private ProxyData getProxyData(Map<String, String> map) {
+		if (map != null) {
+			String host = map.get(Preferences.SUB_KEY_PROXY_HOST);
 			int port;
 			try {
-				port = Integer.parseInt(array[1]);
+				port = Integer.parseInt(map.get(Preferences.SUB_KEY_PROXY_PORT));
 			} catch (Exception e) {
 				return null;
 			}
-			boolean socks = array.length >= 3 && Preferences.VALUE_PROXY_2_SOCKS.equals(array[2]);
+			boolean socks = Preferences.VALUE_PROXY_TYPE_SOCKS.equals(map.get(Preferences.SUB_KEY_PROXY_TYPE));
 			return new ProxyData(socks, host, port);
 		}
 		return null;

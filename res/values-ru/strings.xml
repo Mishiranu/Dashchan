@@ -37,8 +37,6 @@
 	<string name="audio_player">Аудиоплеер</string>
 	<string name="auto_disable">Отключать автоматически</string>
 	<string name="auto_disable__summary">Отключать отслеживание для удалённых тредов</string>
-	<string name="auto_refreshing">Автообновление</string>
-	<string name="auto_refreshing_mode">Режим автообновления</string>
 	<string name="autohide">Автоскрытие</string>
 	<string name="available__plural">Доступные</string>
 	<string name="backup_data">Резервное копирование данных</string>
@@ -385,8 +383,8 @@
 	<string name="reduce">Уменьшить</string>
 	<string name="reencode_image">Перекодировать</string>
 	<string name="refresh">Обновить</string>
-	<string name="refresh_interval">Интервал обновления</string>
-	<string name="refresh_periodically">Обновлять периодически</string>
+	<string name="refresh_favorites">Обновление избранного</string>
+	<string name="refresh_open_thread">Обновление открытого треда</string>
 	<string name="regular_expression">Регулярное выражение</string>
 	<string name="rejected_words">Отклонённые слова</string>
 	<string name="relay_block__format_sentence">Ваш IP-адрес заблокирован %s. Введите капчу,
@@ -490,7 +488,6 @@
 	<string name="thread_title">Заголовок треда</string>
 	<string name="thread_will_be_deleted_from_cache__sentence">Тред будет удалён из кэша.</string>
 	<string name="threads">Треды</string>
-	<string name="threads_auto_refreshing">Автообновление тредов</string>
 	<string name="threads_list">Список тредов</string>
 	<string name="threads_view">Вид тредов</string>
 	<string name="threads_will_be_deleted__sentence">Будут удалены следующие треды.</string>

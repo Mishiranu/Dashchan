@@ -58,16 +58,20 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		addList(Preferences.KEY_LOAD_THUMBNAILS, Preferences.GENERIC_VALUES_NETWORK,
-				Preferences.DEFAULT_LOAD_THUMBNAILS, R.string.load_thumbnails, Preferences.GENERIC_ENTRIES_NETWORK);
-
-		addHeader(R.string.threads_auto_refreshing);
-		addList(Preferences.KEY_AUTO_REFRESH_MODE, Preferences.VALUES_AUTO_REFRESH_MODE,
-				Preferences.DEFAULT_AUTO_REFRESH_MODE, R.string.auto_refreshing_mode,
-				Preferences.ENTRIES_AUTO_REFRESH_MODE);
+		addHeader(R.string.threads);
 		addSeek(Preferences.KEY_AUTO_REFRESH_INTERVAL, Preferences.DEFAULT_AUTO_REFRESH_INTERVAL,
-				R.string.refresh_interval, R.string.every_number_sec__format, Preferences.MIN_AUTO_REFRESH_INTERVAL,
-				Preferences.MAX_AUTO_REFRESH_INTERVAL, Preferences.STEP_AUTO_REFRESH_INTERVAL, 1f);
+				R.string.refresh_open_thread, R.string.every_number_sec__format,
+				new Pair<>(Preferences.DISABLED_AUTO_REFRESH_INTERVAL, R.string.disabled),
+				Preferences.MIN_AUTO_REFRESH_INTERVAL, Preferences.MAX_AUTO_REFRESH_INTERVAL,
+				Preferences.STEP_AUTO_REFRESH_INTERVAL);
+
+		addHeader(R.string.images);
+		addList(Preferences.KEY_LOAD_THUMBNAILS, enumList(Preferences.NetworkMode.values(), v -> v.value),
+				Preferences.DEFAULT_LOAD_THUMBNAILS.value, R.string.load_thumbnails,
+				enumResList(Preferences.NetworkMode.values(), v -> v.titleResId));
+		addList(Preferences.KEY_LOAD_NEAREST_IMAGE, enumList(Preferences.NetworkMode.values(), v -> v.value),
+				Preferences.DEFAULT_LOAD_NEAREST_IMAGE.value, R.string.load_nearest_image,
+				enumResList(Preferences.NetworkMode.values(), v -> v.titleResId));
 
 		addHeader(R.string.downloads);
 		addCheck(true, Preferences.KEY_DOWNLOAD_DETAIL_NAME, Preferences.DEFAULT_DOWNLOAD_DETAIL_NAME,
@@ -86,9 +90,9 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 			addEdit(Preferences.KEY_DOWNLOAD_PATH, null, R.string.download_path, C.DEFAULT_DOWNLOAD_PATH,
 					InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
 		}
-		addList(Preferences.KEY_DOWNLOAD_SUBDIR, Preferences.VALUES_DOWNLOAD_SUBDIR,
-				Preferences.DEFAULT_DOWNLOAD_SUBDIR, R.string.show_download_configuration_dialog,
-				Preferences.ENTRIES_DOWNLOAD_SUBDIR);
+		addList(Preferences.KEY_DOWNLOAD_SUBDIR, enumList(Preferences.DownloadSubdirMode.values(), v -> v.value),
+				Preferences.DEFAULT_DOWNLOAD_SUBDIR.value, R.string.show_download_configuration_dialog,
+				enumResList(Preferences.DownloadSubdirMode.values(), v -> v.titleResId));
 		addEdit(Preferences.KEY_SUBDIR_PATTERN, Preferences.DEFAULT_SUBDIR_PATTERN,
 				R.string.subdirectory_pattern, Preferences.DEFAULT_SUBDIR_PATTERN,
 				InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI)
@@ -97,11 +101,6 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 			addCheck(true, Preferences.KEY_NOTIFY_DOWNLOAD_COMPLETE, Preferences.DEFAULT_NOTIFY_DOWNLOAD_COMPLETE,
 					R.string.notify_when_download_is_completed, R.string.notify_when_download_is_completed__summary);
 		}
-
-		addHeader(R.string.images);
-		addList(Preferences.KEY_LOAD_NEAREST_IMAGE, Preferences.GENERIC_VALUES_NETWORK,
-				Preferences.DEFAULT_LOAD_NEAREST_IMAGE, R.string.load_nearest_image,
-				Preferences.GENERIC_ENTRIES_NETWORK);
 
 		addHeader(R.string.video_player);
 		Pair<Boolean, String> playerLoadResult = VideoPlayer.loadLibraries(requireContext());
@@ -121,9 +120,10 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		addCheck(true, Preferences.KEY_USE_VIDEO_PLAYER, Preferences.DEFAULT_USE_VIDEO_PLAYER,
 				R.string.use_built_in_video_player, R.string.use_built_in_video_player__summary)
 				.setEnabled(playerLoadResult.first);
-		addList(Preferences.KEY_VIDEO_COMPLETION, Preferences.VALUES_VIDEO_COMPLETION,
-				Preferences.DEFAULT_VIDEO_COMPLETION, R.string.action_on_playback_completion,
-				Preferences.ENTRIES_VIDEO_COMPLETION).setEnabled(playerLoadResult.first);
+		addList(Preferences.KEY_VIDEO_COMPLETION, enumList(Preferences.VideoCompletionMode.values(), o -> o.value),
+				Preferences.DEFAULT_VIDEO_COMPLETION.value, R.string.action_on_playback_completion,
+				enumResList(Preferences.VideoCompletionMode.values(), o -> o.titleResId))
+				.setEnabled(playerLoadResult.first);
 		addCheck(true, Preferences.KEY_VIDEO_PLAY_AFTER_SCROLL, Preferences.DEFAULT_VIDEO_PLAY_AFTER_SCROLL,
 				R.string.play_after_scroll, R.string.play_after_scroll__summary).setEnabled(playerLoadResult.first);
 		addCheck(true, Preferences.KEY_VIDEO_SEEK_ANY_FRAME, Preferences.DEFAULT_VIDEO_SEEK_ANY_FRAME,
@@ -135,8 +135,8 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		}
 
 		addHeader(R.string.additional);
-		addSeek(Preferences.KEY_CACHE_SIZE, Preferences.DEFAULT_CACHE_SIZE,
-				getString(R.string.cache_size), "%d MB", 50, 750, 10, Preferences.MULTIPLIER_CACHE_SIZE);
+		addSeek(Preferences.KEY_CACHE_SIZE, Preferences.DEFAULT_CACHE_SIZE, getString(R.string.cache_size), "%d MB",
+				null, Preferences.MIN_CACHE_SIZE, Preferences.MAX_CACHE_SIZE, Preferences.STEP_CACHE_SIZE);
 		clearCachePreference = addButton(getString(R.string.clear_cache), p -> {
 			long cacheSize = CacheManager.getInstance().getCacheSize();
 			long pagesSize = PagesDatabase.getInstance().getSize();
@@ -147,10 +147,8 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 			dialog.show(getChildFragmentManager(), ClearCacheDialog.class.getName());
 		});
 
-		addDependency(Preferences.KEY_AUTO_REFRESH_INTERVAL, Preferences.KEY_AUTO_REFRESH_MODE, true,
-				Preferences.VALUE_AUTO_REFRESH_MODE_ENABLED);
 		addDependency(Preferences.KEY_SUBDIR_PATTERN, Preferences.KEY_DOWNLOAD_SUBDIR, false,
-				Preferences.VALUE_DOWNLOAD_SUBDIR_DISABLED);
+				Preferences.DownloadSubdirMode.DISABLED.value);
 		clearCachePreference.invalidate();
 	}
 

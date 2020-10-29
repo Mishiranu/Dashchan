@@ -18,20 +18,30 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
+import com.mishiranu.dashchan.util.SafeSharedPreferences;
 import com.mishiranu.dashchan.util.ToastUtils;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Preferences {
-	public static final SharedPreferences PREFERENCES = MainApplication.getInstance().getSharedPreferences
-			(MainApplication.getInstance().getPackageName() + "_preferences", Context.MODE_PRIVATE);
+	public static final SharedPreferences PREFERENCES;
+
+	static {
+		Context context = MainApplication.getInstance();
+		String name = context.getPackageName() + "_preferences";
+		PREFERENCES = new SafeSharedPreferences(context.getSharedPreferences(name, Context.MODE_PRIVATE));
+	}
 
 	private static final String SPECIAL_CHAN_NAME_GENERAL = "general";
 	private static final String SPECIAL_CHAN_NAME_CLOUDFLARE = "cloudflare";
@@ -59,27 +69,54 @@ public class Preferences {
 		return new File(new File(context.getCacheDir().getParentFile(), "shared_prefs"), name + ".xml");
 	}
 
-	public static String[] unpackOrCastMultipleValues(String value, int count) {
-		String[] values = new String[count];
+	public static List<String> unpackOrCastMultipleValues(String value, int count) {
+		ArrayList<String> values = new ArrayList<>(count);
+		for (int i = 0; i < count; i++) {
+			values.add(null);
+		}
 		if (value != null) {
 			try {
 				JSONArray jsonArray = new JSONArray(value);
 				int length = Math.min(count, jsonArray.length());
 				for (int i = 0; i < length; i++) {
-					values[i] = jsonArray.isNull(i) ? null : StringUtils.nullIfEmpty(jsonArray.getString(i));
+					values.set(i, jsonArray.isNull(i) ? null : StringUtils.nullIfEmpty(jsonArray.getString(i)));
 				}
 				return values;
 			} catch (JSONException e) {
 				// Backward compatibility
 				if (value.length() > 0 && !value.startsWith("[")) {
-					values[0] = value;
+					values.set(0, value);
 				}
 			}
 		}
 		return values;
 	}
 
-	public static boolean checkHasMultipleValues(String[] values) {
+	public static Map<String, String> unpackOrCastMultipleValues(String value, List<String> keys) {
+		HashMap<String, String> values = new HashMap<>(keys.size());
+		if (value != null) {
+			try {
+				JSONObject jsonObject = new JSONObject(value);
+				for (String key : keys) {
+					String stringValue = jsonObject.optString(key);
+					if (!StringUtils.isEmpty(stringValue)) {
+						values.put(key, stringValue);
+					}
+				}
+			} catch (JSONException e) {
+				// Migration
+				List<String> list = unpackOrCastMultipleValues(value, keys.size());
+				if (list != null && list.size() == keys.size()) {
+					for (int i = 0; i < keys.size(); i++) {
+						values.put(keys.get(i), list.get(i));
+					}
+				}
+			}
+		}
+		return values;
+	}
+
+	public static boolean checkHasMultipleValues(List<String> values) {
 		boolean hasValues = false;
 		if (values != null) {
 			for (String value : values) {
@@ -92,6 +129,21 @@ public class Preferences {
 		return hasValues;
 	}
 
+	private interface EnumValueProvider<T extends Enum<T>> {
+		String getValue(T enumValue);
+	}
+
+	private static <T extends Enum<T>> T getEnumValue(String key, T[] values, T defaultValue,
+			EnumValueProvider<T> enumValueProvider) {
+		String stringValue = PREFERENCES.getString(key, enumValueProvider.getValue(defaultValue));
+		for (T value : values) {
+			if (enumValueProvider.getValue(value).equals(stringValue)) {
+				return value;
+			}
+		}
+		return defaultValue;
+	}
+
 	static {
 		String statistics = PREFERENCES.getString("statistics", null);
 		if (statistics != null) {
@@ -100,39 +152,35 @@ public class Preferences {
 		}
 	}
 
-	private static final String GENERIC_VALUE_NETWORK_ALWAYS = "always";
-	private static final String GENERIC_VALUE_NETWORK_WIFI_3G = "wifi_3g";
-	private static final String GENERIC_VALUE_NETWORK_WIFI = "wifi";
-	private static final String GENERIC_VALUE_NETWORK_NEVER = "never";
-	public static final String[] GENERIC_VALUES_NETWORK = {
-			GENERIC_VALUE_NETWORK_ALWAYS,
-			GENERIC_VALUE_NETWORK_WIFI_3G,
-			GENERIC_VALUE_NETWORK_WIFI,
-			GENERIC_VALUE_NETWORK_NEVER
-	};
-	public static final int[] GENERIC_ENTRIES_NETWORK = {
-			R.string.always,
-			R.string.wifi_or_3g_plus,
-			R.string.wifi_only,
-			R.string.never
-	};
+	public enum NetworkMode {
+		ALWAYS("always", R.string.always, o -> true),
+		WIFI_3G("wifi_3g", R.string.wifi_or_3g_plus, NetworkObserver::isMobile3GConnected),
+		WIFI("wifi", R.string.wifi_only, NetworkObserver::isWifiConnected),
+		NEVER("never", R.string.never, o -> false);
 
-	private static boolean isNetworkAvailable(String value, String defaultValue) {
-		switch (StringUtils.emptyIfNull(value)) {
-			case GENERIC_VALUE_NETWORK_ALWAYS: {
-				return true;
-			}
-			case GENERIC_VALUE_NETWORK_WIFI_3G: {
-				return NetworkObserver.getInstance().isMobile3GConnected();
-			}
-			case GENERIC_VALUE_NETWORK_WIFI: {
-				return NetworkObserver.getInstance().isWifiConnected();
-			}
-			case GENERIC_VALUE_NETWORK_NEVER: {
-				return false;
-			}
+		private static final EnumValueProvider<NetworkMode> VALUE_PROVIDER = o -> o.value;
+
+		private interface Check {
+			boolean isNetworkAvailable(NetworkObserver networkObserver);
 		}
-		return defaultValue != null && isNetworkAvailable(defaultValue, null);
+
+		public final String value;
+		public final int titleResId;
+		private final Check check;
+
+		NetworkMode(String value, int titleResId, Check check) {
+			this.value = value;
+			this.titleResId = titleResId;
+			this.check = check;
+		}
+
+		public boolean isNetworkAvailable(NetworkObserver networkObserver) {
+			return check.isNetworkAvailable(networkObserver);
+		}
+	}
+
+	private static NetworkMode getNetworkModeGeneric(String key, NetworkMode defaultValue) {
+		return getEnumValue(key, NetworkMode.values(), defaultValue, NetworkMode.VALUE_PROVIDER);
 	}
 
 	public static final String KEY_ACTIVE_SCROLLBAR = "active_scrollbar";
@@ -156,49 +204,41 @@ public class Preferences {
 		return PREFERENCES.getBoolean(KEY_ALL_ATTACHMENTS, DEFAULT_ALL_ATTACHMENTS);
 	}
 
-	public static final String KEY_AUTO_REFRESH_MODE = "auto_refresh_mode";
-	public static final String VALUE_AUTO_REFRESH_MODE_DISABLED = "disabled";
-	public static final String VALUE_AUTO_REFRESH_MODE_ENABLED = "enabled";
-	public static final String[] VALUES_AUTO_REFRESH_MODE = {
-			VALUE_AUTO_REFRESH_MODE_DISABLED,
-			VALUE_AUTO_REFRESH_MODE_ENABLED
-	};
-	public static final int[] ENTRIES_AUTO_REFRESH_MODE = {
-			R.string.disabled,
-			R.string.enabled
-	};
-	public static final String DEFAULT_AUTO_REFRESH_MODE = VALUE_AUTO_REFRESH_MODE_DISABLED;
-
-	public static final int AUTO_REFRESH_MODE_DISABLED = 0;
-	public static final int AUTO_REFRESH_MODE_ENABLED = 1;
-
-	public static int getAutoRefreshMode() {
-		String value = PREFERENCES.getString(KEY_AUTO_REFRESH_MODE, DEFAULT_AUTO_REFRESH_MODE);
-		if (VALUE_AUTO_REFRESH_MODE_DISABLED.equals(value)) {
-			return AUTO_REFRESH_MODE_DISABLED;
-		}
-		if (VALUE_AUTO_REFRESH_MODE_ENABLED.equals(value)) {
-			return AUTO_REFRESH_MODE_ENABLED;
-		}
-		return AUTO_REFRESH_MODE_DISABLED;
-	}
-
 	public static final String KEY_AUTO_REFRESH_INTERVAL = "auto_refresh_interval";
-	public static final int DEFAULT_AUTO_REFRESH_INTERVAL = 30;
+	public static final int DISABLED_AUTO_REFRESH_INTERVAL = 0;
 	public static final int MIN_AUTO_REFRESH_INTERVAL = 15;
-	public static final int MAX_AUTO_REFRESH_INTERVAL = 120;
+	public static final int MAX_AUTO_REFRESH_INTERVAL = 90;
 	public static final int STEP_AUTO_REFRESH_INTERVAL = 5;
+	public static final int DEFAULT_AUTO_REFRESH_INTERVAL = DISABLED_AUTO_REFRESH_INTERVAL;
 
 	public static int getAutoRefreshInterval() {
-		return PREFERENCES.getInt(KEY_AUTO_REFRESH_INTERVAL, DEFAULT_AUTO_REFRESH_INTERVAL);
+		int value = PREFERENCES.getInt(KEY_AUTO_REFRESH_INTERVAL, DEFAULT_AUTO_REFRESH_INTERVAL);
+		return value > MAX_AUTO_REFRESH_INTERVAL ? MAX_AUTO_REFRESH_INTERVAL
+				: value < MIN_AUTO_REFRESH_INTERVAL ? DISABLED_AUTO_REFRESH_INTERVAL : value;
+	}
+
+	static {
+		String key = "auto_refresh_mode";
+		String value = PREFERENCES.getString(key, null);
+		if (value != null) {
+			boolean enabled = "enabled".equals(value);
+			SharedPreferences.Editor editor = PREFERENCES.edit();
+			editor.remove(value);
+			if (!enabled) {
+				editor.putInt(KEY_AUTO_REFRESH_INTERVAL, DISABLED_AUTO_REFRESH_INTERVAL);
+			}
+			editor.commit();
+		}
 	}
 
 	public static final String KEY_CACHE_SIZE = "cache_size";
-	public static final int DEFAULT_CACHE_SIZE = 100;
-	public static final float MULTIPLIER_CACHE_SIZE = 1.2f;
+	public static final int MIN_CACHE_SIZE = 100;
+	public static final int MAX_CACHE_SIZE = 800;
+	public static final int STEP_CACHE_SIZE = 50;
+	public static final int DEFAULT_CACHE_SIZE = 200;
 
 	public static int getCacheSize() {
-		return (int) (PREFERENCES.getInt(KEY_CACHE_SIZE, DEFAULT_CACHE_SIZE) * MULTIPLIER_CACHE_SIZE);
+		return PREFERENCES.getInt(KEY_CACHE_SIZE, DEFAULT_CACHE_SIZE);
 	}
 
 	public static final ChanKey KEY_CAPTCHA = new ChanKey("captcha");
@@ -224,20 +264,18 @@ public class Preferences {
 		return defaultCaptchaType;
 	}
 
-	public static String[] getCaptchaTypeValues(Collection<String> captchaTypes) {
-		int i = 0;
-		String[] values = new String[captchaTypes.size()];
+	public static List<String> getCaptchaTypeValues(Collection<String> captchaTypes) {
+		ArrayList<String> values = new ArrayList<>();
 		for (String captchaType : captchaTypes) {
-			values[i++] = transformCaptchaTypeToValue(captchaType);
+			values.add(transformCaptchaTypeToValue(captchaType));
 		}
 		return values;
 	}
 
-	public static String[] getCaptchaTypeEntries(Chan chan, Collection<String> captchaTypes) {
-		int i = 0;
-		String[] entries = new String[captchaTypes.size()];
+	public static List<CharSequence> getCaptchaTypeEntries(Chan chan, Collection<String> captchaTypes) {
+		ArrayList<CharSequence> entries = new ArrayList<>();
 		for (String captchaType : captchaTypes) {
-			entries[i++] = chan.configuration.safe().obtainCaptcha(captchaType).title;
+			entries.add(chan.configuration.safe().obtainCaptcha(captchaType).title);
 		}
 		return entries;
 	}
@@ -256,7 +294,7 @@ public class Preferences {
 
 	public static final ChanKey KEY_CAPTCHA_PASS = new ChanKey("captcha_pass");
 
-	public static String[] getCaptchaPass(Chan chan) {
+	public static List<String> getCaptchaPass(Chan chan) {
 		ChanConfiguration.Authorization authorization = chan.configuration.safe().obtainCaptchaPass();
 		if (authorization != null && authorization.fieldsCount > 0) {
 			String value = PREFERENCES.getString(KEY_CAPTCHA_PASS.bind(chan.name), null);
@@ -328,94 +366,6 @@ public class Preferences {
 
 	public static void setDefaultBoardName(String chanName, String boardName) {
 		PREFERENCES.edit().putString(KEY_DEFAULT_BOARD_NAME.bind(chanName), boardName).commit();
-	}
-
-	public static final String KEY_SUBDIR_PATTERN = "subdir_pattern";
-	public static final String DEFAULT_SUBDIR_PATTERN = "\\c-<\\b->\\t";
-
-	public static String getSubdir(String chanName, String chanTitle, String boardName,
-			String threadNumber, String threadTitle) {
-		if (threadNumber == null) {
-			return null;
-		}
-		String pattern = StringUtils.emptyIfNull(PREFERENCES.getString(KEY_SUBDIR_PATTERN, DEFAULT_SUBDIR_PATTERN));
-		return formatSubdir(pattern, chanName, chanTitle, boardName, threadNumber, threadTitle);
-	}
-
-	public static String formatSubdir(String pattern, String chanName, String chanTitle, String boardName,
-			String threadNumber, String threadTitle) {
-		StringBuilder builder = new StringBuilder(pattern);
-		for (int i = builder.length() - 2; i >= 0; i--) {
-			char c = builder.charAt(i);
-			if (c == '\\') {
-				char cn = builder.charAt(i + 1);
-				boolean replace = false;
-				String replaceTo = null;
-				switch (cn) {
-					case 'c': {
-						replace = true;
-						replaceTo = chanName;
-						break;
-					}
-					case 'd': {
-						replace = true;
-						replaceTo = chanTitle;
-						break;
-					}
-					case 'b': {
-						replace = true;
-						replaceTo = boardName;
-						break;
-					}
-					case 't': {
-						replace = true;
-						replaceTo = threadNumber;
-						break;
-					}
-					case 'e': {
-						replace = true;
-						replaceTo = threadTitle;
-						break;
-					}
-				}
-				if (!replace) {
-					continue;
-				}
-				replaceTo = StringUtils.nullIfEmpty(replaceTo);
-				if (replaceTo == null) {
-					int optStart = -1;
-					int optEnd = -1;
-					for (int j = i - 1; j >= 0; j--) {
-						char cj = builder.charAt(j);
-						if (cj == '<') {
-							optStart = j;
-							break;
-						} else if (cj == '\\') {
-							break;
-						}
-					}
-					for (int j = i + 2; j < builder.length(); j++) {
-						char cj = builder.charAt(j);
-						if (cj == '>') {
-							optEnd = j + 1;
-							break;
-						} else if (cj == '\\') {
-							break;
-						}
-					}
-					if (optEnd > optStart && optStart >= 0) {
-						builder.replace(optStart, optEnd, "");
-						i = optStart - 1;
-					} else {
-						replaceTo = "null";
-					}
-				}
-				if (replaceTo != null) {
-					builder.replace(i, i + 2, replaceTo);
-				}
-			}
-		}
-		return builder.toString().replaceAll("[:\\\\*?|]", "_").replaceAll("[<>]", "");
 	}
 
 	public static final String KEY_DISPLAY_HIDDEN_THREADS = "display_hidden_threads";
@@ -536,69 +486,62 @@ public class Preferences {
 		}
 	}
 
-	public static final String KEY_DOWNLOAD_SUBDIR = "download_subdir";
-	public static final String VALUE_DOWNLOAD_SUBDIR_DISABLED = "disabled";
-	public static final String VALUE_DOWNLOAD_SUBDIR_MULTIPLE = "multiple_only";
-	public static final String VALUE_DOWNLOAD_SUBDIR_ENABLED = "enabled";
-	public static final String[] VALUES_DOWNLOAD_SUBDIR = {
-			VALUE_DOWNLOAD_SUBDIR_DISABLED,
-			VALUE_DOWNLOAD_SUBDIR_MULTIPLE,
-			VALUE_DOWNLOAD_SUBDIR_ENABLED
-	};
-	public static final int[] ENTRIES_DOWNLOAD_SUBDIR = {
-			R.string.never,
-			R.string.on_multiple_downloading,
-			R.string.always
-	};
-	public static final String DEFAULT_DOWNLOAD_SUBDIR = VALUE_DOWNLOAD_SUBDIR_DISABLED;
+	public enum DownloadSubdirMode {
+		DISABLED("disabled", R.string.never, multiple -> false),
+		MULTIPLE_ONLY("multiple_only", R.string.on_multiple_downloading, multiple -> multiple),
+		ENABLED("enabled", R.string.always, multiple -> true);
 
-	@SuppressWarnings("RedundantIfStatement")
-	public static boolean isDownloadSubdir(boolean multiple) {
-		String value = PREFERENCES.getString(KEY_DOWNLOAD_SUBDIR, DEFAULT_DOWNLOAD_SUBDIR);
-		if (VALUE_DOWNLOAD_SUBDIR_DISABLED.equals(value)) {
-			return false;
+		private static final EnumValueProvider<DownloadSubdirMode> VALUE_PROVIDER = o -> o.value;
+
+		private interface Check {
+			boolean isEnabled(boolean multiple);
 		}
-		if (VALUE_DOWNLOAD_SUBDIR_MULTIPLE.equals(value)) {
-			return multiple;
+
+		public final String value;
+		public final int titleResId;
+		private final Check check;
+
+		DownloadSubdirMode(String value, int titleResId, Check check) {
+			this.value = value;
+			this.titleResId = titleResId;
+			this.check = check;
 		}
-		if (VALUE_DOWNLOAD_SUBDIR_ENABLED.equals(value)) {
-			return true;
+
+		public boolean isEnabled(boolean multiple) {
+			return check.isEnabled(multiple);
 		}
-		return false;
+	}
+
+	public static final String KEY_DOWNLOAD_SUBDIR = "download_subdir";
+	public static final DownloadSubdirMode DEFAULT_DOWNLOAD_SUBDIR = DownloadSubdirMode.DISABLED;
+
+	public static DownloadSubdirMode getDownloadSubdirMode() {
+		return getEnumValue(KEY_DOWNLOAD_SUBDIR, DownloadSubdirMode.values(),
+				DEFAULT_DOWNLOAD_SUBDIR, DownloadSubdirMode.VALUE_PROVIDER);
+	}
+
+	public enum DrawerInitialPosition {
+		CLOSED("closed", R.string.closed),
+		FAVORITES("favorites", R.string.favorites),
+		FORUMS("forums", R.string.forums);
+
+		public static final EnumValueProvider<DrawerInitialPosition> VALUE_PROVIDER = o -> o.value;
+
+		public final String value;
+		public final int titleResId;
+
+		DrawerInitialPosition(String value, int titleResId) {
+			this.value = value;
+			this.titleResId = titleResId;
+		}
 	}
 
 	public static final String KEY_DRAWER_INITIAL_POSITION = "drawer_initial_position";
-	public static final String VALUE_DRAWER_INITIAL_POSITION_CLOSED = "closed";
-	public static final String VALUE_DRAWER_INITIAL_POSITION_FAVORITES = "favorites";
-	public static final String VALUE_DRAWER_INITIAL_POSITION_FORUMS = "forums";
-	public static final String[] VALUES_DRAWER_INITIAL_POSITION = {
-			VALUE_DRAWER_INITIAL_POSITION_CLOSED,
-			VALUE_DRAWER_INITIAL_POSITION_FAVORITES,
-			VALUE_DRAWER_INITIAL_POSITION_FORUMS
-	};
-	public static final int[] ENTRIES_DRAWER_INITIAL_POSITION = {
-			R.string.closed,
-			R.string.favorites,
-			R.string.forums
-	};
-	public static final String DEFAULT_DRAWER_INITIAL_POSITION = VALUE_DRAWER_INITIAL_POSITION_CLOSED;
+	public static final DrawerInitialPosition DEFAULT_DRAWER_INITIAL_POSITION = DrawerInitialPosition.CLOSED;
 
-	public static final int DRAWER_INITIAL_POSITION_CLOSED = 0;
-	public static final int DRAWER_INITIAL_POSITION_FAVORITES = 1;
-	public static final int DRAWER_INITIAL_POSITION_FORUMS = 2;
-
-	public static int getDrawerInitialPosition() {
-		String value = PREFERENCES.getString(KEY_DRAWER_INITIAL_POSITION, DEFAULT_DRAWER_INITIAL_POSITION);
-		if (VALUE_DRAWER_INITIAL_POSITION_CLOSED.equals(value)) {
-			return DRAWER_INITIAL_POSITION_CLOSED;
-		}
-		if (VALUE_DRAWER_INITIAL_POSITION_FAVORITES.equals(value)) {
-			return DRAWER_INITIAL_POSITION_FAVORITES;
-		}
-		if (VALUE_DRAWER_INITIAL_POSITION_FORUMS.equals(value)) {
-			return DRAWER_INITIAL_POSITION_FORUMS;
-		}
-		return DRAWER_INITIAL_POSITION_CLOSED;
+	public static DrawerInitialPosition getDrawerInitialPosition() {
+		return getEnumValue(KEY_DRAWER_INITIAL_POSITION, DrawerInitialPosition.values(),
+				DEFAULT_DRAWER_INITIAL_POSITION, DrawerInitialPosition.VALUE_PROVIDER);
 	}
 
 	public static final String KEY_EXPANDED_SCREEN = "expanded_screen";
@@ -612,69 +555,72 @@ public class Preferences {
 		PREFERENCES.edit().putBoolean(KEY_EXPANDED_SCREEN, expandedScreen).commit();
 	}
 
-	public static final String KEY_FAVORITE_ON_REPLY = "favorite_on_reply";
-	public static final String VALUE_FAVORITE_ON_REPLY_DISABLED = "disabled";
-	public static final String VALUE_FAVORITE_ON_REPLY_ENABLED = "enabled";
-	public static final String VALUE_FAVORITE_ON_REPLY_WITHOUT_SAGE = "without_sage";
-	public static final String[] VALUES_FAVORITE_ON_REPLY = {
-			VALUE_FAVORITE_ON_REPLY_DISABLED,
-			VALUE_FAVORITE_ON_REPLY_ENABLED,
-			VALUE_FAVORITE_ON_REPLY_WITHOUT_SAGE
-	};
-	public static final int[] ENTRIES_FAVORITE_ON_REPLY = {
-			R.string.disabled,
-			R.string.enabled,
-			R.string.only_if_without_sage
-	};
-	public static final String DEFAULT_FAVORITE_ON_REPLY = VALUE_FAVORITE_ON_REPLY_DISABLED;
+	public enum FavoriteOnReplyMode {
+		DISABLED("disabled", R.string.disabled, sage -> false),
+		ENABLED("enabled", R.string.enabled, sage -> true),
+		WITHOUT_SAGE("without_sage", R.string.only_if_without_sage, sage -> !sage);
 
-	public static boolean isFavoriteOnReply(boolean sage) {
-		String value = PREFERENCES.getString(KEY_FAVORITE_ON_REPLY, DEFAULT_FAVORITE_ON_REPLY);
-		return VALUE_FAVORITE_ON_REPLY_ENABLED.equals(value) ||
-				VALUE_FAVORITE_ON_REPLY_WITHOUT_SAGE.equals(value) && !sage;
+		private static final EnumValueProvider<FavoriteOnReplyMode> VALUE_PROVIDER = o -> o.value;
+
+		private interface Check {
+			boolean isEnabled(boolean sage);
+		}
+
+		public final String value;
+		public final int titleResId;
+		private final Check check;
+
+		FavoriteOnReplyMode(String value, int titleResId, Check check) {
+			this.value = value;
+			this.titleResId = titleResId;
+			this.check = check;
+		}
+
+		public boolean isEnabled(boolean sage) {
+			return check.isEnabled(sage);
+		}
+	}
+
+	public static final String KEY_FAVORITE_ON_REPLY = "favorite_on_reply";
+	public static final FavoriteOnReplyMode DEFAULT_FAVORITE_ON_REPLY = FavoriteOnReplyMode.DISABLED;
+
+	public static FavoriteOnReplyMode getFavoriteOnReply() {
+		return getEnumValue(KEY_FAVORITE_ON_REPLY, FavoriteOnReplyMode.values(),
+				DEFAULT_FAVORITE_ON_REPLY, FavoriteOnReplyMode.VALUE_PROVIDER);
 	}
 
 	static {
-		Object favoriteOnReply = PREFERENCES.getAll().get("favorite_on_reply");
-		if (favoriteOnReply instanceof Boolean) {
-			String value = (boolean) favoriteOnReply ? VALUE_FAVORITE_ON_REPLY_ENABLED
-					: VALUE_FAVORITE_ON_REPLY_DISABLED;
-			PREFERENCES.edit().remove("favorite_on_reply").putString(KEY_FAVORITE_ON_REPLY, value).commit();
+		String key = "favorite_on_reply";
+		Object value = PREFERENCES.getAll().get(key);
+		if (value instanceof Boolean) {
+			FavoriteOnReplyMode favoriteOnReplyMode = (boolean) value
+					? FavoriteOnReplyMode.ENABLED : FavoriteOnReplyMode.DISABLED;
+			PREFERENCES.edit().remove(key).putString(KEY_FAVORITE_ON_REPLY, favoriteOnReplyMode.value).commit();
+		}
+	}
+
+	public enum FavoritesOrder {
+		DATE_DESC("date_desc", R.string.add_to_top__imperfective),
+		DATE_ASC("date_asc", R.string.add_to_bottom__imperfective),
+		TITLE("title", R.string.order_by_title);
+
+		private static final EnumValueProvider<FavoritesOrder> VALUE_PROVIDER = o -> o.value;
+
+		public final String value;
+		public final int titleResId;
+
+		FavoritesOrder(String value, int titleResId) {
+			this.value = value;
+			this.titleResId = titleResId;
 		}
 	}
 
 	public static final String KEY_FAVORITES_ORDER = "favorites_order";
-	public static final String VALUE_FAVORITES_ORDER_DATE_DESC = "date_desc";
-	public static final String VALUE_FAVORITES_ORDER_DATE_ASC = "date_asc";
-	public static final String VALUE_FAVORITES_ORDER_TITLE = "title";
-	public static final String[] VALUES_FAVORITES_ORDER = {
-			VALUE_FAVORITES_ORDER_DATE_DESC,
-			VALUE_FAVORITES_ORDER_DATE_ASC,
-			VALUE_FAVORITES_ORDER_TITLE
-	};
-	public static final int[] ENTRIES_FAVORITES_ORDER = {
-			R.string.add_to_top__imperfective,
-			R.string.add_to_bottom__imperfective,
-			R.string.order_by_title
-	};
-	public static final String DEFAULT_FAVORITES_ORDER = VALUE_FAVORITES_ORDER_DATE_DESC;
+	public static final FavoritesOrder DEFAULT_FAVORITES_ORDER = FavoritesOrder.DATE_DESC;
 
-	public static final int FAVORITES_ORDER_ADD_TO_THE_TOP = 0;
-	public static final int FAVORITES_ORDER_ADD_TO_THE_BOTTOM = 1;
-	public static final int FAVORITES_ORDER_BY_TITLE = 2;
-
-	public static int getFavoritesOrder() {
-		String value = PREFERENCES.getString(KEY_FAVORITES_ORDER, DEFAULT_FAVORITES_ORDER);
-		if (VALUE_FAVORITES_ORDER_DATE_DESC.equals(value)) {
-			return FAVORITES_ORDER_ADD_TO_THE_TOP;
-		}
-		if (VALUE_FAVORITES_ORDER_DATE_ASC.equals(value)) {
-			return FAVORITES_ORDER_ADD_TO_THE_BOTTOM;
-		}
-		if (VALUE_FAVORITES_ORDER_TITLE.equals(value)) {
-			return FAVORITES_ORDER_BY_TITLE;
-		}
-		return FAVORITES_ORDER_ADD_TO_THE_TOP;
+	public static FavoritesOrder getFavoritesOrder() {
+		return getEnumValue(KEY_FAVORITES_ORDER, FavoritesOrder.values(),
+				DEFAULT_FAVORITES_ORDER, FavoritesOrder.VALUE_PROVIDER);
 	}
 
 	public static final String KEY_HIDE_PERSONAL_DATA = "hide_personal_data";
@@ -684,38 +630,28 @@ public class Preferences {
 		return PREFERENCES.getBoolean(KEY_HIDE_PERSONAL_DATA, DEFAULT_HIDE_PERSONAL_DATA);
 	}
 
+	public enum HighlightUnreadMode {
+		AUTOMATICALLY("automatically", R.string.hide_eventually__imperfective),
+		MANUALLY("manually", R.string.hide_on_tap__imperfective),
+		NEVER("never", R.string.never_highlight);
+
+		private static final EnumValueProvider<HighlightUnreadMode> VALUE_PROVIDER = o -> o.value;
+
+		public final String value;
+		public final int titleResId;
+
+		HighlightUnreadMode(String value, int titleResId) {
+			this.value = value;
+			this.titleResId = titleResId;
+		}
+	}
+
 	public static final String KEY_HIGHLIGHT_UNREAD = "highlight_unread_posts";
-	public static final String VALUE_HIGHLIGHT_UNREAD_AUTOMATICALLY = "automatically";
-	public static final String VALUE_HIGHLIGHT_UNREAD_MANUALLY = "manually";
-	public static final String VALUE_HIGHLIGHT_UNREAD_NEVER = "never";
-	public static final String[] VALUES_HIGHLIGHT_UNREAD = {
-			VALUE_HIGHLIGHT_UNREAD_AUTOMATICALLY,
-			VALUE_HIGHLIGHT_UNREAD_MANUALLY,
-			VALUE_HIGHLIGHT_UNREAD_NEVER
-	};
-	public static final int[] ENTRIES_HIGHLIGHT_UNREAD = {
-			R.string.hide_eventually__imperfective,
-			R.string.hide_on_tap__imperfective,
-			R.string.never_highlight
-	};
-	public static final String DEFAULT_HIGHLIGHT_UNREAD = VALUE_HIGHLIGHT_UNREAD_AUTOMATICALLY;
+	public static final HighlightUnreadMode DEFAULT_HIGHLIGHT_UNREAD = HighlightUnreadMode.AUTOMATICALLY;
 
-	public static final int HIGHLIGHT_UNREAD_AUTOMATICALLY = 0;
-	public static final int HIGHLIGHT_UNREAD_MANUALLY = 1;
-	public static final int HIGHLIGHT_UNREAD_NEVER = 2;
-
-	public static int getHighlightUnreadMode() {
-		String value = PREFERENCES.getString(KEY_HIGHLIGHT_UNREAD, DEFAULT_HIGHLIGHT_UNREAD);
-		if (VALUE_HIGHLIGHT_UNREAD_AUTOMATICALLY.equals(value)) {
-			return HIGHLIGHT_UNREAD_AUTOMATICALLY;
-		}
-		if (VALUE_HIGHLIGHT_UNREAD_MANUALLY.equals(value)) {
-			return HIGHLIGHT_UNREAD_MANUALLY;
-		}
-		if (VALUE_HIGHLIGHT_UNREAD_NEVER.equals(value)) {
-			return HIGHLIGHT_UNREAD_NEVER;
-		}
-		return HIGHLIGHT_UNREAD_AUTOMATICALLY;
+	public static HighlightUnreadMode getHighlightUnreadMode() {
+		return getEnumValue(KEY_HIGHLIGHT_UNREAD, HighlightUnreadMode.values(),
+				DEFAULT_HIGHLIGHT_UNREAD, HighlightUnreadMode.VALUE_PROVIDER);
 	}
 
 	public static final String KEY_HUGE_CAPTCHA = "huge_captcha";
@@ -750,22 +686,17 @@ public class Preferences {
 	}
 
 	public static final String KEY_LOAD_NEAREST_IMAGE = "load_nearest_image";
-	public static final String DEFAULT_LOAD_NEAREST_IMAGE = GENERIC_VALUE_NETWORK_NEVER;
+	public static final NetworkMode DEFAULT_LOAD_NEAREST_IMAGE = NetworkMode.NEVER;
 
-	public static boolean isLoadNearestImage() {
-		return isNetworkAvailable(PREFERENCES.getString(KEY_LOAD_NEAREST_IMAGE, DEFAULT_LOAD_NEAREST_IMAGE),
-				DEFAULT_LOAD_NEAREST_IMAGE);
+	public static NetworkMode getLoadNearestImage() {
+		return getNetworkModeGeneric(KEY_LOAD_NEAREST_IMAGE, DEFAULT_LOAD_NEAREST_IMAGE);
 	}
 
 	public static final String KEY_LOAD_THUMBNAILS = "load_thumbnails";
-	public static final String DEFAULT_LOAD_THUMBNAILS = GENERIC_VALUE_NETWORK_ALWAYS;
+	public static final NetworkMode DEFAULT_LOAD_THUMBNAILS = NetworkMode.ALWAYS;
 
-	private static String getLoadThumbnailsMode() {
-		return PREFERENCES.getString(KEY_LOAD_THUMBNAILS, DEFAULT_LOAD_THUMBNAILS);
-	}
-
-	public static boolean isLoadThumbnails() {
-		return isNetworkAvailable(getLoadThumbnailsMode(), DEFAULT_LOAD_THUMBNAILS);
+	public static NetworkMode getLoadThumbnails() {
+		return getNetworkModeGeneric(KEY_LOAD_THUMBNAILS, DEFAULT_LOAD_THUMBNAILS);
 	}
 
 	public static final String KEY_LOCALE = "locale";
@@ -807,38 +738,28 @@ public class Preferences {
 		return PREFERENCES.getBoolean(KEY_PAGE_BY_PAGE, DEFAULT_PAGE_BY_PAGE);
 	}
 
+	public enum PagesListMode {
+		PAGES_FIRST("pages_first", R.string.pages_first),
+		FAVORITES_FIRST("favorites_first", R.string.favorites_first),
+		HIDE_PAGES("hide_pages", R.string.hide_pages);
+
+		public static final EnumValueProvider<PagesListMode> VALUE_PROVIDER = o -> o.value;
+
+		public final String value;
+		public final int titleResId;
+
+		PagesListMode(String value, int titleResId) {
+			this.value = value;
+			this.titleResId = titleResId;
+		}
+	}
+
 	public static final String KEY_PAGES_LIST = "pages_list";
-	public static final String VALUE_PAGES_LIST_PAGES_FIRST = "pages_first";
-	public static final String VALUE_PAGES_LIST_FAVORITES_FIRST = "favorites_first";
-	public static final String VALUE_PAGES_LIST_HIDE_PAGES = "hide_pages";
-	public static final String[] VALUES_PAGES_LIST = {
-			VALUE_PAGES_LIST_PAGES_FIRST,
-			VALUE_PAGES_LIST_FAVORITES_FIRST,
-			VALUE_PAGES_LIST_HIDE_PAGES
-	};
-	public static final int[] ENTRIES_PAGES_LIST = {
-			R.string.pages_first,
-			R.string.favorites_first,
-			R.string.hide_pages
-	};
-	public static final String DEFAULT_PAGES_LIST = VALUE_PAGES_LIST_PAGES_FIRST;
+	public static final PagesListMode DEFAULT_PAGES_LIST = PagesListMode.PAGES_FIRST;
 
-	public static final int PAGES_LIST_MODE_PAGES_FIRST = 0;
-	public static final int PAGES_LIST_MODE_FAVORITES_FIRST = 1;
-	public static final int PAGES_LIST_MODE_HIDE_PAGES = 2;
-
-	public static int getPagesListMode() {
-		String value = PREFERENCES.getString(KEY_PAGES_LIST, DEFAULT_PAGES_LIST);
-		if (VALUE_PAGES_LIST_PAGES_FIRST.equals(value)) {
-			return PAGES_LIST_MODE_PAGES_FIRST;
-		}
-		if (VALUE_PAGES_LIST_FAVORITES_FIRST.equals(value)) {
-			return PAGES_LIST_MODE_FAVORITES_FIRST;
-		}
-		if (VALUE_PAGES_LIST_HIDE_PAGES.equals(value)) {
-			return PAGES_LIST_MODE_HIDE_PAGES;
-		}
-		return PAGES_LIST_MODE_PAGES_FIRST;
+	public static PagesListMode getPagesListMode() {
+		return getEnumValue(KEY_PAGES_LIST, PagesListMode.values(),
+				DEFAULT_PAGES_LIST, PagesListMode.VALUE_PROVIDER);
 	}
 
 	public static final ChanKey KEY_PARTIAL_THREAD_LOADING = new ChanKey("partial_thread_loading");
@@ -894,17 +815,23 @@ public class Preferences {
 	}
 
 	public static final ChanKey KEY_PROXY = new ChanKey("proxy");
-	public static final String VALUE_PROXY_2_HTTP = "http";
-	public static final String VALUE_PROXY_2_SOCKS = "socks";
-	public static final String[] ENTRIES_PROXY_2 = {"HTTP", "SOCKS"};
-	public static final String[] VALUES_PROXY_2 = {VALUE_PROXY_2_HTTP, VALUE_PROXY_2_SOCKS};
+	public static final String SUB_KEY_PROXY_HOST = "host";
+	public static final String SUB_KEY_PROXY_PORT = "port";
+	public static final String SUB_KEY_PROXY_TYPE = "type";
+	public static final List<String> KEYS_PROXY = Arrays
+			.asList(SUB_KEY_PROXY_HOST, SUB_KEY_PROXY_PORT, SUB_KEY_PROXY_TYPE);
+	public static final String VALUE_PROXY_TYPE_HTTP = "http";
+	public static final String VALUE_PROXY_TYPE_SOCKS = "socks";
+	public static final List<CharSequence> ENTRIES_PROXY_TYPE = Arrays.asList("HTTP", "SOCKS");
+	public static final List<String> VALUES_PROXY_TYPE = Arrays
+			.asList(VALUE_PROXY_TYPE_HTTP, VALUE_PROXY_TYPE_SOCKS);
 
-	public static String[] getProxy(Chan chan) {
+	public static Map<String, String> getProxy(Chan chan) {
 		if (chan.configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE)) {
 			return null;
 		}
 		String value = PREFERENCES.getString(KEY_PROXY.bind(chan.name), null);
-		return unpackOrCastMultipleValues(value, 3);
+		return unpackOrCastMultipleValues(value, KEYS_PROXY);
 	}
 
 	public static final String KEY_RECAPTCHA_JAVASCRIPT = "recaptcha_javascript";
@@ -971,14 +898,92 @@ public class Preferences {
 		PREFERENCES.edit().putBoolean(KEY_SHOW_SPOILERS, showSpoilers).commit();
 	}
 
-	public static final String KEY_USER_AGENT_REFERENCE = "user_agent_reference";
+	public static final String KEY_SUBDIR_PATTERN = "subdir_pattern";
+	public static final String DEFAULT_SUBDIR_PATTERN = "\\c-<\\b->\\t";
 
-	public static String getUserAgentReference() {
-		return PREFERENCES.getString(KEY_USER_AGENT_REFERENCE, null);
+	public static String getSubdir(String chanName, String chanTitle, String boardName,
+			String threadNumber, String threadTitle) {
+		if (threadNumber == null) {
+			return null;
+		}
+		String pattern = StringUtils.emptyIfNull(PREFERENCES.getString(KEY_SUBDIR_PATTERN, DEFAULT_SUBDIR_PATTERN));
+		return formatSubdir(pattern, chanName, chanTitle, boardName, threadNumber, threadTitle);
 	}
 
-	public static void setUserAgentReference(String userAgentReference) {
-		PREFERENCES.edit().putString(KEY_USER_AGENT_REFERENCE, userAgentReference).commit();
+	public static String formatSubdir(String pattern, String chanName, String chanTitle, String boardName,
+			String threadNumber, String threadTitle) {
+		StringBuilder builder = new StringBuilder(pattern);
+		for (int i = builder.length() - 2; i >= 0; i--) {
+			char c = builder.charAt(i);
+			if (c == '\\') {
+				char cn = builder.charAt(i + 1);
+				boolean replace = false;
+				String replaceTo = null;
+				switch (cn) {
+					case 'c': {
+						replace = true;
+						replaceTo = chanName;
+						break;
+					}
+					case 'd': {
+						replace = true;
+						replaceTo = chanTitle;
+						break;
+					}
+					case 'b': {
+						replace = true;
+						replaceTo = boardName;
+						break;
+					}
+					case 't': {
+						replace = true;
+						replaceTo = threadNumber;
+						break;
+					}
+					case 'e': {
+						replace = true;
+						replaceTo = threadTitle;
+						break;
+					}
+				}
+				if (!replace) {
+					continue;
+				}
+				replaceTo = StringUtils.nullIfEmpty(replaceTo);
+				if (replaceTo == null) {
+					int optStart = -1;
+					int optEnd = -1;
+					for (int j = i - 1; j >= 0; j--) {
+						char cj = builder.charAt(j);
+						if (cj == '<') {
+							optStart = j;
+							break;
+						} else if (cj == '\\') {
+							break;
+						}
+					}
+					for (int j = i + 2; j < builder.length(); j++) {
+						char cj = builder.charAt(j);
+						if (cj == '>') {
+							optEnd = j + 1;
+							break;
+						} else if (cj == '\\') {
+							break;
+						}
+					}
+					if (optEnd > optStart && optStart >= 0) {
+						builder.replace(optStart, optEnd, "");
+						i = optStart - 1;
+					} else {
+						replaceTo = "null";
+					}
+				}
+				if (replaceTo != null) {
+					builder.replace(i, i + 2, replaceTo);
+				}
+			}
+		}
+		return builder.toString().replaceAll("[:\\\\*?|]", "_").replaceAll("[<>]", "");
 	}
 
 	public static final String KEY_TEXT_SCALE = "text_scale";
@@ -1004,6 +1009,8 @@ public class Preferences {
 		LARGE_GRID("large_grid", R.id.menu_large_grid, R.string.large_grid),
 		SMALL_GRID("small_grid", R.id.menu_small_grid, R.string.small_grid);
 
+		private static final EnumValueProvider<ThreadsView> VALUE_PROVIDER = o -> o.value;
+
 		private final String value;
 		public final int menuItemId;
 		public final int titleResId;
@@ -1019,13 +1026,7 @@ public class Preferences {
 	public static final ThreadsView DEFAULT_THREADS_VIEW = ThreadsView.CARDS;
 
 	public static ThreadsView getThreadsView() {
-		String value = PREFERENCES.getString(KEY_THREADS_VIEW, DEFAULT_THREADS_VIEW.value);
-		for (ThreadsView threadsView : ThreadsView.values()) {
-			if (threadsView.value.equals(value)) {
-				return threadsView;
-			}
-		}
-		return DEFAULT_THREADS_VIEW;
+		return getEnumValue(KEY_THREADS_VIEW, ThreadsView.values(), DEFAULT_THREADS_VIEW, ThreadsView.VALUE_PROVIDER);
 	}
 
 	public static void setThreadsView(ThreadsView threadsView) {
@@ -1100,9 +1101,19 @@ public class Preferences {
 		return PREFERENCES.getBoolean(KEY_USE_VIDEO_PLAYER, DEFAULT_USE_VIDEO_PLAYER);
 	}
 
+	public static final String KEY_USER_AGENT_REFERENCE = "user_agent_reference";
+
+	public static String getUserAgentReference() {
+		return PREFERENCES.getString(KEY_USER_AGENT_REFERENCE, null);
+	}
+
+	public static void setUserAgentReference(String userAgentReference) {
+		PREFERENCES.edit().putString(KEY_USER_AGENT_REFERENCE, userAgentReference).commit();
+	}
+
 	public static final ChanKey KEY_USER_AUTHORIZATION = new ChanKey("user_authorization");
 
-	public static String[] getUserAuthorizationData(Chan chan) {
+	public static List<String> getUserAuthorizationData(Chan chan) {
 		ChanConfiguration.Authorization authorization = chan.configuration.safe().obtainUserAuthorization();
 		if (authorization != null && authorization.fieldsCount > 0) {
 			String value = PREFERENCES.getString(KEY_USER_AUTHORIZATION.bind(chan.name), null);
@@ -1119,31 +1130,27 @@ public class Preferences {
 		return PREFERENCES.getBoolean(KEY_VERIFY_CERTIFICATE, DEFAULT_VERIFY_CERTIFICATE);
 	}
 
+	public enum VideoCompletionMode {
+		NOTHING("nothing", R.string.do_nothing),
+		LOOP("loop", R.string.play_again);
+
+		private static final EnumValueProvider<VideoCompletionMode> VALUE_PROVIDER = o -> o.value;
+
+		public final String value;
+		public final int titleResId;
+
+		VideoCompletionMode(String value, int titleResId) {
+			this.value = value;
+			this.titleResId = titleResId;
+		}
+	}
+
 	public static final String KEY_VIDEO_COMPLETION = "video_completion";
-	public static final String VALUE_VIDEO_COMPLETION_NOTHING = "nothing";
-	public static final String VALUE_VIDEO_COMPLETION_LOOP = "loop";
-	public static final String[] VALUES_VIDEO_COMPLETION = {
-			VALUE_VIDEO_COMPLETION_NOTHING,
-			VALUE_VIDEO_COMPLETION_LOOP
-	};
-	public static final int[] ENTRIES_VIDEO_COMPLETION = {
-			R.string.do_nothing,
-			R.string.play_again
-	};
-	public static final String DEFAULT_VIDEO_COMPLETION = VALUE_VIDEO_COMPLETION_NOTHING;
+	public static final VideoCompletionMode DEFAULT_VIDEO_COMPLETION = VideoCompletionMode.NOTHING;
 
-	public static final int VIDEO_COMPLETION_MODE_NOTHING = 0;
-	public static final int VIDEO_COMPLETION_MODE_LOOP = 1;
-
-	public static int getVideoCompletionMode() {
-		String value = PREFERENCES.getString(KEY_VIDEO_COMPLETION, DEFAULT_VIDEO_COMPLETION);
-		if (VALUE_VIDEO_COMPLETION_NOTHING.equals(value)) {
-			return VIDEO_COMPLETION_MODE_NOTHING;
-		}
-		if (VALUE_VIDEO_COMPLETION_LOOP.equals(value)) {
-			return VIDEO_COMPLETION_MODE_LOOP;
-		}
-		return VIDEO_COMPLETION_MODE_NOTHING;
+	public static VideoCompletionMode getVideoCompletionMode() {
+		return getEnumValue(KEY_VIDEO_COMPLETION, VideoCompletionMode.values(),
+				DEFAULT_VIDEO_COMPLETION, VideoCompletionMode.VALUE_PROVIDER);
 	}
 
 	public static final String KEY_VIDEO_PLAY_AFTER_SCROLL = "video_play_after_scroll";
@@ -1168,18 +1175,29 @@ public class Preferences {
 	}
 
 	public static final String KEY_WATCHER_REFRESH_INTERVAL = "watcher_refresh_interval";
+	public static final int DISABLED_WATCHER_REFRESH_INTERVAL = 0;
+	public static final int MIN_WATCHER_REFRESH_INTERVAL = 15;
+	public static final int MAX_WATCHER_REFRESH_INTERVAL = 60;
+	public static final int STEP_WATCHER_REFRESH_INTERVAL = 5;
 	public static final int DEFAULT_WATCHER_REFRESH_INTERVAL = 30;
 
 	public static int getWatcherRefreshInterval() {
-		return PREFERENCES.getInt(KEY_WATCHER_REFRESH_INTERVAL, DEFAULT_WATCHER_REFRESH_INTERVAL);
+		int value = PREFERENCES.getInt(KEY_WATCHER_REFRESH_INTERVAL, DEFAULT_WATCHER_REFRESH_INTERVAL);
+		return value > MAX_WATCHER_REFRESH_INTERVAL ? MAX_WATCHER_REFRESH_INTERVAL
+				: value < MIN_WATCHER_REFRESH_INTERVAL ? DISABLED_WATCHER_REFRESH_INTERVAL : value;
 	}
 
-	public static final String KEY_WATCHER_REFRESH_PERIODICALLY = "watcher_refresh_periodically";
-	public static final boolean DEFAULT_WATCHER_REFRESH_PERIODICALLY = true;
-
-	public static boolean isWatcherRefreshPeriodically() {
-		return PREFERENCES.getBoolean(KEY_WATCHER_REFRESH_PERIODICALLY,
-				DEFAULT_WATCHER_REFRESH_PERIODICALLY);
+	static {
+		String key = "watcher_refresh_periodically";
+		Object value = PREFERENCES.getAll().get(key);
+		if (value instanceof Boolean) {
+			SharedPreferences.Editor editor = PREFERENCES.edit();
+			editor.remove(key);
+			if (!((boolean) value)) {
+				editor.putInt(KEY_WATCHER_REFRESH_INTERVAL, DISABLED_WATCHER_REFRESH_INTERVAL);
+			}
+			editor.commit();
+		}
 	}
 
 	public static final String KEY_WATCHER_WATCH_INITIALLY = "watcher_watch_initially";

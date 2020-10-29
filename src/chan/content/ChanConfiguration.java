@@ -9,6 +9,7 @@ import android.util.SparseArray;
 import chan.annotation.Extendable;
 import chan.annotation.Public;
 import chan.content.model.BoardCategory;
+import chan.util.CommonUtils;
 import chan.util.DataFile;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
@@ -919,7 +920,7 @@ public class ChanConfiguration implements Chan.Linked {
 
 	@Public
 	public final String[] getUserAuthorizationData() {
-		return Preferences.getUserAuthorizationData(get());
+		return CommonUtils.toArray(Preferences.getUserAuthorizationData(get()), String.class);
 	}
 
 	@Public

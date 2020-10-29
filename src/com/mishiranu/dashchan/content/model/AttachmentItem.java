@@ -7,6 +7,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.ImageLoader;
+import com.mishiranu.dashchan.content.NetworkObserver;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.net.EmbeddedType;
 import com.mishiranu.dashchan.widget.AttachmentView;
@@ -436,7 +437,8 @@ public abstract class AttachmentItem {
 	private void startLoad(AttachmentView view, Chan chan, String key, boolean force) {
 		if (key != null) {
 			Uri uri = getThumbnailUri(chan);
-			boolean loadThumbnails = Preferences.isLoadThumbnails();
+			boolean loadThumbnails = Preferences.getLoadThumbnails()
+					.isNetworkAvailable(NetworkObserver.getInstance());
 			boolean allowDownload = loadThumbnails || force;
 			ImageLoader.getInstance().loadImage(chan, uri, key, !allowDownload, view);
 		} else {

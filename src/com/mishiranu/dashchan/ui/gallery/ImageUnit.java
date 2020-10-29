@@ -10,6 +10,7 @@ import android.util.Pair;
 import chan.content.Chan;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
+import com.mishiranu.dashchan.content.NetworkObserver;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.async.ReadFileTask;
@@ -87,7 +88,8 @@ public class ImageUnit {
 		decodeBitmapTask.execute(EXECUTOR);
 		holder.decodeBitmapTask = decodeBitmapTask;
 		PagerInstance.ViewHolder nextHolder = instance.scrollingLeft ? instance.leftHolder : instance.rightHolder;
-		if (nextHolder != null && Preferences.isLoadNearestImage()) {
+		if (nextHolder != null && Preferences.getLoadNearestImage()
+				.isNetworkAvailable(NetworkObserver.getInstance())) {
 			GalleryItem nextGalleryItem = nextHolder.galleryItem;
 			Chan chan = Chan.get(instance.galleryInstance.chanName);
 			if (nextGalleryItem.isImage(chan)) {

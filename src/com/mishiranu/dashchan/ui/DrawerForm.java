@@ -100,7 +100,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 
 	private boolean mergeChans = false;
 	private boolean showHistory = false;
-	private int pagesListMode = -1;
+	private Preferences.PagesListMode pagesListMode = null;
 	private boolean chanSelectMode = false;
 	private boolean showRestartButton = false;
 	private CategoriesOrder categoriesOrder;
@@ -425,7 +425,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 	private boolean updatePreferencesWithoutConfiguration() {
 		boolean mergeChans = Preferences.isMergeChans();
 		boolean showHistory = Preferences.isRememberHistory();
-		int pagesListMode = Preferences.getPagesListMode();
+		Preferences.PagesListMode pagesListMode = Preferences.getPagesListMode();
 		if (this.mergeChans != mergeChans || this.showHistory != showHistory ||
 				this.pagesListMode != pagesListMode) {
 			this.mergeChans = mergeChans;
@@ -674,28 +674,31 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 	}
 
 	public void updateItems(boolean pages, boolean favorites) {
-		if (pages && pagesListMode != Preferences.PAGES_LIST_MODE_HIDE_PAGES) {
+		if (pages && pagesListMode != Preferences.PagesListMode.HIDE_PAGES) {
 			updateListPages();
 		}
 		if (favorites) {
 			updateListFavorites();
 		}
-		switch (pagesListMode) {
-			case Preferences.PAGES_LIST_MODE_PAGES_FIRST: {
-				categoriesOrder = CategoriesOrder.PAGES_FIRST;
-				break;
-			}
-			case Preferences.PAGES_LIST_MODE_FAVORITES_FIRST: {
-				categoriesOrder = CategoriesOrder.FAVORITES_FIRST;
-				break;
-			}
-			case Preferences.PAGES_LIST_MODE_HIDE_PAGES: {
-				categoriesOrder = CategoriesOrder.HIDE_PAGES;
-				break;
-			}
-			default: {
-				categoriesOrder = null;
-				break;
+		if (pagesListMode == null) {
+			categoriesOrder = null;
+		} else {
+			switch (pagesListMode) {
+				case PAGES_FIRST: {
+					categoriesOrder = CategoriesOrder.PAGES_FIRST;
+					break;
+				}
+				case FAVORITES_FIRST: {
+					categoriesOrder = CategoriesOrder.FAVORITES_FIRST;
+					break;
+				}
+				case HIDE_PAGES: {
+					categoriesOrder = CategoriesOrder.HIDE_PAGES;
+					break;
+				}
+				default: {
+					throw new IllegalStateException();
+				}
 			}
 		}
 		notifyDataSetChanged();

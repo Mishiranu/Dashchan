@@ -273,7 +273,7 @@ public class InteractionUnit {
 			uiManager.sendPostItemMessage(postItem, UiManager.Message.PERFORM_SWITCH_HIDE);
 			return true;
 		} else {
-			if (Preferences.getHighlightUnreadMode() == Preferences.HIGHLIGHT_UNREAD_MANUALLY) {
+			if (Preferences.getHighlightUnreadMode() == Preferences.HighlightUnreadMode.MANUALLY) {
 				for (PostItem localPostItem : localPostItems) {
 					if (!postStateProvider.isRead(localPostItem.getPostNumber())) {
 						postStateProvider.setRead(localPostItem.getPostNumber());

@@ -41,13 +41,11 @@ public class ReencodingDialog extends DialogFragment implements DialogInterface.
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		Context context = getActivity();
-		qualityForm = new SeekBarForm(false);
-		qualityForm.setConfiguration(1, 100, 1, 1);
-		qualityForm.setValueFormat(ResourceUtils.getColonString(getResources(), R.string.quality, "%d%%"));
+		qualityForm = new SeekBarForm(false, 1, 100, 1,
+				ResourceUtils.getColonString(getResources(), R.string.quality, "%d%%"));
 		qualityForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_QUALITY) : 90);
-		reduceForm = new SeekBarForm(false);
-		reduceForm.setConfiguration(1, 8, 1, 1);
-		reduceForm.setValueFormat(ResourceUtils.getColonString(getResources(), R.string.reduce, "%dx"));
+		reduceForm = new SeekBarForm(false, 1, 8, 1,
+				ResourceUtils.getColonString(getResources(), R.string.reduce, "%dx"));
 		reduceForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_REDUCE) : 1);
 		int padding = getResources().getDimensionPixelSize(R.dimen.dialog_padding_view);
 		View qualityView = qualityForm.inflate(context);

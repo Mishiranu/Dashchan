@@ -21,6 +21,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toolbar;
 import androidx.annotation.RequiresApi;
@@ -186,6 +187,7 @@ public class ThemeEngine {
 		}
 
 		private ColorStateList checkBoxColors;
+		private ColorStateList switchThumbColors;
 		private ColorStateList editTextColors;
 		private ColorStateList buttonColors;
 
@@ -197,6 +199,28 @@ public class ThemeEngine {
 				checkBoxColors = new ColorStateList(states, colors);
 			}
 			return checkBoxColors;
+		}
+
+		public ColorStateList getSwitchThumbColors() {
+			if (switchThumbColors == null) {
+				int thumbColorNormal;
+				int thumbColorNormalDisabled;
+				int thumbNormalColorsAttr = getResources().getIdentifier("colorSwitchThumbNormal", "attr", "android");
+				ColorStateList thumbColors = thumbNormalColorsAttr != 0
+						? ResourceUtils.getColorStateList(this, thumbNormalColorsAttr) : null;
+				if (thumbColors != null) {
+					thumbColorNormal = thumbColors.getDefaultColor();
+					int[] disabledState = {-android.R.attr.state_enabled};
+					thumbColorNormalDisabled = thumbColors.getColorForState(disabledState, thumbColorNormal);
+				} else {
+					thumbColorNormal = theme.controlNormal21;
+					thumbColorNormalDisabled = theme.controlNormal21;
+				}
+				int[][] states = {{-android.R.attr.state_enabled}, {android.R.attr.state_checked}, {}};
+				int[] colors = {thumbColorNormalDisabled, theme.accent, thumbColorNormal};
+				switchThumbColors = new ColorStateList(states, colors);
+			}
+			return switchThumbColors;
 		}
 
 		public ColorStateList getEditTextColors() {
@@ -478,6 +502,13 @@ public class ThemeEngine {
 				if (view instanceof CompoundButton) {
 					if (C.API_LOLLIPOP_MR1) {
 						((CompoundButton) view).setButtonTintList(themeContext.getCheckBoxColors());
+					}
+					if (view instanceof Switch) {
+						if (C.API_MARSHMALLOW) {
+							Switch switchView = (Switch) view;
+							switchView.setTrackTintList(themeContext.getCheckBoxColors());
+							switchView.setThumbTintList(themeContext.getSwitchThumbColors());
+						}
 					}
 				} else if (view instanceof TextView) {
 					TextView textView = (TextView) view;

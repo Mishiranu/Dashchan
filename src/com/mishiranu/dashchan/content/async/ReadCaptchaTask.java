@@ -8,10 +8,12 @@ import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
+import chan.util.CommonUtils;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.RecaptchaReader;
 import com.mishiranu.dashchan.util.GraphicsUtils;
+import java.util.List;
 
 public class ReadCaptchaTask extends HttpHolderTask<Void, Boolean> {
 	public static final String RECAPTCHA_SKIP_RESPONSE = "recaptcha_skip_response";
@@ -20,7 +22,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Boolean> {
 	private final CaptchaReader captchaReader;
 
 	private final String captchaType;
-	private final String[] captchaPass;
+	private final List<String> captchaPass;
 	private final boolean mayShowLoadButton;
 	private final String requirement;
 	private final Chan chan;
@@ -78,7 +80,7 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Boolean> {
 	}
 
 	public ReadCaptchaTask(Callback callback, CaptchaReader captchaReader,
-			String captchaType, String requirement, String[] captchaPass, boolean mayShowLoadButton,
+			String captchaType, String requirement, List<String> captchaPass, boolean mayShowLoadButton,
 			Chan chan, String boardName, String threadNumber) {
 		super(chan);
 		if (captchaReader == null) {
@@ -100,7 +102,8 @@ public class ReadCaptchaTask extends HttpHolderTask<Void, Boolean> {
 		Result result;
 		try {
 			result = captchaReader.onReadCaptcha(new ChanPerformer.ReadCaptchaData(captchaType,
-					captchaPass, mayShowLoadButton, requirement, boardName, threadNumber, holder));
+					CommonUtils.toArray(captchaPass, String.class), mayShowLoadButton,
+					requirement, boardName, threadNumber, holder));
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {
 			errorItem = e.getErrorItemAndHandle();
 			return false;

@@ -25,9 +25,9 @@ public class InterfaceFragment extends PreferenceFragment {
 
 		String scaleFormat = ResourceUtils.getColonString(getResources(), R.string.scale, "%d%%");
 		addSeek(Preferences.KEY_TEXT_SCALE, Preferences.DEFAULT_TEXT_SCALE,
-				getString(R.string.text_scale), scaleFormat, 75, 200, 5, 1f);
+				getString(R.string.text_scale), scaleFormat, null, 75, 200, 5);
 		addSeek(Preferences.KEY_THUMBNAILS_SCALE, Preferences.DEFAULT_THUMBNAILS_SCALE,
-				getString(R.string.thumbnail_scale), scaleFormat, 100, 200, 10, 1f);
+				getString(R.string.thumbnail_scale), scaleFormat, null, 100, 200, 10);
 		addCheck(true, Preferences.KEY_CUT_THUMBNAILS, Preferences.DEFAULT_CUT_THUMBNAILS,
 				R.string.crop_thumbnails, R.string.crop_thumbnails__summary);
 		addCheck(true, Preferences.KEY_ACTIVE_SCROLLBAR, Preferences.DEFAULT_ACTIVE_SCROLLBAR,
@@ -38,11 +38,13 @@ public class InterfaceFragment extends PreferenceFragment {
 				.pushFragment(new ThemesFragment()));
 
 		addHeader(R.string.navigation_drawer);
-		addList(Preferences.KEY_PAGES_LIST, Preferences.VALUES_PAGES_LIST, Preferences.DEFAULT_PAGES_LIST,
-				R.string.headers_order, Preferences.ENTRIES_PAGES_LIST);
-		addList(Preferences.KEY_DRAWER_INITIAL_POSITION, Preferences.VALUES_DRAWER_INITIAL_POSITION,
-				Preferences.DEFAULT_DRAWER_INITIAL_POSITION, R.string.initial_position,
-				Preferences.ENTRIES_DRAWER_INITIAL_POSITION);
+		addList(Preferences.KEY_PAGES_LIST, enumList(Preferences.PagesListMode.values(), o -> o.value),
+				Preferences.DEFAULT_PAGES_LIST.value, R.string.headers_order,
+				enumResList(Preferences.PagesListMode.values(), o -> o.titleResId));
+		addList(Preferences.KEY_DRAWER_INITIAL_POSITION,
+				enumList(Preferences.DrawerInitialPosition.values(), o -> o.value),
+				Preferences.DEFAULT_DRAWER_INITIAL_POSITION.value, R.string.initial_position,
+				enumResList(Preferences.DrawerInitialPosition.values(), o -> o.titleResId));
 
 		addHeader(R.string.threads_list);
 		addCheck(true, Preferences.KEY_PAGE_BY_PAGE, Preferences.DEFAULT_PAGE_BY_PAGE,
@@ -56,9 +58,9 @@ public class InterfaceFragment extends PreferenceFragment {
 				.setOnAfterChangeListener(p -> requireActivity().recreate());
 		addCheck(true, Preferences.KEY_ALL_ATTACHMENTS, Preferences.DEFAULT_ALL_ATTACHMENTS,
 				R.string.all_attachments, R.string.all_attachments__summary);
-		addList(Preferences.KEY_HIGHLIGHT_UNREAD, Preferences.VALUES_HIGHLIGHT_UNREAD,
-				Preferences.DEFAULT_HIGHLIGHT_UNREAD, R.string.highlight_unread_posts,
-				Preferences.ENTRIES_HIGHLIGHT_UNREAD);
+		addList(Preferences.KEY_HIGHLIGHT_UNREAD, enumList(Preferences.HighlightUnreadMode.values(), o -> o.value),
+				Preferences.DEFAULT_HIGHLIGHT_UNREAD.value, R.string.highlight_unread_posts,
+				enumResList(Preferences.HighlightUnreadMode.values(), o -> o.titleResId));
 		addCheck(true, Preferences.KEY_ADVANCED_SEARCH, Preferences.DEFAULT_ADVANCED_SEARCH,
 				R.string.advanced_search, R.string.advanced_search__summary)
 				.setOnAfterChangeListener(p -> {

@@ -59,7 +59,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 
 	private boolean started;
 	private int interval;
-	private boolean refreshPeriodically = true;
+	private boolean enabled = true;
 
 	public static final int NEW_POSTS_COUNT_DELETED = -1;
 	public static final int POSTS_COUNT_DIFFERENCE_DELETED = Integer.MIN_VALUE;
@@ -297,7 +297,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 		if (!started) {
 			started = true;
 			updatePreferences(false);
-			if (refreshPeriodically) {
+			if (enabled) {
 				updateAllSinceNow();
 			} else {
 				for (WatcherItem watcherItem : watching.values()) {
@@ -330,12 +330,12 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 
 	private void updatePreferences(boolean restart) {
 		int interval = Preferences.getWatcherRefreshInterval() * 1000;
-		boolean refreshPeriodically = Preferences.isWatcherRefreshPeriodically();
+		boolean enabled = interval > 0;
 		boolean mergeChans = Preferences.isMergeChans();
 		boolean changed = this.interval != interval ||
-				this.refreshPeriodically != refreshPeriodically || this.mergeChans != mergeChans;
+				this.enabled != enabled || this.mergeChans != mergeChans;
 		this.interval = interval;
-		this.refreshPeriodically = refreshPeriodically;
+		this.enabled = enabled;
 		this.mergeChans = mergeChans;
 		if (restart && changed && !clients.isEmpty()) {
 			stop(true);
@@ -380,7 +380,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 		long time = SystemClock.elapsedRealtime();
 		if (time - lastAvailableCheck >= 1000) {
 			lastAvailableCheck = time;
-			lastAvailableValue = !refreshPeriodically || !Preferences.isWatcherWifiOnly()
+			lastAvailableValue = !enabled || !Preferences.isWatcherWifiOnly()
 					|| NetworkObserver.getInstance().isWifiConnected();
 		}
 		return lastAvailableValue;
@@ -430,7 +430,7 @@ public class WatcherService extends Service implements FavoritesStorage.Observer
 	}
 
 	private void enqueueDelayed(WatcherItem watcherItem) {
-		if (refreshPeriodically) {
+		if (enabled) {
 			handler.sendMessageDelayed(handler.obtainMessage(MESSAGE_UPDATE, watcherItem), interval);
 		}
 	}

@@ -37,8 +37,6 @@
     <string name="audio_player">Player audio</string>
     <string name="auto_disable">Disabilita automaticamente</string>
     <string name="auto_disable__summary">Disabilita watcher per i thread eliminati</string>
-    <string name="auto_refreshing">Auto refresh</string>
-    <string name="auto_refreshing_mode">Modalità auto refresh</string>
     <string name="autohide">Autohide</string>
     <string name="available__plural">Disponibili</string>
     <string name="backup_data">Backup dei dati</string>
@@ -357,8 +355,6 @@
     <string name="reduce">Riduci</string>
     <string name="reencode_image">Ricodifica immagine</string>
     <string name="refresh">Aggiorna</string>
-    <string name="refresh_interval">Intervallo di aggiornamento</string>
-    <string name="refresh_periodically">Aggiorna periodicamente</string>
     <string name="regular_expression">Espressione regolare</string>
     <string name="rejected_words">Parole respinte</string>
     <string name="relay_block__format_sentence">%s ha bloccato il tuo indirizzo IP. Inserisci il captcha per passare la
@@ -459,7 +455,6 @@
     <string name="thread_number">Numero thread</string>
     <string name="thread_title">Titolo thread</string>
     <string name="threads">Thread</string>
-    <string name="threads_auto_refreshing">Aggiornamento automatico thread</string>
     <string name="threads_created">Thread creati</string>
     <string name="threads_list">Lista thread</string>
     <string name="threads_will_be_deleted__sentence">I seguenti thread saranno cancellati.</string>

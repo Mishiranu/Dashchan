@@ -20,6 +20,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.ImageLoader;
+import com.mishiranu.dashchan.content.NetworkObserver;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.graphics.SimpleBitmapDrawable;
@@ -344,7 +345,8 @@ public class PagerUnit implements PagerInstance.Callback {
 			target.awaitImmediate = true;
 			target.keepScale = keepScale;
 			try {
-				boolean allowLoad = galleryInstance.callback.isGalleryWindow() || Preferences.isLoadThumbnails();
+				boolean allowLoad = galleryInstance.callback.isGalleryWindow() ||
+						Preferences.getLoadThumbnails().isNetworkAvailable(NetworkObserver.getInstance());
 				return ImageLoader.getInstance().loadImage(chan, uri, null, !allowLoad, target);
 			} finally {
 				target.awaitImmediate = false;

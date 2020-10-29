@@ -694,15 +694,15 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 			}
 			boolean allowDetailName = modifyingAllowed;
 			boolean allowOriginalName = modifyingAllowed && hasOriginalNames;
-			primaryRequest = new UriRequest(Preferences.isDownloadSubdir(multiple), requestItems,
+			primaryRequest = new UriRequest(Preferences.getDownloadSubdirMode().isEnabled(multiple), requestItems,
 					allowDetailName, allowOriginalName, chanName, boardName, threadNumber, threadTitle);
 			handleRequests();
 		}
 
 		public void downloadStorage(InputStream input, String chanName, String boardName, String threadNumber,
 				String threadTitle, String fileName, boolean allowDialog, boolean allowWrite) {
-			primaryRequest = new StreamRequest(Preferences.isDownloadSubdir(false) && allowDialog, allowWrite,
-					input, fileName, chanName, boardName, threadNumber, threadTitle);
+			primaryRequest = new StreamRequest(Preferences.getDownloadSubdirMode().isEnabled(false) && allowDialog,
+					allowWrite, input, fileName, chanName, boardName, threadNumber, threadTitle);
 			handleRequests();
 		}
 	}

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-	<string name="__colon_format">%s: %s</string>
-	<string name="__enumeration_format">%s, %s</string>
+	<string name="__colon_format">%1$s: %2$s</string>
+	<string name="__enumeration_format">%1$s, %2$s</string>
 	<string name="about">About</string>
 	<string name="action_on_playback_completion">Action on playback completion</string>
 	<string name="active_scrollbar">Active scrollbar</string>
@@ -39,8 +39,6 @@
 	<string name="audio_player">Audio player</string>
 	<string name="auto_disable">Auto disable</string>
 	<string name="auto_disable__summary">Disable watcher for deleted threads</string>
-	<string name="auto_refreshing">Auto refreshing</string>
-	<string name="auto_refreshing_mode">Auto refreshing mode</string>
 	<string name="autohide">Autohide</string>
 	<string name="available__plural">Available</string>
 	<string name="backup_data">Backup data</string>
@@ -368,8 +366,8 @@
 	<string name="reduce">Reduce</string>
 	<string name="reencode_image">Re-encode image</string>
 	<string name="refresh">Refresh</string>
-	<string name="refresh_interval">Refresh interval</string>
-	<string name="refresh_periodically">Refresh periodically</string>
+	<string name="refresh_favorites">Refresh favorites</string>
+	<string name="refresh_open_thread">Refresh open thread</string>
 	<string name="regular_expression">Regular expression</string>
 	<string name="rejected_words">Rejected words</string>
 	<string name="relay_block__format_sentence">%s has blocked your IP address. Enter the captcha to pass
@@ -472,7 +470,6 @@
 	<string name="thread_title">Thread title</string>
 	<string name="thread_will_be_deleted_from_cache__sentence">The thread will be deleted from cache.</string>
 	<string name="threads">Threads</string>
-	<string name="threads_auto_refreshing">Threads auto refreshing</string>
 	<string name="threads_created">Threads created</string>
 	<string name="threads_list">Threads list</string>
 	<string name="threads_view">Threads view</string>

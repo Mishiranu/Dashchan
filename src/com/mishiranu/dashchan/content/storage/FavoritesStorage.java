@@ -121,7 +121,7 @@ public class FavoritesStorage extends StorageManager.Storage<List<FavoritesStora
 	}
 
 	public boolean canSortManually() {
-		return Preferences.getFavoritesOrder() != Preferences.FAVORITES_ORDER_BY_TITLE;
+		return Preferences.getFavoritesOrder() != Preferences.FavoritesOrder.TITLE;
 	}
 
 	private void notifyFavoritesUpdate(FavoriteItem favoriteItem, Action action) {
@@ -149,7 +149,7 @@ public class FavoritesStorage extends StorageManager.Storage<List<FavoritesStora
 	private boolean sortIfNeededInternal() {
 		if (!canSortManually()) {
 			switch (Preferences.getFavoritesOrder()) {
-				case Preferences.FAVORITES_ORDER_BY_TITLE: {
+				case TITLE: {
 					Collections.sort(favoriteItemsList, titlesComparator);
 					return true;
 				}
@@ -167,8 +167,8 @@ public class FavoritesStorage extends StorageManager.Storage<List<FavoritesStora
 	public void add(FavoriteItem favoriteItem) {
 		if (!hasFavorite(favoriteItem.chanName, favoriteItem.boardName, favoriteItem.threadNumber)) {
 			favoriteItemsMap.put(makeKey(favoriteItem), favoriteItem);
-			int order = Preferences.getFavoritesOrder();
-			if (order == Preferences.FAVORITES_ORDER_ADD_TO_THE_TOP) {
+			Preferences.FavoritesOrder order = Preferences.getFavoritesOrder();
+			if (order == Preferences.FavoritesOrder.DATE_DESC) {
 				favoriteItemsList.add(0, favoriteItem);
 			} else {
 				favoriteItemsList.add(favoriteItem);

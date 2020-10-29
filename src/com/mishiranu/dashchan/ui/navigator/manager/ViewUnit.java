@@ -1183,19 +1183,22 @@ public class ViewUnit {
 			if (selection == UiManager.Selection.DISABLED &&
 					!configurationSet.postStateProvider.isRead(postItem.getPostNumber())) {
 				switch (Preferences.getHighlightUnreadMode()) {
-					case Preferences.HIGHLIGHT_UNREAD_AUTOMATICALLY: {
+					case AUTOMATICALLY: {
 						newPostAnimation = new NewPostAnimation(layout,
 								configurationSet.postStateProvider, postItem.getPostNumber(),
 								highlightBackgroundColor);
 						break;
 					}
-					case Preferences.HIGHLIGHT_UNREAD_MANUALLY: {
+					case MANUALLY: {
 						layout.setSecondaryBackgroundColor(highlightBackgroundColor);
 						break;
 					}
-					default: {
+					case NEVER: {
 						layout.setSecondaryBackground(null);
 						break;
+					}
+					default: {
+						throw new IllegalStateException();
 					}
 				}
 			} else if (selection == UiManager.Selection.SELECTED) {

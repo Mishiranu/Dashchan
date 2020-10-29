@@ -52,6 +52,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class ForegroundManager implements Handler.Callback {
@@ -228,7 +229,7 @@ public class ForegroundManager implements Handler.Callback {
 			Chan chan = Chan.get(args.getString(EXTRA_CHAN_NAME));
 			boolean forceCaptcha = (boolean) extra.get(EXTRA_FORCE_CAPTCHA);
 			boolean mayShowLoadButton = (boolean) extra.get(EXTRA_MAY_SHOW_LOAD_BUTTON);
-			String[] captchaPass = forceCaptcha || chan.name == null ? null : Preferences.getCaptchaPass(chan);
+			List<String> captchaPass = forceCaptcha || chan.name == null ? null : Preferences.getCaptchaPass(chan);
 			CaptchaPendingData pendingData = getPendingData(false);
 			if (pendingData == null) {
 				return null;

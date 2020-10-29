@@ -1196,7 +1196,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		boolean forceCaptcha = (boolean) extra.get(EXTRA_FORCE_CAPTCHA);
 		boolean mayShowLoadButton = (boolean) extra.get(EXTRA_MAY_SHOW_LOAD_BUTTON);
 		Chan chan = Chan.get(getChanName());
-		String[] captchaPass = forceCaptcha ? null : Preferences.getCaptchaPass(chan);
+		List<String> captchaPass = forceCaptcha ? null : Preferences.getCaptchaPass(chan);
 		ReadCaptchaHolder holder = new ReadCaptchaHolder();
 		ReadCaptchaTask task = new ReadCaptchaTask(holder, null, captchaType, null, captchaPass,
 				mayShowLoadButton, chan, getBoardName(), getThreadNumber());

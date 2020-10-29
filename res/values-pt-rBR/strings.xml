@@ -20,8 +20,6 @@
 	<string name="archive__verb">Arquivo</string>
 	<string name="attach">Anexar</string>
 	<string name="attachments_are_too_large">O arquivo é muito grande</string>
-	<string name="auto_refreshing">Atualizar automaticamente</string>
-	<string name="auto_refreshing_mode">Modo de auto-atualização</string>
 	<string name="autohide">Auto-Esconder</string>
 	<string name="backup_data">Fazer backup de dados</string>
 	<string name="backup_data__summary">Salve todas as suas configurações, favoritos, histórico e regras do
@@ -268,8 +266,6 @@
 	<string name="read_timeout_expired">A conexão expirou</string>
 	<string name="reason">Razão</string>
 	<string name="refresh">Atualizar</string>
-	<string name="refresh_interval">Intervalo de atualização</string>
-	<string name="refresh_periodically">Atualizar periodicamente</string>
 	<string name="regular_expression">Expressão regular</string>
 	<string name="rejected_words">Palavras rejeitadas</string>
 	<string name="relay_block__format_sentence">Parece que %s bloqueou seu IP. Confirme</string>
@@ -347,7 +343,6 @@
 	<string name="thread_doesnt_exist">Esse fio não existe</string>
 	<string name="thread_is_closed">Fio fechado</string>
 	<string name="thread_title">Título do fio</string>
-	<string name="threads_auto_refreshing">Fios auto-atualizáveis</string>
 	<string name="threads_list">Lista de fios</string>
 	<string name="thumbnail_scale">Escala da miniatura</string>
 	<string name="thumbnails">Miniaturas</string>

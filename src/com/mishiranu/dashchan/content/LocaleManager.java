@@ -10,16 +10,18 @@ import chan.content.ChanManager;
 import com.mishiranu.dashchan.BuildConfig;
 import com.mishiranu.dashchan.C;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class LocaleManager {
-	public static final String[] ENTRIES_LOCALE;
-	public static final String[] VALUES_LOCALE;
+	public static final List<CharSequence> ENTRIES_LOCALE;
+	public static final List<String> VALUES_LOCALE;
 	public static final String DEFAULT_LOCALE = "";
-	private static final HashMap<String, Locale> VALUES_LOCALE_OBJECTS;
+	private static final Map<String, Locale> VALUES_LOCALE_OBJECTS;
 
 	static {
 		int total = BuildConfig.LOCALES.length + 2;
@@ -47,12 +49,13 @@ public class LocaleManager {
 			names[i] = displayName.substring(0, 1).toUpperCase(locale) + displayName.substring(1);
 			locales[i] = locale;
 		}
-		ENTRIES_LOCALE = names;
-		VALUES_LOCALE = codes;
-		VALUES_LOCALE_OBJECTS = new HashMap<>();
+		ENTRIES_LOCALE = Arrays.asList(names);
+		VALUES_LOCALE = Arrays.asList(codes);
+		HashMap<String, Locale> valueLocaleObjects = new HashMap<>();
 		for (int i = 0; i < codes.length; i++) {
-			VALUES_LOCALE_OBJECTS.put(codes[i], locales[i]);
+			valueLocaleObjects.put(codes[i], locales[i]);
 		}
+		VALUES_LOCALE_OBJECTS = Collections.unmodifiableMap(valueLocaleObjects);
 	}
 
 	private static final LocaleManager INSTANCE = new LocaleManager();

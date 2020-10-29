@@ -1241,11 +1241,12 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 	private void queueNextRefresh(boolean instant) {
 		ConcurrentUtils.HANDLER.removeCallbacks(refreshRunnable);
-		if (Preferences.getAutoRefreshMode() == Preferences.AUTO_REFRESH_MODE_ENABLED) {
+		int interval = Preferences.getAutoRefreshInterval() * 1000;
+		if (interval > 0) {
 			if (instant) {
 				ConcurrentUtils.HANDLER.post(refreshRunnable);
 			} else {
-				ConcurrentUtils.HANDLER.postDelayed(refreshRunnable, Preferences.getAutoRefreshInterval() * 1000);
+				ConcurrentUtils.HANDLER.postDelayed(refreshRunnable, interval);
 			}
 		}
 	}

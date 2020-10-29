@@ -31,23 +31,25 @@ import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.CheckPreference;
-import com.mishiranu.dashchan.ui.preference.core.MultipleEditTextPreference;
+import com.mishiranu.dashchan.ui.preference.core.MultipleEditPreference;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ChanFragment extends PreferenceFragment implements ActivityHandler  {
 	private static final String EXTRA_CHAN_NAME = "chanName";
 
-	private Preference<String[]> captchaPassPreference;
-	private Preference<String[]> userAuthorizationPreference;
+	private Preference<List<String>> captchaPassPreference;
+	private Preference<List<String>> userAuthorizationPreference;
 	private Preference<?> cookiePreference;
 
 	private static final String VALUE_CUSTOM_DOMAIN = "custom_domain\n";
@@ -118,8 +120,7 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 		}
 		Collection<String> captchaTypes = chan.configuration.getSupportedCaptchaTypes();
 		if (captchaTypes != null && captchaTypes.size() > 1) {
-			String[] values = Preferences.getCaptchaTypeValues(captchaTypes);
-			addList(Preferences.KEY_CAPTCHA.bind(chanName), values,
+			addList(Preferences.KEY_CAPTCHA.bind(chanName), Preferences.getCaptchaTypeValues(captchaTypes),
 					Preferences.getCaptchaTypeDefaultValue(chan), R.string.captcha_type,
 					Preferences.getCaptchaTypeEntries(chan, captchaTypes));
 		}
@@ -127,11 +128,13 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 			ChanConfiguration.Authorization authorization = chan.configuration.safe().obtainCaptchaPass();
 			if (authorization != null && authorization.fieldsCount > 0) {
 				captchaPassPreference = addMultipleEdit(Preferences.KEY_CAPTCHA_PASS.bind(chanName),
-						R.string.captcha_pass, R.string.captcha_pass__summary, authorization.hints,
+						R.string.captcha_pass, R.string.captcha_pass__summary,
+						authorization.hints != null ? Arrays.asList(authorization.hints) : null,
 						createInputTypes(authorization.fieldsCount,
-								InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD));
+								InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD),
+						new MultipleEditPreference.ListValueCodec(authorization.fieldsCount));
 				captchaPassPreference.setOnAfterChangeListener(p -> {
-					String[] values = p.getValue();
+					List<String> values = p.getValue();
 					if (Preferences.checkHasMultipleValues(values)) {
 						new AuthorizationFragment(getChanName(), AuthorizationType.CAPTCHA_PASS, values).show(this);
 					}
@@ -142,11 +145,13 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 			ChanConfiguration.Authorization authorization = chan.configuration.safe().obtainUserAuthorization();
 			if (authorization != null && authorization.fieldsCount > 0) {
 				userAuthorizationPreference = addMultipleEdit(Preferences.KEY_USER_AUTHORIZATION.bind(chanName),
-						R.string.user_authorization, 0, authorization.hints,
+						R.string.user_authorization, 0,
+						authorization.hints != null ? Arrays.asList(authorization.hints) : null,
 						createInputTypes(authorization.fieldsCount,
-								InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD));
+								InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD),
+						new MultipleEditPreference.ListValueCodec(authorization.fieldsCount));
 				userAuthorizationPreference.setOnAfterChangeListener(p -> {
-					String[] values = p.getValue();
+					List<String> values = p.getValue();
 					if (Preferences.checkHasMultipleValues(values)) {
 						new AuthorizationFragment(getChanName(), AuthorizationType.USER, values).show(this);
 					}
@@ -189,16 +194,13 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 			if (anotherDomainMode) {
 				addAnotherDomainPreference(domains.get(0));
 			} else {
-				String[] domainsArray = CommonUtils.toArray(domains, String.class);
-				String[] entries = new String[domainsArray.length + 1];
-				System.arraycopy(domainsArray, 0, entries, 0, domainsArray.length);
-				entries[entries.length - 1] = getString(R.string.another);
-				String[] values = new String[domainsArray.length + 1];
-				values[0] = "";
-				System.arraycopy(domainsArray, 1, values, 1, domainsArray.length - 1);
-				values[values.length - 1] = VALUE_CUSTOM_DOMAIN;
+				ArrayList<CharSequence> entries = new ArrayList<>(domains);
+				entries.add(getString(R.string.another));
+				ArrayList<String> values = new ArrayList<>(domains);
+				values.add(VALUE_CUSTOM_DOMAIN);
+				values.set(0, "");
 				Preference<String> domainPreference = addList(Preferences.KEY_DOMAIN.bind(chanName), values,
-						values[0], R.string.domain_name, entries);
+						values.get(0), R.string.domain_name, entries);
 				domainPreference.setOnAfterChangeListener(p -> clearSpecialCookies());
 				domainPreference.setOnBeforeChangeListener((preference, value) -> {
 					if (VALUE_CUSTOM_DOMAIN.equals(value)) {
@@ -219,12 +221,14 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 					.setOnAfterChangeListener(p -> clearSpecialCookies());
 		}
 		if (!localMode) {
-			MultipleEditTextPreference proxyPreference = addMultipleEdit(Preferences.KEY_PROXY.bind(chanName),
-					R.string.proxy, "%s:%s", new String[] {getString(R.string.address),
-					getString(R.string.port), null}, new int[] {InputType.TYPE_CLASS_TEXT |
-					InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD, InputType.TYPE_CLASS_NUMBER |
-					InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD, 0});
-			proxyPreference.setValues(2, Preferences.ENTRIES_PROXY_2, Preferences.VALUES_PROXY_2);
+			MultipleEditPreference<Map<String, String>> proxyPreference = addMultipleEdit
+					(Preferences.KEY_PROXY.bind(chanName), R.string.proxy, "%s:%s",
+							Arrays.asList(getString(R.string.address), getString(R.string.port), null),
+							Arrays.asList(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
+									InputType.TYPE_CLASS_NUMBER | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD, 0),
+							new MultipleEditPreference.MapValueCodec(Preferences.KEYS_PROXY));
+			proxyPreference.setValues(Preferences.KEYS_PROXY.indexOf(Preferences.SUB_KEY_PROXY_TYPE),
+					Preferences.ENTRIES_PROXY_TYPE, Preferences.VALUES_PROXY_TYPE);
 			proxyPreference.setOnAfterChangeListener(p -> {
 				boolean success = HttpClient.getInstance().checkProxyValid(p.getValue());
 				if (!success) {
@@ -343,11 +347,12 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 		public AuthorizationFragment() {}
 
 		public AuthorizationFragment(String chanName,
-				AuthorizationType authorizationType, String[] authorizationData) {
+				AuthorizationType authorizationType, List<String> authorizationData) {
 			Bundle args = new Bundle();
 			args.putString(EXTRA_CHAN_NAME, chanName);
 			args.putString(EXTRA_AUTHORIZATION_TYPE, authorizationType.name());
-			args.putStringArray(EXTRA_AUTHORIZATION_DATA, authorizationData);
+			args.putStringArrayList(EXTRA_AUTHORIZATION_DATA, authorizationData != null
+					? new ArrayList<>(authorizationData) : null);
 			setArguments(args);
 		}
 
@@ -381,7 +386,7 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 			Chan chan = Chan.get(args.getString(EXTRA_CHAN_NAME));
 			CheckAuthorizationTask task = new CheckAuthorizationTask(chan,
 					AuthorizationType.valueOf(args.getString(EXTRA_AUTHORIZATION_TYPE)),
-					args.getStringArray(EXTRA_AUTHORIZATION_DATA));
+					args.getStringArrayList(EXTRA_AUTHORIZATION_DATA));
 			task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 			return task.getHolder();
 		}
@@ -434,13 +439,13 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 
 		private final Chan chan;
 		private final AuthorizationType authorizationType;
-		private final String[] authorizationData;
+		private final List<String> authorizationData;
 
 		private boolean valid;
 		private ErrorItem errorItem;
 
 		public CheckAuthorizationTask(Chan chan,
-				AuthorizationType authorizationType, String[] authorizationData) {
+				AuthorizationType authorizationType, List<String> authorizationData) {
 			holder = new HttpHolder(chan);
 			this.chan = chan;
 			this.authorizationType = authorizationType;
@@ -462,8 +467,8 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 					}
 				}
 				ChanPerformer.CheckAuthorizationResult result = chan.performer.safe()
-						.onCheckAuthorization(new ChanPerformer
-								.CheckAuthorizationData(type, authorizationData, holder));
+						.onCheckAuthorization(new ChanPerformer.CheckAuthorizationData(type,
+								CommonUtils.toArray(authorizationData, String.class), holder));
 				valid = result != null && result.success;
 			} catch (ExtensionException | HttpException | InvalidResponseException e) {
 				errorItem = e.getErrorItemAndHandle();

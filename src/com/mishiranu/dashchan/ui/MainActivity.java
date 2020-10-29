@@ -284,12 +284,12 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		bindService(new Intent(this, DownloadService.class), downloadConnection, BIND_AUTO_CREATE);
 		boolean allowSelectChan = ChanManager.getInstance().hasMultipleAvailableChans();
 		if (savedInstanceState == null) {
-			int drawerInitialPosition = Preferences.getDrawerInitialPosition();
-			if (drawerInitialPosition != Preferences.DRAWER_INITIAL_POSITION_CLOSED) {
+			Preferences.DrawerInitialPosition drawerInitialPosition = Preferences.getDrawerInitialPosition();
+			if (drawerInitialPosition != Preferences.DrawerInitialPosition.CLOSED) {
 				if (!wideMode) {
 					drawerLayout.post(() -> drawerLayout.openDrawer(GravityCompat.START));
 				}
-				if (drawerInitialPosition == Preferences.DRAWER_INITIAL_POSITION_FORUMS) {
+				if (drawerInitialPosition == Preferences.DrawerInitialPosition.FORUMS) {
 					drawerForm.setChanSelectMode(allowSelectChan);
 				}
 			}
