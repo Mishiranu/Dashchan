@@ -5,15 +5,17 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
 import android.util.SparseArray;
-import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.LinkedBlockingQueue;
 import org.json.JSONException;
@@ -21,8 +23,6 @@ import org.json.JSONObject;
 
 public class StorageManager implements Handler.Callback, Runnable {
 	private static final StorageManager INSTANCE = new StorageManager();
-	@SuppressWarnings("CharsetObjectCanBeUsed")
-	private static final Charset CHARSET = Charset.forName("UTF-8");
 
 	public static StorageManager getInstance() {
 		return INSTANCE;
@@ -52,47 +52,36 @@ public class StorageManager implements Handler.Callback, Runnable {
 
 	private <Data> void performSerialize(Enqueued<Data> enqueued) {
 		synchronized (enqueued.storage.lock) {
-			JSONObject jsonObject;
-			try {
-				jsonObject = enqueued.storage.onSerialize(enqueued.data);
-			} catch (JSONException e) {
-				throw new RuntimeException(e);
-			}
 			File file = getFile(enqueued.storage);
 			File backupFile = getBackupFile(enqueued.storage);
-			if (jsonObject != null) {
-				if (file.exists()) {
-					if (!backupFile.exists()) {
-						if (!file.renameTo(backupFile)) {
-							Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "Can't create backup of", file);
-							return;
-						}
-					} else {
-						file.delete();
+			if (file.exists()) {
+				if (!backupFile.exists()) {
+					if (!file.renameTo(backupFile)) {
+						Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES, "Can't create backup of", file);
+						return;
 					}
+				} else {
+					file.delete();
 				}
-				boolean success = false;
-				FileOutputStream output = null;
-				try {
-					output = new FileOutputStream(file);
-					output.write(jsonObject.toString().getBytes(CHARSET));
-					output.flush();
-					output.getFD().sync();
-					success = true;
-				} catch (IOException e) {
-					Log.persistent().write(e);
-				} finally {
-					success &= IOUtils.close(output);
-					if (success) {
-						backupFile.delete();
-					} else if (file.exists() && !file.delete()) {
-						Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
-								"Can't delete partially written", file);
-					}
+			}
+			boolean success = false;
+			FileOutputStream output = null;
+			try {
+				output = new FileOutputStream(file);
+				enqueued.storage.onWrite(enqueued.data, output);
+				output.flush();
+				output.getFD().sync();
+				success = true;
+			} catch (IOException e) {
+				Log.persistent().stack(e);
+			} finally {
+				success &= IOUtils.close(output);
+				if (success) {
+					backupFile.delete();
+				} else if (file.exists() && !file.delete()) {
+					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
+							"Can't delete partially written", file);
 				}
-			} else {
-				file.delete();
-				backupFile.delete();
 			}
 		}
 	}
@@ -121,12 +110,18 @@ public class StorageManager implements Handler.Callback, Runnable {
 			this.maxTimeout = maxTimeout;
 		}
 
-		public final File getFile() {
-			return INSTANCE.getFile(this);
+		protected void startRead() {
+			try (InputStream input = INSTANCE.open(this)) {
+				onRead(input);
+			} catch (FileNotFoundException e) {
+				// Ignore exception
+			} catch (IOException e) {
+				Log.persistent().stack(e);
+			}
 		}
 
-		public final JSONObject read() {
-			return INSTANCE.read(this);
+		public final File getFile() {
+			return INSTANCE.getFile(this);
 		}
 
 		public final void serialize() {
@@ -138,31 +133,44 @@ public class StorageManager implements Handler.Callback, Runnable {
 		}
 
 		public abstract Data onClone();
+		public abstract void onRead(InputStream input) throws IOException;
+		public abstract void onWrite(Data data, OutputStream output) throws IOException;
+	}
+
+	public static abstract class JsonOrgStorage<Data> extends Storage<Data> {
+		@SuppressWarnings("CharsetObjectCanBeUsed")
+		private static final Charset CHARSET = Charset.forName("UTF-8");
+
+		public JsonOrgStorage(String name, int timeout, int maxTimeout) {
+			super(name, timeout, maxTimeout);
+		}
+
+		@Override
+		public final void onRead(InputStream input) throws IOException {
+			ByteArrayOutputStream output = new ByteArrayOutputStream();
+			IOUtils.copyStream(input, output);
+			try {
+				onDeserialize(new JSONObject(new String(output.toByteArray(), CHARSET)));
+			} catch (JSONException e) {
+				// Ignore exception
+			}
+		}
+
+		@Override
+		public final void onWrite(Data data, OutputStream output) throws IOException {
+			JSONObject jsonObject;
+			try {
+				jsonObject = onSerialize(data);
+			} catch (JSONException e) {
+				throw new RuntimeException(e);
+			}
+			if (jsonObject != null) {
+				output.write(jsonObject.toString().getBytes(CHARSET));
+			}
+		}
+
+		public abstract void onDeserialize(JSONObject jsonObject) throws JSONException;
 		public abstract JSONObject onSerialize(Data data) throws JSONException;
-
-		public static void putJson(JSONObject jsonObject, String name, String value) throws JSONException {
-			if (!StringUtils.isEmpty(value)) {
-				jsonObject.put(name, value);
-			}
-		}
-
-		public static void putJson(JSONObject jsonObject, String name, boolean value) throws JSONException {
-			if (value) {
-				jsonObject.put(name, true);
-			}
-		}
-
-		public static void putJson(JSONObject jsonObject, String name, int value) throws JSONException {
-			if (value != 0) {
-				jsonObject.put(name, value);
-			}
-		}
-
-		public static void putJson(JSONObject jsonObject, String name, long value) throws JSONException {
-			if (value != 0L) {
-				jsonObject.put(name, value);
-			}
-		}
 	}
 
 	private File getDirectory() {
@@ -183,33 +191,14 @@ public class StorageManager implements Handler.Callback, Runnable {
 		return getFile(storage.name);
 	}
 
-	private JSONObject read(Storage<?> storage) {
+	private InputStream open(Storage<?> storage) throws IOException {
 		File file = getFile(storage);
 		File backupFile = getBackupFile(storage);
 		if (backupFile.exists()) {
 			file.delete();
 			backupFile.renameTo(file);
 		}
-		FileInputStream input = null;
-		byte[] bytes = null;
-		try {
-			input = new FileInputStream(file);
-			ByteArrayOutputStream output = new ByteArrayOutputStream();
-			IOUtils.copyStream(input, output);
-			bytes = output.toByteArray();
-		} catch (IOException e) {
-			// Ignore exception
-		} finally {
-			IOUtils.close(input);
-		}
-		if (bytes != null) {
-			try {
-				return new JSONObject(new String(bytes, CHARSET));
-			} catch (JSONException e) {
-				// Invalid JSON object, ignore exception
-			}
-		}
-		return null;
+		return new FileInputStream(file);
 	}
 
 	private final SparseArray<Long> serializeTimes = new SparseArray<>();

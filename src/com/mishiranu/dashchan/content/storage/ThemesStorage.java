@@ -8,7 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ThemesStorage extends StorageManager.Storage<List<JSONObject>> {
+public class ThemesStorage extends StorageManager.JsonOrgStorage<List<JSONObject>> {
 	private static final String KEY_DATA = "data";
 
 	private static final ThemesStorage INSTANCE = new ThemesStorage();
@@ -21,26 +21,28 @@ public class ThemesStorage extends StorageManager.Storage<List<JSONObject>> {
 
 	private ThemesStorage() {
 		super("themes", 1000, 10000);
-		JSONObject jsonObject = read();
-		if (jsonObject != null) {
-			JSONArray jsonArray = jsonObject.optJSONArray(KEY_DATA);
-			if (jsonArray != null) {
-				for (int i = 0; i < jsonArray.length(); i++) {
-					jsonObject = jsonArray.optJSONObject(i);
-					if (jsonObject != null) {
-						String name = jsonObject.optString("name");
-						if (!StringUtils.isEmpty(name)) {
-							themes.put(name, jsonObject);
-						}
-					}
-				}
-			}
-		}
+		startRead();
 	}
 
 	@Override
 	public List<JSONObject> onClone() {
 		return new ArrayList<>(themes.values());
+	}
+
+	@Override
+	public void onDeserialize(JSONObject jsonObject) {
+		JSONArray jsonArray = jsonObject.optJSONArray(KEY_DATA);
+		if (jsonArray != null) {
+			for (int i = 0; i < jsonArray.length(); i++) {
+				jsonObject = jsonArray.optJSONObject(i);
+				if (jsonObject != null) {
+					String name = jsonObject.optString("name");
+					if (!StringUtils.isEmpty(name)) {
+						themes.put(name, jsonObject);
+					}
+				}
+			}
+		}
 	}
 
 	@Override

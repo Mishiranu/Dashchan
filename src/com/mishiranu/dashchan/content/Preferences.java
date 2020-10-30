@@ -17,7 +17,6 @@ import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.util.SafeSharedPreferences;
 import com.mishiranu.dashchan.util.ToastUtils;
 import java.io.File;
@@ -142,14 +141,6 @@ public class Preferences {
 			}
 		}
 		return defaultValue;
-	}
-
-	static {
-		String statistics = PREFERENCES.getString("statistics", null);
-		if (statistics != null) {
-			StatisticsStorage.getInstance().convertFromOldFormat(statistics);
-			PREFERENCES.edit().remove("statistics").commit();
-		}
 	}
 
 	public enum NetworkMode {

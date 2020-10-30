@@ -5,12 +5,9 @@ import android.os.Parcelable;
 import chan.annotation.Public;
 import chan.text.JsonSerial;
 import chan.text.ParseException;
-import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 @Public
 public final class HttpValidator implements Parcelable {
@@ -38,38 +35,6 @@ public final class HttpValidator implements Parcelable {
 		if (!StringUtils.isEmpty(lastModified)) {
 			connection.setRequestProperty("If-Modified-Since", lastModified);
 		}
-	}
-
-	@Override
-	public String toString() {
-		JSONObject jsonObject = new JSONObject();
-		try {
-			if (!StringUtils.isEmpty(entityTag)) {
-				jsonObject.put("ETag", entityTag);
-			}
-			if (!StringUtils.isEmpty(lastModified)) {
-				jsonObject.put("LastModified", lastModified);
-			}
-		} catch (JSONException e) {
-			throw new RuntimeException(e);
-		}
-		return jsonObject.toString();
-	}
-
-	public static HttpValidator fromString(String validator) {
-		if (validator != null) {
-			try {
-				JSONObject jsonObject = new JSONObject(validator);
-				String eTag = CommonUtils.optJsonString(jsonObject, "ETag");
-				String lastModified = CommonUtils.optJsonString(jsonObject, "LastModified");
-				if (eTag != null || lastModified != null) {
-					return new HttpValidator(eTag, lastModified);
-				}
-			} catch (JSONException e) {
-				// Invalid data, ignore exception
-			}
-		}
-		return null;
 	}
 
 	public void serialize(JsonSerial.Writer writer) throws IOException {

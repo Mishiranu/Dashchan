@@ -5,8 +5,11 @@ import android.graphics.BitmapFactory;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
+import android.util.Pair;
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
+import chan.text.JsonSerial;
+import chan.text.ParseException;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.FileHolder;
@@ -19,14 +22,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-public class DraftsStorage extends StorageManager.Storage<List<DraftsStorage.PostDraft>> {
+public class DraftsStorage extends StorageManager.Storage<Pair<List<DraftsStorage.PostDraft>,
+		List<DraftsStorage.AttachmentDraft>>> {
 	private static final String KEY_POST_DRAFTS = "postDrafts";
 	private static final String KEY_FUTURE_ATTACHMENT_DRAFTS = "futureAttachmentDrafts";
 
@@ -44,36 +46,7 @@ public class DraftsStorage extends StorageManager.Storage<List<DraftsStorage.Pos
 
 	private DraftsStorage() {
 		super("drafts", 2000, 10000);
-		JSONObject jsonObject = read();
-		if (jsonObject != null) {
-			JSONArray postsArray = jsonObject.optJSONArray(KEY_POST_DRAFTS);
-			if (postsArray != null && postsArray.length() > 0) {
-				try {
-					for (int i = 0; i < postsArray.length(); i++) {
-						PostDraft postDraft = PostDraft.fromJsonObject(postsArray.getJSONObject(i));
-						if (postDraft != null) {
-							postDrafts.put(makeKey(postDraft), postDraft);
-						}
-					}
-				} catch (JSONException e) {
-					// Invalid data, ignore exception
-				}
-			}
-			JSONArray futureAttachmentsArray = jsonObject.optJSONArray(KEY_FUTURE_ATTACHMENT_DRAFTS);
-			if (futureAttachmentsArray != null && futureAttachmentsArray.length() > 0) {
-				try {
-					for (int i = 0; i < futureAttachmentsArray.length(); i++) {
-						AttachmentDraft attachmentDraft = AttachmentDraft.fromJsonObject(futureAttachmentsArray
-								.getJSONObject(i));
-						if (attachmentDraft != null) {
-							futureAttachmentDrafts.add(attachmentDraft);
-						}
-					}
-				} catch (JSONException e) {
-					// Invalid data, ignore exception
-				}
-			}
-		}
+		startRead();
 		File directory = getAttachmentDraftsDirectory();
 		if (directory != null) {
 			File[] files = directory.listFiles();
@@ -89,28 +62,70 @@ public class DraftsStorage extends StorageManager.Storage<List<DraftsStorage.Pos
 	}
 
 	@Override
-	public List<PostDraft> onClone() {
-		return new ArrayList<>(postDrafts.values());
+	public Pair<List<PostDraft>, List<AttachmentDraft>> onClone() {
+		return new Pair<>(new ArrayList<>(postDrafts.values()), new ArrayList<>(futureAttachmentDrafts));
 	}
 
 	@Override
-	public JSONObject onSerialize(List<PostDraft> postDrafts) throws JSONException {
-		JSONObject jsonObject = new JSONObject();
-		if (postDrafts.size() > 0) {
-			JSONArray jsonArray = new JSONArray();
-			for (PostDraft postDraft : postDrafts) {
-				jsonArray.put(postDraft.toJsonObject());
+	public void onRead(InputStream input) throws IOException {
+		try {
+			JsonSerial.Reader reader = JsonSerial.reader(input);
+			reader.startObject();
+			while (!reader.endStruct()) {
+				switch (reader.nextName()) {
+					case KEY_POST_DRAFTS: {
+						reader.startArray();
+						while (!reader.endStruct()) {
+							PostDraft postDraft = PostDraft.deserialize(reader);
+							if (postDraft != null) {
+								postDrafts.put(makeKey(postDraft), postDraft);
+							}
+						}
+						break;
+					}
+					case KEY_FUTURE_ATTACHMENT_DRAFTS: {
+						reader.startArray();
+						while (!reader.endStruct()) {
+							AttachmentDraft attachmentDraft = AttachmentDraft.deserialize(reader);
+							if (attachmentDraft != null) {
+								futureAttachmentDrafts.add(attachmentDraft);
+							}
+						}
+						break;
+					}
+					default: {
+						reader.skip();
+						break;
+					}
+				}
 			}
-			jsonObject.put(KEY_POST_DRAFTS, jsonArray);
+		} catch (ParseException e) {
+			throw new IOException(e);
 		}
-		if (futureAttachmentDrafts.size() > 0) {
-			JSONArray jsonArray = new JSONArray();
-			for (AttachmentDraft attachmentDraft : futureAttachmentDrafts) {
-				jsonArray.put(attachmentDraft.toJsonObject());
+	}
+
+	@Override
+	public void onWrite(Pair<List<PostDraft>, List<AttachmentDraft>> pair, OutputStream output) throws IOException {
+		JsonSerial.Writer writer = JsonSerial.writer(output);
+		writer.startObject();
+		if (pair.first.size() > 0) {
+			writer.name(KEY_POST_DRAFTS);
+			writer.startArray();
+			for (PostDraft postDraft : pair.first) {
+				postDraft.serialize(writer);
 			}
-			jsonObject.put(KEY_FUTURE_ATTACHMENT_DRAFTS, jsonArray);
+			writer.endArray();
 		}
-		return jsonObject;
+		if (pair.second.size() > 0) {
+			writer.name(KEY_FUTURE_ATTACHMENT_DRAFTS);
+			writer.startArray();
+			for (AttachmentDraft attachmentDraft : pair.second) {
+				attachmentDraft.serialize(writer);
+			}
+			writer.endArray();
+		}
+		writer.endObject();
+		writer.flush();
 	}
 
 	private static String makeKey(String chanName, String boardName, String threadNumber) {
@@ -336,61 +351,152 @@ public class DraftsStorage extends StorageManager.Storage<List<DraftsStorage.Pos
 					!optionSage && !optionSpoiler && !optionOriginalPoster && StringUtils.isEmpty(userIcon);
 		}
 
-		public JSONObject toJsonObject() throws JSONException {
-			JSONObject jsonObject = new JSONObject();
-			putJson(jsonObject, KEY_CHAN_NAME, chanName);
-			putJson(jsonObject, KEY_BOARD_NAME, boardName);
-			putJson(jsonObject, KEY_THREAD_NUMBER, threadNumber);
-			putJson(jsonObject, KEY_NAME, name);
-			putJson(jsonObject, KEY_EMAIL, email);
-			putJson(jsonObject, KEY_PASSWORD, password);
-			putJson(jsonObject, KEY_SUBJECT, subject);
-			putJson(jsonObject, KEY_COMMENT, comment);
-			putJson(jsonObject, KEY_COMMENT_CARRIAGE, commentCarriage);
-			if (attachmentDrafts != null && !attachmentDrafts.isEmpty()) {
-				JSONArray jsonArray = new JSONArray();
-				for (AttachmentDraft attachmentDraft : attachmentDrafts) {
-					jsonArray.put(attachmentDraft.toJsonObject());
-				}
-				jsonObject.put(KEY_ATTACHMENT_DRAFTS, jsonArray);
+		public void serialize(JsonSerial.Writer writer) throws IOException {
+			writer.startObject();
+			if (!StringUtils.isEmpty(chanName)) {
+				writer.name(KEY_CHAN_NAME);
+				writer.value(chanName);
 			}
-			putJson(jsonObject, KEY_OPTION_SAGE, optionSage);
-			putJson(jsonObject, KEY_OPTION_SPOILER, optionSpoiler);
-			putJson(jsonObject, KEY_OPTION_ORIGINAL_POSTER, optionOriginalPoster);
-			putJson(jsonObject, KEY_USER_ICON, userIcon);
-			return jsonObject;
+			if (!StringUtils.isEmpty(boardName)) {
+				writer.name(KEY_BOARD_NAME);
+				writer.value(boardName);
+			}
+			if (!StringUtils.isEmpty(threadNumber)) {
+				writer.name(KEY_THREAD_NUMBER);
+				writer.value(threadNumber);
+			}
+			if (!StringUtils.isEmpty(name)) {
+				writer.name(KEY_NAME);
+				writer.value(name);
+			}
+			if (!StringUtils.isEmpty(email)) {
+				writer.name(KEY_EMAIL);
+				writer.value(email);
+			}
+			if (!StringUtils.isEmpty(password)) {
+				writer.name(KEY_PASSWORD);
+				writer.value(password);
+			}
+			if (!StringUtils.isEmpty(subject)) {
+				writer.name(KEY_SUBJECT);
+				writer.value(subject);
+			}
+			if (!StringUtils.isEmpty(comment)) {
+				writer.name(KEY_COMMENT);
+				writer.value(comment);
+			}
+			writer.name(KEY_COMMENT_CARRIAGE);
+			writer.value(commentCarriage);
+			if (attachmentDrafts != null && !attachmentDrafts.isEmpty()) {
+				writer.name(KEY_ATTACHMENT_DRAFTS);
+				writer.startArray();
+				for (AttachmentDraft attachmentDraft : attachmentDrafts) {
+					attachmentDraft.serialize(writer);
+				}
+				writer.endArray();
+			}
+			writer.name(KEY_OPTION_SAGE);
+			writer.value(optionSage);
+			writer.name(KEY_OPTION_SPOILER);
+			writer.value(optionSpoiler);
+			writer.name(KEY_OPTION_ORIGINAL_POSTER);
+			writer.value(optionOriginalPoster);
+			if (!StringUtils.isEmpty(userIcon)) {
+				writer.name(KEY_USER_ICON);
+				writer.value(userIcon);
+			}
+			writer.endObject();
 		}
 
-		public static PostDraft fromJsonObject(JSONObject jsonObject) {
-			String chanName = jsonObject.optString(KEY_CHAN_NAME, null);
-			String boardName = jsonObject.optString(KEY_BOARD_NAME, null);
-			String threadNumber = jsonObject.optString(KEY_THREAD_NUMBER, null);
-			String name = jsonObject.optString(KEY_NAME, null);
-			String email = jsonObject.optString(KEY_EMAIL, null);
-			String password = jsonObject.optString(KEY_PASSWORD, null);
-			String subject = jsonObject.optString(KEY_SUBJECT, null);
-			String comment = jsonObject.optString(KEY_COMMENT, null);
-			int commentCarriage = jsonObject.optInt(KEY_COMMENT_CARRIAGE);
+		public static PostDraft deserialize(JsonSerial.Reader reader) throws IOException, ParseException {
+			String chanName = null;
+			String boardName = null;
+			String threadNumber = null;
+			String name = null;
+			String email = null;
+			String password = null;
+			String subject = null;
+			String comment = null;
+			int commentCarriage = 0;
 			ArrayList<AttachmentDraft> attachmentDrafts = null;
-			JSONArray jsonArray = jsonObject.optJSONArray(KEY_ATTACHMENT_DRAFTS);
-			if (jsonArray != null && jsonArray.length() > 0) {
-				for (int i = 0; i < jsonArray.length(); i++) {
-					JSONObject draftObject = jsonArray.optJSONObject(i);
-					if (draftObject != null) {
-						AttachmentDraft attachmentDraft = AttachmentDraft.fromJsonObject(draftObject);
-						if (attachmentDraft != null) {
-							if (attachmentDrafts == null) {
-								attachmentDrafts = new ArrayList<>();
+			boolean optionSage = false;
+			boolean optionSpoiler = false;
+			boolean optionOriginalPoster = false;
+			String userIcon = null;
+			reader.startObject();
+			while (!reader.endStruct()) {
+				switch (reader.nextName()) {
+					case KEY_CHAN_NAME: {
+						chanName = reader.nextString();
+						break;
+					}
+					case KEY_BOARD_NAME: {
+						boardName = reader.nextString();
+						break;
+					}
+					case KEY_THREAD_NUMBER: {
+						threadNumber = reader.nextString();
+						break;
+					}
+					case KEY_NAME: {
+						name = reader.nextString();
+						break;
+					}
+					case KEY_EMAIL: {
+						email = reader.nextString();
+						break;
+					}
+					case KEY_PASSWORD: {
+						password = reader.nextString();
+						break;
+					}
+					case KEY_SUBJECT: {
+						subject = reader.nextString();
+						break;
+					}
+					case KEY_COMMENT: {
+						comment = reader.nextString();
+						break;
+					}
+					case KEY_COMMENT_CARRIAGE: {
+						commentCarriage = reader.nextInt();
+						break;
+					}
+					case KEY_ATTACHMENT_DRAFTS: {
+						reader.startArray();
+						while (!reader.endStruct()) {
+							AttachmentDraft attachmentDraft = AttachmentDraft.deserialize(reader);
+							if (attachmentDraft != null) {
+								if (attachmentDrafts == null) {
+									attachmentDrafts = new ArrayList<>();
+								}
+								attachmentDrafts.add(attachmentDraft);
 							}
-							attachmentDrafts.add(attachmentDraft);
 						}
+						break;
+					}
+					case KEY_OPTION_SAGE: {
+						optionSage = reader.nextBoolean();
+						break;
+					}
+					case KEY_OPTION_SPOILER: {
+						optionSpoiler = reader.nextBoolean();
+						break;
+					}
+					case KEY_OPTION_ORIGINAL_POSTER: {
+						optionOriginalPoster = reader.nextBoolean();
+						break;
+					}
+					case KEY_USER_ICON: {
+						userIcon = reader.nextString();
+						break;
+					}
+					default: {
+						reader.skip();
+						break;
 					}
 				}
 			}
-			boolean optionSage = jsonObject.optBoolean(KEY_OPTION_SAGE);
-			boolean optionSpoiler = jsonObject.optBoolean(KEY_OPTION_SPOILER);
-			boolean optionOriginalPoster = jsonObject.optBoolean(KEY_OPTION_ORIGINAL_POSTER);
-			String userIcon = jsonObject.optString(KEY_USER_ICON, null);
 			return new PostDraft(chanName, boardName, threadNumber, name, email, password, subject, comment,
 					commentCarriage, attachmentDrafts, optionSage, optionSpoiler, optionOriginalPoster, userIcon);
 		}
@@ -536,42 +642,123 @@ public class DraftsStorage extends StorageManager.Storage<List<DraftsStorage.Pos
 			this.reencoding = reencoding;
 		}
 
-		public JSONObject toJsonObject() throws JSONException {
-			JSONObject jsonObject = new JSONObject();
-			putJson(jsonObject, KEY_HASH, hash);
-			putJson(jsonObject, KEY_NAME, name);
-			putJson(jsonObject, KEY_RATING, rating);
-			putJson(jsonObject, KEY_OPTION_UNIQUE_HASH, optionUniqueHash);
-			putJson(jsonObject, KEY_OPTION_REMOVE_METADATA, optionRemoveMetadata);
-			putJson(jsonObject, KEY_OPTION_REMOVE_FILE_NAME, optionRemoveFileName);
-			putJson(jsonObject, KEY_OPTION_SPOILER, optionSpoiler);
-			if (reencoding != null) {
-				JSONObject reencodingObject = new JSONObject();
-				putJson(reencodingObject, KEY_REENCODING_FORMAT, reencoding.format);
-				putJson(reencodingObject, KEY_REENCODING_QUALITY, reencoding.quality);
-				putJson(reencodingObject, KEY_REENCODING_REDUCE, reencoding.reduce);
-				jsonObject.put(KEY_REENCODING, reencodingObject);
+		public void serialize(JsonSerial.Writer writer) throws IOException {
+			writer.startObject();
+			if (!StringUtils.isEmpty(hash)) {
+				writer.name(KEY_HASH);
+				writer.value(hash);
 			}
-			return jsonObject;
+			if (!StringUtils.isEmpty(name)) {
+				writer.name(KEY_NAME);
+				writer.value(name);
+			}
+			if (!StringUtils.isEmpty(rating)) {
+				writer.name(KEY_RATING);
+				writer.value(rating);
+			}
+			writer.name(KEY_OPTION_UNIQUE_HASH);
+			writer.value(optionUniqueHash);
+			writer.name(KEY_OPTION_REMOVE_METADATA);
+			writer.value(optionRemoveMetadata);
+			writer.name(KEY_OPTION_REMOVE_FILE_NAME);
+			writer.value(optionRemoveFileName);
+			writer.name(KEY_OPTION_SPOILER);
+			writer.value(optionSpoiler);
+			if (reencoding != null) {
+				writer.name(KEY_REENCODING);
+				writer.startObject();
+				if (!StringUtils.isEmpty(reencoding.format)) {
+					writer.name(KEY_REENCODING_FORMAT);
+					writer.value(reencoding.format);
+				}
+				writer.name(KEY_REENCODING_QUALITY);
+				writer.value(reencoding.quality);
+				writer.name(KEY_REENCODING_REDUCE);
+				writer.value(reencoding.reduce);
+				writer.endObject();
+			}
+			writer.endObject();
 		}
 
-		public static AttachmentDraft fromJsonObject(JSONObject jsonObject) {
-			String hash = jsonObject.optString(KEY_HASH, null);
+		public static AttachmentDraft deserialize(JsonSerial.Reader reader) throws IOException, ParseException {
+			String hash = null;
+			String name = null;
+			String rating = null;
+			boolean optionUniqueHash = false;
+			boolean optionRemoveMetadata = false;
+			boolean optionRemoveFileName = false;
+			boolean optionSpoiler = false;
+			GraphicsUtils.Reencoding reencoding = null;
+			reader.startObject();
+			while (!reader.endStruct()) {
+				switch (reader.nextName()) {
+					case KEY_HASH: {
+						hash = reader.nextString();
+						break;
+					}
+					case KEY_NAME: {
+						name = reader.nextString();
+						break;
+					}
+					case KEY_RATING: {
+						rating = reader.nextString();
+						break;
+					}
+					case KEY_OPTION_UNIQUE_HASH: {
+						optionUniqueHash = reader.nextBoolean();
+						break;
+					}
+					case KEY_OPTION_REMOVE_METADATA: {
+						optionRemoveMetadata = reader.nextBoolean();
+						break;
+					}
+					case KEY_OPTION_REMOVE_FILE_NAME: {
+						optionRemoveFileName = reader.nextBoolean();
+						break;
+					}
+					case KEY_OPTION_SPOILER: {
+						optionSpoiler = reader.nextBoolean();
+						break;
+					}
+					case KEY_REENCODING: {
+						String format = null;
+						int quality = 0;
+						int reduce = 0;
+						reader.startObject();
+						while (!reader.endStruct()) {
+							switch (reader.nextName()) {
+								case KEY_REENCODING_FORMAT: {
+									format = reader.nextString();
+									break;
+								}
+								case KEY_REENCODING_QUALITY: {
+									quality = reader.nextInt();
+									break;
+								}
+								case KEY_REENCODING_REDUCE: {
+									reduce = reader.nextInt();
+									break;
+								}
+								default: {
+									reader.skip();
+									break;
+								}
+							}
+						}
+						reencoding = new GraphicsUtils.Reencoding(format, quality, reduce);
+						break;
+					}
+					default: {
+						reader.skip();
+						break;
+					}
+				}
+			}
 			if (StringUtils.isEmpty(hash)) {
 				return null;
 			}
-			JSONObject reencodingObject = jsonObject.optJSONObject(KEY_REENCODING);
-			GraphicsUtils.Reencoding reencoding = null;
-			if (reencodingObject != null) {
-				reencoding = new GraphicsUtils.Reencoding(reencodingObject.optString(KEY_REENCODING_FORMAT),
-						reencodingObject.optInt(KEY_REENCODING_QUALITY),
-						reencodingObject.optInt(KEY_REENCODING_REDUCE));
-			}
-			return new AttachmentDraft(hash, jsonObject.optString(KEY_NAME, null),
-					jsonObject.optString(KEY_RATING, null), jsonObject.optBoolean(KEY_OPTION_UNIQUE_HASH),
-					jsonObject.optBoolean(KEY_OPTION_REMOVE_METADATA),
-					jsonObject.optBoolean(KEY_OPTION_REMOVE_FILE_NAME), jsonObject.optBoolean(KEY_OPTION_SPOILER),
-					reencoding);
+			return new AttachmentDraft(hash, name, rating, optionUniqueHash, optionRemoveMetadata,
+					optionRemoveFileName, optionSpoiler, reencoding);
 		}
 	}
 }
