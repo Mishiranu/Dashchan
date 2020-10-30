@@ -20,6 +20,7 @@ import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.HeaderItemDecoration;
 import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
@@ -49,7 +50,7 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback, Ge
 		recyclerView.setAdapter(adapter);
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				adapter::configureDivider));
-		recyclerView.addItemDecoration(adapter.headerItemDecoration);
+		recyclerView.addItemDecoration(new HeaderItemDecoration(adapter::getItemHeader));
 		recyclerView.setItemAnimator(null);
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.NONE);
 		switchView(ViewType.PROGRESS, null);

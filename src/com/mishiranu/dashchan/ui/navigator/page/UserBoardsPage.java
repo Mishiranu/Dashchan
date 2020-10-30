@@ -1,14 +1,17 @@
 package com.mishiranu.dashchan.ui.navigator.page;
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.view.Menu;
 import android.view.MenuItem;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import chan.content.model.Board;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.async.GetBoardsTask;
 import com.mishiranu.dashchan.content.async.ReadUserBoardsTask;
+import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.ui.navigator.adapter.UserBoardsAdapter;
@@ -20,17 +23,46 @@ import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
+import java.util.Collections;
 import java.util.List;
 
 public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callback,
-		ReadUserBoardsTask.Callback {
-	private static class RetainExtra {
-		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
+		GetBoardsTask.Callback, ReadUserBoardsTask.Callback {
+	private static class ParcelableExtra implements Parcelable {
+		public static final ExtraFactory<ParcelableExtra> FACTORY = ParcelableExtra::new;
 
-		public List<Board> boards;
+		public List<String> boardNames = Collections.emptyList();
+
+		@Override
+		public int describeContents() {
+			return 0;
+		}
+
+		@Override
+		public void writeToParcel(Parcel dest, int flags) {
+			dest.writeStringList(boardNames);
+		}
+
+		public static final Creator<ParcelableExtra> CREATOR = new Creator<ParcelableExtra>() {
+			@Override
+			public ParcelableExtra createFromParcel(Parcel source) {
+				ParcelableExtra parcelableExtra = new ParcelableExtra();
+				parcelableExtra.boardNames = source.createStringArrayList();
+				return parcelableExtra;
+			}
+
+			@Override
+			public ParcelableExtra[] newArray(int size) {
+				return new ParcelableExtra[size];
+			}
+		};
 	}
 
+	private String searchQuery;
+
+	private GetBoardsTask getTask;
 	private ReadUserBoardsTask readTask;
+	private boolean firstLoad = true;
 
 	private UserBoardsAdapter getAdapter() {
 		return (UserBoardsAdapter) getRecyclerView().getAdapter();
@@ -44,23 +76,28 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 			float density = ResourceUtils.obtainDensity(recyclerView);
 			ViewUtils.setNewPadding(recyclerView, (int) (16f * density), null, (int) (16f * density), null);
 		}
-		UserBoardsAdapter adapter = new UserBoardsAdapter(this, getPage().chanName);
+		searchQuery = getInitSearch().currentQuery;
+		UserBoardsAdapter adapter = new UserBoardsAdapter(this);
 		recyclerView.setAdapter(adapter);
-		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				(c, position) -> c.need(true)));
-		adapter.applyFilter(getInitSearch().currentQuery);
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		if (retainExtra.boards != null) {
-			adapter.setItems(retainExtra.boards);
-			restoreListPosition();
-		} else {
+		recyclerView.setItemAnimator(null);
+		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
+		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
+		if (parcelableExtra.boardNames.isEmpty()) {
 			refreshBoards(false);
+		} else {
+			updateBoards();
 		}
 	}
 
 	@Override
 	protected void onDestroy() {
+		getAdapter().setCursor(null);
+		if (getTask != null) {
+			getTask.cancel();
+			getTask = null;
+		}
 		if (readTask != null) {
 			readTask.cancel();
 			readTask = null;
@@ -73,30 +110,25 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 	}
 
 	@Override
-	public void onItemClick(String boardName) {
-		if (boardName != null) {
-			getUiManager().navigator().navigateBoardsOrThreads(getPage().chanName, boardName);
-		}
+	public void onItemClick(ChanDatabase.BoardItem boardItem) {
+		getUiManager().navigator().navigateBoardsOrThreads(getPage().chanName, boardItem.boardName);
 	}
 
 	@Override
-	public boolean onItemLongClick(String boardName) {
-		if (boardName != null) {
-			DialogMenu dialogMenu = new DialogMenu(getContext());
-			dialogMenu.add(R.string.copy_link, () -> {
-				Uri uri = getChan().locator.safe(true).createBoardUri(boardName, 0);
-				if (uri != null) {
-					StringUtils.copyToClipboard(getContext(), uri.toString());
-				}
-			});
-			if (!FavoritesStorage.getInstance().hasFavorite(getPage().chanName, boardName, null)) {
-				dialogMenu.add(R.string.add_to_favorites, () -> FavoritesStorage.getInstance()
-						.add(getPage().chanName, boardName));
+	public boolean onItemLongClick(ChanDatabase.BoardItem boardItem) {
+		DialogMenu dialogMenu = new DialogMenu(getContext());
+		dialogMenu.add(R.string.copy_link, () -> {
+			Uri uri = getChan().locator.safe(true).createBoardUri(boardItem.boardName, 0);
+			if (uri != null) {
+				StringUtils.copyToClipboard(getContext(), uri.toString());
 			}
-			dialogMenu.show(getUiManager().getConfigurationLock());
-			return true;
+		});
+		if (!FavoritesStorage.getInstance().hasFavorite(getPage().chanName, boardItem.boardName, null)) {
+			dialogMenu.add(R.string.add_to_favorites, () -> FavoritesStorage.getInstance()
+					.add(getPage().chanName, boardItem.boardName));
 		}
-		return false;
+		dialogMenu.show(getUiManager().getConfigurationLock());
+		return true;
 	}
 
 	@Override
@@ -113,7 +145,8 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.menu_refresh: {
-				refreshBoards(!getAdapter().isRealEmpty());
+				ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
+				refreshBoards(!parcelableExtra.boardNames.isEmpty());
 				return true;
 			}
 		}
@@ -122,12 +155,27 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 
 	@Override
 	public void onSearchQueryChange(String query) {
-		getAdapter().applyFilter(query);
+		searchQuery = query;
+		updateBoards();
 	}
 
 	@Override
 	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side) {
 		refreshBoards(true);
+	}
+
+	private void updateBoards() {
+		if (getTask != null) {
+			getTask.cancel();
+			getTask = null;
+		}
+		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
+		if (parcelableExtra.boardNames.isEmpty()) {
+			getAdapter().setCursor(null);
+		} else {
+			getTask = new GetBoardsTask(this, getChan(), parcelableExtra.boardNames, searchQuery);
+			getTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+		}
 	}
 
 	private void refreshBoards(boolean showPull) {
@@ -146,12 +194,24 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 	}
 
 	@Override
-	public void onReadUserBoardsSuccess(List<Board> boards) {
+	public void onGetBoardsResult(ChanDatabase.BoardCursor cursor) {
+		getTask = null;
+		boolean firstLoad = this.firstLoad;
+		this.firstLoad = false;
+		getAdapter().setCursor(cursor);
+		if (firstLoad) {
+			restoreListPosition();
+		}
+	}
+
+	@Override
+	public void onReadUserBoardsSuccess(List<String> boardNames) {
 		readTask = null;
 		getRecyclerView().getWrapper().cancelBusyState();
 		switchView(ViewType.LIST, null);
-		getRetainExtra(RetainExtra.FACTORY).boards = boards;
-		getAdapter().setItems(boards);
+		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
+		parcelableExtra.boardNames = boardNames;
+		updateBoards();
 		getRecyclerView().scrollToPosition(0);
 	}
 
@@ -159,7 +219,8 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 	public void onReadUserBoardsFail(ErrorItem errorItem) {
 		readTask = null;
 		getRecyclerView().getWrapper().cancelBusyState();
-		if (getAdapter().isRealEmpty()) {
+		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
+		if (parcelableExtra.boardNames.isEmpty()) {
 			switchView(ViewType.ERROR, errorItem.toString());
 		} else {
 			ClickableToast.show(getContext(), errorItem.toString());

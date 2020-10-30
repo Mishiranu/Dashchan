@@ -1,11 +1,7 @@
 package com.mishiranu.dashchan.ui.navigator.adapter;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Rect;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
@@ -15,12 +11,13 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.database.HistoryDatabase;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.PostDateFormatter;
+import com.mishiranu.dashchan.widget.CursorAdapter;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.Calendar;
 
-public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class HistoryAdapter extends CursorAdapter<HistoryDatabase.HistoryCursor, RecyclerView.ViewHolder> {
 	public interface Callback extends ListViewUtils.SimpleCallback<HistoryDatabase.HistoryItem> {}
 
 	private enum Header {
@@ -53,7 +50,6 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	private final PostDateFormatter postDateFormatter;
 	private final HistoryDatabase.HistoryItem historyItem = new HistoryDatabase.HistoryItem();
 
-	private HistoryDatabase.HistoryCursor cursor;
 	private long queryDayStart;
 
 	public HistoryAdapter(Context context, Callback callback, String chanName) {
@@ -63,42 +59,18 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		setHasStableIds(true);
 	}
 
-	public void setCursor(HistoryDatabase.HistoryCursor cursor) {
-		if (this.cursor != cursor) {
-			if (this.cursor != null) {
-				this.cursor.close();
-			}
-			this.cursor = cursor;
-			Calendar calendar = Calendar.getInstance();
-			calendar.set(Calendar.HOUR_OF_DAY, 0);
-			calendar.set(Calendar.MINUTE, 0);
-			calendar.set(Calendar.SECOND, 0);
-			calendar.set(Calendar.MILLISECOND, 0);
-			queryDayStart = calendar.getTimeInMillis();
-			notifyDataSetChanged();
-		}
-	}
-
 	@Override
-	public int getItemCount() {
-		return cursor != null ? cursor.getCount() : 0;
-	}
-
-	@Override
-	public long getItemId(int position) {
-		cursor.moveToPosition(position);
-		int index = cursor.getColumnIndex("rowid");
-		return index >= 0 ? cursor.getLong(index) : -1;
-	}
-
-	private HistoryDatabase.HistoryItem getTransientItem(int position) {
-		cursor.moveToPosition(position);
-		historyItem.update(cursor);
-		return historyItem;
+	protected void onCursorChanged() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
+		queryDayStart = calendar.getTimeInMillis();
 	}
 
 	private HistoryDatabase.HistoryItem copyItem(int position) {
-		return getTransientItem(position).copy();
+		return historyItem.update(moveTo(position)).copy();
 	}
 
 	@NonNull
@@ -110,7 +82,7 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 	@Override
 	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-		HistoryDatabase.HistoryItem historyItem = getTransientItem(position);
+		HistoryDatabase.HistoryItem historyItem = this.historyItem.update(moveTo(position));
 		ViewFactory.TwoLinesViewHolder viewHolder = (ViewFactory.TwoLinesViewHolder) holder.itemView.getTag();
 		viewHolder.text1.setText(StringUtils.isEmpty(historyItem.title)
 				? StringUtils.formatThreadTitle(historyItem.chanName, historyItem.boardName,
@@ -137,66 +109,20 @@ public class HistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	}
 
 	private Header getItemHeader(int position) {
+		HistoryDatabase.HistoryCursor cursor = getCursor();
 		if (cursor != null && cursor.filtered) {
 			return null;
 		} else if (position == 0) {
-			return Header.find(queryDayStart, getTransientItem(0).time);
+			return Header.find(queryDayStart, historyItem.update(moveTo(0)).time);
 		} else {
-			Header previous = Header.find(queryDayStart, getTransientItem(position - 1).time);
-			Header current = Header.find(queryDayStart, getTransientItem(position).time);
+			Header previous = Header.find(queryDayStart, historyItem.update(moveTo(position - 1)).time);
+			Header current = Header.find(queryDayStart, historyItem.update(moveTo(position)).time);
 			return previous != current ? current : null;
 		}
 	}
 
-	public final RecyclerView.ItemDecoration headerItemDecoration = new RecyclerView.ItemDecoration() {
-		private final Rect rect = new Rect();
-		private TextView headerView;
-
-		private View prepareHeaderView(RecyclerView parent, int titleResId, boolean layout) {
-			if (headerView == null) {
-				headerView = ViewFactory.makeListTextHeader(parent);
-			}
-			headerView.setText(titleResId);
-			headerView.measure(View.MeasureSpec.makeMeasureSpec(parent.getWidth(), View.MeasureSpec.EXACTLY),
-					View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-			if (layout) {
-				headerView.layout(0, 0, headerView.getMeasuredWidth(), headerView.getMeasuredHeight());
-			}
-			return headerView;
-		}
-
-		@Override
-		public void onDraw(@NonNull Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-			int childCount = parent.getChildCount();
-			for (int i = 0; i < childCount; i++) {
-				View view = parent.getChildAt(i);
-				int position = parent.getChildAdapterPosition(view);
-				if (position >= 0) {
-					Header header = getItemHeader(position);
-					if (header != null) {
-						parent.getDecoratedBoundsWithMargins(view, rect);
-						c.save();
-						c.translate(rect.left, rect.top);
-						prepareHeaderView(parent, header.titleResId, true).draw(c);
-						c.restore();
-					}
-				}
-			}
-		}
-
-		@Override
-		public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent,
-				@NonNull RecyclerView.State state) {
-			int position = parent.getChildAdapterPosition(view);
-			Header header = null;
-			if (position >= 0) {
-				header = getItemHeader(position);
-			}
-			if (header != null) {
-				outRect.set(0, prepareHeaderView(parent, header.titleResId, false).getMeasuredHeight(), 0, 0);
-			} else {
-				outRect.set(0, 0, 0, 0);
-			}
-		}
-	};
+	public String getItemHeader(Context context, int position) {
+		Header header = getItemHeader(position);
+		return header != null ? context.getString(header.titleResId) : null;
+	}
 }

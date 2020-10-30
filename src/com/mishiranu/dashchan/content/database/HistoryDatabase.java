@@ -57,12 +57,13 @@ public class HistoryDatabase implements CommonDatabase.Instance {
 		public long time;
 		public String title;
 
-		public void update(HistoryCursor cursor) {
+		public HistoryItem update(HistoryCursor cursor) {
 			chanName = cursor.getString(cursor.chanNameIndex);
 			boardName = cursor.getString(cursor.boardNameIndex);
 			threadNumber = cursor.getString(cursor.threadNumberIndex);
 			time = cursor.getLong(cursor.timeIndex);
 			title = cursor.getString(cursor.titleIndex);
+			return this;
 		}
 
 		public HistoryItem copy() {

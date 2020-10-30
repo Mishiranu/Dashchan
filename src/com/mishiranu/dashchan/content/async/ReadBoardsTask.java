@@ -7,17 +7,17 @@ import chan.content.InvalidResponseException;
 import chan.content.model.BoardCategory;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
+import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
 public class ReadBoardsTask extends HttpHolderTask<Void, Boolean> {
 	private final Callback callback;
 	private final Chan chan;
 
-	private BoardCategory[] boardCategories;
 	private ErrorItem errorItem;
 
 	public interface Callback {
-		void onReadBoardsSuccess(BoardCategory[] boardCategories);
+		void onReadBoardsSuccess();
 		void onReadBoardsFail(ErrorItem errorItem);
 	}
 
@@ -39,7 +39,10 @@ public class ReadBoardsTask extends HttpHolderTask<Void, Boolean> {
 			if (boardCategories != null) {
 				chan.configuration.updateFromBoards(boardCategories);
 			}
-			this.boardCategories = boardCategories;
+			if (!ChanDatabase.getInstance().setBoards(chan.name, boardCategories)) {
+				errorItem = new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE);
+				return false;
+			}
 			return true;
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {
 			errorItem = e.getErrorItemAndHandle();
@@ -52,11 +55,7 @@ public class ReadBoardsTask extends HttpHolderTask<Void, Boolean> {
 	@Override
 	protected void onComplete(Boolean success) {
 		if (success) {
-			if (boardCategories != null) {
-				callback.onReadBoardsSuccess(boardCategories);
-			} else {
-				callback.onReadBoardsFail(new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE));
-			}
+			callback.onReadBoardsSuccess();
 		} else {
 			callback.onReadBoardsFail(errorItem);
 		}

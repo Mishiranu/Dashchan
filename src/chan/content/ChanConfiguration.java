@@ -1,9 +1,9 @@
 package chan.content;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.os.CancellationSignal;
 import android.util.Pair;
 import android.util.SparseArray;
 import chan.annotation.Extendable;
@@ -15,6 +15,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,20 +24,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 @Extendable
 public class ChanConfiguration implements Chan.Linked {
 	private final Chan.Provider chanProvider;
 	private final Resources resources;
-	private final SharedPreferences preferences;
+	private final HashMap<ChanDatabase.DataKey, Object> editData;
 
 	private boolean canSetOptions = true;
 
@@ -52,12 +49,11 @@ public class ChanConfiguration implements Chan.Linked {
 			ChanManager.Initializer.Holder holder = INITIALIZER.consume();
 			this.chanProvider = holder.chanProvider;
 			resources = holder.resources;
-			preferences = MainApplication.getInstance().getSharedPreferences
-					("chan." + holder.chanName, Context.MODE_PRIVATE);
+			editData = new HashMap<>();
 		} else {
 			this.chanProvider = chanProvider;
 			resources = null;
-			preferences = null;
+			editData = null;
 		}
 	}
 
@@ -87,7 +83,6 @@ public class ChanConfiguration implements Chan.Linked {
 	private static final String KEY_DEFAULT_NAME = "default_name";
 	private static final String KEY_BUMP_LIMIT = "bump_limit";
 	private static final String KEY_PAGES_COUNT = "pages_count";
-	private static final String KEY_BOARDS = "boards";
 
 	public static final int PAGES_COUNT_INVALID = Integer.MAX_VALUE;
 	public static final int BUMP_LIMIT_INVALID = Integer.MAX_VALUE;
@@ -100,11 +95,6 @@ public class ChanConfiguration implements Chan.Linked {
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_2 = "recaptcha_2";
 	@Public public static final String CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE = "recaptcha_2_invisible";
 	@Public public static final String CAPTCHA_TYPE_HCAPTCHA = "hcaptcha";
-
-	private static final String KEY_COOKIES = "cookies";
-	private static final String KEY_COOKIE_VALUE = "value";
-	private static final String KEY_COOKIE_DISPLAY_NAME = "displayName";
-	private static final String KEY_COOKIE_BLOCKED = "blocked";
 
 	@Public
 	public static ChanConfiguration get(Object object) {
@@ -242,87 +232,72 @@ public class ChanConfiguration implements Chan.Linked {
 		public CustomPreference() {}
 	}
 
-	private final HashMap<String, Object> editData = new HashMap<>();
-
 	public final void commit() {
-		if (preferences != null) {
+		if (editData != null) {
 			synchronized (editData) {
-				SharedPreferences.Editor editor = preferences.edit();
-				for (HashMap.Entry<String, Object> entry : editData.entrySet()) {
-					String key = entry.getKey();
-					Object value = entry.getValue();
-					if (value instanceof Boolean) {
-						editor.putBoolean(key, (boolean) value);
-					} else if (value instanceof Integer) {
-						editor.putInt(key, (int) value);
-					} else {
-						editor.putString(key, (String) value);
-					}
-				}
-				editor.commit();
+				ChanDatabase.getInstance().setData(get().name, editData);
 				editData.clear();
 			}
 		}
 	}
 
-	public final String buildKey(String boardName, String key) {
-		StringBuilder builder = new StringBuilder();
-		if (boardName != null) {
-			builder.append(boardName).append('_');
-		}
-		builder.append(key);
-		return builder.toString();
-	}
-
 	@Public
 	public final boolean get(String boardName, String key, boolean defaultValue) {
-		if (preferences == null) {
+		if (editData == null) {
 			return defaultValue;
 		}
-		String realKey = buildKey(boardName, key);
+		ChanDatabase.DataKey dataKey = new ChanDatabase.DataKey(boardName, key);
 		synchronized (editData) {
-			Object result = editData.get(realKey);
+			Object result = editData.get(dataKey);
 			if (result != null) {
-				return (boolean) result;
+				return result instanceof Boolean ? (boolean) result : defaultValue;
 			}
 		}
-		return preferences.getBoolean(realKey, defaultValue);
+		String value = ChanDatabase.getInstance().getData(get().name, dataKey.boardName, dataKey.name);
+		return value != null ? !"0".equals(value) : defaultValue;
 	}
 
 	@Public
 	public final int get(String boardName, String key, int defaultValue) {
-		if (preferences == null) {
+		if (editData == null) {
 			return defaultValue;
 		}
-		String realKey = buildKey(boardName, key);
+		ChanDatabase.DataKey dataKey = new ChanDatabase.DataKey(boardName, key);
 		synchronized (editData) {
-			Object result = editData.get(realKey);
+			Object result = editData.get(dataKey);
 			if (result != null) {
-				return (int) result;
+				return result instanceof Integer ? (int) result : defaultValue;
 			}
 		}
-		return preferences.getInt(realKey, defaultValue);
+		String value = ChanDatabase.getInstance().getData(get().name, dataKey.boardName, dataKey.name);
+		try {
+			return Integer.parseInt(value);
+		} catch (Exception e) {
+			return defaultValue;
+		}
 	}
 
 	@Public
 	public final String get(String boardName, String key, String defaultValue) {
-		if (preferences == null) {
+		if (editData == null) {
 			return defaultValue;
 		}
-		String realKey = buildKey(boardName, key);
+		ChanDatabase.DataKey dataKey = new ChanDatabase.DataKey(boardName, key);
 		synchronized (editData) {
-			Object result = editData.get(realKey);
+			Object result = editData.get(dataKey);
 			if (result != null) {
-				return (String) result;
+				return result instanceof String ? (String) result : defaultValue;
 			}
 		}
-		return preferences.getString(realKey, defaultValue);
+		String value = ChanDatabase.getInstance().getData(get().name, dataKey.boardName, dataKey.name);
+		return value != null ? value : defaultValue;
 	}
 
 	private void set(String boardName, String key, Object value) {
-		if (preferences != null) {
+		if (editData != null) {
+			ChanDatabase.DataKey dataKey = new ChanDatabase.DataKey(boardName, key);
 			synchronized (editData) {
-				editData.put(buildKey(boardName, key), value);
+				editData.put(dataKey, value);
 			}
 		}
 	}
@@ -393,23 +368,8 @@ public class ChanConfiguration implements Chan.Linked {
 		return singleBoardName;
 	}
 
-	public final void storeBoards(JSONArray jsonArray) {
-		set(null, KEY_BOARDS, jsonArray != null ? jsonArray.toString() : null);
-	}
-
-	public final JSONArray getBoards() {
-		String data = StringUtils.nullIfEmpty(get(null, KEY_BOARDS, null));
-		if (data != null) {
-			try {
-				return new JSONArray(data);
-			} catch (JSONException e) {
-				// Invalid or unspecified data, ignore exception
-			}
-		}
-		return null;
-	}
-
 	private HashMap<String, String> boardTitlesMap;
+	private HashMap<String, String> boardDescriptionsMap;
 
 	@Public
 	public final void setBoardTitle(String boardName, String title) {
@@ -425,18 +385,6 @@ public class ChanConfiguration implements Chan.Linked {
 		set(boardName, KEY_TITLE, title);
 	}
 
-	public final String getBoardTitle(String boardName) {
-		if (boardTitlesMap != null) {
-			String title = boardTitlesMap.get(boardName);
-			if (title != null) {
-				return title;
-			}
-		}
-		return get(boardName, KEY_TITLE, null);
-	}
-
-	private HashMap<String, String> boardDescriptionsMap;
-
 	@Public
 	public final void setBoardDescription(String boardName, String description) {
 		checkInit();
@@ -451,14 +399,29 @@ public class ChanConfiguration implements Chan.Linked {
 		set(boardName, KEY_DESCRIPTION, description);
 	}
 
+	private final ChanDatabase.BoardExtraFallbackProvider titleFallbackProvider =
+			boardName -> boardTitlesMap != null ? boardTitlesMap.get(boardName) : null;
+	private final ChanDatabase.BoardExtraFallbackProvider descriptionFallbackProvider =
+			boardName -> boardDescriptionsMap != null ? boardDescriptionsMap.get(boardName) : null;
+
+	public final String getBoardTitle(String boardName) {
+		String title = titleFallbackProvider.getExtra(boardName);
+		return title != null ? title : get(boardName, KEY_TITLE, null);
+	}
+
 	public final String getBoardDescription(String boardName) {
-		if (boardDescriptionsMap != null) {
-			String description = boardDescriptionsMap.get(boardName);
-			if (description != null) {
-				return description;
-			}
-		}
-		return get(boardName, KEY_DESCRIPTION, null);
+		String description = descriptionFallbackProvider.getExtra(boardName);
+		return description != null ? description : get(boardName, KEY_DESCRIPTION, null);
+	}
+
+	public final ChanDatabase.BoardCursor getBoards(String searchQuery, CancellationSignal signal) {
+		return ChanDatabase.getInstance().getBoards(get().name, searchQuery, KEY_TITLE, titleFallbackProvider, signal);
+	}
+
+	public final ChanDatabase.BoardCursor getUserBoards(List<String> boardNames,
+			String searchQuery, CancellationSignal signal) {
+		return ChanDatabase.getInstance().getBoards(get().name, boardNames, searchQuery,
+				KEY_TITLE, KEY_DESCRIPTION, titleFallbackProvider, descriptionFallbackProvider, signal);
 	}
 
 	private String defaultName;
@@ -785,137 +748,21 @@ public class ChanConfiguration implements Chan.Linked {
 		}
 	}
 
-	private JSONObject cookies;
-
-	private JSONObject obtainCookiesLocked() {
-		if (cookies == null) {
-			try {
-				cookies = new JSONObject(get(null, KEY_COOKIES, null));
-			} catch (Exception e) {
-				cookies = new JSONObject();
-			}
-		}
-		return cookies;
-	}
-
 	@Public
 	public final String getCookie(String cookie) {
-		if (cookie == null) {
-			return null;
-		}
-		synchronized (cookieLock) {
-			JSONObject jsonObject = obtainCookiesLocked().optJSONObject(cookie);
-			if (jsonObject != null && !jsonObject.optBoolean(KEY_COOKIE_BLOCKED, false)) {
-				return jsonObject.optString(KEY_COOKIE_VALUE, null);
-			}
-			return null;
-		}
+		return editData == null || cookie == null ? null
+				: ChanDatabase.getInstance().getCookieChecked(get().name, cookie);
 	}
-
-	private final Object cookieLock = new Object();
 
 	@Public
 	public final void storeCookie(String cookie, String value, String displayName) {
-		if (cookie == null) {
-			throw new NullPointerException("cookie must not be null");
-		}
-		synchronized (cookieLock) {
-			JSONObject cookiesObject = obtainCookiesLocked();
-			JSONObject jsonObject = cookiesObject.optJSONObject(cookie);
-			if (!(jsonObject == null && value == null)) {
-				if (jsonObject == null) {
-					jsonObject = new JSONObject();
-				}
-				boolean blocked = jsonObject.optBoolean(KEY_COOKIE_BLOCKED, false);
-				if (value != null || blocked) {
-					try {
-						if (!blocked) {
-							if (value != null) {
-								jsonObject.put(KEY_COOKIE_VALUE, value);
-							} else {
-								jsonObject.remove(KEY_COOKIE_VALUE);
-							}
-						}
-						if (!StringUtils.isEmptyOrWhitespace(displayName)) {
-							jsonObject.put(KEY_COOKIE_DISPLAY_NAME, displayName);
-						}
-						cookiesObject.put(cookie, jsonObject);
-					} catch (JSONException e) {
-						throw new RuntimeException(e);
-					}
-				} else {
-					cookiesObject.remove(cookie);
-				}
-				set(null, KEY_COOKIES, cookiesObject.toString());
+		if (editData != null) {
+			if (cookie == null) {
+				throw new NullPointerException("Сookie must not be null");
 			}
+			ChanDatabase.getInstance().setCookie(get().name, cookie, value,
+					StringUtils.isEmptyOrWhitespace(displayName) ? null : displayName);
 		}
-	}
-
-	public final boolean setCookieBlocked(String cookie, boolean blocked) {
-		synchronized (cookieLock) {
-			JSONObject cookiesObject = obtainCookiesLocked();
-			JSONObject jsonObject = cookiesObject.optJSONObject(cookie);
-			if (jsonObject == null) {
-				jsonObject = new JSONObject();
-			}
-			try {
-				boolean removed = false;
-				if (blocked) {
-					jsonObject.put(KEY_COOKIE_BLOCKED, true);
-				} else {
-					jsonObject.remove(KEY_COOKIE_BLOCKED);
-					if (jsonObject.optString(KEY_COOKIE_VALUE, null) != null) {
-						cookiesObject.put(cookie, jsonObject);
-					} else {
-						cookiesObject.remove(cookie);
-						removed = true;
-					}
-				}
-				set(null, KEY_COOKIES, cookiesObject.toString());
-				return removed;
-			} catch (JSONException e) {
-				throw new RuntimeException(e);
-			}
-		}
-	}
-
-	public final boolean hasCookies() {
-		synchronized (cookieLock) {
-			return obtainCookiesLocked().length() > 0;
-		}
-	}
-
-	public static class CookieData {
-		public final String cookie;
-		public final String value;
-		public final String displayName;
-		public final boolean blocked;
-
-		public CookieData(String cookie, String value, String displayName, boolean blocked) {
-			this.cookie = cookie;
-			this.value = value;
-			this.displayName = displayName;
-			this.blocked = blocked;
-		}
-	}
-
-	public final ArrayList<CookieData> getCookies() {
-		ArrayList<CookieData> result = new ArrayList<>();
-		synchronized (cookieLock) {
-			JSONObject cookiesObject = obtainCookiesLocked();
-			for (Iterator<String> iterator = cookiesObject.keys(); iterator.hasNext();) {
-				String cookie = iterator.next();
-				JSONObject jsonObject = cookiesObject.optJSONObject(cookie);
-				String value = jsonObject != null ? jsonObject.optString(KEY_COOKIE_VALUE, "") : "";
-				String displayName = jsonObject != null ? jsonObject.optString(KEY_COOKIE_DISPLAY_NAME, null) : null;
-				boolean blocked = jsonObject != null && jsonObject.optBoolean(KEY_COOKIE_BLOCKED, false);
-				if (StringUtils.isEmptyOrWhitespace(displayName)) {
-					displayName = cookie;
-				}
-				result.add(new CookieData(cookie, value, displayName, blocked));
-			}
-		}
-		return result;
 	}
 
 	@Public

@@ -1,32 +1,27 @@
 package com.mishiranu.dashchan.ui.preference;
 
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
-import chan.content.Chan;
-import chan.content.ChanConfiguration;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
-import com.mishiranu.dashchan.ui.preference.core.Preference;
-import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.DialogMenu;
-import java.util.ArrayList;
+import com.mishiranu.dashchan.util.ListViewUtils;
+import com.mishiranu.dashchan.widget.CursorAdapter;
+import com.mishiranu.dashchan.widget.SimpleViewHolder;
+import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 
-public class CookiesFragment extends PreferenceFragment implements ActivityHandler {
+public class CookiesFragment extends BaseListFragment implements ActivityHandler {
 	private static final String EXTRA_CHAN_NAME = "chanName";
-
-	private final HashMap<String, ChanConfiguration.CookieData> cookies = new HashMap<>();
 
 	public CookiesFragment() {}
 
@@ -41,32 +36,18 @@ public class CookiesFragment extends PreferenceFragment implements ActivityHandl
 	}
 
 	@Override
-	protected SharedPreferences getPreferences() {
-		return Preferences.PREFERENCES;
-	}
-
-	@Override
-	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-
-		Chan chan = Chan.get(getChanName());
-		ArrayList<ChanConfiguration.CookieData> cookies = chan.configuration.getCookies();
-		Collections.sort(cookies, (l, r) -> StringUtils.compare(l.cookie, r.cookie, true));
-		for (ChanConfiguration.CookieData cookieData : cookies) {
-			this.cookies.put(cookieData.cookie, cookieData);
-			CookiePreference preference = new CookiePreference(requireContext(),
-					cookieData.cookie, cookieData.displayName);
-			preference.setValue(cookieData.value);
-			preference.setViewGrayed(cookieData.blocked);
-			preference.setOnClickListener(onClick);
-			addPreference(preference, false);
-		}
-	}
-
-	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+
 		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.manage_cookies), null);
+		getRecyclerView().setAdapter(new Adapter());
+		updateCursor();
+	}
+
+	@Override
+	public void onDestroyView() {
+		((Adapter) getRecyclerView().getAdapter()).setCursor(null);
+		super.onDestroyView();
 	}
 
 	@Override
@@ -85,70 +66,57 @@ public class CookiesFragment extends PreferenceFragment implements ActivityHandl
 		}
 	}
 
-	private static class CookiePreference extends Preference.Runtime<String> {
-		public CookiePreference(Context context, String key, CharSequence title) {
-			super(context, key, null, title, Preference::getValue);
-		}
-
-		private boolean viewGrayed = false;
-
-		public void setViewGrayed(boolean viewGrayed) {
-			if (this.viewGrayed != viewGrayed) {
-				this.viewGrayed = viewGrayed;
-				// Invalidate view
-				setValue(getValue());
-			}
-		}
-
-		@Override
-		public void bindViewHolder(ViewHolder viewHolder) {
-			super.bindViewHolder(viewHolder);
-			viewHolder.title.setEnabled(!viewGrayed);
-			viewHolder.summary.setEnabled(!viewGrayed);
-		}
+	private void onCookieClick(ChanDatabase.CookieItem cookieItem) {
+		ActionDialog dialog = new ActionDialog(cookieItem.name, cookieItem.blocked);
+		dialog.show(getChildFragmentManager(), ActionDialog.TAG);
 	}
 
-	private final Preference.OnClickListener<String> onClick = preference -> {
-		String cookie = preference.key;
-		ChanConfiguration.CookieData cookieData = cookies.get(cookie);
-		if (cookieData != null) {
-			ActionDialog dialog = new ActionDialog(cookie, cookieData.blocked);
-			dialog.show(getChildFragmentManager(), ActionDialog.TAG);
-		}
-	};
-
-	private void removeCookie(String cookie, boolean preferenceOnly) {
-		if (!preferenceOnly) {
-			Chan chan = Chan.get(getChanName());
-			chan.configuration.storeCookie(cookie, null, null);
-			chan.configuration.commit();
-		}
-		CookiePreference preference = (CookiePreference) findPreference(cookie);
-		if (preference != null) {
-			int size = removePreference(preference);
-			cookies.remove(cookie);
-			if (size == 0) {
-				((FragmentHandler) requireActivity()).removeFragment();
-			}
+	private void removeCookie(String cookie) {
+		ChanDatabase.getInstance().setCookie(getChanName(), cookie, null, null);
+		if (!updateCursor()) {
+			((FragmentHandler) requireActivity()).removeFragment();
 		}
 	}
 
 	private void setBlocked(String cookie, boolean blocked) {
-		Chan chan = Chan.get(getChanName());
-		boolean remove = chan.configuration.setCookieBlocked(cookie, blocked);
-		chan.configuration.commit();
-		if (remove) {
-			removeCookie(cookie, true);
-		} else {
-			ChanConfiguration.CookieData cookieData = cookies.get(cookie);
-			if (cookieData != null) {
-				cookies.put(cookie, new ChanConfiguration.CookieData(cookie,
-						cookieData.value, cookieData.displayName, blocked));
-			}
+		ChanDatabase.getInstance().setCookieBlocked(getChanName(), cookie, blocked);
+		if (!updateCursor()) {
+			((FragmentHandler) requireActivity()).removeFragment();
 		}
-		CookiePreference preference = (CookiePreference) findPreference(cookie);
-		if (preference != null) {
-			preference.setViewGrayed(blocked);
+	}
+
+	private boolean updateCursor() {
+		Adapter adapter = (Adapter) getRecyclerView().getAdapter();
+		adapter.setCursor(ChanDatabase.getInstance().getCookies(getChanName()));
+		return adapter.getItemCount() > 0;
+	}
+
+	private class Adapter extends CursorAdapter<ChanDatabase.CookieCursor, RecyclerView.ViewHolder>
+			implements ListViewUtils.ClickCallback<Void, RecyclerView.ViewHolder> {
+		private final ChanDatabase.CookieItem cookieItem = new ChanDatabase.CookieItem();
+
+		@NonNull
+		@Override
+		public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+			return ListViewUtils.bind(new SimpleViewHolder(ViewFactory.makeTwoLinesListItem(parent, 0).view),
+					false, null, this);
+		}
+
+		@Override
+		public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+			ChanDatabase.CookieItem cookieItem = this.cookieItem.update(moveTo(position));
+			ViewFactory.TwoLinesViewHolder viewHolder = (ViewFactory.TwoLinesViewHolder) holder.itemView.getTag();
+			viewHolder.text1.setText(StringUtils.isEmpty(cookieItem.title) ? cookieItem.name : cookieItem.title);
+			viewHolder.text2.setText(cookieItem.value);
+			viewHolder.text2.setVisibility(StringUtils.isEmpty(cookieItem.value) ? View.GONE : View.VISIBLE);
+			viewHolder.text1.setEnabled(!cookieItem.blocked);
+			viewHolder.text2.setEnabled(!cookieItem.blocked);
+		}
+
+		@Override
+		public boolean onItemClick(RecyclerView.ViewHolder holder, int position, Void item, boolean longClick) {
+			onCookieClick(cookieItem.update(moveTo(position)).copy());
+			return true;
 		}
 	}
 
@@ -177,7 +145,7 @@ public class CookiesFragment extends PreferenceFragment implements ActivityHandl
 					.setBlocked(args.getString(EXTRA_COOKIE), !args.getBoolean(EXTRA_BLOCKED)));
 			if (!blocked) {
 				dialogMenu.add(R.string.delete, () -> ((CookiesFragment) getParentFragment())
-						.removeCookie(args.getString(EXTRA_COOKIE), false));
+						.removeCookie(args.getString(EXTRA_COOKIE)));
 			}
 			return dialogMenu.create();
 		}

@@ -13,6 +13,7 @@ import chan.http.HttpClient;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.content.database.CommonDatabase;
 import com.mishiranu.dashchan.content.database.PagesDatabase;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -68,6 +69,7 @@ public class MainApplication extends Application {
 			HttpClient.getInstance();
 			CommonDatabase.getInstance();
 			PagesDatabase.getInstance();
+			ChanDatabase.getInstance();
 			CacheManager.getInstance();
 			ChanManager.getInstance().loadLibraries();
 		} else if (checkProcess(PROCESS_WEB_VIEW)) {
