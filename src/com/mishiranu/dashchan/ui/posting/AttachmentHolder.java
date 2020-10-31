@@ -9,11 +9,9 @@ public class AttachmentHolder {
 	public final View view;
 	public final TextView fileName;
 	public final TextView fileSize;
-	public final View options;
 	public final ImageView imageView;
 	public final View warningButton;
 	public final View ratingButton;
-	public final View removeButton;
 
 	public String hash;
 	public String name;
@@ -24,15 +22,13 @@ public class AttachmentHolder {
 	public boolean optionSpoiler = false;
 	public GraphicsUtils.Reencoding reencoding;
 
-	public AttachmentHolder(View view, TextView fileName, TextView fileSize, View options, ImageView imageView,
-			View warningButton, View ratingButton, View removeButton) {
+	public AttachmentHolder(View view, TextView fileName, TextView fileSize, ImageView imageView,
+			View warningButton, View ratingButton) {
 		this.view = view;
 		this.fileName = fileName;
 		this.fileSize = fileSize;
-		this.options = options;
 		this.imageView = imageView;
 		this.warningButton = warningButton;
 		this.ratingButton = ratingButton;
-		this.removeButton = removeButton;
 	}
 }

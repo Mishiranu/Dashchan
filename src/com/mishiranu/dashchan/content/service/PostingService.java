@@ -504,14 +504,13 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 				builder.setContentTitle(getString(R.string.post_sent));
 				builder.setContentText(buildNotificationText(chan, data.boardName, targetThreadNumber, postNumber));
 				String tag = newPostData.tag;
-				Intent intent = new Intent(this, MainActivity.class)
+				Intent intent = new Intent(this, MainActivity.class).setAction(tag)
 						.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
 						.putExtra(C.EXTRA_CHAN_NAME, chanName)
 						.putExtra(C.EXTRA_BOARD_NAME, data.boardName)
 						.putExtra(C.EXTRA_THREAD_NUMBER, targetThreadNumber)
 						.putExtra(C.EXTRA_POST_NUMBER, postNumber != null ? postNumber.toString() : null);
-				// TODO Avoid hashCode collisions
-				builder.setContentIntent(PendingIntent.getActivity(this, tag.hashCode(), intent,
+				builder.setContentIntent(PendingIntent.getActivity(this, 0, intent,
 						PendingIntent.FLAG_UPDATE_CURRENT));
 				notificationManager.notify(tag, 0, builder.build());
 			}

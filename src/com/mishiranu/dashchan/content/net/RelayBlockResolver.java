@@ -103,11 +103,14 @@ public class RelayBlockResolver {
 		private final String apiKey;
 		private final String referer;
 		private final Object challengeExtra;
+		private final boolean allowSolveAutomatically;
 
-		public RelayBlockCaptchaReader(String apiKey, String referer, Object challengeExtra) {
+		public RelayBlockCaptchaReader(String apiKey, String referer,
+				Object challengeExtra, boolean allowSolveAutomatically) {
 			this.apiKey = apiKey;
 			this.referer = referer;
 			this.challengeExtra = challengeExtra;
+			this.allowSolveAutomatically = allowSolveAutomatically;
 		}
 
 		@Override
@@ -116,7 +119,7 @@ public class RelayBlockResolver {
 			captchaData.put(ChanPerformer.CaptchaData.API_KEY, apiKey);
 			captchaData.put(ChanPerformer.CaptchaData.REFERER, referer);
 			return new ReadCaptchaTask.Result(new ChanPerformer.ReadCaptchaResult
-					(ChanPerformer.CaptchaState.CAPTCHA, captchaData), challengeExtra);
+					(ChanPerformer.CaptchaState.CAPTCHA, captchaData), challengeExtra, allowSolveAutomatically);
 		}
 	}
 
@@ -156,15 +159,22 @@ public class RelayBlockResolver {
 			return client.onLoad(initialUri, Uri.parse(uriString));
 		}
 
-		private boolean captchaRetry = false;
+		private boolean retry = false;
+
+		private boolean isRetry() {
+			try {
+				return retry;
+			} finally {
+				retry = true;
+			}
+		}
 
 		private String requireUserCaptcha(String captchaType, String apiKey, String referer,
-				Object challengeExtra) {
-			boolean retry = captchaRetry;
-			captchaRetry = true;
+				Object challengeExtra, boolean allowSolveAutomatically, boolean retry) {
 			String description = MainApplication.getInstance().getLocalizedContext().getString
 					(R.string.relay_block__format_sentence, client.getName());
-			RelayBlockCaptchaReader reader = new RelayBlockCaptchaReader(apiKey, referer, challengeExtra);
+			RelayBlockCaptchaReader reader = new RelayBlockCaptchaReader(apiKey, referer,
+					challengeExtra, allowSolveAutomatically);
 			ChanPerformer.CaptchaData captchaData = ForegroundManager.getInstance().requireUserCaptcha(reader,
 					captchaType, null, null, null, null, description, retry);
 			if (captchaData == null) {
@@ -175,13 +185,16 @@ public class RelayBlockResolver {
 
 		@Override
 		public String onRecaptchaV2(String apiKey, boolean invisible, String referer) {
+			boolean retry = isRetry();
+			boolean allowSolveAutomatically = !retry;
 			String captchaType = invisible ? ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE
 					: ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2;
 			RecaptchaReader.ChallengeExtra challengeExtra;
 			HttpHolder holder = new HttpHolder(Chan.getFallback());
 			try (HttpHolder.Use ignored = holder.use()) {
-				challengeExtra = RecaptchaReader.getInstance().getChallenge2(holder, apiKey, invisible, referer,
-						Preferences.isRecaptchaJavascript(), true);
+				challengeExtra = RecaptchaReader.getInstance().getChallenge2(holder,
+						apiKey, invisible, referer, Preferences.isRecaptchaJavascript(),
+						true, allowSolveAutomatically);
 			} catch (RecaptchaReader.CancelException | HttpException e) {
 				return null;
 			}
@@ -189,7 +202,8 @@ public class RelayBlockResolver {
 				if (challengeExtra != null && challengeExtra.response != null) {
 					return challengeExtra.response;
 				}
-				return requireUserCaptcha(captchaType, apiKey, referer, challengeExtra);
+				return requireUserCaptcha(captchaType, apiKey, referer, challengeExtra,
+						allowSolveAutomatically, retry);
 			} finally {
 				if (challengeExtra != null) {
 					challengeExtra.cleanup();
@@ -199,9 +213,13 @@ public class RelayBlockResolver {
 
 		@Override
 		public String onHcaptcha(String apiKey, String referer) {
+			boolean retry = isRetry();
+			boolean allowSolveAutomatically = !retry;
 			RecaptchaReader.ChallengeExtra challengeExtra;
-			try {
-				challengeExtra = RecaptchaReader.getInstance().getChallengeHcaptcha(apiKey, referer, true);
+			HttpHolder holder = new HttpHolder(Chan.getFallback());
+			try (HttpHolder.Use ignored = holder.use()) {
+				challengeExtra = RecaptchaReader.getInstance().getChallengeHcaptcha(holder,
+						apiKey, referer, true, allowSolveAutomatically);
 			} catch (RecaptchaReader.CancelException | HttpException e) {
 				return null;
 			}
@@ -210,7 +228,7 @@ public class RelayBlockResolver {
 					return challengeExtra.response;
 				}
 				return requireUserCaptcha(ChanConfiguration.CAPTCHA_TYPE_HCAPTCHA,
-						apiKey, referer, challengeExtra);
+						apiKey, referer, challengeExtra, allowSolveAutomatically, retry);
 			} finally {
 				if (challengeExtra != null) {
 					challengeExtra.cleanup();

@@ -19,7 +19,10 @@ import com.mishiranu.dashchan.text.SimilarTextEstimator;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SendPostTask<Key> extends HttpHolderTask<long[], Boolean> {
+public class SendPostTask<Key> extends ExecutorTask<long[], Boolean> {
+	private final HttpHolder chanHolder;
+	private final HttpHolder fallbackHolder = new HttpHolder(Chan.getFallback());
+
 	private final Key key;
 	private final Callback<Key> callback;
 	private final Chan chan;
@@ -72,7 +75,7 @@ public class SendPostTask<Key> extends HttpHolderTask<long[], Boolean> {
 	}
 
 	public SendPostTask(Key key, Callback<Key> callback, Chan chan, ChanPerformer.SendPostData data) {
-		super(chan);
+		chanHolder = new HttpHolder(chan);
 		this.key = key;
 		this.callback = callback;
 		this.chan = chan;
@@ -115,19 +118,37 @@ public class SendPostTask<Key> extends HttpHolderTask<long[], Boolean> {
 	}
 
 	@Override
-	protected Boolean run(HttpHolder holder) {
-		try {
+	protected Boolean run() {
+		try (HttpHolder.Use ignore1 = chanHolder.use()) {
 			ChanPerformer.SendPostData data = this.data;
-			if (data.captchaData != null && (ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(data.captchaType) ||
-					ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE.equals(data.captchaType) ||
-					ChanConfiguration.CAPTCHA_TYPE_HCAPTCHA.equals(data.captchaType))) {
+			if (data.captchaNeedLoad) {
+				boolean success = false;
+				if (data.captchaData != null) {
+					try (HttpHolder.Use ignore2 = fallbackHolder.use()) {
+						String response = ReadCaptchaTask.readForegroundCaptcha(fallbackHolder,
+							chan.name, data.captchaData, data.captchaType);
+						if (response != null) {
+							data.captchaData.put(ChanPerformer.CaptchaData.INPUT, response);
+							success = true;
+						}
+					}
+				}
+				if (!success) {
+					// Don't switch captchaError
+					errorItem = new ErrorItem(ErrorItem.Type.API, ApiException.SEND_ERROR_CAPTCHA);
+					return false;
+				}
+			} else if (data.captchaData != null &&
+					(ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2.equals(data.captchaType) ||
+							ChanConfiguration.CAPTCHA_TYPE_RECAPTCHA_2_INVISIBLE.equals(data.captchaType) ||
+							ChanConfiguration.CAPTCHA_TYPE_HCAPTCHA.equals(data.captchaType))) {
 				data.captchaData.put(ChanPerformer.CaptchaData.INPUT,
 						data.captchaData.get(ReadCaptchaTask.RECAPTCHA_SKIP_RESPONSE));
 			}
 			if (isCancelled()) {
 				return false;
 			}
-			data.holder = holder;
+			data.holder = chanHolder;
 			data.listener = progressHandler;
 			ChanPerformer.SendPostResult result = chan.performer.safe().onSendPost(data);
 			if (data.threadNumber == null && (result == null || result.threadNumber == null)) {
@@ -176,6 +197,13 @@ public class SendPostTask<Key> extends HttpHolderTask<long[], Boolean> {
 		} finally {
 			chan.configuration.commit();
 		}
+	}
+
+	@Override
+	public void cancel() {
+		super.cancel();
+		chanHolder.interrupt();
+		fallbackHolder.interrupt();
 	}
 
 	@Override

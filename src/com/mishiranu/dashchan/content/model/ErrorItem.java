@@ -31,6 +31,8 @@ public final class ErrorItem implements Parcelable {
 		INSUFFICIENT_SPACE,
 		EXTENSION,
 		RELAY_BLOCK,
+		UNSUPPORTED_SERVICE,
+		INVALID_AUTHORIZATION_DATA,
 		UNSUPPORTED_RECAPTCHA
 	}
 
@@ -149,6 +151,14 @@ public final class ErrorItem implements Parcelable {
 			}
 			case RELAY_BLOCK: {
 				resId = R.string.ddos_protection_bypass_failed;
+				break;
+			}
+			case UNSUPPORTED_SERVICE: {
+				resId = R.string.unsupported_service;
+				break;
+			}
+			case INVALID_AUTHORIZATION_DATA: {
+				resId = R.string.invalid_authorization_data;
 				break;
 			}
 			case UNSUPPORTED_RECAPTCHA: {

@@ -124,7 +124,7 @@ public class ForegroundManager implements Handler.Callback {
 		private static final String EXTRA_FORCE_CAPTCHA = "forceCaptcha";
 		private static final String EXTRA_MAY_SHOW_LOAD_BUTTON = "mayShowLoadButton";
 
-		private ChanPerformer.CaptchaState captchaState;
+		private ReadCaptchaTask.CaptchaState captchaState;
 		private ChanConfiguration.Captcha.Input loadedInput;
 		private Bitmap image;
 		private boolean large;
@@ -164,8 +164,8 @@ public class ForegroundManager implements Handler.Callback {
 			boolean needLoad = true;
 			if (pendingData.captchaData != null && savedInstanceState != null) {
 				String captchaStateString = savedInstanceState.getString(EXTRA_CAPTCHA_STATE);
-				ChanPerformer.CaptchaState captchaState = captchaStateString != null
-						? ChanPerformer.CaptchaState.valueOf(captchaStateString) : null;
+				ReadCaptchaTask.CaptchaState captchaState = captchaStateString != null
+						? ReadCaptchaTask.CaptchaState.valueOf(captchaStateString) : null;
 				Bitmap image = savedInstanceState.getParcelable(EXTRA_IMAGE);
 				if (captchaState != null) {
 					String loadedInputString = savedInstanceState.getString(EXTRA_LOADED_INPUT);
@@ -210,7 +210,7 @@ public class ForegroundManager implements Handler.Callback {
 
 		private static class ReadCaptchaHolder extends AsyncManager.Holder implements ReadCaptchaTask.Callback {
 			@Override
-			public void onReadCaptchaSuccess(ChanPerformer.CaptchaState captchaState,
+			public void onReadCaptchaSuccess(ReadCaptchaTask.CaptchaState captchaState,
 					ChanPerformer.CaptchaData captchaData, String captchaType, ChanConfiguration.Captcha.Input input,
 					ChanConfiguration.Captcha.Validity validity, Bitmap image, boolean large, boolean blackAndWhite) {
 				storeResult("onReadCaptchaSuccess", captchaState, captchaData, captchaType, input, validity,
@@ -246,7 +246,7 @@ public class ForegroundManager implements Handler.Callback {
 		public void onFinishTaskExecution(String name, AsyncManager.Holder holder) {
 			String methodName = holder.nextArgument();
 			if ("onReadCaptchaSuccess".equals(methodName)) {
-				ChanPerformer.CaptchaState captchaState = holder.nextArgument();
+				ReadCaptchaTask.CaptchaState captchaState = holder.nextArgument();
 				ChanPerformer.CaptchaData captchaData = holder.nextArgument();
 				String captchaType = holder.nextArgument();
 				ChanConfiguration.Captcha.Input input = holder.nextArgument();
@@ -268,7 +268,7 @@ public class ForegroundManager implements Handler.Callback {
 		}
 
 		@Override
-		public void onReadCaptchaSuccess(ChanPerformer.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
+		public void onReadCaptchaSuccess(ReadCaptchaTask.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
 				String captchaType, ChanConfiguration.Captcha.Input input, ChanConfiguration.Captcha.Validity validity,
 				Bitmap image, boolean large, boolean blackAndWhite) {
 			CaptchaPendingData pendingData = getPendingData(true);
@@ -278,7 +278,7 @@ public class ForegroundManager implements Handler.Callback {
 			pendingData.captchaData = captchaData != null ? captchaData : new ChanPerformer.CaptchaData();
 			pendingData.loadedCaptchaType = captchaType;
 			showCaptcha(captchaState, captchaType, input, image, large, blackAndWhite);
-			if (isResumed() && captchaState == ChanPerformer.CaptchaState.SKIP) {
+			if (isResumed() && captchaState == ReadCaptchaTask.CaptchaState.SKIP) {
 				onConfirmCaptcha();
 			}
 		}
@@ -293,7 +293,7 @@ public class ForegroundManager implements Handler.Callback {
 			captchaForm.showError();
 		}
 
-		private void showCaptcha(ChanPerformer.CaptchaState captchaState, String captchaType,
+		private void showCaptcha(ReadCaptchaTask.CaptchaState captchaState, String captchaType,
 				ChanConfiguration.Captcha.Input input, Bitmap image, boolean large, boolean blackAndWhite) {
 			this.captchaState = captchaState;
 			if (captchaType != null && input == null) {
@@ -326,7 +326,8 @@ public class ForegroundManager implements Handler.Callback {
 		private void updatePositiveButtonState() {
 			if (positiveButton != null) {
 				positiveButton.setEnabled(captchaState != null &&
-						captchaState != ChanPerformer.CaptchaState.NEED_LOAD);
+						captchaState != ReadCaptchaTask.CaptchaState.NEED_LOAD &&
+						captchaState != ReadCaptchaTask.CaptchaState.MAY_LOAD);
 			}
 		}
 

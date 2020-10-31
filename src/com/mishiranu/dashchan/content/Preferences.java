@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -292,6 +293,51 @@ public class Preferences {
 			return unpackOrCastMultipleValues(value, authorization.fieldsCount);
 		} else {
 			return null;
+		}
+	}
+
+	public static final String KEY_CAPTCHA_SOLVING = "captcha_solving";
+	public static final String SUB_KEY_CAPTCHA_SOLVING_ENDPOINT = "endpoint";
+	public static final String SUB_KEY_CAPTCHA_SOLVING_TOKEN = "token";
+	public static final List<String> KEYS_CAPTCHA_SOLVING = Arrays
+			.asList(SUB_KEY_CAPTCHA_SOLVING_ENDPOINT, SUB_KEY_CAPTCHA_SOLVING_TOKEN);
+
+	public static Map<String, String> getCaptchaSolving() {
+		String value = PREFERENCES.getString(KEY_CAPTCHA_SOLVING, null);
+		return unpackOrCastMultipleValues(value, KEYS_CAPTCHA_SOLVING);
+	}
+
+	public static final String KEY_CAPTCHA_SOLVING_CHANS = "captcha_solving_chans";
+
+	public static Set<String> getCaptchaSolvingChans() {
+		String value = PREFERENCES.getString(KEY_CAPTCHA_SOLVING_CHANS, null);
+		if (StringUtils.isEmpty(value)) {
+			return Collections.emptySet();
+		}
+		try {
+			JSONArray jsonArray = new JSONArray(value);
+			HashSet<String> chanNames = new HashSet<>(jsonArray.length());
+			for (int i = 0; i < jsonArray.length(); i++) {
+				String chanName = jsonArray.optString(i);
+				if (!StringUtils.isEmpty(chanName)) {
+					chanNames.add(chanName);
+				}
+			}
+			return chanNames;
+		} catch (JSONException e) {
+			return Collections.emptySet();
+		}
+	}
+
+	public static void setCaptchaSolvingChans(Collection<String> chanNames) {
+		if (chanNames == null || chanNames.isEmpty()) {
+			PREFERENCES.edit().remove(KEY_CAPTCHA_SOLVING_CHANS).commit();
+		} else {
+			JSONArray jsonArray = new JSONArray();
+			for (String chanName : chanNames) {
+				jsonArray.put(chanName);
+			}
+			PREFERENCES.edit().putString(KEY_CAPTCHA_SOLVING_CHANS, jsonArray.toString()).commit();
 		}
 	}
 

@@ -810,6 +810,10 @@ public class ChanPerformer implements Chan.Linked {
 			return data.get(key);
 		}
 
+		public CaptchaData copy() {
+			return new CaptchaData(new HashMap<>(data));
+		}
+
 		@Override
 		public int describeContents() {
 			return 0;
@@ -862,6 +866,7 @@ public class ChanPerformer implements Chan.Linked {
 
 		@Public public final String captchaType;
 		@Public public final CaptchaData captchaData;
+		public final boolean captchaNeedLoad;
 
 		public final int connectTimeout;
 		public final int readTimeout;
@@ -1033,7 +1038,7 @@ public class ChanPerformer implements Chan.Linked {
 		public SendPostData(String boardName, String threadNumber, String subject, String comment,
 				String name, String email, String password, Attachment[] attachments, boolean optionSage,
 				boolean optionSpoiler, boolean optionOriginalPoster, String userIcon, String captchaType,
-				CaptchaData captchaData, int connectTimeout, int readTimeout) {
+				CaptchaData captchaData, boolean captchaNeedLoad, int connectTimeout, int readTimeout) {
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
 			this.subject = subject;
@@ -1048,6 +1053,7 @@ public class ChanPerformer implements Chan.Linked {
 			this.userIcon = userIcon;
 			this.captchaType = captchaType;
 			this.captchaData = captchaData;
+			this.captchaNeedLoad = captchaNeedLoad;
 			this.connectTimeout = connectTimeout;
 			this.readTimeout = readTimeout;
 		}

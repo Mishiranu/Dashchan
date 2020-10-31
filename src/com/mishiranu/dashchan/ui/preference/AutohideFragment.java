@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.ui.preference;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.Layout;
@@ -40,6 +39,7 @@ import com.mishiranu.dashchan.widget.MenuExpandListener;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -344,7 +344,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 		}
 	}
 
-	public static class AutohideDialog extends DialogFragment implements View.OnClickListener {
+	public static class AutohideDialog extends DialogFragment implements ChanMultiChoiceDialog.Callback {
 		private static final String EXTRA_ITEM = "item";
 		private static final String EXTRA_INDEX = "index";
 
@@ -396,7 +396,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 			testStringEdit = view.findViewById(R.id.test_string);
 			valueEdit.addTextChangedListener(valueListener);
 			testStringEdit.addTextChangedListener(testStringListener);
-			chanNameSelector.setOnClickListener(this);
+			chanNameSelector.setOnClickListener(v -> new ChanMultiChoiceDialog(selectedChanNames).show(this));
 			if (!ChanManager.getInstance().hasMultipleAvailableChans()) {
 				chanNameSelector.setVisibility(View.GONE);
 			}
@@ -461,12 +461,6 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 			return dialog;
 		}
 
-		@Override
-		public void onClick(View v) {
-			MultipleChanDialog dialog = new MultipleChanDialog(new ArrayList<>(selectedChanNames));
-			dialog.show(getChildFragmentManager(), MultipleChanDialog.class.getName());
-		}
-
 		private void updateSelectedText() {
 			String chanNameText;
 			int size = selectedChanNames.size();
@@ -498,9 +492,10 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 					optionSubject, optionComment, optionName, optionFileName, value);
 		}
 
-		private void onChansSelected(ArrayList<String> selected) {
+		@Override
+		public void onChansSelected(Collection<String> chanNames) {
 			selectedChanNames.clear();
-			selectedChanNames.addAll(selected);
+			selectedChanNames.addAll(chanNames);
 			updateSelectedText();
 		}
 
@@ -618,69 +613,5 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 			@Override
 			public void afterTextChanged(Editable s) {}
 		};
-	}
-
-	public static class MultipleChanDialog extends DialogFragment
-			implements DialogInterface.OnMultiChoiceClickListener {
-		private static final String EXTRA_SELECTED = "selected";
-		private static final String EXTRA_CHECKED = "checked";
-
-		public MultipleChanDialog() {}
-
-		public MultipleChanDialog(ArrayList<String> selected) {
-			Bundle args = new Bundle();
-			args.putStringArrayList(EXTRA_SELECTED, selected);
-			setArguments(args);
-		}
-
-		private boolean[] checkedItems;
-
-		@NonNull
-		@Override
-		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
-			ArrayList<Chan> chans = new ArrayList<>();
-			for (Chan chan : ChanManager.getInstance().getAvailableChans()) {
-				chans.add(chan);
-			}
-			String[] items = new String[chans.size()];
-			for (int i = 0; i < chans.size(); i++) {
-				items[i] = chans.get(i).configuration.getTitle();
-			}
-			boolean[] checkedItems = savedInstanceState != null ? savedInstanceState
-					.getBooleanArray(EXTRA_CHECKED) : null;
-			// size != length means some chans were added or deleted while configuration was changing (very rare case)
-			if (checkedItems == null || chans.size() != checkedItems.length) {
-				ArrayList<String> selected = requireArguments().getStringArrayList(EXTRA_SELECTED);
-				checkedItems = new boolean[items.length];
-				for (int i = 0; i < chans.size(); i++) {
-					checkedItems[i] = selected.contains(chans.get(i).name);
-				}
-			}
-			this.checkedItems = checkedItems;
-			return new AlertDialog.Builder(requireContext())
-					.setMultiChoiceItems(items, checkedItems, this)
-					.setNegativeButton(android.R.string.cancel, null)
-					.setPositiveButton(android.R.string.ok, (d, which) -> {
-						ArrayList<String> selected = new ArrayList<>();
-						for (int i = 0; i < chans.size(); i++) {
-							if (this.checkedItems[i]) {
-								selected.add(chans.get(i).name);
-							}
-						}
-						((AutohideDialog) getParentFragment()).onChansSelected(selected);
-					})
-					.create();
-		}
-
-		@Override
-		public void onSaveInstanceState(@NonNull Bundle outState) {
-			super.onSaveInstanceState(outState);
-			outState.putBooleanArray(EXTRA_CHECKED, checkedItems);
-		}
-
-		@Override
-		public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-			checkedItems[which] = isChecked;
-		}
 	}
 }

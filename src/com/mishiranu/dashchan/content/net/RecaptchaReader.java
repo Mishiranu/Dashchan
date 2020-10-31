@@ -112,8 +112,17 @@ public class RecaptchaReader {
 	}
 
 	public ChallengeExtra getChallenge2(HttpHolder initialHolder, String apiKey, boolean invisible,
-			String referer, boolean useJavaScript, boolean solve) throws CancelException, HttpException {
+			String referer, boolean useJavaScript, boolean solveInBackground, boolean solveAutomatically)
+			throws CancelException, HttpException {
 		String refererFinal = referer != null ? referer : "https://www.google.com/";
+		if (solveAutomatically) {
+			String autoResponse = CaptchaSolving.getInstance().solveCaptcha(initialHolder,
+					invisible ? CaptchaSolving.CaptchaType.RECAPTCHA_2_INVISIBLE :
+							CaptchaSolving.CaptchaType.RECAPTCHA_2, apiKey, refererFinal);
+			if (autoResponse != null) {
+				return new ChallengeExtra(null, autoResponse, null);
+			}
+		}
 		if (useJavaScript && C.API_KITKAT) {
 			ChallengeExtra.ForegroundSolver solver = (newHolder, challengeExtra) -> {
 				synchronized (accessLock) {
@@ -126,7 +135,7 @@ public class RecaptchaReader {
 				}
 			};
 			synchronized (accessLock) {
-				if (solve) {
+				if (solveInBackground) {
 					return new BackgroundSolver(solver, refererFinal, apiKey, invisible, false).await();
 				} else {
 					return new ChallengeExtra(solver, null, null);
@@ -149,7 +158,8 @@ public class RecaptchaReader {
 				if (initialResponseText
 						.contains("Please enable JavaScript to get a reCAPTCHA challenge")) {
 					if (C.API_KITKAT) {
-						return getChallenge2(initialHolder, apiKey, invisible, refererFinal, true, solve);
+						return getChallenge2(initialHolder, apiKey, invisible, refererFinal,
+								true, solveInBackground, false);
 					} else {
 						throw new HttpException(ErrorItem.Type.UNSUPPORTED_RECAPTCHA, false, false);
 					}
@@ -215,9 +225,16 @@ public class RecaptchaReader {
 		}
 	}
 
-	public ChallengeExtra getChallengeHcaptcha(String apiKey, String referer, boolean solveInBackground)
-			throws CancelException, HttpException {
+	public ChallengeExtra getChallengeHcaptcha(HttpHolder initialHolder, String apiKey, String referer,
+			boolean solveInBackground, boolean solveAutomatically) throws CancelException, HttpException {
 		String refererFinal = referer != null ? referer : "https://www.hcaptcha.com/";
+		if (solveAutomatically) {
+			String autoResponse = CaptchaSolving.getInstance().solveCaptcha(initialHolder,
+					CaptchaSolving.CaptchaType.HCAPTCHA, apiKey, refererFinal);
+			if (autoResponse != null) {
+				return new ChallengeExtra(null, autoResponse, null);
+			}
+		}
 		ChallengeExtra.ForegroundSolver solver = (holder, challengeExtra) -> {
 			synchronized (accessLock) {
 				String response = ForegroundManager.getInstance()

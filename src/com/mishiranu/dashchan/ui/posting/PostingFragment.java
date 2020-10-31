@@ -5,7 +5,6 @@ import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
@@ -150,7 +149,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 	private List<Pair<String, String>> attachmentRatingItems;
 
 	private String captchaType;
-	private ChanPerformer.CaptchaState captchaState;
+	private ReadCaptchaTask.CaptchaState captchaState;
 	private ChanPerformer.CaptchaData captchaData;
 	private String loadedCaptchaType;
 	private ChanConfiguration.Captcha.Input loadedCaptchaInput;
@@ -181,6 +180,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 
 	private final ArrayList<AttachmentHolder> attachments = new ArrayList<>();
 
+	private boolean allowDialog = true;
 	private boolean sendButtonEnabled = true;
 
 	private PostingService.Binder postingBinder;
@@ -482,7 +482,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 				}
 				if (captchaDraft.loadedValidity != null) {
 					ChanConfiguration.Captcha.Validity loadedCaptchaValidity = captchaDraft.loadedValidity;
-					if (captchaDraft.captchaState != ChanPerformer.CaptchaState.CAPTCHA ||
+					if (captchaDraft.captchaState != ReadCaptchaTask.CaptchaState.CAPTCHA ||
 							captchaValidity.compareTo(loadedCaptchaValidity) >= 0) {
 						// Allow only reducing of validity
 						captchaValidity = loadedCaptchaValidity;
@@ -514,14 +514,15 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 					}
 				}
 				if (canLoadState && CommonUtils.equals(captchaType, captchaDraft.captchaType)) {
-					if (captchaDraft.captchaState == ChanPerformer.CaptchaState.CAPTCHA && captchaDraft.image != null) {
-						showCaptcha(ChanPerformer.CaptchaState.CAPTCHA, captchaDraft.captchaData, null,
+					if (captchaDraft.captchaState == ReadCaptchaTask.CaptchaState.CAPTCHA &&
+							captchaDraft.image != null) {
+						showCaptcha(ReadCaptchaTask.CaptchaState.CAPTCHA, captchaDraft.captchaData, null,
 								captchaDraft.loadedInput, captchaDraft.loadedValidity,
 								captchaDraft.image, captchaDraft.large, captchaDraft.blackAndWhite);
 						captchaForm.setText(captchaDraft.text);
 						captchaRestoreSuccess = true;
-					} else if (canLoadState && (captchaDraft.captchaState == ChanPerformer.CaptchaState.SKIP
-							|| captchaDraft.captchaState == ChanPerformer.CaptchaState.PASS)) {
+					} else if (canLoadState && (captchaDraft.captchaState == ReadCaptchaTask.CaptchaState.SKIP
+							|| captchaDraft.captchaState == ReadCaptchaTask.CaptchaState.PASS)) {
 						showCaptcha(captchaDraft.captchaState, captchaDraft.captchaData, null, null,
 								captchaDraft.loadedValidity, null, false, false);
 						captchaRestoreSuccess = true;
@@ -807,7 +808,8 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 					? View.VISIBLE : View.GONE);
 			boolean showPersonalDataBlock = !Preferences.isHidePersonalData();
 			if (showPersonalDataBlock) {
-				showPersonalDataBlock = posting.allowName || posting.allowEmail || needPassword || userIconItems != null;
+				showPersonalDataBlock = posting.allowName || posting.allowEmail ||
+						needPassword || userIconItems != null;
 			}
 			personalDataBlock.setVisibility(showPersonalDataBlock ? View.VISIBLE : View.GONE);
 			commentEditWatcher.updateConfiguration(postingConfiguration);
@@ -988,7 +990,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 
 	private void updateSendButtonState() {
 		sendButton.setEnabled(sendButtonEnabled && captchaState != null &&
-				captchaState != ChanPerformer.CaptchaState.NEED_LOAD);
+				captchaState != ReadCaptchaTask.CaptchaState.NEED_LOAD);
 	}
 
 	private String getTextIfVisible(EditText editText) {
@@ -1048,32 +1050,42 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		if (array.size() > 0) {
 			attachments = CommonUtils.toArray(array, ChanPerformer.SendPostData.Attachment.class);
 		}
+		String captchaType = loadedCaptchaType != null ? loadedCaptchaType : this.captchaType;
 		ChanPerformer.CaptchaData captchaData = this.captchaData;
 		if (captchaData != null) {
+			captchaData = captchaData.copy();
 			captchaData.put(ChanPerformer.CaptchaData.INPUT, captchaForm.getInput());
 		}
-		String captchaType = loadedCaptchaType != null ? loadedCaptchaType : this.captchaType;
+		boolean captchaNeedLoad = captchaState == ReadCaptchaTask.CaptchaState.MAY_LOAD;
 		ChanPerformer.SendPostData data = new ChanPerformer.SendPostData(getBoardName(), getThreadNumber(),
 				subject, comment, name, email, password, attachments, optionSage, optionSpoiler, optionOriginalPoster,
-				userIcon, captchaType, captchaData, 15000, 45000);
+				userIcon, captchaType, captchaData, captchaNeedLoad, 15000, 45000);
 		DraftsStorage.getInstance().store(obtainPostDraft());
+		allowDialog = false;
 		if (postingBinder.executeSendPost(getChanName(), data)) {
 			sendButtonEnabled = false;
 			updateSendButtonState();
+			if (progressDialog != null) {
+				progressDialog.dismiss();
+				progressDialog = null;
+			}
+			onSendPostMinimize();
+		} else {
+			allowDialog = true;
 		}
 	}
 
 	private ProgressDialog progressDialog;
 
-	private final DialogInterface.OnCancelListener sendPostCancelListener = dialog -> {
+	private void onSendPostCancel() {
 		progressDialog = null;
 		postingBinder.cancelSendPost(getChanName(), getBoardName(), getThreadNumber());
-	};
+	}
 
-	private final DialogInterface.OnClickListener sendPostMinimizeListener = (dialog, which) -> {
+	private void onSendPostMinimize() {
 		progressDialog = null;
 		((FragmentHandler) requireActivity()).removeFragment();
-	};
+	}
 
 	private void dismissSendPost() {
 		if (progressDialog != null) {
@@ -1090,13 +1102,17 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		@Override
 		public void onState(boolean progressMode, SendPostTask.ProgressState progressState,
 				int attachmentIndex, int attachmentsCount) {
-			if (progressDialog == null) {
+			if (allowDialog && progressDialog == null) {
 				progressDialog = new ProgressDialog(requireContext(), progressMode ? "%1$d / %2$d kB" : null);
-				progressDialog.setCancelable(true);
-				progressDialog.setOnCancelListener(sendPostCancelListener);
+				progressDialog.setOnCancelListener(d -> onSendPostCancel());
 				progressDialog.setButton(ProgressDialog.BUTTON_POSITIVE, getString(R.string.minimize),
-						sendPostMinimizeListener);
+						(d, w) -> onSendPostMinimize());
+				progressDialog.setButton(ProgressDialog.BUTTON_NEGATIVE, getString(android.R.string.cancel),
+						(d, w) -> onSendPostCancel());
 				progressDialog.show();
+			}
+			if (progressDialog == null) {
+				return;
 			}
 			switch (progressState) {
 				case CONNECTING: {
@@ -1178,9 +1194,9 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 
 	private static class ReadCaptchaHolder extends AsyncManager.Holder implements ReadCaptchaTask.Callback {
 		@Override
-		public void onReadCaptchaSuccess(ChanPerformer.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
-				String captchaType, ChanConfiguration.Captcha.Input input, ChanConfiguration.Captcha.Validity validity,
-				Bitmap image, boolean large, boolean blackAndWhite) {
+		public void onReadCaptchaSuccess(ReadCaptchaTask.CaptchaState captchaState,
+				ChanPerformer.CaptchaData captchaData, String captchaType, ChanConfiguration.Captcha.Input input,
+				ChanConfiguration.Captcha.Validity validity, Bitmap image, boolean large, boolean blackAndWhite) {
 			storeResult("onReadCaptchaSuccess", captchaState, captchaData, captchaType, input, validity,
 					image, large, blackAndWhite);
 		}
@@ -1208,7 +1224,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 	public void onFinishTaskExecution(String name, AsyncManager.Holder holder) {
 		String methodName = holder.nextArgument();
 		if ("onReadCaptchaSuccess".equals(methodName)) {
-			ChanPerformer.CaptchaState captchaState = holder.nextArgument();
+			ReadCaptchaTask.CaptchaState captchaState = holder.nextArgument();
 			ChanPerformer.CaptchaData captchaData = holder.nextArgument();
 			String captchaType = holder.nextArgument();
 			ChanConfiguration.Captcha.Input input = holder.nextArgument();
@@ -1229,7 +1245,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 	}
 
 	@Override
-	public void onReadCaptchaSuccess(ChanPerformer.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
+	public void onReadCaptchaSuccess(ReadCaptchaTask.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
 			String captchaType, ChanConfiguration.Captcha.Input input, ChanConfiguration.Captcha.Validity validity,
 			Bitmap image, boolean large, boolean blackAndWhite) {
 		captchaLoadTime = SystemClock.elapsedRealtime();
@@ -1244,7 +1260,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		updatePostingConfigurationIfNeeded();
 	}
 
-	private void showCaptcha(ChanPerformer.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
+	private void showCaptcha(ReadCaptchaTask.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
 			String captchaType, ChanConfiguration.Captcha.Input input, ChanConfiguration.Captcha.Validity validity,
 			Bitmap image, boolean large, boolean blackAndWhite) {
 		this.captchaState = captchaState;
@@ -1532,8 +1548,8 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		View removeButton = addAttachmentButton(controls, minHeight,
 				R.attr.iconButtonCancel, attachmentRemoveListener);
 
-		AttachmentHolder holder = new AttachmentHolder(view, fileName, fileSize, options, imageView,
-				warningButton, ratingButton, removeButton);
+		AttachmentHolder holder = new AttachmentHolder(view, fileName, fileSize, imageView,
+				warningButton, ratingButton);
 		warningButton.setTag(holder);
 		ratingButton.setTag(holder);
 		removeButton.setTag(holder);

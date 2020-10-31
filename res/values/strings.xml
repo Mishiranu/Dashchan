@@ -61,6 +61,8 @@
 	<string name="captcha_is_not_valid">Captcha is not valid</string>
 	<string name="captcha_pass">Captcha pass</string>
 	<string name="captcha_pass__summary">Allows to skip captcha</string>
+	<string name="captcha_solving">Captcha solving</string>
+	<string name="captcha_solving__summary">Use external service to solve reCAPTCHA or hCaptcha automatically</string>
 	<string name="captcha_type">Captcha type</string>
 	<string name="cards">Cards</string>
 	<string name="catalog">Catalog</string>
@@ -494,6 +496,7 @@
 	<string name="unknown_error">Unknown error</string>
 	<string name="unsafe_redirect">Unsafe redirection</string>
 	<string name="unsorted">Unsorted</string>
+	<string name="unsupported_service">Unsupported service</string>
 	<string name="unsupported_version">Unsupported version</string>
 	<string name="update_reminder__sentence">You can track downloading progress in notification bar.\n\nYou can install
 		applications when download finishes.</string>

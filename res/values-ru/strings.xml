@@ -59,6 +59,9 @@
 	<string name="captcha_is_not_valid">Неправильная капча</string>
 	<string name="captcha_pass">Пропуск капчи</string>
 	<string name="captcha_pass__summary">Код для пропуска капчи</string>
+	<string name="captcha_solving">Решение капчи</string>
+	<string name="captcha_solving__summary">Использование стороннего сервиса для автоматического решения
+		reCAPTCHA или hCaptcha</string>
 	<string name="captcha_type">Тип капчи</string>
 	<string name="cards">Карточки</string>
 	<string name="catalog">Каталог</string>
@@ -511,6 +514,7 @@
 	<string name="unknown_error">Неизвестная ошибка</string>
 	<string name="unsafe_redirect">Небезопасное перенаправление</string>
 	<string name="unsorted">Без сортировки</string>
+	<string name="unsupported_service">Неподдерживаемый сервис</string>
 	<string name="unsupported_version">Неподдерживаемая версия</string>
 	<string name="update_reminder__sentence">Прогресс загрузки можно отследить в панели уведомлений.\n\nВы можете
 		установить приложения после окончания загрузки.</string>

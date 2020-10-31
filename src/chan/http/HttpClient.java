@@ -390,8 +390,8 @@ public class HttpClient {
 
 	URL encodeUri(Uri uri) throws MalformedURLException {
 		StringBuilder uriStringBuilder = new StringBuilder();
-		uriStringBuilder.append(uri.getScheme()).append("://");
-		String host = IDN.toASCII(uri.getHost());
+		uriStringBuilder.append(StringUtils.emptyIfNull(uri.getScheme())).append("://");
+		String host = IDN.toASCII(StringUtils.emptyIfNull(uri.getHost()));
 		uriStringBuilder.append(host);
 		int port = uri.getPort();
 		if (port != -1) {

@@ -12,6 +12,7 @@ import chan.text.JsonSerial;
 import chan.text.ParseException;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.MainApplication;
+import com.mishiranu.dashchan.content.async.ReadCaptchaTask;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.Hasher;
@@ -504,7 +505,7 @@ public class DraftsStorage extends StorageManager.Storage<Pair<List<DraftsStorag
 
 	public static class CaptchaDraft implements Parcelable {
 		public final String captchaType;
-		public final ChanPerformer.CaptchaState captchaState;
+		public final ReadCaptchaTask.CaptchaState captchaState;
 		public final ChanPerformer.CaptchaData captchaData;
 		public final String loadedCaptchaType;
 		public final ChanConfiguration.Captcha.Input loadedInput;
@@ -518,7 +519,7 @@ public class DraftsStorage extends StorageManager.Storage<Pair<List<DraftsStorag
 		public final String boardName;
 		public final String threadNumber;
 
-		public CaptchaDraft(String captchaType, ChanPerformer.CaptchaState captchaState,
+		public CaptchaDraft(String captchaType, ReadCaptchaTask.CaptchaState captchaState,
 				ChanPerformer.CaptchaData captchaData, String loadedCaptchaType,
 				ChanConfiguration.Captcha.Input loadedInput, ChanConfiguration.Captcha.Validity loadedValidity,
 				String text, Bitmap image, boolean large, boolean blackAndWhite, long loadTime,
@@ -575,8 +576,8 @@ public class DraftsStorage extends StorageManager.Storage<Pair<List<DraftsStorag
 			public CaptchaDraft createFromParcel(Parcel source) {
 				String captchaType = source.readString();
 				String captchaStateString = source.readString();
-				ChanPerformer.CaptchaState captchaState = captchaStateString != null
-						? ChanPerformer.CaptchaState.valueOf(captchaStateString) : null;
+				ReadCaptchaTask.CaptchaState captchaState = captchaStateString != null
+						? ReadCaptchaTask.CaptchaState.valueOf(captchaStateString) : null;
 				ChanPerformer.CaptchaData captchaData = source.readByte() != 0
 						? ChanPerformer.CaptchaData.CREATOR.createFromParcel(source) : null;
 				String loadedCaptchaType = source.readString();
