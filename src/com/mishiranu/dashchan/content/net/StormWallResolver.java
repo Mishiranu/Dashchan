@@ -100,7 +100,7 @@ public class StormWallResolver {
 
 		@Override
 		public boolean resolve(RelayBlockResolver resolver, RelayBlockResolver.Session session)
-				throws RelayBlockResolver.CancelException, HttpException {
+				throws RelayBlockResolver.CancelException, HttpException, InterruptedException {
 			Matcher ceMatcher = PATTERN_CE.matcher(responseText);
 			Matcher ckMatcher = PATTERN_CK.matcher(responseText);
 			if (ceMatcher.find() && ckMatcher.find()) {
@@ -144,7 +144,8 @@ public class StormWallResolver {
 	}
 
 	public RelayBlockResolver.Result checkResponse(RelayBlockResolver resolver,
-			Chan chan, Uri uri, HttpHolder holder, HttpResponse response, boolean resolve) throws HttpException {
+			Chan chan, Uri uri, HttpHolder holder, HttpResponse response, boolean resolve)
+			throws HttpException, InterruptedException {
 		if (isBlocked(response)) {
 			boolean success = false;
 			if (resolve) {

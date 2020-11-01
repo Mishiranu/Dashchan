@@ -601,9 +601,14 @@ public class HttpClient {
 			if (request.holder.chan.name != null &&
 					request.checkRelayBlock != HttpRequest.CheckRelayBlock.SKIP &&
 					requestMethod != HttpRequest.RequestMethod.HEAD) {
-				RelayBlockResolver.Result result = RelayBlockResolver.getInstance()
-						.checkResponse(request.holder.chan, requestedUri, request.holder, response,
-								request.checkRelayBlock == HttpRequest.CheckRelayBlock.RESOLVE);
+				RelayBlockResolver.Result result;
+				try {
+					result = RelayBlockResolver.getInstance()
+							.checkResponse(request.holder.chan, requestedUri, request.holder, response,
+									request.checkRelayBlock == HttpRequest.CheckRelayBlock.RESOLVE);
+				} catch (InterruptedException e) {
+					throw new InterruptedHttpException();
+				}
 				if (result.blocked) {
 					if (result.resolved && session.nextAttempt()) {
 						request.setCheckRelayBlock(HttpRequest.CheckRelayBlock.CHECK);

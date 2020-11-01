@@ -23,7 +23,8 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import chan.content.Chan;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
@@ -44,7 +45,6 @@ import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ScaledWebView;
 import java.util.Arrays;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -68,7 +68,8 @@ public class RecaptchaReader {
 
 	public static class ChallengeExtra {
 		private interface ForegroundSolver {
-			String solve(HttpHolder holder, ChallengeExtra challengeExtra) throws CancelException, HttpException;
+			String solve(HttpHolder holder, ChallengeExtra challengeExtra)
+					throws CancelException, HttpException, InterruptedException;
 		}
 
 		private final ForegroundSolver solver;
@@ -81,7 +82,7 @@ public class RecaptchaReader {
 			this.holder = holder;
 		}
 
-		public String getResponse(HttpHolder holder) throws CancelException, HttpException {
+		public String getResponse(HttpHolder holder) throws CancelException, HttpException, InterruptedException {
 			if (response != null) {
 				return response;
 			} else {
@@ -631,28 +632,22 @@ public class RecaptchaReader {
 		}
 	}
 
-	public static class WebViewHolderFragment extends Fragment {
-		private final WebViewHolder holder;
+	public static class WebViewViewModel extends ViewModel {
+		private WebViewHolder holder;
 		private boolean clicked = false;
+		private Runnable destroyCallback;
+		private boolean published = false;
 
-		public WebViewHolderFragment() {
-			this(null);
-		}
-
-		public WebViewHolderFragment(WebViewHolder holder) {
+		public void initHolder(WebViewHolder holder) {
 			this.holder = holder != null ? holder : new WebViewHolder();
 		}
 
 		@Override
-		public void onCreate(Bundle savedInstanceState) {
-			super.onCreate(savedInstanceState);
-			setRetainInstance(true);
-		}
-
-		@Override
-		public void onDestroy() {
-			super.onDestroy();
+		protected void onCleared() {
 			holder.destroy();
+			if (destroyCallback != null) {
+				destroyCallback.run();
+			}
 		}
 	}
 
@@ -661,8 +656,6 @@ public class RecaptchaReader {
 		private static final String EXTRA_API_KEY = "apiKey";
 		private static final String EXTRA_INVISIBLE = "invisible";
 		private static final String EXTRA_HCAPTCHA = "hcaptcha";
-
-		private static final String EXTRA_WEB_VIEW_ID = "webViewId";
 
 		public V2Dialog() {}
 
@@ -677,8 +670,7 @@ public class RecaptchaReader {
 			this.challengeExtra = challengeExtra;
 		}
 
-		private String webViewId;
-		private WebViewHolderFragment webView;
+		private WebViewViewModel webView;
 		private ChallengeExtra challengeExtra;
 
 		private boolean started = false;
@@ -713,17 +705,13 @@ public class RecaptchaReader {
 		@NonNull
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
-			if (savedInstanceState == null) {
-				webViewId = UUID.randomUUID().toString();
-				webView = new WebViewHolderFragment(challengeExtra.holder);
+			webView = new ViewModelProvider(this).get(WebViewViewModel.class);
+			if (webView.holder == null) {
+				webView.initHolder(challengeExtra.holder);
 				if (challengeExtra != null) {
 					challengeExtra.holder = null;
 					challengeExtra = null;
 				}
-				getParentFragmentManager().beginTransaction().add(webView, webViewId).commit();
-			} else {
-				webViewId = savedInstanceState.getString(EXTRA_WEB_VIEW_ID);
-				webView = (WebViewHolderFragment) getParentFragmentManager().findFragmentByTag(webViewId);
 			}
 
 			Dialog dialog = new Dialog(requireActivity());
@@ -736,16 +724,11 @@ public class RecaptchaReader {
 				performClick();
 			}
 
+			webView.destroyCallback = this::publishDestroyInternal;
 			webView.holder.obtainWebView(requireContext().getApplicationContext(), layout, 0, () -> new WebViewHolder
 					.Arguments(requireArguments().getString(EXTRA_REFERER), requireArguments().getString(EXTRA_API_KEY),
 					requireArguments().getBoolean(EXTRA_INVISIBLE), requireArguments().getBoolean(EXTRA_HCAPTCHA)));
 			return dialog;
-		}
-
-		@Override
-		public void onSaveInstanceState(@NonNull Bundle outState) {
-			super.onSaveInstanceState(outState);
-			outState.putString(EXTRA_WEB_VIEW_ID, webViewId);
 		}
 
 		@Override
@@ -765,6 +748,10 @@ public class RecaptchaReader {
 
 			if (webView != null) {
 				webView.holder.setCallback(callback);
+				if (!shown && webView.holder.loaded) {
+					showDialog();
+					performClick();
+				}
 			}
 		}
 
@@ -822,14 +809,21 @@ public class RecaptchaReader {
 		}
 
 		private void publishResponseInternal(String response, HttpException exception) {
-			if (webView != null) {
-				getParentFragmentManager().beginTransaction().remove(webView).commit();
+			if (webView != null && !webView.published) {
+				webView.published = true;
 				webView.holder.setCallback(null);
 				webView = null;
-				publishResponse(response, exception);
+				publishResult(response, exception);
 			}
 		}
 
-		public abstract void publishResponse(String response, HttpException exception);
+		private void publishDestroyInternal() {
+			if (webView != null && !webView.published) {
+				webView.published = true;
+				publishResult(null, null);
+			}
+		}
+
+		public abstract void publishResult(String response, HttpException exception);
 	}
 }

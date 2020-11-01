@@ -173,6 +173,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		float density = ResourceUtils.obtainDensity(this);
 		setContentView(R.layout.activity_main);
 		ClickableToast.register(clickableToastHolder);
+		ForegroundManager.getInstance().register(this);
 		FavoritesStorage.getInstance().getObservable().register(this);
 		Preferences.PREFERENCES.registerOnSharedPreferenceChangeListener(preferencesListener);
 		ChanManager.getInstance().observable.register(chanManagerCallback);
@@ -1171,8 +1172,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		drawerForm.updateRestartViewVisibility();
 		drawerForm.updateItems(true, true);
 		updateWideConfiguration(false);
-		ForegroundManager.register(this);
 		handleChansChangedDelayed();
+		ForegroundManager.getInstance().register(this);
 
 		Intent navigateIntentOnResume = this.navigateIntentOnResume;
 		this.navigateIntentOnResume = null;
@@ -1191,7 +1192,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 		watcherServiceClient.stop();
 		clickableToastHolder.onPause();
-		ForegroundManager.unregister(this);
 	}
 
 	@Override

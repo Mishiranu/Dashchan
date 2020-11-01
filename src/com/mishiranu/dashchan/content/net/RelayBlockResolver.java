@@ -25,9 +25,11 @@ import com.mishiranu.dashchan.content.service.webview.IWebViewService;
 import com.mishiranu.dashchan.content.service.webview.WebViewExtra;
 import com.mishiranu.dashchan.content.service.webview.WebViewService;
 import com.mishiranu.dashchan.ui.ForegroundManager;
+import com.mishiranu.dashchan.util.Log;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class RelayBlockResolver {
 	private static final RelayBlockResolver INSTANCE = new RelayBlockResolver();
@@ -52,7 +54,8 @@ public class RelayBlockResolver {
 	}
 
 	public interface Resolver {
-		boolean resolve(RelayBlockResolver resolver, Session session) throws CancelException, HttpException;
+		boolean resolve(RelayBlockResolver resolver, Session session)
+				throws CancelException, HttpException, InterruptedException;
 	}
 
 	public static final class CancelException extends Exception {}
@@ -169,14 +172,45 @@ public class RelayBlockResolver {
 			}
 		}
 
+		private boolean interrupted = false;
+		private Thread requireThread = null;
+
+		public void interrupt() {
+			synchronized (this) {
+				interrupted = true;
+				if (requireThread != null) {
+					requireThread.interrupt();
+				}
+			}
+		}
+
 		private String requireUserCaptcha(String captchaType, String apiKey, String referer,
 				Object challengeExtra, boolean allowSolveAutomatically, boolean retry) {
 			String description = MainApplication.getInstance().getLocalizedContext().getString
 					(R.string.relay_block__format_sentence, client.getName());
 			RelayBlockCaptchaReader reader = new RelayBlockCaptchaReader(apiKey, referer,
 					challengeExtra, allowSolveAutomatically);
-			ChanPerformer.CaptchaData captchaData = ForegroundManager.getInstance().requireUserCaptcha(reader,
-					captchaType, null, null, null, null, description, retry);
+			ChanPerformer.CaptchaData captchaData;
+			synchronized (this) {
+				if (interrupted) {
+					return null;
+				}
+				requireThread = Thread.currentThread();
+			}
+			try {
+				captchaData = ForegroundManager.getInstance().requireUserCaptcha(reader,
+						captchaType, null, null, null, null, description, retry);
+			} catch (InterruptedException e) {
+				return null;
+			} finally {
+				synchronized (this) {
+					if (requireThread == Thread.currentThread()) {
+						requireThread = null;
+						// Clear interrupted state
+						Thread.interrupted();
+					}
+				}
+			}
 			if (captchaData == null) {
 				cancel.run();
 			}
@@ -237,7 +271,8 @@ public class RelayBlockResolver {
 		}
 	}
 
-	public <T> T resolveWebView(Session session, WebViewClient<T> client) throws CancelException {
+	public <T> T resolveWebView(Session session, WebViewClient<T> client)
+			throws CancelException, InterruptedException {
 		Context context = MainApplication.getInstance();
 		class Status {
 			boolean established;
@@ -276,32 +311,48 @@ public class RelayBlockResolver {
 					if (time <= 0) {
 						break;
 					}
-					try {
-						status.wait(time);
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-					}
+					status.wait(time);
 				}
 				service = status.service;
 			}
 			if (service != null) {
-				boolean finished = false;
+				boolean[] finished = {false};
 				Uri initialUri = session.uri.buildUpon().clearQuery().encodedFragment(null).build();
+				String userAgent = AdvancedPreferences.getUserAgent(session.chan.name);
+				HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(session.chan);
+				boolean verifyCertificate = session.chan.locator.isUseHttps() && Preferences.isVerifyCertificate();
+				WebViewRequestCallback requestCallback = new WebViewRequestCallback(client, initialUri,
+						() -> status.cancel = true);
+				String requestId = UUID.randomUUID().toString();
+				Thread blockingCallThread = new Thread(() -> {
+					try {
+						boolean result = service.loadWithCookieResult(requestId, initialUri.toString(), userAgent,
+								proxyData != null && proxyData.socks, proxyData != null ? proxyData.host : null,
+								proxyData != null ? proxyData.port : 0, verifyCertificate, WEB_VIEW_TIMEOUT,
+								client.getExtra(), requestCallback);
+						synchronized (finished) {
+							finished[0] = result;
+						}
+					} catch (RemoteException e) {
+						Log.persistent().stack(e);
+					}
+				});
+				blockingCallThread.start();
 				try {
-					String userAgent = AdvancedPreferences.getUserAgent(session.chan.name);
-					HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(session.chan);
-					boolean verifyCertificate = session.chan.locator.isUseHttps() && Preferences.isVerifyCertificate();
-					IRequestCallback requestCallback = new WebViewRequestCallback(client, initialUri,
-							() -> status.cancel = true);
-					finished = service.loadWithCookieResult(initialUri.toString(), userAgent,
-							proxyData != null && proxyData.socks, proxyData != null ? proxyData.host : null,
-							proxyData != null ? proxyData.port : 0, verifyCertificate, WEB_VIEW_TIMEOUT,
-							client.getExtra(), requestCallback);
-				} catch (RemoteException e) {
-					e.printStackTrace();
+					blockingCallThread.join();
+				} catch (InterruptedException e) {
+					try {
+						service.interrupt(requestId);
+					} catch (RemoteException e1) {
+						Log.persistent().stack(e1);
+					}
+					requestCallback.interrupt();
+					throw e;
 				}
-				if (!finished) {
-					return null;
+				synchronized (finished) {
+					if (!finished[0]) {
+						return null;
+					}
 				}
 				T result = client.takeResult();
 				if (result != null) {
@@ -321,7 +372,7 @@ public class RelayBlockResolver {
 	private final HashMap<String, Long> lastCheckCancel = new HashMap<>();
 
 	public boolean runExclusive(Chan chan, Uri uri, HttpHolder holder,
-			ResolverFactory resolverFactory) throws HttpException {
+			ResolverFactory resolverFactory) throws HttpException, InterruptedException {
 		CheckHolder checkHolder;
 		boolean handle = false;
 		synchronized (lastCheckCancel) {
@@ -340,48 +391,36 @@ public class RelayBlockResolver {
 		}
 
 		if (handle) {
-			Session session = new Session(chan, uri, holder);
-			boolean cancel = false;
-			HttpException httpException = null;
-			try (HttpHolder.Use ignored = holder.use()) {
-				checkHolder.success = checkHolder.resolver.resolve(this, session);
-			} catch (CancelException e) {
-				cancel = true;
-			} catch (HttpException e) {
-				httpException = e;
-			}
-			synchronized (checkHolder) {
-				checkHolder.ready = true;
-				checkHolder.notifyAll();
-			}
-			if (cancel) {
-				synchronized (lastCheckCancel) {
-					lastCheckCancel.put(chan.name, SystemClock.elapsedRealtime());
+			try {
+				Session session = new Session(chan, uri, holder);
+				try (HttpHolder.Use ignored = holder.use()) {
+					checkHolder.success = checkHolder.resolver.resolve(this, session);
+				} catch (CancelException e) {
+					synchronized (lastCheckCancel) {
+						lastCheckCancel.put(chan.name, SystemClock.elapsedRealtime());
+					}
 				}
-			}
-			synchronized (checkHolders) {
-				checkHolders.remove(chan.name);
-			}
-			if (httpException != null) {
-				throw httpException;
+			} finally {
+				synchronized (checkHolder) {
+					checkHolder.ready = true;
+					checkHolder.notifyAll();
+				}
+				synchronized (checkHolders) {
+					checkHolders.remove(chan.name);
+				}
 			}
 		} else {
 			synchronized (checkHolder) {
 				while (!checkHolder.ready) {
-					try {
-						checkHolder.wait();
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-						break;
-					}
+					checkHolder.wait();
 				}
 			}
 		}
 		return checkHolder.success;
 	}
 
-	public Result checkResponse(Chan chan, Uri uri,
-			HttpHolder holder, HttpResponse response, boolean resolve) throws HttpException {
+	public Result checkResponse(Chan chan, Uri uri, HttpHolder holder, HttpResponse response, boolean resolve)
+			throws HttpException, InterruptedException {
 		if (chan.locator.getChanHosts(false).contains(uri.getHost())) {
 			Result result = CloudFlareResolver.getInstance()
 					.checkResponse(this, chan, uri, holder, response, resolve);

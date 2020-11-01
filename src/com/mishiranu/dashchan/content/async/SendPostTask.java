@@ -131,6 +131,9 @@ public class SendPostTask<Key> extends ExecutorTask<long[], Boolean> {
 							data.captchaData.put(ChanPerformer.CaptchaData.INPUT, response);
 							success = true;
 						}
+					} catch (InterruptedException e) {
+						errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
+						return false;
 					}
 				}
 				if (!success) {

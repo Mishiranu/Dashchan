@@ -123,7 +123,7 @@ public class ReadCaptchaTask extends ExecutorTask<Void, Boolean> {
 	}
 
 	public static String readForegroundCaptcha(HttpHolder holder, String chanName,
-			ChanPerformer.CaptchaData captchaData, String captchaType) throws HttpException {
+			ChanPerformer.CaptchaData captchaData, String captchaType) throws HttpException, InterruptedException {
 		ForegroundCaptcha foregroundCaptcha = checkForegroundCaptcha(captchaType);
 		if (foregroundCaptcha == null) {
 			return null;
@@ -138,7 +138,7 @@ public class ReadCaptchaTask extends ExecutorTask<Void, Boolean> {
 
 	private static String readForegroundCaptcha(HttpHolder holder, ChanPerformer.CaptchaData captchaData,
 			ForegroundCaptcha foregroundCaptcha, Object challengeExtra, boolean allowSolveAutomatically)
-			throws HttpException, RecaptchaReader.CancelException {
+			throws HttpException, RecaptchaReader.CancelException, InterruptedException {
 		String apiKey = captchaData.get(ChanPerformer.CaptchaData.API_KEY);
 		String referer = captchaData.get(ChanPerformer.CaptchaData.REFERER);
 		RecaptchaReader recaptchaReader = RecaptchaReader.getInstance();
@@ -220,6 +220,9 @@ public class ReadCaptchaTask extends ExecutorTask<Void, Boolean> {
 				return true;
 			} catch (HttpException e) {
 				errorItem = e.getErrorItemAndHandle();
+				return false;
+			} catch (InterruptedException e) {
+				errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
 				return false;
 			}
 		} else if (result.result.image != null) {

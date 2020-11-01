@@ -31,6 +31,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 public class WebViewService extends Service {
@@ -75,8 +76,9 @@ public class WebViewService extends Service {
 
 	private static final int MESSAGE_HANDLE_NEXT = 1;
 	private static final int MESSAGE_HANDLE_FINISH = 2;
-	private static final int MESSAGE_HANDLE_CAPTCHA = 3;
-	private static final int MESSAGE_DRAW_TO_FILE = 4;
+	private static final int MESSAGE_HANDLE_AFTER_INTERRUPT = 3;
+	private static final int MESSAGE_HANDLE_CAPTCHA = 4;
+	private static final int MESSAGE_DRAW_TO_FILE = 5;
 
 	private final Handler handler = new Handler(Looper.getMainLooper(), message -> {
 		if (webView == null) {
@@ -88,7 +90,7 @@ public class WebViewService extends Service {
 				return true;
 			}
 			case MESSAGE_HANDLE_FINISH: {
-				CookieRequest cookieRequest = WebViewService.this.cookieRequest;
+				CookieRequest cookieRequest = this.cookieRequest;
 				if (cookieRequest != null) {
 					synchronized (cookieRequest) {
 						if (!cookieRequest.ready) {
@@ -96,14 +98,22 @@ public class WebViewService extends Service {
 							cookieRequest.notifyAll();
 						}
 					}
-					WebViewService.this.cookieRequest = null;
+					this.cookieRequest = null;
 				}
 				handleNextCookieRequest();
 				return true;
 			}
+			case MESSAGE_HANDLE_AFTER_INTERRUPT: {
+				CookieRequest cookieRequest = (CookieRequest) message.obj;
+				if (cookieRequest == this.cookieRequest) {
+					this.cookieRequest = null;
+					handleNextCookieRequest();
+				}
+				return true;
+			}
 			case MESSAGE_HANDLE_CAPTCHA: {
 				CookieRequest cookieRequest = (CookieRequest) message.obj;
-				if (cookieRequest == WebViewService.this.cookieRequest) {
+				if (cookieRequest == this.cookieRequest) {
 					message.getTarget().removeMessages(MESSAGE_HANDLE_FINISH);
 					if (cookieRequest.recaptchaV2Result != null) {
 						webView.loadUrl("javascript:handleResult('" + cookieRequest.recaptchaV2Result + "')");
@@ -278,8 +288,12 @@ public class WebViewService extends Service {
 	private void handleNextCookieRequest() {
 		if (cookieRequest == null) {
 			synchronized (cookieRequests) {
-				if (!cookieRequests.isEmpty()) {
+				while (!cookieRequests.isEmpty()) {
 					cookieRequest = cookieRequests.removeFirst();
+					// Ignore interrupted requests
+					if (!cookieRequest.ready) {
+						break;
+					}
 				}
 			}
 			handler.removeMessages(MESSAGE_DRAW_TO_FILE);
@@ -307,29 +321,61 @@ public class WebViewService extends Service {
 	@Override
 	public IBinder onBind(Intent intent) {
 		return new IWebViewService.Stub() {
+			private final HashMap<String, CookieRequest> interruptedRequests = new HashMap<>();
+
 			@Override
-			public boolean loadWithCookieResult(String uriString, String userAgent,
+			public boolean loadWithCookieResult(String requestId, String uriString, String userAgent,
 					boolean proxySocks, String proxyHost, int proxyPort, boolean verifyCertificate, long timeout,
 					WebViewExtra extra, IRequestCallback requestCallback) throws RemoteException {
 				HttpClient.ProxyData proxyData = proxyHost != null
 						? new HttpClient.ProxyData(proxySocks, proxyHost, proxyPort) : null;
 				CookieRequest cookieRequest = new CookieRequest(uriString, userAgent, proxyData,
 						verifyCertificate, timeout, extra, requestCallback);
-				synchronized (cookieRequest) {
+				synchronized (interruptedRequests) {
+					if (interruptedRequests.containsKey(requestId)) {
+						interruptedRequests.remove(requestId);
+						return false;
+					} else {
+						interruptedRequests.put(requestId, cookieRequest);
+					}
+				}
+				try {
 					synchronized (cookieRequests) {
 						cookieRequests.add(cookieRequest);
 					}
-					handler.sendEmptyMessage(MESSAGE_HANDLE_NEXT);
-					while (!cookieRequest.ready) {
-						try {
-							cookieRequest.wait();
-						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt();
-							throw new RemoteException("interrupted");
+					synchronized (cookieRequest) {
+						handler.sendEmptyMessage(MESSAGE_HANDLE_NEXT);
+						while (!cookieRequest.ready) {
+							try {
+								cookieRequest.wait();
+							} catch (InterruptedException e) {
+								Thread.currentThread().interrupt();
+								throw new RemoteException("interrupted");
+							}
 						}
 					}
+					return cookieRequest.finished;
+				} finally {
+					synchronized (interruptedRequests) {
+						interruptedRequests.remove(requestId);
+					}
 				}
-				return cookieRequest.finished;
+			}
+
+			@Override
+			public void interrupt(String requestId) {
+				synchronized (interruptedRequests) {
+					CookieRequest cookieRequest = interruptedRequests.get(requestId);
+					if (cookieRequest != null) {
+						synchronized (cookieRequest) {
+							cookieRequest.ready = true;
+							cookieRequest.notifyAll();
+						}
+						handler.obtainMessage(MESSAGE_HANDLE_AFTER_INTERRUPT, cookieRequest).sendToTarget();
+					} else {
+						interruptedRequests.put(requestId, null);
+					}
+				}
 			}
 		};
 	}

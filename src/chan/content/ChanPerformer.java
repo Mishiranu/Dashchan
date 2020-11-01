@@ -23,10 +23,10 @@ import chan.http.HttpValidator;
 import chan.http.MultipartEntity;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
+import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.ui.ForegroundManager;
-import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1192,49 +1192,100 @@ public class ChanPerformer implements Chan.Linked {
 		}
 	}
 
+	private final ThreadLocal<Boolean> requireCallState = new ThreadLocal<Boolean>() {
+		@Override
+		protected Boolean initialValue() {
+			return false;
+		}
+	};
+
+	private static class PerformerContext {
+		public final boolean requireCallState;
+
+		public PerformerContext(boolean requireCallState) {
+			this.requireCallState = requireCallState;
+		}
+	}
+
+	private PerformerContext enterContext() {
+		boolean requireCallState = this.requireCallState.get();
+		this.requireCallState.set(true);
+		return new PerformerContext(requireCallState);
+	}
+
+	private void exitContext(PerformerContext context) {
+		requireCallState.set(context.requireCallState);
+	}
+
 	private void checkPerformerRequireCall() {
-		if (ConcurrentUtils.isMain()) {
-			throw new RuntimeException("Invalid call");
+		if (!requireCallState.get()) {
+			throw new IllegalStateException("Invalid call state");
 		}
 	}
 
 	@Public
 	public final CaptchaData requireUserCaptcha(String requirement, String boardName, String threadNumber,
-			boolean retry) {
+			boolean retry) throws HttpException {
 		checkPerformerRequireCall();
-		return ForegroundManager.getInstance().requireUserCaptcha(get(), requirement, boardName, threadNumber, retry);
+		try {
+			return ForegroundManager.getInstance().requireUserCaptcha(get(),
+					requirement, boardName, threadNumber, retry);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new HttpException(ErrorItem.Type.UNKNOWN, false, false, e);
+		}
 	}
 
 	@Public
 	public final Integer requireUserItemSingleChoice(int selected, CharSequence[] item, String descriptionText,
-			Bitmap descriptionImage) {
+			Bitmap descriptionImage) throws HttpException {
 		checkPerformerRequireCall();
-		return ForegroundManager.getInstance().requireUserItemSingleChoice(selected, item,
-				descriptionText, descriptionImage);
+		try {
+			return ForegroundManager.getInstance().requireUserItemSingleChoice(selected, item,
+					descriptionText, descriptionImage);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new HttpException(ErrorItem.Type.UNKNOWN, false, false, e);
+		}
 	}
 
 	@Public
 	public final boolean[] requireUserItemMultipleChoice(boolean[] selected, CharSequence[] item,
-			String descriptionText, Bitmap descriptionImage) {
+			String descriptionText, Bitmap descriptionImage) throws HttpException {
 		checkPerformerRequireCall();
-		return ForegroundManager.getInstance().requireUserItemMultipleChoice(selected, item,
-				descriptionText, descriptionImage);
+		try {
+			return ForegroundManager.getInstance().requireUserItemMultipleChoice(selected, item,
+					descriptionText, descriptionImage);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new HttpException(ErrorItem.Type.UNKNOWN, false, false, e);
+		}
 	}
 
 	@Public
 	public final Integer requireUserImageSingleChoice(int selected, Bitmap[] images, String descriptionText,
-			Bitmap descriptionImage) {
+			Bitmap descriptionImage) throws HttpException {
 		checkPerformerRequireCall();
-		return ForegroundManager.getInstance().requireUserImageSingleChoice(3, selected, images,
-				descriptionText, descriptionImage);
+		try {
+			return ForegroundManager.getInstance().requireUserImageSingleChoice(3, selected, images,
+					descriptionText, descriptionImage);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new HttpException(ErrorItem.Type.UNKNOWN, false, false, e);
+		}
 	}
 
 	@Public
 	public final boolean[] requireUserImageMultipleChoice(boolean[] selected, Bitmap[] images,
-			String descriptionText, Bitmap descriptionImage) {
+			String descriptionText, Bitmap descriptionImage) throws HttpException {
 		checkPerformerRequireCall();
-		return ForegroundManager.getInstance().requireUserImageMultipleChoice(3, selected, images,
-				descriptionText, descriptionImage);
+		try {
+			return ForegroundManager.getInstance().requireUserImageMultipleChoice(3, selected, images,
+					descriptionText, descriptionImage);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new HttpException(ErrorItem.Type.UNKNOWN, false, false, e);
+		}
 	}
 
 	public static final class Safe {
@@ -1246,136 +1297,181 @@ public class ChanPerformer implements Chan.Linked {
 
 		public ReadThreadsResult onReadThreads(ReadThreadsData data) throws ExtensionException, HttpException,
 				InvalidResponseException, RedirectException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onReadThreads(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 
 		public ReadPostsResult onReadPosts(ReadPostsData data) throws ExtensionException, HttpException,
 				InvalidResponseException, RedirectException, ThreadRedirectException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onReadPosts(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 
 		public ReadSinglePostResult onReadSinglePost(ReadSinglePostData data) throws ExtensionException, HttpException,
 				InvalidResponseException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onReadSinglePost(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 
 		public ReadSearchPostsResult onReadSearchPosts(ReadSearchPostsData data) throws ExtensionException,
 				HttpException, InvalidResponseException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onReadSearchPosts(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 
 		public ReadBoardsResult onReadBoards(ReadBoardsData data) throws ExtensionException, HttpException,
 				InvalidResponseException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onReadBoards(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 
 		public ReadUserBoardsResult onReadUserBoards(ReadUserBoardsData data) throws ExtensionException, HttpException,
 				InvalidResponseException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onReadUserBoards(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 
 		public ReadThreadSummariesResult onReadThreadSummaries(ReadThreadSummariesData data) throws ExtensionException,
 				HttpException, InvalidResponseException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onReadThreadSummaries(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 
 		public ReadPostsCountResult onReadPostsCount(ReadPostsCountData data) throws ExtensionException, HttpException,
 				InvalidResponseException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onReadPostsCount(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 
 		public ReadContentResult onReadContent(ReadContentData data) throws ExtensionException, HttpException,
 				InvalidResponseException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onReadContent(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 
 		public CheckAuthorizationResult onCheckAuthorization(CheckAuthorizationData data) throws ExtensionException,
 				HttpException, InvalidResponseException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onCheckAuthorization(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 
 		public ReadCaptchaResult onReadCaptcha(ReadCaptchaData data) throws ExtensionException, HttpException,
 				InvalidResponseException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onReadCaptcha(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 
 		public SendPostResult onSendPost(SendPostData data) throws ExtensionException, HttpException, ApiException,
 				InvalidResponseException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onSendPost(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 
 		public SendDeletePostsResult onSendDeletePosts(SendDeletePostsData data) throws ExtensionException,
 				HttpException, ApiException, InvalidResponseException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onSendDeletePosts(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 
 		public SendReportPostsResult onSendReportPosts(SendReportPostsData data) throws ExtensionException,
 				HttpException, ApiException, InvalidResponseException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onSendReportPosts(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 
 		public SendAddToArchiveResult onSendAddToArchive(SendAddToArchiveData data) throws ExtensionException,
 				HttpException, ApiException, InvalidResponseException {
+			PerformerContext context = performer.enterContext();
 			try {
 				return performer.onSendAddToArchive(data);
 			} catch (LinkageError | RuntimeException e) {
 				throw new ExtensionException(e);
+			} finally {
+				performer.exitContext(context);
 			}
 		}
 	}

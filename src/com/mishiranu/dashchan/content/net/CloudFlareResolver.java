@@ -117,7 +117,7 @@ public class CloudFlareResolver {
 
 		@Override
 		public boolean resolve(RelayBlockResolver resolver, RelayBlockResolver.Session session)
-				throws RelayBlockResolver.CancelException {
+				throws RelayBlockResolver.CancelException, InterruptedException {
 			CookieResult result = resolver.resolveWebView(session, new WebViewClient(title));
 			if (result != null) {
 				storeCookie(session.chan, result.cookie, result.uriString);
@@ -128,7 +128,8 @@ public class CloudFlareResolver {
 	}
 
 	public RelayBlockResolver.Result checkResponse(RelayBlockResolver resolver,
-			Chan chan, Uri uri, HttpHolder holder, HttpResponse response, boolean resolve) throws HttpException {
+			Chan chan, Uri uri, HttpHolder holder, HttpResponse response, boolean resolve)
+			throws HttpException, InterruptedException {
 		int responseCode = response.getResponseCode();
 		if ((responseCode == HttpURLConnection.HTTP_FORBIDDEN || responseCode == HttpURLConnection.HTTP_UNAVAILABLE)
 				&& response.getHeaderFields().containsKey("CF-RAY")) {
