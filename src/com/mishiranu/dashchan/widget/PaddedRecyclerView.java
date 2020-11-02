@@ -19,14 +19,6 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import org.xmlpull.v1.XmlPullParser;
 
 public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandler.Shift {
-	private static class UnlimitedRecycledViewPool extends RecycledViewPool {
-		@Override
-		public void putRecycledView(ViewHolder scrap) {
-			setMaxRecycledViews(scrap.getItemViewType(), Integer.MAX_VALUE);
-			super.putRecycledView(scrap);
-		}
-	}
-
 	private static final long FAST_SCROLLER_TRANSITION_IN = 100;
 	private static final long FAST_SCROLLER_TRANSITION_OUT = 200;
 	private static final long FAST_SCROLLER_TRANSITION_OUT_DELAY = 1000;
@@ -93,8 +85,7 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 		trackDrawable = ResourceUtils.getDrawable(getContext(), android.R.attr.fastScrollTrackDrawable, 0);
 		minTrackSize = (int) (16f * density);
 
-		// Use unlimited pool size for immediate scrolls to improve performance
-		setRecycledViewPool(new UnlimitedRecycledViewPool());
+		setRecycledViewPool(new ListViewUtils.UnlimitedRecycledViewPool());
 		addOnScrollListener(new OnScrollListener() {
 			@Override
 			public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {

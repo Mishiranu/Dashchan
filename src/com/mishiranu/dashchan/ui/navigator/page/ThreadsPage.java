@@ -136,6 +136,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		UiManager uiManager = getUiManager();
+		uiManager.view().bindThreadsPostRecyclerView(recyclerView);
 		ThreadsAdapter adapter = new ThreadsAdapter(context, this, page.chanName, uiManager,
 				postStateProvider, parcelableExtra.catalogSort);
 		recyclerView.setAdapter(adapter);

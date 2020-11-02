@@ -21,6 +21,7 @@ import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
+import com.mishiranu.dashchan.ui.navigator.manager.ViewUnit;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
@@ -55,14 +56,12 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		}
 	}
 
-	private enum ViewType {POST, POST_HIDDEN}
-
 	private static final String PAYLOAD_INVALIDATE_COMMENT = "invalidateComment";
 
-	private final Callback callback;
 	private final UiManager uiManager;
-	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
 	private final UiManager.ConfigurationSet configurationSet;
+	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
+	private final GalleryItem.Set gallerySet = new GalleryItem.Set(true);
 	private final CommentTextView.RecyclerKeeper recyclerKeeper;
 
 	private final ArrayList<PostNumber> postNumbers = new ArrayList<>();
@@ -75,10 +74,9 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	public PostsAdapter(Callback callback, String chanName, UiManager uiManager, Replyable replyable,
 			UiManager.PostStateProvider postStateProvider, RecyclerView recyclerView,
 			Map<PostNumber, PostItem> postItemsMap) {
-		this.callback = callback;
 		this.uiManager = uiManager;
 		configurationSet = new UiManager.ConfigurationSet(chanName, replyable, this, postStateProvider,
-				new GalleryItem.Set(true), uiManager.dialog().createStackInstance(), this,
+				gallerySet, uiManager.dialog().createStackInstance(), this, callback,
 				true, false, true, true, true, null);
 		recyclerKeeper = new CommentTextView.RecyclerKeeper(recyclerView);
 		super.registerAdapterDataObserver(recyclerKeeper);
@@ -88,9 +86,9 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		preloadPosts(0);
 		for (PostItem postItem : postItemsMap.values()) {
 			if (postItem.isOriginalPost()) {
-				configurationSet.gallerySet.setThreadTitle(postItem.getSubjectOrComment());
+				gallerySet.setThreadTitle(postItem.getSubjectOrComment());
 			}
-			configurationSet.gallerySet.put(postItem.getPostNumber(), postItem.getAttachmentItems());
+			gallerySet.put(postItem.getPostNumber(), postItem.getAttachmentItems());
 		}
 	}
 
@@ -116,25 +114,13 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	public int getItemViewType(int position) {
 		PostItem postItem = getItem(position);
 		return (configurationSet.postStateProvider.isHiddenResolve(postItem)
-				? ViewType.POST_HIDDEN : ViewType.POST).ordinal();
+				? ViewUnit.ViewType.POST_HIDDEN : ViewUnit.ViewType.POST).ordinal();
 	}
 
 	@NonNull
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-		switch (ViewType.values()[viewType]) {
-			case POST: {
-				return ListViewUtils.bind(uiManager.view().createPostView(parent, configurationSet),
-						true, this::getItem, callback);
-			}
-			case POST_HIDDEN: {
-				return ListViewUtils.bind(uiManager.view().createPostHiddenView(parent, configurationSet),
-						true, this::getItem, callback);
-			}
-			default: {
-				throw new IllegalStateException();
-			}
-		}
+		return uiManager.view().createView(parent, ViewUnit.ViewType.values()[viewType]);
 	}
 
 	@Override
@@ -146,7 +132,7 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position,
 			@NonNull List<Object> payloads) {
 		PostItem postItem = getItem(position);
-		switch (ViewType.values()[holder.getItemViewType()]) {
+		switch (ViewUnit.ViewType.values()[holder.getItemViewType()]) {
 			case POST: {
 				UiManager.DemandSet demandSet = this.demandSet;
 				demandSet.selection = selection ? selected.contains(postItem.getPostNumber())
@@ -155,12 +141,12 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 				if (payloads.contains(PAYLOAD_INVALIDATE_COMMENT)) {
 					uiManager.view().bindPostViewInvalidateComment(holder);
 				} else {
-					uiManager.view().bindPostView(holder, postItem, demandSet);
+					uiManager.view().bindPostView(holder, postItem, configurationSet, demandSet);
 				}
 				break;
 			}
 			case POST_HIDDEN: {
-				uiManager.view().bindPostHiddenView(holder, postItem);
+				uiManager.view().bindPostHiddenView(holder, postItem, configurationSet);
 				break;
 			}
 		}
@@ -197,6 +183,10 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	@Override
 	public Iterator<PostItem> iterator() {
 		return new PostsIterator(true, 0);
+	}
+
+	public GalleryItem.Set getGallerySet() {
+		return gallerySet;
 	}
 
 	public int getExistingPostsCount() {
@@ -244,7 +234,7 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		for (PostNumber postNumber : changedOrRemoved) {
 			PostItem oldPostItem = postItemsMap.get(postNumber);
 			if (oldPostItem != null) {
-				configurationSet.gallerySet.remove(oldPostItem.getPostNumber());
+				gallerySet.remove(oldPostItem.getPostNumber());
 				for (PostNumber referenceTo : oldPostItem.getReferencesTo()) {
 					PostItem referenced = postItemsMap.get(referenceTo);
 					if (referenced != null) {
@@ -279,9 +269,9 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 		for (PostItem postItem : changed.values()) {
 			if (postItem.isOriginalPost()) {
-				configurationSet.gallerySet.setThreadTitle(postItem.getSubjectOrComment());
+				gallerySet.setThreadTitle(postItem.getSubjectOrComment());
 			}
-			configurationSet.gallerySet.put(postItem.getPostNumber(), postItem.getAttachmentItems());
+			gallerySet.put(postItem.getPostNumber(), postItem.getAttachmentItems());
 			for (PostNumber referenceTo : postItem.getReferencesTo()) {
 				PostItem referenced = postItemsMap.get(referenceTo);
 				if (referenced != null) {
@@ -330,7 +320,7 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 						referenced.removeReferenceFrom(postItem.getPostNumber());
 					}
 				}
-				configurationSet.gallerySet.remove(postItem.getPostNumber());
+				gallerySet.remove(postItem.getPostNumber());
 				iterator.remove();
 			}
 		}

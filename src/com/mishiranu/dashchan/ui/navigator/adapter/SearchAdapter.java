@@ -1,22 +1,21 @@
 package com.mishiranu.dashchan.ui.navigator.adapter;
 
 import android.content.Context;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import chan.util.CommonUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
+import com.mishiranu.dashchan.ui.navigator.manager.ViewUnit;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
-import com.mishiranu.dashchan.widget.SimpleViewHolder;
-import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -25,35 +24,32 @@ import java.util.List;
 public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 	public interface Callback extends ListViewUtils.SimpleCallback<PostItem> {}
 
-	private enum ViewType {VIEW, HEADER}
-
 	private static class ListItem {
 		public final PostItem postItem;
-		public final String title;
+		public final String group;
 
-		private ListItem(PostItem postItem, String title) {
+		private ListItem(PostItem postItem, String group) {
 			this.postItem = postItem;
-			this.title = title;
+			this.group = group;
 		}
 	}
 
 	private final Context context;
-	private final Callback callback;
 	private final UiManager uiManager;
-	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
 	private final UiManager.ConfigurationSet configurationSet;
+	private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
+	private final GalleryItem.Set gallerySet = new GalleryItem.Set(false);
 
-	private final ArrayList<ListItem> postItems = new ArrayList<>();
+	private final ArrayList<PostItem> postItems = new ArrayList<>();
 	private final ArrayList<ListItem> groupItems = new ArrayList<>();
 
 	private boolean groupMode = false;
 
 	public SearchAdapter(Context context, Callback callback, String chanName, UiManager uiManager, String searchQuery) {
 		this.context = context;
-		this.callback = callback;
 		this.uiManager = uiManager;
 		configurationSet = new UiManager.ConfigurationSet(chanName, null, null, UiManager.PostStateProvider.DEFAULT,
-				new GalleryItem.Set(false), uiManager.dialog().createStackInstance(), null,
+				gallerySet, uiManager.dialog().createStackInstance(), null, callback,
 				true, false, false, false, false, null);
 		demandSet.highlightText = Collections.singleton(searchQuery);
 	}
@@ -65,51 +61,22 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 	@Override
 	public int getItemViewType(int position) {
-		ListItem listItem = getItem(position);
-		return (listItem.postItem != null ? ViewType.VIEW : ViewType.HEADER).ordinal();
+		return ViewUnit.ViewType.POST.ordinal();
 	}
 
-	private ListItem getItem(int position) {
-		return groupMode ? groupItems.get(position) : postItems.get(position);
-	}
-
-	private PostItem getPostItem(int position) {
-		return getItem(position).postItem;
+	private PostItem getItem(int position) {
+		return groupMode ? groupItems.get(position).postItem : postItems.get(position);
 	}
 
 	@NonNull
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-		switch (ViewType.values()[viewType]) {
-			case VIEW: {
-				RecyclerView.ViewHolder holder = uiManager.view().createPostView(parent, configurationSet);
-				ListViewUtils.bind(holder, true, this::getPostItem, callback);
-				return holder;
-			}
-			case HEADER: {
-				View view = ViewFactory.makeListTextHeader(parent);
-				float density = ResourceUtils.obtainDensity(parent);
-				ViewUtils.setNewPadding(view, (int) (12f * density), null, (int) (12f * density), null);
-				return new SimpleViewHolder(view);
-			}
-			default: {
-				throw new IllegalStateException();
-			}
-		}
+		return uiManager.view().createView(parent, ViewUnit.ViewType.POST);
 	}
 
 	@Override
 	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-		switch (ViewType.values()[holder.getItemViewType()]) {
-			case VIEW: {
-				uiManager.view().bindPostView(holder, getItem(position).postItem, demandSet);
-				break;
-			}
-			case HEADER: {
-				((TextView) holder.itemView).setText(getItem(position).title);
-				break;
-			}
-		}
+		uiManager.view().bindPostView(holder, getItem(position), configurationSet, demandSet);
 	}
 
 	public UiManager.ConfigurationSet getConfigurationSet() {
@@ -119,9 +86,7 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	public void setItems(List<PostItem> postItems) {
 		this.postItems.clear();
 		if (postItems != null) {
-			for (PostItem postItem : postItems) {
-				this.postItems.add(new ListItem(postItem, null));
-			}
+			this.postItems.addAll(postItems);
 		}
 		handleItems();
 	}
@@ -139,20 +104,20 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 	private void handleItems() {
 		groupItems.clear();
-		configurationSet.gallerySet.clear();
+		gallerySet.clear();
 		if (postItems.size() > 0) {
 			if (groupMode) {
-				LinkedHashMap<String, ArrayList<ListItem>> map = new LinkedHashMap<>();
-				for (ListItem listItem : postItems) {
-					String threadNumber = listItem.postItem.getThreadNumber();
-					ArrayList<ListItem> postItems = map.get(threadNumber);
+				LinkedHashMap<String, ArrayList<PostItem>> map = new LinkedHashMap<>();
+				for (PostItem postItem : postItems) {
+					String threadNumber = postItem.getThreadNumber();
+					ArrayList<PostItem> postItems = map.get(threadNumber);
 					if (postItems == null) {
 						postItems = new ArrayList<>();
 						map.put(threadNumber, postItems);
 					}
-					postItems.add(listItem);
+					postItems.add(postItem);
 				}
-				for (LinkedHashMap.Entry<String, ArrayList<ListItem>> entry : map.entrySet()) {
+				for (LinkedHashMap.Entry<String, ArrayList<PostItem>> entry : map.entrySet()) {
 					String threadNumber = entry.getKey();
 					boolean number;
 					try {
@@ -161,38 +126,53 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 					} catch (NumberFormatException e) {
 						number = false;
 					}
-					groupItems.add(new ListItem(null, context.getString(R.string.in_thread_number__format,
-							number ? "#" + threadNumber : threadNumber)));
+					String group = context.getString(R.string.in_thread_number__format,
+							number ? "#" + threadNumber : threadNumber);
 					int ordinalIndex = 0;
-					for (ListItem listItem : entry.getValue()) {
-						groupItems.add(listItem);
-						listItem.postItem.setOrdinalIndex(ordinalIndex++);
+					for (PostItem postItem : entry.getValue()) {
+						groupItems.add(new ListItem(postItem, group));
+						postItem.setOrdinalIndex(ordinalIndex++);
 					}
 				}
 			} else {
 				for (int i = 0; i < postItems.size(); i++) {
-					postItems.get(i).postItem.setOrdinalIndex(i);
+					postItems.get(i).setOrdinalIndex(i);
 				}
 			}
 		}
 		for (int i = 0, count = getItemCount(); i < count; i++) {
-			ListItem listItem = getItem(i);
-			if (listItem.postItem != null) {
-				configurationSet.gallerySet.put(listItem.postItem.getPostNumber(),
-						listItem.postItem.getAttachmentItems());
-			}
+			PostItem postItem = getItem(i);
+			gallerySet.put(postItem.getPostNumber(), postItem.getAttachmentItems());
 		}
 		notifyDataSetChanged();
 	}
 
 	public DividerItemDecoration.Configuration configureDivider
 			(DividerItemDecoration.Configuration configuration, int position) {
-		ListItem current = getItem(position);
-		ListItem next = position + 1 < getItemCount() ? getItem(position + 1) : null;
 		if (C.API_LOLLIPOP) {
-			return configuration.need(current.postItem != null || next == null || next.postItem == null);
+			return configuration.need(true);
 		} else {
-			return configuration.need(current.postItem != null && (next == null || next.postItem != null));
+			String header = position + 1 < getItemCount() ? getItemHeader(position + 1) : null;
+			return configuration.need(header == null);
+		}
+	}
+
+	public void configureItemHeader(Context context, TextView headerView) {
+		float density = ResourceUtils.obtainDensity(context);
+		ViewUtils.setNewPadding(headerView, (int) (12f * density), null, (int) (12f * density), null);
+	}
+
+	public String getItemHeader(int position) {
+		if (groupMode) {
+			if (position == 0) {
+				return groupItems.get(0).group;
+			} else {
+				String previous = groupItems.get(position - 1).group;
+				String current = groupItems.get(position).group;
+				return CommonUtils.equals(previous, current) ? null : current;
+			}
+		} else {
+			return null;
 		}
 	}
 }

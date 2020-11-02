@@ -2,6 +2,7 @@ package com.mishiranu.dashchan.ui.navigator.manager;
 
 import android.content.Context;
 import android.view.View;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanLocator;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
@@ -159,9 +160,10 @@ public class UiManager {
 		public final Replyable replyable;
 		public final PostsProvider postsProvider;
 		public final PostStateProvider postStateProvider;
-		public final GalleryItem.Set gallerySet;
+		public final GalleryItem.Provider galleryProvider;
 		public final DialogUnit.StackInstance stackInstance;
 		public final CommentTextView.LinkListener linkListener;
+		public final ListViewUtils.ClickCallback<PostItem, RecyclerView.ViewHolder> clickCallback;
 
 		public final boolean mayCollapse;
 		public final boolean isDialog;
@@ -171,17 +173,19 @@ public class UiManager {
 		public final PostNumber repliesToPost;
 
 		public ConfigurationSet(String chanName, Replyable replyable, PostsProvider postsProvider,
-				PostStateProvider postStateProvider, GalleryItem.Set gallerySet,
+				PostStateProvider postStateProvider, GalleryItem.Provider galleryProvider,
 				DialogUnit.StackInstance stackInstance, CommentTextView.LinkListener linkListener,
+				ListViewUtils.ClickCallback<PostItem, RecyclerView.ViewHolder> clickCallback,
 				boolean mayCollapse, boolean isDialog, boolean allowMyMarkEdit,
 				boolean allowHiding, boolean allowGoToPost, PostNumber repliesToPost) {
 			this.chanName = chanName;
 			this.replyable = replyable;
 			this.postsProvider = postsProvider;
 			this.postStateProvider = postStateProvider;
-			this.gallerySet = gallerySet;
+			this.galleryProvider = galleryProvider;
 			this.stackInstance = stackInstance;
 			this.linkListener = linkListener;
+			this.clickCallback = clickCallback;
 
 			this.mayCollapse = mayCollapse;
 			this.isDialog = isDialog;
@@ -191,9 +195,10 @@ public class UiManager {
 			this.repliesToPost = repliesToPost;
 		}
 
-		public ConfigurationSet copy(boolean mayCollapse, boolean isDialog, PostNumber repliesToPost) {
+		public ConfigurationSet copy(ListViewUtils.ClickCallback<PostItem, RecyclerView.ViewHolder> clickCallback,
+				boolean mayCollapse, boolean isDialog, PostNumber repliesToPost) {
 			return new ConfigurationSet(chanName, replyable,
-					postsProvider, postStateProvider, gallerySet, stackInstance, linkListener,
+					postsProvider, postStateProvider, galleryProvider, stackInstance, linkListener, clickCallback,
 					mayCollapse, isDialog, allowMyMarkEdit, allowHiding, allowGoToPost, repliesToPost);
 		}
 	}
@@ -209,7 +214,10 @@ public class UiManager {
 	public interface Holder {
 		PostItem getPostItem();
 		ConfigurationSet getConfigurationSet();
-		GalleryItem.Set getGallerySet();
+
+		default GalleryItem.Set getGallerySet() {
+			return getConfigurationSet().galleryProvider.getGallerySet(getPostItem());
+		}
 	}
 
 	public void onFinish() {

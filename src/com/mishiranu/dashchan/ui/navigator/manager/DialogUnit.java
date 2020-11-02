@@ -76,7 +76,6 @@ import com.mishiranu.dashchan.widget.ProgressDialog;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import com.mishiranu.dashchan.widget.WindowControlFrameLayout;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -105,10 +104,10 @@ public class DialogUnit {
 		}
 
 		public static class State {
-			private final ArrayList<DialogProvider.Factory> factories;
+			private final ArrayList<DialogProvider.Factory<?>> factories;
 			private final AttachmentDialog attachmentDialog;
 
-			public State(ArrayList<DialogProvider.Factory> factories, AttachmentDialog attachmentDialog) {
+			public State(ArrayList<DialogProvider.Factory<?>> factories, AttachmentDialog attachmentDialog) {
 				this.factories = factories;
 				this.attachmentDialog = attachmentDialog;
 			}
@@ -122,12 +121,12 @@ public class DialogUnit {
 		}
 
 		public State collectState() {
-			ArrayList<DialogProvider.Factory> factories = new ArrayList<>();
+			ArrayList<DialogProvider.Factory<?>> factories = new ArrayList<>();
 			for (Pair<DialogFactory, View> pair : dialogStack) {
 				if (pair.second != null) {
-					pair.first.saveState(pair.second);
+					pair.first.delegate.saveState(pair.second);
 				}
-				factories.add(pair.first.factory);
+				factories.add(pair.first.delegate.factory);
 			}
 			return new State(factories, attachmentDialog != null ? attachmentDialog.first : null);
 		}
@@ -141,30 +140,50 @@ public class DialogUnit {
 		return new StackInstance(new DialogStack<>(uiManager.getContext()));
 	}
 
-	private class DialogFactory implements DialogStack.ViewFactory<DialogFactory> {
-		public final DialogProvider provider;
-		public final DialogProvider.Factory factory;
+	private static class DialogFactory implements DialogStack.ViewFactory<DialogFactory> {
+		public final TypedDialogFactory<?> delegate;
 
-		private DialogFactory(DialogProvider provider, DialogProvider.Factory factory) {
-			this.provider = provider;
-			this.factory = factory;
+		public DialogFactory(DialogProvider.Factory<?> factory,
+				UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
+			delegate = new TypedDialogFactory<>(factory, uiManager, configurationSet);
 		}
 
 		@Override
 		public View createView(DialogStack<DialogFactory> dialogStack) {
-			Context context = uiManager.getContext();
+			return delegate.createView(dialogStack);
+		}
+
+		@Override
+		public void destroyView(View view) {
+			delegate.destroyView(view);
+		}
+	}
+
+	private static class TypedDialogFactory<T> {
+		private final DialogProvider<T> provider;
+		private final DialogProvider.Factory<T> factory;
+
+		public TypedDialogFactory(DialogProvider.Factory<T> factory,
+				UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
+			this.provider = factory.create(uiManager, configurationSet);
+			this.factory = factory;
+		}
+
+		public View createView(DialogStack<DialogFactory> dialogStack) {
+			Context context = provider.uiManager.getContext();
 			View content = LayoutInflater.from(context).inflate(R.layout.dialog_posts, null);
 			RecyclerView recyclerView = content.findViewById(android.R.id.list);
 			View progress = content.findViewById(R.id.progress);
 			float density = ResourceUtils.obtainDensity(context);
 			int dividerPadding = (int) (12f * density);
 			recyclerView.setLayoutManager(new PostsLayoutManager(recyclerView.getContext()));
-			DialogPostsAdapter adapter = new DialogPostsAdapter(uiManager, provider, recyclerView);
+			provider.uiManager.view().bindThreadsPostRecyclerView(recyclerView);
+			DialogPostsAdapter<T> adapter = new DialogPostsAdapter<>(provider.uiManager, provider, recyclerView);
 			recyclerView.setAdapter(adapter);
 			recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 					(c, position) -> c.need(true).horizontal(dividerPadding, dividerPadding)));
-			final DialogHolder holder = new DialogHolder(adapter, provider, content, recyclerView, progress);
-			uiManager.observable().register(holder);
+			DialogHolder<T> holder = new DialogHolder<>(adapter, provider, content, recyclerView, progress);
+			provider.uiManager.observable().register(holder);
 			content.setTag(holder);
 			if (factory.listPosition != null) {
 				factory.listPosition.apply(recyclerView);
@@ -194,29 +213,28 @@ public class DialogUnit {
 			return content;
 		}
 
-		@Override
 		public void destroyView(View view) {
 			saveState(view);
-			DialogHolder holder = (DialogHolder) view.getTag();
-			uiManager.observable().unregister(holder);
+			DialogHolder<?> holder = (DialogHolder<?>) view.getTag();
+			provider.uiManager.observable().unregister(holder);
 			holder.cancel();
 		}
 
 		public void saveState(View view) {
-			DialogHolder holder = (DialogHolder) view.getTag();
+			DialogHolder<?> holder = (DialogHolder<?>) view.getTag();
 			factory.listPosition = ListPosition.obtain(holder.recyclerView, null);
 		}
 	}
 
-	private static class DialogHolder implements UiManager.Observer {
-		public final DialogPostsAdapter adapter;
-		public final DialogProvider dialogProvider;
+	private static class DialogHolder<T> implements UiManager.Observer {
+		public final DialogPostsAdapter<T> adapter;
+		public final DialogProvider<T> dialogProvider;
 
 		public final View content;
 		public final RecyclerView recyclerView;
 		public final View progress;
 
-		public DialogHolder(DialogPostsAdapter adapter, DialogProvider dialogProvider, View content,
+		public DialogHolder(DialogPostsAdapter<T> adapter, DialogProvider<T> dialogProvider, View content,
 				RecyclerView recyclerView, View progress) {
 			this.adapter = adapter;
 			this.dialogProvider = dialogProvider;
@@ -313,18 +331,31 @@ public class DialogUnit {
 		boolean onStateChanged(State state);
 	}
 
-	private static abstract class DialogProvider implements UiManager.Observer, Iterable<PostItem> {
-		public static abstract class Factory {
+	private static abstract class DialogProvider<T> implements UiManager.Observer, Iterable<PostItem>,
+			ListViewUtils.ClickCallback<PostItem, RecyclerView.ViewHolder> {
+		public interface ConfigurationSetProvider<T> {
+			UiManager.ConfigurationSet create(T dialogProvider);
+		}
+
+		public static abstract class Factory<T> {
 			public ListPosition listPosition;
 
-			public abstract DialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet);
+			public abstract DialogProvider<T> create(UiManager uiManager, UiManager.ConfigurationSet configurationSet);
 		}
 
+		public final UiManager uiManager;
 		public final UiManager.ConfigurationSet configurationSet;
 
-		public DialogProvider(UiManager.ConfigurationSet configurationSet) {
-			this.configurationSet = configurationSet;
+		public DialogProvider(UiManager uiManager, ConfigurationSetProvider<T> configurationSetProvider) {
+			T self = getThis();
+			if (this != self) {
+				throw new IllegalStateException();
+			}
+			this.uiManager = uiManager;
+			this.configurationSet = configurationSetProvider.create(self);
 		}
+
+		protected abstract T getThis();
 
 		public void onRequestUpdateDemandSet(UiManager.DemandSet demandSet, int index) {}
 
@@ -363,11 +394,26 @@ public class DialogUnit {
 		}
 
 		@Override
+		public boolean onItemClick(RecyclerView.ViewHolder holder, int position, PostItem postItem, boolean longClick) {
+			if (longClick) {
+				Chan chan = Chan.get(configurationSet.chanName);
+				boolean userPost = configurationSet.postStateProvider.isUserPost(postItem.getPostNumber());
+				return uiManager.interaction().handlePostContextMenu(chan, postItem,
+						configurationSet.replyable, userPost, configurationSet.allowMyMarkEdit,
+						configurationSet.allowHiding, configurationSet.allowGoToPost);
+			} else {
+				uiManager.interaction().handlePostClick(holder.itemView,
+						configurationSet.postStateProvider, postItem, this);
+				return true;
+			}
+		}
+
+		@Override
 		public void onPostItemMessage(PostItem postItem, UiManager.Message message) {}
 	}
 
-	private static class SingleDialogProvider extends DialogProvider {
-		public static class Factory extends DialogProvider.Factory {
+	private static class SingleDialogProvider extends DialogProvider<SingleDialogProvider> {
+		public static class Factory extends DialogProvider.Factory<SingleDialogProvider> {
 			private final PostItem postItem;
 
 			private Factory(PostItem postItem) {
@@ -375,16 +421,23 @@ public class DialogUnit {
 			}
 
 			@Override
-			public DialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
-				return new SingleDialogProvider(postItem, configurationSet.copy(false, true, null));
+			public SingleDialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
+				return new SingleDialogProvider(uiManager, dialogProvider -> configurationSet
+						.copy(dialogProvider, false, true, null), postItem);
 			}
 		}
 
 		private final PostItem postItem;
 
-		private SingleDialogProvider(PostItem postItem, UiManager.ConfigurationSet configurationSet) {
-			super(configurationSet);
+		private SingleDialogProvider(UiManager uiManager,
+				ConfigurationSetProvider<SingleDialogProvider> configurationSetProvider, PostItem postItem) {
+			super(uiManager, configurationSetProvider);
 			this.postItem = postItem;
+		}
+
+		@Override
+		protected SingleDialogProvider getThis() {
+			return this;
 		}
 
 		@NonNull
@@ -394,9 +447,9 @@ public class DialogUnit {
 		}
 	}
 
-	private static class ThreadDialogProvider extends DialogProvider implements CommentTextView.LinkListener,
-			UiManager.PostsProvider {
-		public static class Factory extends DialogProvider.Factory {
+	private static class ThreadDialogProvider extends DialogProvider<ThreadDialogProvider>
+			implements CommentTextView.LinkListener, UiManager.PostsProvider {
+		public static class Factory extends DialogProvider.Factory<ThreadDialogProvider> {
 			public final PostItem postItem;
 
 			public Factory(PostItem postItem) {
@@ -404,8 +457,7 @@ public class DialogUnit {
 			}
 
 			@Override
-			public DialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
-				Intermediate intermediate = new Intermediate();
+			public ThreadDialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
 				String chanName = configurationSet.chanName;
 				Replyable replyable = (click, data) -> {
 					Chan chan = Chan.get(chanName);
@@ -416,46 +468,21 @@ public class DialogUnit {
 					}
 					return board.allowPosting;
 				};
-				configurationSet = new UiManager.ConfigurationSet(configurationSet.chanName, replyable,
-						intermediate, UiManager.PostStateProvider.DEFAULT, new GalleryItem.Set(false),
-						configurationSet.stackInstance, intermediate, false, true, false, false, false, null);
-				return new ThreadDialogProvider(uiManager, configurationSet, intermediate, postItem);
+				GalleryItem.Set gallerySet = new GalleryItem.Set(false);
+				return new ThreadDialogProvider(uiManager, dialogProvider -> new UiManager
+						.ConfigurationSet(configurationSet.chanName, replyable, dialogProvider,
+						UiManager.PostStateProvider.DEFAULT, gallerySet,
+						configurationSet.stackInstance, dialogProvider, dialogProvider,
+						false, true, false, false, false, null), postItem, gallerySet);
 			}
 		}
 
-		private static class Intermediate implements CommentTextView.LinkListener, UiManager.PostsProvider {
-			public WeakReference<ThreadDialogProvider> provider;
-
-			@NonNull
-			@Override
-			public Iterator<PostItem> iterator() {
-				return provider.get().iterator();
-			}
-
-			@Override
-			public PostItem findPostItem(PostNumber postNumber) {
-				return provider.get().findPostItem(postNumber);
-			}
-
-			@Override
-			public void onLinkClick(CommentTextView view, Uri uri, Extra extra, boolean confirmed) {
-				provider.get().onLinkClick(view, uri, extra, confirmed);
-			}
-
-			@Override
-			public void onLinkLongClick(CommentTextView view, Uri uri, Extra extra) {
-				provider.get().onLinkLongClick(view, uri, extra);
-			}
-		}
-
-		private final UiManager uiManager;
 		private final ArrayList<PostItem> postItems = new ArrayList<>();
 
-		private ThreadDialogProvider(UiManager uiManager, UiManager.ConfigurationSet configurationSet,
-				Intermediate intermediate, PostItem postItem) {
-			super(configurationSet);
-			intermediate.provider = new WeakReference<>(this);
-			this.uiManager = uiManager;
+		private ThreadDialogProvider(UiManager uiManager,
+				ConfigurationSetProvider<ThreadDialogProvider> configurationSetProvider,
+				PostItem postItem, GalleryItem.Set gallerySet) {
+			super(uiManager, configurationSetProvider);
 			if (!postItem.isThreadItem()) {
 				throw new RuntimeException("Not thread item");
 			}
@@ -477,10 +504,15 @@ public class DialogUnit {
 					}
 				}
 			}
-			configurationSet.gallerySet.setThreadTitle(this.postItems.get(0).getSubjectOrComment());
+			gallerySet.setThreadTitle(this.postItems.get(0).getSubjectOrComment());
 			for (PostItem childPostItem : postItems) {
-				configurationSet.gallerySet.put(childPostItem.getPostNumber(), childPostItem.getAttachmentItems());
+				gallerySet.put(childPostItem.getPostNumber(), childPostItem.getAttachmentItems());
 			}
+		}
+
+		@Override
+		protected ThreadDialogProvider getThis() {
+			return this;
 		}
 
 		@Override
@@ -535,8 +567,8 @@ public class DialogUnit {
 		}
 	}
 
-	private static class RepliesDialogProvider extends DialogProvider {
-		public static class Factory extends DialogProvider.Factory {
+	private static class RepliesDialogProvider extends DialogProvider<RepliesDialogProvider> {
+		public static class Factory extends DialogProvider.Factory<RepliesDialogProvider> {
 			private final PostItem postItem;
 
 			public Factory(PostItem postItem) {
@@ -544,19 +576,25 @@ public class DialogUnit {
 			}
 
 			@Override
-			public DialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
-				return new RepliesDialogProvider(configurationSet
-						.copy(false, true, postItem.getPostNumber()), postItem);
+			public RepliesDialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
+				return new RepliesDialogProvider(uiManager, dialogProvider -> configurationSet
+						.copy(dialogProvider, false, true, postItem.getPostNumber()), postItem);
 			}
 		}
 
 		private final PostItem postItem;
 		private final ArrayList<PostItem> postItems = new ArrayList<>();
 
-		private RepliesDialogProvider(UiManager.ConfigurationSet configurationSet, PostItem postItem) {
-			super(configurationSet);
+		private RepliesDialogProvider(UiManager uiManager,
+				ConfigurationSetProvider<RepliesDialogProvider> configurationSetProvider, PostItem postItem) {
+			super(uiManager, configurationSetProvider);
 			this.postItem = postItem;
 			onRequestUpdate();
+		}
+
+		@Override
+		protected RepliesDialogProvider getThis() {
+			return this;
 		}
 
 		@NonNull
@@ -580,8 +618,8 @@ public class DialogUnit {
 		}
 	}
 
-	private static class ListDialogProvider extends DialogProvider {
-		public static class Factory extends DialogProvider.Factory {
+	private static class ListDialogProvider extends DialogProvider<ListDialogProvider> {
+		public static class Factory extends DialogProvider.Factory<ListDialogProvider> {
 			private final HashSet<PostNumber> postNumbers;
 
 			public Factory(Collection<PostNumber> postNumbers) {
@@ -589,18 +627,26 @@ public class DialogUnit {
 			}
 
 			@Override
-			public DialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
-				return new ListDialogProvider(configurationSet.copy(false, true, null), postNumbers);
+			public ListDialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
+				return new ListDialogProvider(uiManager, dialogProvider -> configurationSet
+						.copy(dialogProvider, false, true, null), postNumbers);
 			}
 		}
 
 		private final HashSet<PostNumber> postNumbers;
 		private final ArrayList<PostItem> postItems = new ArrayList<>();
 
-		private ListDialogProvider(UiManager.ConfigurationSet configurationSet, HashSet<PostNumber> postNumbers) {
-			super(configurationSet);
+		private ListDialogProvider(UiManager uiManager,
+				ConfigurationSetProvider<ListDialogProvider> configurationSetProvider,
+				HashSet<PostNumber> postNumbers) {
+			super(uiManager, configurationSetProvider);
 			this.postNumbers = postNumbers;
 			onRequestUpdate();
+		}
+
+		@Override
+		protected ListDialogProvider getThis() {
+			return this;
 		}
 
 		@NonNull
@@ -621,8 +667,9 @@ public class DialogUnit {
 		}
 	}
 
-	private static class AsyncDialogProvider extends DialogProvider implements ReadSinglePostTask.Callback {
-		public static class Factory extends DialogProvider.Factory {
+	private static class AsyncDialogProvider extends DialogProvider<AsyncDialogProvider>
+			implements ReadSinglePostTask.Callback {
+		public static class Factory extends DialogProvider.Factory<AsyncDialogProvider> {
 			private final String chanName;
 			private final String boardName;
 			private final String threadNumber;
@@ -638,33 +685,36 @@ public class DialogUnit {
 			}
 
 			@Override
-			public DialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
-				configurationSet = new UiManager.ConfigurationSet(configurationSet.chanName, null,
-						null, UiManager.PostStateProvider.DEFAULT, new GalleryItem.Set(false),
-						configurationSet.stackInstance, null, false, true, false, false, false, null);
-				return new AsyncDialogProvider(uiManager, configurationSet, this,
-						chanName, boardName, threadNumber, postNumber);
+			public AsyncDialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
+				GalleryItem.Set gallerySet = new GalleryItem.Set(false);
+				return new AsyncDialogProvider(uiManager, dialogProvider -> new UiManager
+						.ConfigurationSet(configurationSet.chanName, null, null, UiManager.PostStateProvider.DEFAULT,
+						gallerySet, configurationSet.stackInstance, null, dialogProvider,
+						false, true, false, false, false, null), this,
+						chanName, boardName, threadNumber, postNumber, gallerySet);
 			}
 		}
 
-		private final UiManager uiManager;
 		private final Factory factory;
 		private final String chanName;
 		private final String boardName;
 		private final String threadNumber;
 		private final PostNumber postNumber;
+		private final GalleryItem.Set gallerySet;
 
 		private ReadSinglePostTask readTask;
 
-		private AsyncDialogProvider(UiManager uiManager, UiManager.ConfigurationSet configurationSet, Factory factory,
-				String chanName, String boardName, String threadNumber, PostNumber postNumber) {
-			super(configurationSet);
-			this.uiManager = uiManager;
+		private AsyncDialogProvider(UiManager uiManager,
+				ConfigurationSetProvider<AsyncDialogProvider> configurationSetProvider, Factory factory,
+				String chanName, String boardName, String threadNumber, PostNumber postNumber,
+				GalleryItem.Set gallerySet) {
+			super(uiManager, configurationSetProvider);
 			this.factory = factory;
 			this.chanName = chanName;
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
 			this.postNumber = postNumber;
+			this.gallerySet = gallerySet;
 			if (factory.postItem != null) {
 				onReadSinglePostSuccess(factory.postItem);
 			} else {
@@ -672,6 +722,11 @@ public class DialogUnit {
 				readTask = new ReadSinglePostTask(this, Chan.get(chanName), boardName, threadNumber, postNumber);
 				readTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 			}
+		}
+
+		@Override
+		protected AsyncDialogProvider getThis() {
+			return this;
 		}
 
 		@NonNull
@@ -706,9 +761,9 @@ public class DialogUnit {
 			List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 			if (attachmentItems != null) {
 				if (postItem.isOriginalPost()) {
-					configurationSet.gallerySet.setThreadTitle(postItem.getSubjectOrComment());
+					gallerySet.setThreadTitle(postItem.getSubjectOrComment());
 				}
-				configurationSet.gallerySet.put(postItem.getPostNumber(), attachmentItems);
+				gallerySet.put(postItem.getPostNumber(), attachmentItems);
 			}
 			switchState(State.LIST, null);
 		}
@@ -726,14 +781,14 @@ public class DialogUnit {
 
 	public void notifyDataSetChangedToAll(StackInstance stackInstance) {
 		for (View view : stackInstance.dialogStack.getVisibleViews()) {
-			DialogHolder holder = (DialogHolder) view.getTag();
+			DialogHolder<?> holder = (DialogHolder<?>) view.getTag();
 			holder.notifyDataSetChanged();
 		}
 	}
 
 	public void updateAdapters(StackInstance stackInstance) {
 		for (View view : stackInstance.dialogStack.getVisibleViews()) {
-			DialogHolder holder = (DialogHolder) view.getTag();
+			DialogHolder<?> holder = (DialogHolder<?>) view.getTag();
 			holder.requestUpdate();
 		}
 	}
@@ -767,19 +822,18 @@ public class DialogUnit {
 		display(configurationSet, new AsyncDialogProvider.Factory(chanName, boardName, threadNumber, postNumber));
 	}
 
-	private void display(UiManager.ConfigurationSet configurationSet, DialogProvider.Factory factory) {
-		DialogProvider provider = factory.create(uiManager, configurationSet);
-		configurationSet.stackInstance.dialogStack.push(new DialogFactory(provider, factory));
+	private void display(UiManager.ConfigurationSet configurationSet, DialogProvider.Factory<?> factory) {
+		configurationSet.stackInstance.dialogStack.push(new DialogFactory(factory, uiManager, configurationSet));
 		uiManager.callback().onDialogStackOpen();
 	}
 
 	public void restoreState(UiManager.ConfigurationSet configurationSet, StackInstance.State state) {
 		if (!state.factories.isEmpty()) {
 			ArrayList<DialogFactory> dialogFactories = new ArrayList<>();
-			for (DialogProvider.Factory factory : state.factories) {
-				DialogProvider provider = factory.create(uiManager, configurationSet);
-				dialogFactories.add(new DialogFactory(provider, factory));
-				configurationSet = provider.configurationSet;
+			for (DialogProvider.Factory<?> factory : state.factories) {
+				DialogFactory dialogFactory = new DialogFactory(factory, uiManager, configurationSet);
+				configurationSet = dialogFactory.delegate.provider.configurationSet;
+				dialogFactories.add(dialogFactory);
 			}
 			configurationSet.stackInstance.dialogStack.addAll(dialogFactories);
 			uiManager.callback().onDialogStackOpen();
@@ -791,14 +845,11 @@ public class DialogUnit {
 		}
 	}
 
-	private static class DialogPostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
-			implements ListViewUtils.ClickCallback<Void, RecyclerView.ViewHolder> {
-		private enum ViewType {POST, POST_HIDDEN}
-
+	private static class DialogPostsAdapter<T> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 		private static final String PAYLOAD_INVALIDATE_COMMENT = "invalidateComment";
 
 		private final UiManager uiManager;
-		private final DialogProvider dialogProvider;
+		private final DialogProvider<T> dialogProvider;
 		private final UiManager.DemandSet demandSet = new UiManager.DemandSet();
 		private final RecyclerView.AdapterDataObserver updateObserver;
 		private final CommentTextView.RecyclerKeeper recyclerKeeper;
@@ -806,7 +857,7 @@ public class DialogUnit {
 		public final ArrayList<PostItem> postItems = new ArrayList<>();
 		public final HashSet<PostNumber> postNumbers = new HashSet<>();
 
-		public DialogPostsAdapter(UiManager uiManager, DialogProvider dialogProvider, RecyclerView recyclerView) {
+		public DialogPostsAdapter(UiManager uiManager, DialogProvider<T> dialogProvider, RecyclerView recyclerView) {
 			this.uiManager = uiManager;
 			this.dialogProvider = dialogProvider;
 			updateObserver = new RecyclerView.AdapterDataObserver() {
@@ -847,46 +898,17 @@ public class DialogUnit {
 		public int getItemViewType(int position) {
 			PostItem postItem = getItem(position);
 			return (dialogProvider.configurationSet.postStateProvider.isHiddenResolve(postItem)
-					? ViewType.POST_HIDDEN : ViewType.POST).ordinal();
+					? ViewUnit.ViewType.POST_HIDDEN : ViewUnit.ViewType.POST).ordinal();
 		}
 
 		private PostItem getItem(int position) {
 			return postItems.get(position);
 		}
 
-		@Override
-		public boolean onItemClick(RecyclerView.ViewHolder holder, int position, Void nothing, boolean longClick) {
-			PostItem postItem = postItems.get(position);
-			UiManager.ConfigurationSet configurationSet = dialogProvider.configurationSet;
-			if (longClick) {
-				Chan chan = Chan.get(configurationSet.chanName);
-				boolean userPost = configurationSet.postStateProvider.isUserPost(postItem.getPostNumber());
-				return uiManager.interaction().handlePostContextMenu(chan, postItem,
-						configurationSet.replyable, userPost, configurationSet.allowMyMarkEdit,
-						configurationSet.allowHiding, configurationSet.allowGoToPost);
-			} else {
-				uiManager.interaction().handlePostClick(holder.itemView,
-						configurationSet.postStateProvider, postItem, postItems);
-				return true;
-			}
-		}
-
 		@NonNull
 		@Override
 		public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-			switch (ViewType.values()[viewType]) {
-				case POST: {
-					return ListViewUtils.bind(uiManager.view().createPostView(parent,
-							dialogProvider.configurationSet), true, null, this);
-				}
-				case POST_HIDDEN: {
-					return ListViewUtils.bind(uiManager.view().createPostHiddenView(parent,
-							dialogProvider.configurationSet), true, null, this);
-				}
-				default: {
-					throw new IllegalStateException();
-				}
-			}
+			return uiManager.view().createView(parent, ViewUnit.ViewType.values()[viewType]);
 		}
 
 		@Override
@@ -898,18 +920,18 @@ public class DialogUnit {
 		public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position,
 				@NonNull List<Object> payloads) {
 			PostItem postItem = getItem(position);
-			switch (ViewType.values()[holder.getItemViewType()]) {
+			switch (ViewUnit.ViewType.values()[holder.getItemViewType()]) {
 				case POST: {
 					if (payloads.contains(PAYLOAD_INVALIDATE_COMMENT)) {
 						uiManager.view().bindPostViewInvalidateComment(holder);
 					} else {
 						dialogProvider.onRequestUpdateDemandSet(demandSet, position);
-						uiManager.view().bindPostView(holder, postItem, demandSet);
+						uiManager.view().bindPostView(holder, postItem, dialogProvider.configurationSet, demandSet);
 					}
 					break;
 				}
 				case POST_HIDDEN: {
-					uiManager.view().bindPostHiddenView(holder, postItem);
+					uiManager.view().bindPostHiddenView(holder, postItem, dialogProvider.configurationSet);
 					break;
 				}
 			}

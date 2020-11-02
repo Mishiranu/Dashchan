@@ -46,9 +46,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 		this.threadNumber = threadNumber;
 		this.threadTitle = threadTitle;
 		this.postItems = postItems;
-		UiManager.ConfigurationSet configurationSet = new UiManager.ConfigurationSet(chanName, null, null,
-				UiManager.PostStateProvider.DEFAULT, null, null, null, false, false, false, false, false, null);
-		holder = uiManager.view().createPostView(parent, configurationSet);
+		holder = uiManager.view().createView(parent, ViewUnit.ViewType.POST);
 		divider = ResourceUtils.getDrawable(parent.getContext(), android.R.attr.listDivider, 0);
 		width = parent.getWidth();
 		background = ThemeEngine.getColorScheme(parent.getContext()).windowBackgroundColor;
@@ -64,6 +62,9 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 		@Override
 		protected InputStream run() {
 			long time = SystemClock.elapsedRealtime();
+			UiManager.ConfigurationSet configurationSet = new UiManager.ConfigurationSet(chanName, null, null,
+					UiManager.PostStateProvider.DEFAULT, null, null, null, null,
+					false, false, false, false, false, null);
 			UiManager.DemandSet demandSet = new UiManager.DemandSet();
 			demandSet.selection = UiManager.Selection.THREADSHOT;
 			int dividerHeight = divider.getIntrinsicHeight();
@@ -74,7 +75,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 			int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
 			for (PostItem postItem : postItems) {
 				int measuredHeight = ConcurrentUtils.mainGet(() -> {
-					uiManager.view().bindPostView(holder, postItem, demandSet);
+					uiManager.view().bindPostView(holder, postItem, configurationSet, demandSet);
 					holder.itemView.measure(widthMeasureSpec, heightMeasureSpec);
 					return holder.itemView.getMeasuredHeight();
 				});
@@ -98,7 +99,7 @@ public class ThreadshotPerformer implements DialogInterface.OnCancelListener {
 						return null;
 					}
 					ConcurrentUtils.mainGet(() -> {
-						uiManager.view().bindPostView(holder, postItem, demandSet);
+						uiManager.view().bindPostView(holder, postItem, configurationSet, demandSet);
 						holder.itemView.measure(widthMeasureSpec, heightMeasureSpec);
 						holder.itemView.layout(0, 0, holder.itemView.getMeasuredWidth(),
 								holder.itemView.getMeasuredHeight());

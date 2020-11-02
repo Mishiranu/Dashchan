@@ -36,7 +36,6 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
-import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.Post;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
@@ -57,11 +56,13 @@ import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.LinebreakLayout;
 import com.mishiranu.dashchan.widget.PostLinearLayout;
 import com.mishiranu.dashchan.widget.ThemeEngine;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public class ViewUnit {
 	private final UiManager uiManager;
@@ -87,11 +88,11 @@ public class ViewUnit {
 				.asList(new CommentTextView.ExtraButton(context.getString(R.string.quote__verb),
 						R.attr.iconActionPaste, (view, text, click) -> {
 					PostViewHolder holder = ListViewUtils.getViewHolder(view, PostViewHolder.class);
-					if (holder.configurationSet.replyable != null &&
-							holder.configurationSet.replyable.onRequestReply(false)) {
+					UiManager.ConfigurationSet configurationSet = holder.getConfigurationSet();
+					if (configurationSet.replyable != null && configurationSet.replyable.onRequestReply(false)) {
 						if (click) {
-							holder.configurationSet.replyable.onRequestReply(true, new Replyable
-									.ReplyData(holder.postItem.getPostNumber(), text.toPreparedString(view)));
+							configurationSet.replyable.onRequestReply(true, new Replyable
+									.ReplyData(holder.getPostItem().getPostNumber(), text.toPreparedString(view)));
 						}
 						return true;
 					}
@@ -102,8 +103,9 @@ public class ViewUnit {
 					if (uri != null) {
 						if (click) {
 							PostViewHolder holder = ListViewUtils.getViewHolder(view, PostViewHolder.class);
-							CommentTextView.LinkListener linkListener = holder.configurationSet.linkListener != null
-									? holder.configurationSet.linkListener : defaultLinkListener;
+							UiManager.ConfigurationSet configurationSet = holder.getConfigurationSet();
+							CommentTextView.LinkListener linkListener = configurationSet.linkListener != null
+									? configurationSet.linkListener : defaultLinkListener;
 							linkListener.onLinkClick(view, uri, CommentTextView.LinkListener.Extra.EMPTY, true);
 						}
 						return true;
@@ -190,22 +192,56 @@ public class ViewUnit {
 	private final CommentTextView.PrepareToCopyListener prepareToCopyListener =
 			(view, text, start, end) -> InteractionUnit.getCopyReadyComment(text, start, end);
 
-	public RecyclerView.ViewHolder createThreadViewHolder(ViewGroup parent,
-			UiManager.ConfigurationSet configurationSet, boolean card, boolean cell) {
-		return new ThreadViewHolder(parent, configurationSet, uiManager, cell ? ThreadViewHolder.ViewType.CELL
-				: card ? ThreadViewHolder.ViewType.CARD : ThreadViewHolder.ViewType.LIST);
+	public enum ViewType {THREAD, THREAD_HIDDEN, THREAD_CARD, THREAD_CARD_HIDDEN, THREAD_CARD_CELL, POST, POST_HIDDEN}
+	private enum ThreadViewType {LIST, CARD, CELL}
+
+	private final ListViewUtils.UnlimitedRecycledViewPool threadsPostsViewPool =
+			new ListViewUtils.UnlimitedRecycledViewPool();
+
+	public void bindThreadsPostRecyclerView(RecyclerView recyclerView) {
+		recyclerView.setRecycledViewPool(threadsPostsViewPool);
+		((LinearLayoutManager) recyclerView.getLayoutManager()).setRecycleChildrenOnDetach(true);
 	}
 
-	public void bindThreadView(RecyclerView.ViewHolder viewHolder, PostItem postItem) {
+	public RecyclerView.ViewHolder createView(ViewGroup parent, ViewType viewType) {
+		switch (viewType) {
+			case THREAD: {
+				return new ThreadViewHolder(parent, uiManager, ThreadViewType.LIST);
+			}
+			case THREAD_HIDDEN: {
+				return new HiddenViewHolder(parent, false, true);
+			}
+			case THREAD_CARD: {
+				return new ThreadViewHolder(parent, uiManager, ThreadViewType.CARD);
+			}
+			case THREAD_CARD_HIDDEN: {
+				return new HiddenViewHolder(parent, true, true);
+			}
+			case THREAD_CARD_CELL: {
+				return new ThreadViewHolder(parent, uiManager, ThreadViewType.CELL);
+			}
+			case POST: {
+				return new PostViewHolder(parent, uiManager, thumbnailWidth);
+			}
+			case POST_HIDDEN: {
+				return new HiddenViewHolder(parent, false, false);
+			}
+			default: {
+				throw new IllegalArgumentException();
+			}
+		}
+	}
+
+	public void bindThreadView(RecyclerView.ViewHolder viewHolder,
+			PostItem postItem, UiManager.ConfigurationSet configurationSet) {
 		Context context = uiManager.getContext();
 		ColorScheme colorScheme = ThemeEngine.getColorScheme(context);
 		ThreadViewHolder holder = (ThreadViewHolder) viewHolder;
-		Chan chan = Chan.get(holder.configurationSet.chanName);
-		holder.postItem = postItem;
+		Chan chan = Chan.get(configurationSet.chanName);
+		holder.configure(postItem, configurationSet);
 
 		boolean bumpLimitReached = postItem.getBumpLimitReachedState(chan, 0) == PostItem.BumpLimitState.REACHED;
-		PostState.Predicate.Data stateData = new PostState.Predicate
-				.Data(postItem, holder.configurationSet, bumpLimitReached);
+		PostState.Predicate.Data stateData = new PostState.Predicate.Data(postItem, configurationSet, bumpLimitReached);
 		for (int i = 0; i < PostState.THREAD_ITEM_STATES.size(); i++) {
 			boolean visible = PostState.THREAD_ITEM_STATES.get(i).predicate.apply(stateData);
 			holder.stateImages[i].setVisibility(visible ? View.VISIBLE : View.GONE);
@@ -248,13 +284,13 @@ public class ViewUnit {
 		holder.thumbnail.setOnLongClickListener(holder.thumbnailLongClickListener);
 	}
 
-	public void bindThreadCellView(RecyclerView.ViewHolder viewHolder, PostItem postItem,
-			boolean small, int contentHeight) {
+	public void bindThreadCellView(RecyclerView.ViewHolder viewHolder,
+			PostItem postItem, UiManager.ConfigurationSet configurationSet, boolean small, int contentHeight) {
 		Context context = uiManager.getContext();
 		ColorScheme colorScheme = ThemeEngine.getColorScheme(context);
 		ThreadViewHolder holder = (ThreadViewHolder) viewHolder;
-		Chan chan = Chan.get(holder.configurationSet.chanName);
-		holder.postItem = postItem;
+		Chan chan = Chan.get(configurationSet.chanName);
+		holder.configure(postItem, configurationSet);
 
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 		boolean hidden = postItem.getHideState().hidden;
@@ -307,14 +343,10 @@ public class ViewUnit {
 		holder.threadContent.getLayoutParams().height = contentHeight;
 	}
 
-	public RecyclerView.ViewHolder createThreadHiddenView(ViewGroup parent,
-			UiManager.ConfigurationSet configurationSet, boolean card) {
-		return new HiddenViewHolder(parent, configurationSet, card, true);
-	}
-
-	public void bindThreadHiddenView(RecyclerView.ViewHolder viewHolder, PostItem postItem) {
+	public void bindThreadHiddenView(RecyclerView.ViewHolder viewHolder,
+			PostItem postItem, UiManager.ConfigurationSet configurationSet) {
 		HiddenViewHolder holder = (HiddenViewHolder) viewHolder;
-		holder.postItem = postItem;
+		holder.configure(postItem, configurationSet);
 		String description = postItem.getHideReason();
 		if (description == null) {
 			description = postItem.getSubjectOrComment();
@@ -322,17 +354,13 @@ public class ViewUnit {
 		holder.comment.setText(description);
 	}
 
-	public RecyclerView.ViewHolder createPostView(ViewGroup parent,
-			UiManager.ConfigurationSet configurationSet) {
-		return new PostViewHolder(parent, configurationSet, uiManager, thumbnailWidth);
-	}
-
-	public void bindPostView(RecyclerView.ViewHolder viewHolder, PostItem postItem, UiManager.DemandSet demandSet) {
+	public void bindPostView(RecyclerView.ViewHolder viewHolder,
+			PostItem postItem, UiManager.ConfigurationSet configurationSet, UiManager.DemandSet demandSet) {
 		ColorScheme colorScheme = ThemeEngine.getColorScheme(uiManager.getContext());
 		PostViewHolder holder = (PostViewHolder) viewHolder;
-		Chan chan = Chan.get(holder.configurationSet.chanName);
+		Chan chan = Chan.get(configurationSet.chanName);
 		holder.resetAnimations();
-		holder.postItem = postItem;
+		holder.configure(postItem, configurationSet);
 		holder.selection = demandSet.selection;
 
 		String boardName = postItem.getBoardName();
@@ -343,9 +371,9 @@ public class ViewUnit {
 		if (bumpLimitReachedState == PostItem.BumpLimitState.REACHED) {
 			bumpLimitReached = true;
 		} else if (bumpLimitReachedState == PostItem.BumpLimitState.NEED_COUNT &&
-				holder.configurationSet.postsProvider != null) {
+				configurationSet.postsProvider != null) {
 			int postsCount = 0;
-			for (PostItem itPostItem : holder.configurationSet.postsProvider) {
+			for (PostItem itPostItem : configurationSet.postsProvider) {
 				if (!itPostItem.isDeleted()) {
 					postsCount++;
 				}
@@ -353,8 +381,7 @@ public class ViewUnit {
 			bumpLimitReached = postItem.getBumpLimitReachedState(chan, postsCount) == PostItem.BumpLimitState.REACHED;
 		}
 		holder.number.setText("#" + postNumber);
-		PostState.Predicate.Data stateData = new PostState.Predicate
-				.Data(postItem, holder.configurationSet, bumpLimitReached);
+		PostState.Predicate.Data stateData = new PostState.Predicate.Data(postItem, configurationSet, bumpLimitReached);
 		for (int i = 0; i < PostState.POST_ITEM_STATES.size(); i++) {
 			boolean visible = PostState.POST_ITEM_STATES.get(i).predicate.apply(stateData);
 			holder.stateImages[i].setVisibility(visible ? View.VISIBLE : View.GONE);
@@ -367,15 +394,15 @@ public class ViewUnit {
 		holder.date.setText(postItem.getDateTime(postDateFormatter));
 
 		String subject = postItem.getSubject();
-		CharSequence comment = holder.configurationSet.repliesToPost != null
-				? postItem.getComment(chan, holder.configurationSet.repliesToPost) : postItem.getComment(chan);
+		CharSequence comment = configurationSet.repliesToPost != null
+				? postItem.getComment(chan, configurationSet.repliesToPost) : postItem.getComment(chan);
 				colorScheme.apply(postItem.getCommentSpans());
 		LinkSuffixSpan[] linkSuffixSpans = postItem.getLinkSuffixSpansAfterComment();
 		if (linkSuffixSpans != null) {
 			boolean showMyPosts = Preferences.isShowMyPosts();
 			for (LinkSuffixSpan span : linkSuffixSpans) {
 				span.setSuffix(LinkSuffixSpan.SUFFIX_USER_POST, showMyPosts &&
-						holder.configurationSet.postStateProvider.isUserPost(span.getPostNumber()));
+						configurationSet.postStateProvider.isUserPost(span.getPostNumber()));
 			}
 		}
 		LinkSpan[] linkSpans = postItem.getLinkSpansAfterComment();
@@ -384,10 +411,10 @@ public class ViewUnit {
 				if (linkSpan.postNumber != null) {
 					boolean hidden = false;
 					if (postItem.getReferencesTo().contains(linkSpan.postNumber)
-							&& holder.configurationSet.postsProvider != null) {
-						PostItem linkPostItem = holder.configurationSet.postsProvider.findPostItem(linkSpan.postNumber);
+							&& configurationSet.postsProvider != null) {
+						PostItem linkPostItem = configurationSet.postsProvider.findPostItem(linkSpan.postNumber);
 						if (linkPostItem != null) {
-							hidden = holder.configurationSet.postStateProvider.isHiddenResolve(linkPostItem);
+							hidden = configurationSet.postStateProvider.isHiddenResolve(linkPostItem);
 						}
 					}
 					linkSpan.setHidden(hidden);
@@ -397,9 +424,9 @@ public class ViewUnit {
 		holder.comment.setSpoilersEnabled(!Preferences.isShowSpoilers());
 		holder.comment.setSubjectAndComment(makeHighlightedText(demandSet.highlightText, subject),
 				makeHighlightedText(demandSet.highlightText, comment));
-		holder.comment.setLinkListener(holder.configurationSet.linkListener != null
-				? holder.configurationSet.linkListener : defaultLinkListener,
-				holder.configurationSet.chanName, boardName, threadNumber);
+		holder.comment.setLinkListener(configurationSet.linkListener != null
+				? configurationSet.linkListener : defaultLinkListener,
+				configurationSet.chanName, boardName, threadNumber);
 		holder.comment.setVisibility(subject.length() > 0 || comment.length() > 0 ? View.VISIBLE : View.GONE);
 		holder.comment.bindSelectionPaddingView(demandSet.lastInList ? holder.textSelectionPadding : null);
 
@@ -428,8 +455,8 @@ public class ViewUnit {
 			holder.bottomBarExpand.setVisibility(View.GONE);
 			holder.bottomBarOpenThread.setVisibility(demandSet.showOpenThreadButton ? View.VISIBLE : View.GONE);
 		}
-		if (holder.configurationSet.mayCollapse && commentMaxLines > 0 &&
-				!holder.configurationSet.postStateProvider.isExpanded(postNumber)) {
+		if (configurationSet.mayCollapse && commentMaxLines > 0 &&
+				!configurationSet.postStateProvider.isExpanded(postNumber)) {
 			holder.comment.setLinesLimit(commentMaxLines, commentAdditionalHeight);
 		} else {
 			holder.comment.setLinesLimit(0, 0);
@@ -455,14 +482,10 @@ public class ViewUnit {
 		holder.comment.invalidateAllSpans();
 	}
 
-	public RecyclerView.ViewHolder createPostHiddenView(ViewGroup parent,
-			UiManager.ConfigurationSet configurationSet) {
-		return new HiddenViewHolder(parent, configurationSet, false, false);
-	}
-
-	public void bindPostHiddenView(RecyclerView.ViewHolder viewHolder, PostItem postItem) {
+	public void bindPostHiddenView(RecyclerView.ViewHolder viewHolder,
+			PostItem postItem, UiManager.ConfigurationSet configurationSet) {
 		HiddenViewHolder holder = (HiddenViewHolder) viewHolder;
-		holder.postItem = postItem;
+		holder.configure(postItem, configurationSet);
 		holder.index.setText(postItem.getOrdinalIndexString());
 		holder.number.setText("#" + postItem.getPostNumber());
 		String description = postItem.getHideReason();
@@ -470,19 +493,20 @@ public class ViewUnit {
 			description = postItem.getSubjectOrComment();
 		}
 		holder.comment.setText(description);
-		holder.configurationSet.postStateProvider.setRead(postItem.getPostNumber());
+		configurationSet.postStateProvider.setRead(postItem.getPostNumber());
 	}
 
-	private static int getPostBackgroundColor(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
-		ColorScheme colorScheme = ThemeEngine.getColorScheme(uiManager.getContext());
+	private static int getPostBackgroundColor(Context context, UiManager.ConfigurationSet configurationSet) {
+		ColorScheme colorScheme = ThemeEngine.getColorScheme(context);
 		return configurationSet.isDialog ? colorScheme.dialogBackgroundColor : colorScheme.windowBackgroundColor;
 	}
 
 	@SuppressLint("InflateParams")
 	private void handlePostViewAttachments(PostViewHolder holder) {
+		PostItem postItem = holder.getPostItem();
+		UiManager.ConfigurationSet configurationSet = holder.getConfigurationSet();
 		Context context = uiManager.getContext();
-		Chan chan = Chan.get(holder.configurationSet.chanName);
-		PostItem postItem = holder.postItem;
+		Chan chan = Chan.get(configurationSet.chanName);
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 		if (attachmentItems != null && !attachmentItems.isEmpty()) {
 			int size = attachmentItems.size();
@@ -497,7 +521,7 @@ public class ViewUnit {
 				}
 				int holders = attachmentHolders.size();
 				if (holders < size) {
-					int postBackgroundColor = getPostBackgroundColor(uiManager, holder.configurationSet);
+					int postBackgroundColor = getPostBackgroundColor(uiManager.getContext(), configurationSet);
 					int thumbnailsScale = Preferences.getThumbnailsScale();
 					int textScale = Preferences.getTextScale();
 					for (int i = holders; i < size; i++) {
@@ -531,7 +555,7 @@ public class ViewUnit {
 					AttachmentHolder attachmentHolder = attachmentHolders.get(i);
 					AttachmentItem attachmentItem = attachmentItems.get(i);
 					attachmentItem.configureAndLoad(attachmentHolder.thumbnail, chan, false, false);
-					attachmentHolder.thumbnailClickListener.update(i, false, holder.configurationSet.isDialog
+					attachmentHolder.thumbnailClickListener.update(i, false, configurationSet.isDialog
 							? GalleryOverlay.NavigatePostMode.MANUALLY : GalleryOverlay.NavigatePostMode.ENABLED);
 					attachmentHolder.thumbnailLongClickListener.update(attachmentItem);
 					attachmentHolder.thumbnail.setSfwMode(sfwMode);
@@ -550,7 +574,7 @@ public class ViewUnit {
 			} else {
 				AttachmentItem attachmentItem = attachmentItems.get(0);
 				attachmentItem.configureAndLoad(holder.thumbnail, chan, size > 1, false);
-				holder.thumbnailClickListener.update(0, true, holder.configurationSet.isDialog
+				holder.thumbnailClickListener.update(0, true, configurationSet.isDialog
 						? GalleryOverlay.NavigatePostMode.MANUALLY : GalleryOverlay.NavigatePostMode.ENABLED);
 				holder.thumbnailLongClickListener.update(attachmentItem);
 				holder.thumbnail.setSfwMode(Preferences.isSfwMode());
@@ -572,9 +596,10 @@ public class ViewUnit {
 	}
 
 	private void handlePostViewIcons(PostViewHolder holder) {
+		PostItem postItem = holder.getPostItem();
+		UiManager.ConfigurationSet configurationSet = holder.getConfigurationSet();
 		Context context = uiManager.getContext();
-		Chan chan = Chan.get(holder.configurationSet.chanName);
-		PostItem postItem = holder.postItem;
+		Chan chan = Chan.get(configurationSet.chanName);
 		List<Post.Icon> icons = postItem.getIcons();
 		if (!icons.isEmpty() && Preferences.isDisplayIcons()) {
 			if (holder.badgeImages == null) {
@@ -682,8 +707,7 @@ public class ViewUnit {
 		@Override
 		public void onClick(View v) {
 			PostViewHolder holder = ListViewUtils.getViewHolder(v, PostViewHolder.class);
-			PostItem postItem = holder.postItem;
-			uiManager.dialog().displayReplies(holder.configurationSet, postItem);
+			uiManager.dialog().displayReplies(holder.getConfigurationSet(), holder.getPostItem());
 		}
 	};
 
@@ -691,9 +715,9 @@ public class ViewUnit {
 		@Override
 		public void onClick(View v) {
 			PostViewHolder holder = ListViewUtils.getViewHolder(v, PostViewHolder.class);
-			PostItem postItem = holder.postItem;
+			PostItem postItem = holder.getPostItem();
 			PostNumber postNumber = postItem.isOriginalPost() ? null : postItem.getPostNumber();
-			uiManager.navigator().navigatePosts(holder.configurationSet.chanName, postItem.getBoardName(),
+			uiManager.navigator().navigatePosts(holder.getConfigurationSet().chanName, postItem.getBoardName(),
 					postItem.getThreadNumber(), postNumber, null);
 		}
 	};
@@ -755,6 +779,8 @@ public class ViewUnit {
 					if (type != TYPE_NONE) {
 						Context context = uiManager.getContext();
 						PostViewHolder holder = ListViewUtils.getViewHolder(v, PostViewHolder.class);
+						PostItem postItem = holder.getPostItem();
+						UiManager.ConfigurationSet configurationSet = holder.getConfigurationSet();
 						int touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
 						if (Math.abs(event.getX() - startX) <= touchSlop &&
 								Math.abs(event.getY() - startY) <= touchSlop) {
@@ -762,8 +788,8 @@ public class ViewUnit {
 							String emailToCopy = null;
 							switch (type) {
 								case TYPE_BADGES: {
-									Chan chan = Chan.get(holder.configurationSet.chanName);
-									List<Post.Icon> postIcons = holder.postItem.getIcons();
+									Chan chan = Chan.get(configurationSet.chanName);
+									List<Post.Icon> postIcons = postItem.getIcons();
 									for (Post.Icon postIcon : postIcons) {
 										Uri uri = postIcon.uri;
 										if (uri != null) {
@@ -778,15 +804,14 @@ public class ViewUnit {
 										if (holder.stateImages[i].getVisibility() == View.VISIBLE) {
 											PostState postState = PostState.POST_ITEM_STATES.get(i);
 											String title = postState.titleProvider
-													.get(uiManager.getContext(), holder.postItem);
+													.get(uiManager.getContext(), postItem);
 											icons.add(new DialogUnit.IconData(title, postState.iconAttrResId));
 										}
 									}
 									break;
 								}
 							}
-							uiManager.dialog().showPostDescriptionDialog(icons,
-									holder.configurationSet.chanName, emailToCopy);
+							uiManager.dialog().showPostDescriptionDialog(icons, configurationSet.chanName, emailToCopy);
 						}
 						return true;
 					}
@@ -924,9 +949,41 @@ public class ViewUnit {
 		}
 	}
 
-	private static class ThreadViewHolder extends RecyclerView.ViewHolder implements UiManager.Holder {
-		public enum ViewType {LIST, CARD, CELL}
+	private static class BasePostViewHolder extends RecyclerView.ViewHolder
+			implements UiManager.Holder, ListViewUtils.ClickCallback<Void, BasePostViewHolder> {
+		private WeakReference<PostItem> postItem;
+		private WeakReference<UiManager.ConfigurationSet> configurationSet;
 
+		public BasePostViewHolder(View itemView) {
+			super(itemView);
+		}
+
+		protected void onConfigure(PostItem postItem, UiManager.ConfigurationSet configurationSet) {}
+
+		public final void configure(PostItem postItem, UiManager.ConfigurationSet configurationSet) {
+			this.postItem = new WeakReference<>(postItem);
+			this.configurationSet = new WeakReference<>(configurationSet);
+			onConfigure(postItem, configurationSet);
+		}
+
+		@Override
+		public final PostItem getPostItem() {
+			return Objects.requireNonNull(postItem.get());
+		}
+
+		@Override
+		public final UiManager.ConfigurationSet getConfigurationSet() {
+			return Objects.requireNonNull(configurationSet.get());
+		}
+
+		@Override
+		public final boolean onItemClick(BasePostViewHolder holder, int position, Void item, boolean longClick) {
+			return getConfigurationSet().clickCallback.onItemClick(holder, position, getPostItem(), longClick);
+		}
+	}
+
+	private static class ThreadViewHolder extends BasePostViewHolder {
+		private final CardView cardView;
 		public final AttachmentView thumbnail;
 		public final TextView subject;
 		public final TextView comment;
@@ -935,28 +992,24 @@ public class ViewUnit {
 		public final View threadContent;
 		public final View showOriginalPost;
 
-		public final UiManager.ConfigurationSet configurationSet;
 		public final UiManager.ThumbnailClickListener thumbnailClickListener;
 		public final UiManager.ThumbnailLongClickListener thumbnailLongClickListener;
 
-		public PostItem postItem;
-
-		public ThreadViewHolder(ViewGroup parent, UiManager.ConfigurationSet configurationSet,
-				UiManager uiManager, ViewType viewType) {
-			super(viewType != ViewType.LIST ? createCardLayout(parent)
+		public ThreadViewHolder(ViewGroup parent, UiManager uiManager, ThreadViewType threadViewType) {
+			super(threadViewType != ThreadViewType.LIST ? createCardLayout(parent)
 					: LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_thread, parent, false));
 
-			int thumbnailBackground;
-			if (viewType != ViewType.LIST) {
-				CardView cardView = (CardView) itemView;
+			if (threadViewType != ThreadViewType.LIST) {
+				cardView = (CardView) itemView;
 				ViewGroup cardContent = (ViewGroup) cardView.getChildAt(0);
 				LayoutInflater inflater = LayoutInflater.from(itemView.getContext());
-				inflater.inflate(viewType == ViewType.CELL ? R.layout.list_item_thread_cell
+				inflater.inflate(threadViewType == ThreadViewType.CELL ? R.layout.list_item_thread_cell
 						: R.layout.list_item_thread_card, cardContent);
-				thumbnailBackground = cardView.getBackgroundColor();
+				ListViewUtils.bind(this, cardContent, true, null, this);
 			} else {
+				cardView = null;
 				ViewUtils.setSelectableItemBackground(itemView);
-				thumbnailBackground = getPostBackgroundColor(uiManager, configurationSet);
+				ListViewUtils.bind(this, itemView, true, null, this);
 			}
 
 			thumbnail = itemView.findViewById(R.id.thumbnail);
@@ -966,25 +1019,23 @@ public class ViewUnit {
 			threadContent = itemView.findViewById(R.id.thread_content);
 			ViewGroup showOriginalPost = itemView.findViewById(R.id.show_original_post);
 			this.showOriginalPost = showOriginalPost;
-			(viewType == ViewType.CELL ? description : showOriginalPost).setOnClickListener(uiManager.view()
-					.threadShowOriginalPostClickListener);
+			(threadViewType == ThreadViewType.CELL ? description : showOriginalPost)
+					.setOnClickListener(uiManager.view().threadShowOriginalPostClickListener);
 
-			this.configurationSet = configurationSet;
 			thumbnailClickListener = uiManager.interaction().createThumbnailClickListener();
 			thumbnailLongClickListener = uiManager.interaction().createThumbnailLongClickListener();
 
 			thumbnail.setDrawTouching(true);
-			if (viewType == ViewType.CELL) {
+			if (threadViewType == ThreadViewType.CELL) {
 				thumbnail.setFitSquare(true);
-				thumbnail.applyRoundedCorners(thumbnailBackground);
 				ViewUtils.applyScaleSize(comment, subject, description);
 				stateImages = null;
 			} else {
 				stateImages = new ImageView[PostState.THREAD_ITEM_STATES.size()];
-				fillStateImages(showOriginalPost, viewType == ViewType.CARD ? 1 : 0,
+				fillStateImages(showOriginalPost, threadViewType == ThreadViewType.CARD ? 1 : 0,
 						stateImages, PostState.THREAD_ITEM_STATES, 0.5f,
-						viewType == ViewType.CARD ? 8 : 0, viewType == ViewType.CARD ? 0 : 8);
-				thumbnail.applyRoundedCorners(thumbnailBackground);
+						threadViewType == ThreadViewType.CARD ? 8 : 0,
+						threadViewType == ThreadViewType.CARD ? 0 : 8);
 				ViewGroup.MarginLayoutParams thumbnailLayoutParams =
 						(ViewGroup.MarginLayoutParams) thumbnail.getLayoutParams();
 				ViewUtils.applyScaleSize(comment, subject, description);
@@ -1001,7 +1052,7 @@ public class ViewUnit {
 							description.getPaddingRight(), description.getPaddingBottom());
 					comment.setMaxLines(8);
 				} else {
-					description.setGravity(viewType == ViewType.LIST ? Gravity.START : Gravity.END);
+					description.setGravity(threadViewType == ThreadViewType.LIST ? Gravity.START : Gravity.END);
 					comment.setMaxLines(6);
 				}
 				int thumbnailsScale = Preferences.getThumbnailsScale();
@@ -1011,18 +1062,10 @@ public class ViewUnit {
 		}
 
 		@Override
-		public PostItem getPostItem() {
-			return postItem;
-		}
-
-		@Override
-		public UiManager.ConfigurationSet getConfigurationSet() {
-			return configurationSet;
-		}
-
-		@Override
-		public GalleryItem.Set getGallerySet() {
-			return postItem.getThreadGallerySet();
+		protected void onConfigure(PostItem postItem, UiManager.ConfigurationSet configurationSet) {
+			int thumbnailBackground = cardView != null ? cardView.getBackgroundColor()
+					: getPostBackgroundColor(itemView.getContext(), configurationSet);
+			thumbnail.applyRoundedCorners(thumbnailBackground);
 		}
 	}
 
@@ -1072,9 +1115,8 @@ public class ViewUnit {
 		}
 	}
 
-	private static class PostViewHolder extends RecyclerView.ViewHolder implements UiManager.Holder,
-			CommentTextView.RecyclerKeeper.Holder, View.OnAttachStateChangeListener,
-			CommentTextView.LimitListener, View.OnClickListener {
+	private static class PostViewHolder extends BasePostViewHolder implements CommentTextView.RecyclerKeeper.Holder,
+			View.OnAttachStateChangeListener, CommentTextView.LimitListener, View.OnClickListener {
 		public final PostLinearLayout layout;
 		public final LinebreakLayout head;
 		public final TextView number;
@@ -1098,18 +1140,15 @@ public class ViewUnit {
 		public final ImageView[] stateImages = new ImageView[PostState.POST_ITEM_STATES.size()];
 		public final int highlightBackgroundColor;
 
-		public final UiManager.ConfigurationSet configurationSet;
 		public final UiManager.ThumbnailClickListener thumbnailClickListener;
 		public final UiManager.ThumbnailLongClickListener thumbnailLongClickListener;
 
-		public PostItem postItem;
 		public UiManager.Selection selection;
 		public Animator expandAnimator;
 		public NewPostAnimation newPostAnimation;
 		public long lastCommentClick;
 
-		public PostViewHolder(ViewGroup parent, UiManager.ConfigurationSet configurationSet,
-				UiManager uiManager, int thumbnailWidth) {
+		public PostViewHolder(ViewGroup parent, UiManager uiManager, int thumbnailWidth) {
 			super(LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_post, parent, false));
 
 			layout = (PostLinearLayout) itemView;
@@ -1133,9 +1172,9 @@ public class ViewUnit {
 			bottomBarOpenThread = itemView.findViewById(R.id.bottom_bar_open_thread);
 			highlightBackgroundColor = ThemeEngine.getColorScheme(itemView.getContext()).highlightBackgroundColor;
 
-			this.configurationSet = configurationSet;
 			thumbnailClickListener = uiManager.interaction().createThumbnailClickListener();
 			thumbnailLongClickListener = uiManager.interaction().createThumbnailLongClickListener();
+			ListViewUtils.bind(this, itemView, true, null, this);
 
 			head.setOnTouchListener(uiManager.view().headContentTouchListener);
 			comment.setLimitListener(this);
@@ -1158,7 +1197,6 @@ public class ViewUnit {
 			}
 
 			thumbnail.setDrawTouching(true);
-			thumbnail.applyRoundedCorners(getPostBackgroundColor(uiManager, configurationSet));
 			ViewGroup.LayoutParams thumbnailLayoutParams = thumbnail.getLayoutParams();
 			int thumbnailsScale = Preferences.getThumbnailsScale();
 			if (thumbnailsScale != 100) {
@@ -1180,6 +1218,8 @@ public class ViewUnit {
 				newPostAnimation.cancel();
 				newPostAnimation = null;
 			}
+			PostItem postItem = getPostItem();
+			UiManager.ConfigurationSet configurationSet = getConfigurationSet();
 			if (selection == UiManager.Selection.DISABLED &&
 					!configurationSet.postStateProvider.isRead(postItem.getPostNumber())) {
 				switch (Preferences.getHighlightUnreadMode()) {
@@ -1255,9 +1295,11 @@ public class ViewUnit {
 
 		@Override
 		public void onClick(View v) {
-			if (v == bottomBarExpand && postItem != null &&
-					!configurationSet.postStateProvider.isExpanded(postItem.getPostNumber())) {
-				configurationSet.postStateProvider.setExpanded(postItem.getPostNumber());
+			PostItem postItem = getPostItem();
+			PostNumber postNumber = postItem.getPostNumber();
+			UiManager.ConfigurationSet configurationSet = getConfigurationSet();
+			if (v == bottomBarExpand && !configurationSet.postStateProvider.isExpanded(postNumber)) {
+				configurationSet.postStateProvider.setExpanded(postNumber);
 				comment.setLinesLimit(0, 0);
 				bottomBarExpand.setVisibility(View.GONE);
 				int bottomBarHeight = bottomBar.getHeight();
@@ -1291,18 +1333,8 @@ public class ViewUnit {
 		}
 
 		@Override
-		public PostItem getPostItem() {
-			return postItem;
-		}
-
-		@Override
-		public UiManager.ConfigurationSet getConfigurationSet() {
-			return configurationSet;
-		}
-
-		@Override
-		public GalleryItem.Set getGallerySet() {
-			return configurationSet.gallerySet;
+		protected void onConfigure(PostItem postItem, UiManager.ConfigurationSet configurationSet) {
+			thumbnail.applyRoundedCorners(getPostBackgroundColor(itemView.getContext(), configurationSet));
 		}
 
 		@Override
@@ -1311,14 +1343,10 @@ public class ViewUnit {
 		}
 	}
 
-	private static class HiddenViewHolder extends RecyclerView.ViewHolder implements UiManager.Holder {
+	private static class HiddenViewHolder extends BasePostViewHolder {
 		public final TextView index;
 		public final TextView number;
 		public final TextView comment;
-
-		public final UiManager.ConfigurationSet configurationSet;
-
-		public PostItem postItem;
 
 		private static View createBaseView(ViewGroup parent, boolean card) {
 			if (card) {
@@ -1331,8 +1359,7 @@ public class ViewUnit {
 			}
 		}
 
-		public HiddenViewHolder(ViewGroup parent, UiManager.ConfigurationSet configurationSet,
-				boolean card, boolean thread) {
+		public HiddenViewHolder(ViewGroup parent, boolean card, boolean thread) {
 			super(createBaseView(parent, card));
 
 			index = itemView.findViewById(R.id.index);
@@ -1345,26 +1372,14 @@ public class ViewUnit {
 				index.setVisibility(View.GONE);
 				number.setVisibility(View.GONE);
 			}
-			if (!card) {
+			if (card) {
+				CardView cardView = (CardView) itemView;
+				ViewGroup cardContent = (ViewGroup) cardView.getChildAt(0);
+				ListViewUtils.bind(this, cardContent, true, null, this);
+			} else {
 				ViewUtils.setSelectableItemBackground(itemView);
+				ListViewUtils.bind(this, itemView, true, null, this);
 			}
-
-			this.configurationSet = configurationSet;
-		}
-
-		@Override
-		public PostItem getPostItem() {
-			return postItem;
-		}
-
-		@Override
-		public UiManager.ConfigurationSet getConfigurationSet() {
-			return configurationSet;
-		}
-
-		@Override
-		public GalleryItem.Set getGallerySet() {
-			throw new UnsupportedOperationException();
 		}
 	}
 }

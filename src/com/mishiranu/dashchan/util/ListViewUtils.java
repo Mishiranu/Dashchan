@@ -82,6 +82,15 @@ public class ListViewUtils {
 		return holder != null && clazz.isAssignableFrom(holder.getClass()) ? (T) holder : null;
 	}
 
+	// Unlimited pool size for immediate scrolls to improve performance
+	public static class UnlimitedRecycledViewPool extends RecyclerView.RecycledViewPool {
+		@Override
+		public void putRecycledView(RecyclerView.ViewHolder scrap) {
+			setMaxRecycledViews(scrap.getItemViewType(), Integer.MAX_VALUE);
+			super.putRecycledView(scrap);
+		}
+	}
+
 	private static class TopLinearSmoothScroller extends LinearSmoothScroller {
 		public TopLinearSmoothScroller(Context context, int targetPosition) {
 			super(context);

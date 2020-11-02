@@ -21,6 +21,7 @@ import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.HeaderItemDecoration;
 import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import java.util.ArrayList;
@@ -80,12 +81,15 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 		recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
 		Page page = getPage();
 		UiManager uiManager = getUiManager();
+		uiManager.view().bindThreadsPostRecyclerView(recyclerView);
 		float density = ResourceUtils.obtainDensity(getResources());
 		int dividerPadding = (int) (12f * density);
 		SearchAdapter adapter = new SearchAdapter(getContext(), this, page.chanName, uiManager, page.searchQuery);
 		recyclerView.setAdapter(adapter);
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				(c, position) -> adapter.configureDivider(c, position).horizontal(dividerPadding, dividerPadding)));
+		recyclerView.addItemDecoration(new HeaderItemDecoration(adapter::configureItemHeader,
+				(c, position) -> adapter.getItemHeader(position)));
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		InitRequest initRequest = getInitRequest();
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);

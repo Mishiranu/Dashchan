@@ -189,13 +189,15 @@ public class AttachmentView extends View {
 	}
 
 	public void applyRoundedCorners(int backgroundColor) {
-		float density = ResourceUtils.obtainDensity(this);
-		int radius = (int) (2f * density + 0.5f);
-		cornersDrawable = new RoundedCornersDrawable(radius);
-		cornersDrawable.setColor(backgroundColor);
-		if (getWidth() > 0) {
-			updateCornersBounds(getWidth(), getHeight());
+		if (cornersDrawable == null) {
+			float density = ResourceUtils.obtainDensity(this);
+			int radius = (int) (2f * density + 0.5f);
+			cornersDrawable = new RoundedCornersDrawable(radius);
+			if (getWidth() > 0) {
+				updateCornersBounds(getWidth(), getHeight());
+			}
 		}
+		cornersDrawable.setColor(backgroundColor);
 	}
 
 	@Override

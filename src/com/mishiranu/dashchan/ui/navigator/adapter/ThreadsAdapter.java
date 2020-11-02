@@ -13,6 +13,7 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
+import com.mishiranu.dashchan.ui.navigator.manager.ViewUnit;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -24,7 +25,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements GalleryItem.Provider {
 	public interface Callback extends ListViewUtils.SimpleCallback<PostItem> {}
 
 	public enum CatalogSort {
@@ -44,8 +45,6 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 			this.comparator = comparator;
 		}
 	}
-
-	private enum ViewType {THREAD, THREAD_HIDDEN, THREAD_CARD, THREAD_CARD_HIDDEN, THREAD_CELL}
 
 	private static final int LIST_PADDING = 12;
 	private static final int CARD_MIN_WIDTH_LARGE_DP = 120;
@@ -72,7 +71,6 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	private boolean catalog;
 
 	private final Context context;
-	private final Callback callback;
 	private final UiManager uiManager;
 	private final UiManager.ConfigurationSet configurationSet;
 
@@ -84,67 +82,36 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	public ThreadsAdapter(Context context, Callback callback, String chanName, UiManager uiManager,
 			UiManager.PostStateProvider postStateProvider, CatalogSort catalogSort) {
 		this.context = context;
-		this.callback = callback;
 		this.uiManager = uiManager;
 		configurationSet = new UiManager.ConfigurationSet(chanName, null, null, postStateProvider,
-				new GalleryItem.Set(false), uiManager.dialog().createStackInstance(), null,
+				this, uiManager.dialog().createStackInstance(), null, callback,
 				false, true, false, false, false, null);
 		this.catalogSort = catalogSort;
-	}
-
-	private RecyclerView.ViewHolder configureView(RecyclerView.ViewHolder viewHolder, View view) {
-		return ListViewUtils.bind(viewHolder, view, true, this::getItem, callback);
-	}
-
-	private RecyclerView.ViewHolder configureView(RecyclerView.ViewHolder viewHolder) {
-		return configureView(viewHolder, viewHolder.itemView);
-	}
-
-	private RecyclerView.ViewHolder configureCard(RecyclerView.ViewHolder viewHolder) {
-		return configureView(viewHolder, ((ViewGroup) viewHolder.itemView).getChildAt(0));
 	}
 
 	@NonNull
 	@Override
 	public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-		switch (ViewType.values()[viewType]) {
-			case THREAD: {
-				return configureView(uiManager.view().createThreadViewHolder(parent, configurationSet, false, false));
-			}
-			case THREAD_CARD: {
-				return configureCard(uiManager.view().createThreadViewHolder(parent, configurationSet, true, false));
-			}
-			case THREAD_HIDDEN: {
-				return configureView(uiManager.view().createThreadHiddenView(parent, configurationSet, false));
-			}
-			case THREAD_CARD_HIDDEN: {
-				return configureCard(uiManager.view().createThreadHiddenView(parent, configurationSet, true));
-			}
-			case THREAD_CELL: {
-				return configureCard(uiManager.view().createThreadViewHolder(parent, configurationSet, true, true));
-			}
-			default: {
-				throw new IllegalStateException();
-			}
-		}
+		return uiManager.view().createView(parent, ViewUnit.ViewType.values()[viewType]);
 	}
 
 	@Override
 	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 		PostItem postItem = getItem(position);
-		switch (ViewType.values()[holder.getItemViewType()]) {
+		switch (ViewUnit.ViewType.values()[holder.getItemViewType()]) {
 			case THREAD:
 			case THREAD_CARD: {
-				uiManager.view().bindThreadView(holder, postItem);
+				uiManager.view().bindThreadView(holder, postItem, configurationSet);
 				break;
 			}
 			case THREAD_HIDDEN:
 			case THREAD_CARD_HIDDEN: {
-				uiManager.view().bindThreadHiddenView(holder, postItem);
+				uiManager.view().bindThreadHiddenView(holder, postItem, configurationSet);
 				break;
 			}
-			case THREAD_CELL: {
-				uiManager.view().bindThreadCellView(holder, postItem, gridMode.small, gridMode.gridItemContentHeight);
+			case THREAD_CARD_CELL: {
+				uiManager.view().bindThreadCellView(holder, postItem, configurationSet,
+						gridMode.small, gridMode.gridItemContentHeight);
 				break;
 			}
 		}
@@ -154,6 +121,11 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		return configurationSet;
 	}
 
+	@Override
+	public GalleryItem.Set getGallerySet(PostItem postItem) {
+		return postItem.getThreadGallerySet();
+	}
+
 	public boolean isRealEmpty() {
 		return postItems.isEmpty();
 	}
@@ -161,10 +133,10 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	@Override
 	public int getItemViewType(int position) {
 		PostItem postItem = getItem(position);
-		return (gridMode != null ? ViewType.THREAD_CELL
+		return (gridMode != null ? ViewUnit.ViewType.THREAD_CARD_CELL
 				: configurationSet.postStateProvider.isHiddenResolve(postItem)
-				? (cardsMode ? ViewType.THREAD_CARD_HIDDEN : ViewType.THREAD_HIDDEN)
-				: (cardsMode ? ViewType.THREAD_CARD : ViewType.THREAD)).ordinal();
+				? (cardsMode ? ViewUnit.ViewType.THREAD_CARD_HIDDEN : ViewUnit.ViewType.THREAD_HIDDEN)
+				: (cardsMode ? ViewUnit.ViewType.THREAD_CARD : ViewUnit.ViewType.THREAD)).ordinal();
 	}
 
 	private List<PostItem> getPostItems() {

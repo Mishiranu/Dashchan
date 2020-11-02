@@ -9,21 +9,34 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class HeaderItemDecoration extends RecyclerView.ItemDecoration {
+	public interface Configuration {
+		void configureHeaderView(Context context, TextView headerView);
+	}
+
 	public interface Provider {
 		String getHeader(Context context, int position);
 	}
 
+	private final Configuration configuration;
 	private final Provider provider;
 	private final Rect rect = new Rect();
 	private TextView headerView;
 
 	public HeaderItemDecoration(Provider provider) {
+		this(null, provider);
+	}
+
+	public HeaderItemDecoration(Configuration configuration, Provider provider) {
+		this.configuration = configuration;
 		this.provider = provider;
 	}
 
 	private View prepareHeaderView(RecyclerView parent, String header, boolean layout) {
 		if (headerView == null) {
 			headerView = ViewFactory.makeListTextHeader(parent);
+			if (configuration != null) {
+				configuration.configureHeaderView(parent.getContext(), headerView);
+			}
 		}
 		headerView.setText(header);
 		headerView.measure(View.MeasureSpec.makeMeasureSpec(parent.getWidth(), View.MeasureSpec.EXACTLY),

@@ -95,7 +95,11 @@ public class GalleryItem implements Serializable {
 				chan.name, boardName, threadNumber, threadTitle);
 	}
 
-	public static class Set {
+	public interface Provider {
+		GalleryItem.Set getGallerySet(PostItem postItem);
+	}
+
+	public static class Set implements Provider {
 		private final boolean navigatePostSupported;
 		private final TreeMap<PostNumber, List<GalleryItem>> galleryItems = new TreeMap<>();
 
@@ -159,6 +163,11 @@ public class GalleryItem implements Serializable {
 
 		public boolean isNavigatePostSupported() {
 			return navigatePostSupported;
+		}
+
+		@Override
+		public Set getGallerySet(PostItem postItem) {
+			return this;
 		}
 	}
 }

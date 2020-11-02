@@ -267,6 +267,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		recyclerView.setLayoutManager(new PostsLayoutManager(recyclerView.getContext()));
 		Page page = getPage();
 		UiManager uiManager = getUiManager();
+		uiManager.view().bindThreadsPostRecyclerView(recyclerView);
 		float density = ResourceUtils.obtainDensity(context);
 		int dividerPadding = (int) (12f * density);
 		hidePerformer = new HidePerformer(context);
@@ -586,7 +587,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				int imageIndex = -1;
 				RecyclerView recyclerView = getRecyclerView();
 				View child = recyclerView.getChildAt(0);
-				GalleryItem.Set gallerySet = adapter.getConfigurationSet().gallerySet;
+				GalleryItem.Set gallerySet = adapter.getGallerySet();
 				if (child != null) {
 					int position = recyclerView.getChildAdapterPosition(child);
 					OUTER: for (int v = 0; v <= 1; v++) {
@@ -835,12 +836,13 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 	@Override
 	public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+		PostsAdapter adapter = getAdapter();
 		switch (item.getItemId()) {
 			case R.id.menu_make_threadshot: {
-				ArrayList<PostItem> postItems = getAdapter().getSelectedItems();
+				ArrayList<PostItem> postItems = adapter.getSelectedItems();
 				if (postItems.size() > 0) {
 					Page page = getPage();
-					String threadTitle = getAdapter().getConfigurationSet().gallerySet.getThreadTitle();
+					String threadTitle = adapter.getItem(0).getSubjectOrComment();
 					new ThreadshotPerformer(getRecyclerView(), getUiManager(), page.chanName, page.boardName,
 							page.threadNumber, threadTitle, postItems);
 				}
@@ -849,7 +851,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			}
 			case R.id.menu_reply: {
 				ArrayList<Replyable.ReplyData> data = new ArrayList<>();
-				for (PostItem postItem : getAdapter().getSelectedItems()) {
+				for (PostItem postItem : adapter.getSelectedItems()) {
 					data.add(new Replyable.ReplyData(postItem.getPostNumber(), null));
 				}
 				if (data.size() > 0) {
@@ -859,7 +861,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				return true;
 			}
 			case R.id.menu_delete: {
-				ArrayList<PostItem> postItems = getAdapter().getSelectedItems();
+				ArrayList<PostItem> postItems = adapter.getSelectedItems();
 				ArrayList<PostNumber> postNumbers = new ArrayList<>();
 				for (PostItem postItem : postItems) {
 					if (!postItem.isDeleted()) {
@@ -875,7 +877,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				return true;
 			}
 			case R.id.menu_report: {
-				ArrayList<PostItem> postItems = getAdapter().getSelectedItems();
+				ArrayList<PostItem> postItems = adapter.getSelectedItems();
 				ArrayList<PostNumber> postNumbers = new ArrayList<>();
 				for (PostItem postItem : postItems) {
 					if (!postItem.isDeleted()) {
