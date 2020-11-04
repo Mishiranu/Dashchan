@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -15,6 +16,7 @@ import android.webkit.MimeTypeMap;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
 import chan.http.HttpException;
@@ -26,8 +28,9 @@ import com.mishiranu.dashchan.BuildConfig;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.async.AsyncManager;
+import com.mishiranu.dashchan.content.async.HttpHolderTask;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
+import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.content.service.DownloadService;
@@ -51,17 +54,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ThemesFragment extends BaseListFragment implements ActivityHandler, AsyncManager.Callback {
+public class ThemesFragment extends BaseListFragment implements ActivityHandler {
 	private static final String EXTRA_AVAILABLE_THEMES = "availableThemes";
-	private static final String TASK_READ_THEMES = "readThemes";
 
-	private List<JSONObject> availableJsonThemes = Collections.emptyList();
+	private List<JSONObject> availableJsonThemes;
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -85,12 +86,12 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 			}
 			return true;
 		}));
+		updateThemes();
 
+		ThemesViewModel viewModel = new ViewModelProvider(this).get(ThemesViewModel.class);
 		ArrayList<String> availableThemes = savedInstanceState != null
 				? savedInstanceState.getStringArrayList(EXTRA_AVAILABLE_THEMES) : null;
-		if (availableThemes == null) {
-			AsyncManager.get(this).startTask(TASK_READ_THEMES, this, null, false);
-		} else {
+		if (availableThemes != null) {
 			availableJsonThemes = new ArrayList<>();
 			for (String string : availableThemes) {
 				try {
@@ -99,13 +100,23 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 					throw new RuntimeException(e);
 				}
 			}
+			updateThemes();
+		} else {
+			if (!viewModel.hasTaskOrValue()) {
+				ReadThemesTask task = new ReadThemesTask(viewModel);
+				task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+				viewModel.attach(task);
+			}
+			viewModel.observe(getViewLifecycleOwner(), result -> {
+				if (result.second != null) {
+					availableJsonThemes = result.second;
+					updateThemes();
+				} else {
+					availableJsonThemes = Collections.emptyList();
+					ToastUtils.show(requireContext(), result.first);
+				}
+			});
 		}
-		updateThemes();
-	}
-
-	@Override
-	public void onTerminate() {
-		AsyncManager.get(this).cancelTask(TASK_READ_THEMES, this);
 	}
 
 	@Override
@@ -246,30 +257,6 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 				requireActivity().recreate();
 			}
 		}
-	}
-
-	@Override
-	public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
-		ReadThemesTask task = new ReadThemesTask();
-		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
-		return task.getHolder();
-	}
-
-	@Override
-	public void onFinishTaskExecution(String name, AsyncManager.Holder holder) {
-		List<JSONObject> themes = holder.nextArgument();
-		ErrorItem errorItem = holder.nextArgument();
-		if (errorItem != null) {
-			ToastUtils.show(requireContext(), errorItem);
-		} else {
-			availableJsonThemes = themes != null ? themes : Collections.emptyList();
-			updateThemes();
-		}
-	}
-
-	@Override
-	public void onRequestTaskCancel(String name, Object task) {
-		((ReadThemesTask) task).cancel();
 	}
 
 	private static class ListItem {
@@ -414,23 +401,25 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 		}
 	}
 
-	private static class ReadThemesTask extends AsyncManager.SimpleTask<Boolean> {
-		private final HttpHolder holder = new HttpHolder(Chan.getFallback());
+	public static class ThemesViewModel extends TaskViewModel<ReadThemesTask, Pair<ErrorItem, List<JSONObject>>> {}
 
-		private ArrayList<JSONObject> themes;
-		private ErrorItem errorItem;
+	private static class ReadThemesTask extends HttpHolderTask<Void, Pair<ErrorItem, List<JSONObject>>> {
+		private final ThemesViewModel viewModel;
+
+		public ReadThemesTask(ThemesViewModel viewModel) {
+			super(Chan.getFallback());
+			this.viewModel = viewModel;
+		}
 
 		@Override
-		protected Boolean run() {
-			ArrayList<JSONObject> themes = new ArrayList<>();
-			try (HttpHolder.Use ignored = holder.use()) {
+		protected Pair<ErrorItem, List<JSONObject>> run(HttpHolder holder) {
+			try {
 				Uri uri = Chan.getFallback().locator.setScheme(Uri.parse(BuildConfig.URI_THEMES));
 				int redirects = 0;
 				while (redirects++ < 5) {
 					JSONObject jsonObject = new JSONObject(new HttpRequest(uri, holder).perform().readString());
 					if (jsonObject == null) {
-						errorItem = new ErrorItem(ErrorItem.Type.INVALID_RESPONSE);
-						return false;
+						return new Pair<>(new ErrorItem(ErrorItem.Type.INVALID_RESPONSE), null);
 					}
 					String redirect = CommonUtils.optJsonString(jsonObject, "redirect");
 					if (redirect != null) {
@@ -438,32 +427,23 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler,
 						continue;
 					}
 					JSONArray jsonArray = jsonObject.getJSONArray("themes");
+					ArrayList<JSONObject> themes = new ArrayList<>();
 					for (int i = 0; i < jsonArray.length(); i++) {
 						themes.add(jsonArray.getJSONObject(i));
 					}
-					this.themes = themes;
-					return true;
+					return new Pair<>(null, themes);
 				}
-				errorItem = new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE);
-				return false;
+				return new Pair<>(new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE), null);
 			} catch (HttpException e) {
-				errorItem = e.getErrorItemAndHandle();
-				return false;
+				return new Pair<>(e.getErrorItemAndHandle(), null);
 			} catch (JSONException e) {
-				errorItem = new ErrorItem(ErrorItem.Type.INVALID_RESPONSE);
-				return false;
+				return new Pair<>(new ErrorItem(ErrorItem.Type.INVALID_RESPONSE), null);
 			}
 		}
 
 		@Override
-		protected void onStoreResult(AsyncManager.Holder holder, Boolean result) {
-			holder.storeResult(themes, errorItem);
-		}
-
-		@Override
-		public void cancel() {
-			super.cancel();
-			holder.interrupt();
+		protected void onComplete(Pair<ErrorItem, List<JSONObject>> result) {
+			viewModel.handleResult(result);
 		}
 	}
 }

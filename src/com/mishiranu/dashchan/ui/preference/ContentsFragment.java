@@ -12,13 +12,15 @@ import android.util.Pair;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.ViewModelProvider;
 import chan.util.DataFile;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.async.AsyncManager;
+import com.mishiranu.dashchan.content.async.ExecutorTask;
+import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.database.PagesDatabase;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.ui.ActivityHandler;
@@ -32,7 +34,6 @@ import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Locale;
 
 public class ContentsFragment extends PreferenceFragment implements ActivityHandler {
@@ -260,13 +261,11 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		}
 	}
 
-	public static class ClearingDialog extends DialogFragment implements AsyncManager.Callback {
+	public static class ClearingDialog extends DialogFragment {
 		private static final String EXTRA_THUMBNAILS = "thumbnails";
 		private static final String EXTRA_MEDIA = "media";
 		private static final String EXTRA_OLD_PAGES = "oldPages";
 		private static final String EXTRA_ALL_PAGES = "allPages";
-
-		private static final String TASK_CLEAR_CACHE = "clear_cache";
 
 		public ClearingDialog() {}
 
@@ -290,7 +289,35 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
-			AsyncManager.get(this).startTask(TASK_CLEAR_CACHE, this, null, false);
+
+			ClearCacheViewModel viewModel = new ViewModelProvider(this).get(ClearCacheViewModel.class);
+			if (!viewModel.hasTaskOrValue()) {
+				Bundle args = requireArguments();
+				boolean thumbnails = args.getBoolean(EXTRA_THUMBNAILS);
+				boolean media = args.getBoolean(EXTRA_MEDIA);
+				boolean oldPages = args.getBoolean(EXTRA_OLD_PAGES);
+				boolean allPages = args.getBoolean(EXTRA_ALL_PAGES);
+				Collection<PagesDatabase.ThreadKey> openThreads = Collections.emptyList();
+				if (oldPages && !allPages) {
+					Collection<DrawerForm.Page> drawerPages =
+							((FragmentHandler) requireActivity()).obtainDrawerPages();
+					openThreads = new ArrayList<>(openThreads.size());
+					for (DrawerForm.Page page : drawerPages) {
+						if (page.threadNumber != null) {
+							openThreads.add(new PagesDatabase.ThreadKey(page.chanName,
+									page.boardName, page.threadNumber));
+						}
+					}
+				}
+				ClearCacheTask task = new ClearCacheTask(viewModel,
+						thumbnails, media, oldPages, allPages, openThreads);
+				task.execute(ConcurrentUtils.SEPARATE_EXECUTOR);
+				viewModel.attach(task);
+			}
+			viewModel.observe(this, result -> {
+				dismiss();
+				sendUpdateCacheSize();
+			});
 		}
 
 		private void sendUpdateCacheSize() {
@@ -300,53 +327,24 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 		@Override
 		public void onCancel(@NonNull DialogInterface dialog) {
 			super.onCancel(dialog);
-			AsyncManager.get(this).cancelTask(TASK_CLEAR_CACHE, this);
 			sendUpdateCacheSize();
-		}
-
-		@Override
-		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
-			Bundle args = requireArguments();
-			boolean thumbnails = args.getBoolean(EXTRA_THUMBNAILS);
-			boolean media = args.getBoolean(EXTRA_MEDIA);
-			boolean oldPages = args.getBoolean(EXTRA_OLD_PAGES);
-			boolean allPages = args.getBoolean(EXTRA_ALL_PAGES);
-			Collection<PagesDatabase.ThreadKey> openThreads = Collections.emptyList();
-			if (oldPages && !allPages) {
-				Collection<DrawerForm.Page> drawerPages = ((FragmentHandler) requireActivity()).obtainDrawerPages();
-				openThreads = new ArrayList<>(openThreads.size());
-				for (DrawerForm.Page page : drawerPages) {
-					if (page.threadNumber != null) {
-						openThreads.add(new PagesDatabase.ThreadKey(page.chanName, page.boardName, page.threadNumber));
-					}
-				}
-			}
-			ClearCacheTask task = new ClearCacheTask(thumbnails, media, oldPages, allPages, openThreads);
-			task.execute(ConcurrentUtils.SEPARATE_EXECUTOR);
-			return task.getHolder();
-		}
-
-		@Override
-		public void onFinishTaskExecution(String name, AsyncManager.Holder holder) {
-			dismiss();
-			sendUpdateCacheSize();
-		}
-
-		@Override
-		public void onRequestTaskCancel(String name, Object task) {
-			((ClearCacheTask) task).cancel();
 		}
 	}
 
-	private static class ClearCacheTask extends AsyncManager.SimpleTask<Void> {
+	public static class ClearCacheViewModel extends TaskViewModel<ClearCacheTask, Object> {}
+
+	private static class ClearCacheTask extends ExecutorTask<Void, Object> {
+		private final ClearCacheViewModel viewModel;
 		private final boolean thumbnails;
 		private final boolean media;
 		private final boolean oldPages;
 		private final boolean allPages;
 		private final Collection<PagesDatabase.ThreadKey> openThreads;
 
-		public ClearCacheTask(boolean thumbnails, boolean media, boolean oldPages, boolean allPages,
+		public ClearCacheTask(ClearCacheViewModel viewModel,
+				boolean thumbnails, boolean media, boolean oldPages, boolean allPages,
 				Collection<PagesDatabase.ThreadKey> openThreads) {
+			this.viewModel = viewModel;
 			this.thumbnails = thumbnails;
 			this.media = media;
 			this.oldPages = oldPages;
@@ -382,6 +380,11 @@ public class ContentsFragment extends PreferenceFragment implements ActivityHand
 				Thread.currentThread().interrupt();
 			}
 			return null;
+		}
+
+		@Override
+		protected void onComplete(Object o) {
+			viewModel.handleResult(this);
 		}
 	}
 }

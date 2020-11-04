@@ -117,11 +117,11 @@ public class RelayBlockResolver {
 		}
 
 		@Override
-		public ReadCaptchaTask.Result onReadCaptcha(ChanPerformer.ReadCaptchaData data) {
+		public ReadCaptchaTask.RemoteResult onReadCaptcha(ChanPerformer.ReadCaptchaData data) {
 			ChanPerformer.CaptchaData captchaData = new ChanPerformer.CaptchaData();
 			captchaData.put(ChanPerformer.CaptchaData.API_KEY, apiKey);
 			captchaData.put(ChanPerformer.CaptchaData.REFERER, referer);
-			return new ReadCaptchaTask.Result(new ChanPerformer.ReadCaptchaResult
+			return new ReadCaptchaTask.RemoteResult(new ChanPerformer.ReadCaptchaResult
 					(ChanPerformer.CaptchaState.CAPTCHA, captchaData), challengeExtra, allowSolveAutomatically);
 		}
 	}

@@ -47,6 +47,7 @@ import androidx.annotation.NonNull;
 import androidx.core.view.ViewCompat;
 import androidx.core.widget.TextViewCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanMarkup;
@@ -57,9 +58,9 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.async.ReadCaptchaTask;
 import com.mishiranu.dashchan.content.async.SendPostTask;
+import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.content.model.PostNumber;
@@ -93,11 +94,10 @@ import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-public class PostingFragment extends Fragment implements ActivityHandler, CaptchaForm.Callback, AsyncManager.Callback,
+public class PostingFragment extends Fragment implements ActivityHandler, CaptchaForm.Callback,
 		ReadCaptchaTask.Callback, PostingDialogCallback {
 	private static final String EXTRA_CHAN_NAME = "chanName";
 	private static final String EXTRA_BOARD_NAME = "boardName";
@@ -105,7 +105,6 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 	private static final String EXTRA_REPLY_DATA_LIST = "replyDataList";
 
 	private static final String EXTRA_CAPTCHA_DRAFT = "captchaDraft";
-	private static final String TASK_READ_CAPTCHA = "read_captcha";
 
 	public PostingFragment() {}
 
@@ -651,11 +650,9 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 				? R.string.new_thread : R.string.new_post), null);
 		requireActivity().bindService(new Intent(requireContext(), PostingService.class),
 				postingConnection, Context.BIND_AUTO_CREATE);
-	}
 
-	@Override
-	public void onTerminate() {
-		AsyncManager.get(this).cancelTask(TASK_READ_CAPTCHA, this);
+		CaptchaViewModel viewModel = new ViewModelProvider(this).get(CaptchaViewModel.class);
+		viewModel.observe(getViewLifecycleOwner(), this);
 	}
 
 	private DraftsStorage.PostDraft obtainPostDraft() {
@@ -1177,79 +1174,30 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		}
 	}
 
-	private static final String EXTRA_FORCE_CAPTCHA = "forceCaptcha";
-	private static final String EXTRA_MAY_SHOW_LOAD_BUTTON = "mayShowLoadButton";
-
 	private void refreshCaptcha(boolean forceCaptcha, boolean mayShowLoadButton, boolean restart) {
 		captchaState = null;
 		loadedCaptchaType = null;
 		captchaLoadTime = 0L;
 		updateSendButtonState();
 		captchaForm.showLoading();
-		HashMap<String, Object> extra = new HashMap<>();
-		extra.put(EXTRA_FORCE_CAPTCHA, forceCaptcha);
-		extra.put(EXTRA_MAY_SHOW_LOAD_BUTTON, mayShowLoadButton);
-		AsyncManager.get(this).startTask(TASK_READ_CAPTCHA, this, extra, restart);
-	}
-
-	private static class ReadCaptchaHolder extends AsyncManager.Holder implements ReadCaptchaTask.Callback {
-		@Override
-		public void onReadCaptchaSuccess(ReadCaptchaTask.CaptchaState captchaState,
-				ChanPerformer.CaptchaData captchaData, String captchaType, ChanConfiguration.Captcha.Input input,
-				ChanConfiguration.Captcha.Validity validity, Bitmap image, boolean large, boolean blackAndWhite) {
-			storeResult("onReadCaptchaSuccess", captchaState, captchaData, captchaType, input, validity,
-					image, large, blackAndWhite);
-		}
-
-		@Override
-		public void onReadCaptchaError(ErrorItem errorItem) {
-			storeResult("onReadCaptchaError", errorItem);
+		CaptchaViewModel viewModel = new ViewModelProvider(this).get(CaptchaViewModel.class);
+		if (restart || !viewModel.hasTaskOrValue()) {
+			Chan chan = Chan.get(getChanName());
+			List<String> captchaPass = forceCaptcha ? null : Preferences.getCaptchaPass(chan);
+			ReadCaptchaTask task = new ReadCaptchaTask(viewModel.callback, null, captchaType, null, captchaPass,
+					mayShowLoadButton, chan, getBoardName(), getThreadNumber());
+			task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+			viewModel.attach(task);
 		}
 	}
 
-	@Override
-	public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
-		boolean forceCaptcha = (boolean) extra.get(EXTRA_FORCE_CAPTCHA);
-		boolean mayShowLoadButton = (boolean) extra.get(EXTRA_MAY_SHOW_LOAD_BUTTON);
-		Chan chan = Chan.get(getChanName());
-		List<String> captchaPass = forceCaptcha ? null : Preferences.getCaptchaPass(chan);
-		ReadCaptchaHolder holder = new ReadCaptchaHolder();
-		ReadCaptchaTask task = new ReadCaptchaTask(holder, null, captchaType, null, captchaPass,
-				mayShowLoadButton, chan, getBoardName(), getThreadNumber());
-		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
-		return holder.attach(task);
-	}
+	public static class CaptchaViewModel extends TaskViewModel.Proxy<ReadCaptchaTask, ReadCaptchaTask.Callback> {}
 
 	@Override
-	public void onFinishTaskExecution(String name, AsyncManager.Holder holder) {
-		String methodName = holder.nextArgument();
-		if ("onReadCaptchaSuccess".equals(methodName)) {
-			ReadCaptchaTask.CaptchaState captchaState = holder.nextArgument();
-			ChanPerformer.CaptchaData captchaData = holder.nextArgument();
-			String captchaType = holder.nextArgument();
-			ChanConfiguration.Captcha.Input input = holder.nextArgument();
-			ChanConfiguration.Captcha.Validity validity = holder.nextArgument();
-			Bitmap image = holder.nextArgument();
-			boolean large = holder.nextArgument();
-			boolean blackAndWhite = holder.nextArgument();
-			onReadCaptchaSuccess(captchaState, captchaData, captchaType, input, validity, image, large, blackAndWhite);
-		} else if ("onReadCaptchaError".equals(methodName)) {
-			ErrorItem errorItem = holder.nextArgument();
-			onReadCaptchaError(errorItem);
-		}
-	}
-
-	@Override
-	public void onRequestTaskCancel(String name, Object task) {
-		((ReadCaptchaTask) task).cancel();
-	}
-
-	@Override
-	public void onReadCaptchaSuccess(ReadCaptchaTask.CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
-			String captchaType, ChanConfiguration.Captcha.Input input, ChanConfiguration.Captcha.Validity validity,
-			Bitmap image, boolean large, boolean blackAndWhite) {
+	public void onReadCaptchaSuccess(ReadCaptchaTask.Result result) {
 		captchaLoadTime = SystemClock.elapsedRealtime();
-		showCaptcha(captchaState, captchaData, captchaType, input, validity, image, large, blackAndWhite);
+		showCaptcha(result.captchaState, result.captchaData, result.captchaType, result.input, result.validity,
+				result.image, result.large, result.blackAndWhite);
 		updatePostingConfigurationIfNeeded();
 	}
 

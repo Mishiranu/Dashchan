@@ -1,15 +1,12 @@
 package com.mishiranu.dashchan.ui.preference;
 
-import android.annotation.TargetApi;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import chan.content.Chan;
 import chan.content.ChanManager;
 import chan.http.HttpException;
@@ -18,7 +15,8 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.async.AsyncManager;
+import com.mishiranu.dashchan.content.async.HttpHolderTask;
+import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.CaptchaSolving;
 import com.mishiranu.dashchan.ui.ActivityHandler;
@@ -30,7 +28,6 @@ import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 public class GeneralFragment extends PreferenceFragment implements ActivityHandler, ChanMultiChoiceDialog.Callback {
@@ -73,7 +70,7 @@ public class GeneralFragment extends PreferenceFragment implements ActivityHandl
 				new MultipleEditPreference.MapValueCodec(Preferences.KEYS_CAPTCHA_SOLVING));
 		captchaSolvingPreference.setOnAfterChangeListener(p -> {
 			if (CaptchaSolving.getInstance().shouldValidateConfiguration()) {
-				new CheckDataFragment().show(this);
+				new CheckDataFragment().show(getChildFragmentManager(), CheckDataFragment.class.getName());
 			}
 		});
 		configureCaptchaSolvingNeutralButton();
@@ -117,13 +114,7 @@ public class GeneralFragment extends PreferenceFragment implements ActivityHandl
 		}
 	}
 
-	public static class CheckDataFragment extends DialogFragment implements AsyncManager.Callback {
-		private static final String TASK_CHECK_DATA = "check_data";
-
-		public void show(Fragment parent) {
-			show(parent.getChildFragmentManager(), getClass().getName());
-		}
-
+	public static class CheckDataFragment extends DialogFragment {
 		@NonNull
 		@Override
 		public ProgressDialog onCreateDialog(Bundle savedInstanceState) {
@@ -135,81 +126,58 @@ public class GeneralFragment extends PreferenceFragment implements ActivityHandl
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
-			AsyncManager.get(this).startTask(TASK_CHECK_DATA, this, null, false);
-		}
 
-		@Override
-		public void onCancel(@NonNull DialogInterface dialog) {
-			super.onCancel(dialog);
-			AsyncManager.get(this).cancelTask(TASK_CHECK_DATA, this);
-		}
-
-		@Override
-		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
-			CheckCaptchaSolvingTask task = new CheckCaptchaSolvingTask(Preferences.getCaptchaSolving());
-			task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
-			return task.getHolder();
-		}
-
-		@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-		@Override
-		public void onFinishTaskExecution(String name, AsyncManager.Holder holder) {
-			dismiss();
-			ErrorItem errorItem = holder.nextArgument();
-			if (errorItem == null) {
-				ToastUtils.show(requireContext(), R.string.validation_completed);
-			} else {
-				ToastUtils.show(requireContext(), errorItem);
-				Fragment fragment = getParentFragment();
-				if (fragment instanceof GeneralFragment) {
-					GeneralFragment generalFragment = ((GeneralFragment) fragment);
-					generalFragment.captchaSolvingPreference.performClick();
-				}
+			CheckViewModel viewModel = new ViewModelProvider(this).get(CheckViewModel.class);
+			if (!viewModel.hasTaskOrValue()) {
+				CheckCaptchaSolvingTask task = new CheckCaptchaSolvingTask(viewModel, Preferences.getCaptchaSolving());
+				task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+				viewModel.attach(task);
 			}
-		}
-
-		@Override
-		public void onRequestTaskCancel(String name, Object task) {
-			((CheckCaptchaSolvingTask) task).cancel();
+			viewModel.observe(this, result -> {
+				dismiss();
+				if (result == CheckCaptchaSolvingTask.SUCCESS) {
+					ToastUtils.show(requireContext(), R.string.validation_completed);
+				} else {
+					ToastUtils.show(requireContext(), result);
+					((GeneralFragment) getParentFragment()).captchaSolvingPreference.performClick();
+				}
+			});
 		}
 	}
 
-	private static class CheckCaptchaSolvingTask extends AsyncManager.SimpleTask<Void> {
-		private final HttpHolder holder = new HttpHolder(Chan.getFallback());
+	public static class CheckViewModel extends TaskViewModel<CheckCaptchaSolvingTask, ErrorItem> {}
 
+	private static class CheckCaptchaSolvingTask extends HttpHolderTask<Void, ErrorItem> {
+		private static final ErrorItem SUCCESS = new ErrorItem(null);
+
+		private final CheckViewModel viewModel;
 		private final Map<String, String> data;
 
-		private ErrorItem errorItem;
-
-		public CheckCaptchaSolvingTask(Map<String, String> data) {
+		public CheckCaptchaSolvingTask(CheckViewModel viewModel, Map<String, String> data) {
+			super(Chan.getFallback());
+			this.viewModel = viewModel;
 			this.data = data;
 		}
 
 		@Override
-		public Void run() {
-			try (HttpHolder.Use ignored = holder.use()) {
+		protected ErrorItem run(HttpHolder holder) {
+			try {
 				String endpoint = data.get(Preferences.SUB_KEY_CAPTCHA_SOLVING_ENDPOINT);
 				String token = data.get(Preferences.SUB_KEY_CAPTCHA_SOLVING_TOKEN);
 				CaptchaSolving.getInstance().checkService(holder, endpoint, token);
+				return SUCCESS;
 			} catch (HttpException e) {
-				errorItem = e.getErrorItemAndHandle();
+				return e.getErrorItemAndHandle();
 			} catch (CaptchaSolving.UnsupportedServiceException e) {
-				errorItem = new ErrorItem(ErrorItem.Type.UNSUPPORTED_SERVICE);
+				return new ErrorItem(ErrorItem.Type.UNSUPPORTED_SERVICE);
 			} catch (CaptchaSolving.InvalidTokenException e) {
-				errorItem = new ErrorItem(ErrorItem.Type.INVALID_AUTHORIZATION_DATA);
+				return new ErrorItem(ErrorItem.Type.INVALID_AUTHORIZATION_DATA);
 			}
-			return null;
 		}
 
 		@Override
-		protected void onStoreResult(AsyncManager.Holder holder, Void result) {
-			holder.storeResult(errorItem);
-		}
-
-		@Override
-		public void cancel() {
-			super.cancel();
-			holder.interrupt();
+		protected void onComplete(ErrorItem result) {
+			viewModel.handleResult(result);
 		}
 	}
 }

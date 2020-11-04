@@ -1,6 +1,7 @@
 package com.mishiranu.dashchan.content.async;
 
 import android.graphics.Bitmap;
+import android.util.Pair;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
@@ -17,7 +18,7 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 import java.util.List;
 import java.util.Set;
 
-public class ReadCaptchaTask extends ExecutorTask<Void, Boolean> {
+public class ReadCaptchaTask extends ExecutorTask<Void, Pair<ErrorItem, ReadCaptchaTask.Result>> {
 	public static final String RECAPTCHA_SKIP_RESPONSE = "recaptcha_skip_response";
 
 	private final HttpHolder chanHolder;
@@ -34,31 +35,44 @@ public class ReadCaptchaTask extends ExecutorTask<Void, Boolean> {
 	private final String boardName;
 	private final String threadNumber;
 
-	private CaptchaState captchaState;
-	private ChanPerformer.CaptchaData captchaData;
-	private String loadedCaptchaType;
-	private ChanConfiguration.Captcha.Input input;
-	private ChanConfiguration.Captcha.Validity validity;
-	private Bitmap image;
-	private boolean large;
-	private boolean blackAndWhite;
-	private ErrorItem errorItem;
-
 	public interface Callback {
-		void onReadCaptchaSuccess(CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
-				String captchaType, ChanConfiguration.Captcha.Input input, ChanConfiguration.Captcha.Validity validity,
-				Bitmap image, boolean large, boolean blackAndWhite);
+		void onReadCaptchaSuccess(Result result);
 		void onReadCaptchaError(ErrorItem errorItem);
+	}
+
+	public static class Result {
+		public final CaptchaState captchaState;
+		public final ChanPerformer.CaptchaData captchaData;
+		public final String captchaType;
+		public final ChanConfiguration.Captcha.Input input;
+		public final ChanConfiguration.Captcha.Validity validity;
+		public final Bitmap image;
+		public final boolean large;
+		public final boolean blackAndWhite;
+
+		public Result(CaptchaState captchaState, ChanPerformer.CaptchaData captchaData,
+				String captchaType, ChanConfiguration.Captcha.Input input, ChanConfiguration.Captcha.Validity validity,
+				Bitmap image, boolean large, boolean blackAndWhite) {
+			this.captchaState = captchaState;
+			this.captchaData = captchaData;
+			this.captchaType = captchaType;
+			this.input = input;
+			this.validity = validity;
+			this.image = image;
+			this.large = large;
+			this.blackAndWhite = blackAndWhite;
+		}
 	}
 
 	public enum CaptchaState {CAPTCHA, SKIP, PASS, NEED_LOAD, MAY_LOAD}
 
-	public static class Result {
+	public static class RemoteResult {
 		public final ChanPerformer.ReadCaptchaResult result;
 		public final Object challengeExtra;
 		public final boolean allowSolveAutomatically;
 
-		public Result(ChanPerformer.ReadCaptchaResult result, Object challengeExtra, boolean allowSolveAutomatically) {
+		public RemoteResult(ChanPerformer.ReadCaptchaResult result,
+				Object challengeExtra, boolean allowSolveAutomatically) {
 			this.result = result;
 			this.challengeExtra = challengeExtra;
 			this.allowSolveAutomatically = allowSolveAutomatically;
@@ -66,7 +80,7 @@ public class ReadCaptchaTask extends ExecutorTask<Void, Boolean> {
 	}
 
 	public interface CaptchaReader {
-		Result onReadCaptcha(ChanPerformer.ReadCaptchaData data)
+		RemoteResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
 				throws ExtensionException, HttpException, InvalidResponseException;
 	}
 
@@ -78,13 +92,13 @@ public class ReadCaptchaTask extends ExecutorTask<Void, Boolean> {
 		}
 
 		@Override
-		public Result onReadCaptcha(ChanPerformer.ReadCaptchaData data)
+		public RemoteResult onReadCaptcha(ChanPerformer.ReadCaptchaData data)
 				throws ExtensionException, HttpException, InvalidResponseException {
 			ChanPerformer.ReadCaptchaResult result = chan.performer.safe().onReadCaptcha(data);
 			if (result == null) {
 				throw new ExtensionException(new RuntimeException("Captcha result is null"));
 			}
-			return new Result(result, null, allowSolveAutomatically(chan.name));
+			return new RemoteResult(result, null, allowSolveAutomatically(chan.name));
 		}
 	}
 
@@ -159,18 +173,18 @@ public class ReadCaptchaTask extends ExecutorTask<Void, Boolean> {
 	}
 
 	@Override
-	protected Boolean run() {
-		Result result;
+	protected Pair<ErrorItem, Result> run() {
+		RemoteResult result;
 		try (HttpHolder.Use ignore = chanHolder.use()) {
 			result = captchaReader.onReadCaptcha(new ChanPerformer.ReadCaptchaData(captchaType,
 					CommonUtils.toArray(captchaPass, String.class), mayShowLoadButton,
 					requirement, boardName, threadNumber, chanHolder));
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {
-			errorItem = e.getErrorItemAndHandle();
-			return false;
+			return new Pair<>(e.getErrorItemAndHandle(), null);
 		} finally {
 			chan.configuration.commit();
 		}
+		CaptchaState captchaState = null;
 		ChanPerformer.CaptchaState chanCaptchaState = result.result.captchaState;
 		if (chanCaptchaState != null) {
 			switch (chanCaptchaState) {
@@ -192,48 +206,47 @@ public class ReadCaptchaTask extends ExecutorTask<Void, Boolean> {
 				}
 			}
 		}
-		captchaData = result.result.captchaData;
-		loadedCaptchaType = result.result.captchaType;
-		input = result.result.input;
-		validity = result.result.validity;
-		if (captchaState != CaptchaState.CAPTCHA) {
-			return true;
-		}
-		if (isCancelled()) {
-			return null;
-		}
-		String captchaType = loadedCaptchaType != null ? loadedCaptchaType : this.captchaType;
-		ForegroundCaptcha foregroundCaptcha = checkForegroundCaptcha(captchaType);
-		if (foregroundCaptcha != null) {
-			if (mayShowLoadButton) {
-				captchaState = CaptchaState.MAY_LOAD;
-				return true;
+		ChanPerformer.CaptchaData captchaData = result.result.captchaData;
+		String loadedCaptchaType = result.result.captchaType;
+		ChanConfiguration.Captcha.Input input = result.result.input;
+		ChanConfiguration.Captcha.Validity validity = result.result.validity;
+		Bitmap image = null;
+		boolean large = false;
+		boolean blackAndWhite = false;
+		if (captchaState == CaptchaState.CAPTCHA) {
+			if (isCancelled()) {
+				return null;
 			}
-			try (HttpHolder.Use ignore = fallbackHolder.use()) {
-				String response = readForegroundCaptcha(fallbackHolder, captchaData, foregroundCaptcha,
-						result.challengeExtra, result.allowSolveAutomatically);
-				captchaData.put(RECAPTCHA_SKIP_RESPONSE, response);
-				captchaState = CaptchaState.SKIP;
-				return true;
-			} catch (RecaptchaReader.CancelException e) {
-				captchaState = CaptchaState.MAY_LOAD;
-				return true;
-			} catch (HttpException e) {
-				errorItem = e.getErrorItemAndHandle();
-				return false;
-			} catch (InterruptedException e) {
-				errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
-				return false;
+			ForegroundCaptcha foregroundCaptcha = checkForegroundCaptcha(loadedCaptchaType != null
+					? loadedCaptchaType : this.captchaType);
+			if (foregroundCaptcha != null) {
+				if (mayShowLoadButton) {
+					captchaState = CaptchaState.MAY_LOAD;
+				} else {
+					try (HttpHolder.Use ignore = fallbackHolder.use()) {
+						String response = readForegroundCaptcha(fallbackHolder, captchaData, foregroundCaptcha,
+								result.challengeExtra, result.allowSolveAutomatically);
+						captchaData.put(RECAPTCHA_SKIP_RESPONSE, response);
+						captchaState = CaptchaState.SKIP;
+					} catch (RecaptchaReader.CancelException e) {
+						captchaState = CaptchaState.MAY_LOAD;
+					} catch (HttpException e) {
+						return new Pair<>(e.getErrorItemAndHandle(), null);
+					} catch (InterruptedException e) {
+						return isCancelled() ? null : new Pair<>(new ErrorItem(ErrorItem.Type.UNKNOWN), null);
+					}
+				}
+			} else if (result.result.image != null) {
+				image = result.result.image;
+				blackAndWhite = GraphicsUtils.isBlackAndWhiteCaptchaImage(image);
+				image = blackAndWhite ? GraphicsUtils.handleBlackAndWhiteCaptchaImage(image).first : image;
+				large = result.result.large;
+			} else {
+				return new Pair<>(new ErrorItem(ErrorItem.Type.UNKNOWN), null);
 			}
-		} else if (result.result.image != null) {
-			Bitmap image = result.result.image;
-			blackAndWhite = GraphicsUtils.isBlackAndWhiteCaptchaImage(image);
-			this.image = blackAndWhite ? GraphicsUtils.handleBlackAndWhiteCaptchaImage(image).first : image;
-			large = result.result.large;
-			return true;
 		}
-		errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
-		return false;
+		return new Pair<>(null, new Result(captchaState, captchaData, loadedCaptchaType,
+				input, validity, image, large, blackAndWhite));
 	}
 
 	@Override
@@ -244,12 +257,11 @@ public class ReadCaptchaTask extends ExecutorTask<Void, Boolean> {
 	}
 
 	@Override
-	protected void onComplete(Boolean success) {
-		if (success) {
-			callback.onReadCaptchaSuccess(captchaState, captchaData, loadedCaptchaType, input, validity,
-					image, large, blackAndWhite);
+	protected void onComplete(Pair<ErrorItem, Result> result) {
+		if (result.second != null) {
+			callback.onReadCaptchaSuccess(result.second);
 		} else {
-			callback.onReadCaptchaError(errorItem);
+			callback.onReadCaptchaError(result.first);
 		}
 	}
 }

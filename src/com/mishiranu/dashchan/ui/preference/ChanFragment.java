@@ -1,17 +1,14 @@
 package com.mishiranu.dashchan.ui.preference;
 
-import android.annotation.TargetApi;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
@@ -25,7 +22,8 @@ import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.async.AsyncManager;
+import com.mishiranu.dashchan.content.async.HttpHolderTask;
+import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.RelayBlockResolver;
@@ -41,7 +39,6 @@ import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,7 +134,9 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 				captchaPassPreference.setOnAfterChangeListener(p -> {
 					List<String> values = p.getValue();
 					if (Preferences.checkHasMultipleValues(values)) {
-						new AuthorizationFragment(getChanName(), AuthorizationType.CAPTCHA_PASS, values).show(this);
+						AuthorizationDialog dialog = new AuthorizationDialog(getChanName(),
+								AuthorizationType.CAPTCHA_PASS, values);
+						dialog.show(getChildFragmentManager(), AuthorizationDialog.class.getName());
 					}
 				});
 			}
@@ -154,7 +153,9 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 				userAuthorizationPreference.setOnAfterChangeListener(p -> {
 					List<String> values = p.getValue();
 					if (Preferences.checkHasMultipleValues(values)) {
-						new AuthorizationFragment(getChanName(), AuthorizationType.USER, values).show(this);
+						AuthorizationDialog dialog = new AuthorizationDialog(getChanName(),
+								AuthorizationType.USER, values);
+						dialog.show(getChildFragmentManager(), AuthorizationDialog.class.getName());
 					}
 				});
 			}
@@ -337,16 +338,14 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 
 	private enum AuthorizationType {CAPTCHA_PASS, USER}
 
-	public static class AuthorizationFragment extends DialogFragment implements AsyncManager.Callback {
-		private static final String TASK_CHECK_AUTHORIZATION = "check_authorization";
-
+	public static class AuthorizationDialog extends DialogFragment {
 		private static final String EXTRA_CHAN_NAME = "chanName";
 		private static final String EXTRA_AUTHORIZATION_TYPE = "authorizationType";
 		private static final String EXTRA_AUTHORIZATION_DATA = "authorizationData";
 
-		public AuthorizationFragment() {}
+		public AuthorizationDialog() {}
 
-		public AuthorizationFragment(String chanName,
+		public AuthorizationDialog(String chanName,
 				AuthorizationType authorizationType, List<String> authorizationData) {
 			Bundle args = new Bundle();
 			args.putString(EXTRA_CHAN_NAME, chanName);
@@ -354,10 +353,6 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 			args.putStringArrayList(EXTRA_AUTHORIZATION_DATA, authorizationData != null
 					? new ArrayList<>(authorizationData) : null);
 			setArguments(args);
-		}
-
-		public void show(Fragment parent) {
-			show(parent.getChildFragmentManager(), getClass().getName());
 		}
 
 		@NonNull
@@ -371,45 +366,24 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
-			AsyncManager.get(this).startTask(TASK_CHECK_AUTHORIZATION, this, null, false);
-		}
 
-		@Override
-		public void onCancel(@NonNull DialogInterface dialog) {
-			super.onCancel(dialog);
-			AsyncManager.get(this).cancelTask(TASK_CHECK_AUTHORIZATION, this);
-		}
-
-		@Override
-		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
-			Bundle args = requireArguments();
-			Chan chan = Chan.get(args.getString(EXTRA_CHAN_NAME));
-			CheckAuthorizationTask task = new CheckAuthorizationTask(chan,
-					AuthorizationType.valueOf(args.getString(EXTRA_AUTHORIZATION_TYPE)),
-					args.getStringArrayList(EXTRA_AUTHORIZATION_DATA));
-			task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
-			return task.getHolder();
-		}
-
-		@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
-		@Override
-		public void onFinishTaskExecution(String name, AsyncManager.Holder holder) {
-			dismiss();
-			boolean valid = holder.nextArgument();
-			ErrorItem errorItem = holder.nextArgument();
-			boolean expandPreference;
-			if (errorItem == null) {
-				ToastUtils.show(requireContext(), valid ? R.string.validation_completed
-						: R.string.invalid_authorization_data);
-				expandPreference = !valid;
-			} else {
-				ToastUtils.show(requireContext(), errorItem);
-				expandPreference = true;
+			CheckAuthorizationViewModel viewModel = new ViewModelProvider(this).get(CheckAuthorizationViewModel.class);
+			if (!viewModel.hasTaskOrValue()) {
+				Bundle args = requireArguments();
+				Chan chan = Chan.get(args.getString(EXTRA_CHAN_NAME));
+				CheckAuthorizationTask task = new CheckAuthorizationTask(viewModel, chan,
+						AuthorizationType.valueOf(args.getString(EXTRA_AUTHORIZATION_TYPE)),
+						args.getStringArrayList(EXTRA_AUTHORIZATION_DATA));
+				task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+				viewModel.attach(task);
 			}
-			if (expandPreference) {
-				Fragment fragment = getParentFragment();
-				if (fragment instanceof ChanFragment) {
-					ChanFragment chanFragment = ((ChanFragment) fragment);
+			viewModel.observe(this, result -> {
+				dismiss();
+				if (result == CheckAuthorizationTask.SUCCESS) {
+					ToastUtils.show(requireContext(), R.string.validation_completed);
+				} else {
+					ToastUtils.show(requireContext(), result);
+					ChanFragment chanFragment = (ChanFragment) getParentFragment();
 					Preference<?> preference = null;
 					switch (AuthorizationType.valueOf(requireArguments().getString(EXTRA_AUTHORIZATION_TYPE))) {
 						case CAPTCHA_PASS: {
@@ -425,36 +399,32 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 						preference.performClick();
 					}
 				}
-			}
-		}
-
-		@Override
-		public void onRequestTaskCancel(String name, Object task) {
-			((CheckAuthorizationTask) task).cancel();
+			});
 		}
 	}
 
-	private static class CheckAuthorizationTask extends AsyncManager.SimpleTask<Void> {
-		private final HttpHolder holder;
+	public static class CheckAuthorizationViewModel extends TaskViewModel<CheckAuthorizationTask, ErrorItem> {}
 
+	private static class CheckAuthorizationTask extends HttpHolderTask<Void, ErrorItem> {
+		public static final ErrorItem SUCCESS = new ErrorItem(null);
+
+		private final CheckAuthorizationViewModel viewModel;
 		private final Chan chan;
 		private final AuthorizationType authorizationType;
 		private final List<String> authorizationData;
 
-		private boolean valid;
-		private ErrorItem errorItem;
-
-		public CheckAuthorizationTask(Chan chan,
-				AuthorizationType authorizationType, List<String> authorizationData) {
-			holder = new HttpHolder(chan);
+		public CheckAuthorizationTask(CheckAuthorizationViewModel viewModel,
+				Chan chan, AuthorizationType authorizationType, List<String> authorizationData) {
+			super(chan);
+			this.viewModel = viewModel;
 			this.chan = chan;
 			this.authorizationType = authorizationType;
 			this.authorizationData = authorizationData;
 		}
 
 		@Override
-		public Void run() {
-			try (HttpHolder.Use ignored = holder.use()) {
+		protected ErrorItem run(HttpHolder holder) {
+			try {
 				int type = -1;
 				switch (authorizationType) {
 					case CAPTCHA_PASS: {
@@ -469,24 +439,18 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 				ChanPerformer.CheckAuthorizationResult result = chan.performer.safe()
 						.onCheckAuthorization(new ChanPerformer.CheckAuthorizationData(type,
 								CommonUtils.toArray(authorizationData, String.class), holder));
-				valid = result != null && result.success;
+				return result != null && result.success ? SUCCESS
+						: new ErrorItem(ErrorItem.Type.INVALID_AUTHORIZATION_DATA);
 			} catch (ExtensionException | HttpException | InvalidResponseException e) {
-				errorItem = e.getErrorItemAndHandle();
+				return e.getErrorItemAndHandle();
 			} finally {
 				chan.configuration.commit();
 			}
-			return null;
 		}
 
 		@Override
-		protected void onStoreResult(AsyncManager.Holder holder, Void result) {
-			holder.storeResult(valid, errorItem);
-		}
-
-		@Override
-		public void cancel() {
-			super.cancel();
-			holder.interrupt();
+		protected void onComplete(ErrorItem result) {
+			viewModel.handleResult(result);
 		}
 	}
 }

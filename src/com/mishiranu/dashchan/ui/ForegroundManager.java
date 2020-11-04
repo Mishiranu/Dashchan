@@ -44,8 +44,8 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.async.ReadCaptchaTask;
+import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.RecaptchaReader;
 import com.mishiranu.dashchan.graphics.SelectorBorderDrawable;
@@ -227,23 +227,19 @@ public class ForegroundManager implements Handler.Callback {
 	}
 
 	public static class CaptchaDialog extends DialogFragment implements PendingDataDialog<CaptchaPendingData>,
-			CaptchaForm.Callback, AsyncManager.Callback, ReadCaptchaTask.Callback {
+			CaptchaForm.Callback, ReadCaptchaTask.Callback {
 		private static final String EXTRA_CHAN_NAME = "chanName";
 		private static final String EXTRA_CAPTCHA_TYPE = "captchaType";
 		private static final String EXTRA_REQUIREMENT = "requirement";
 		private static final String EXTRA_BOARD_NAME = "boardName";
 		private static final String EXTRA_THREAD_NUMBER = "threadNumber";
 		private static final String EXTRA_DESCRIPTION = "description";
-		private static final String EXTRA_TASK_NAME = "taskName";
 
 		private static final String EXTRA_CAPTCHA_STATE = "captchaState";
 		private static final String EXTRA_LOADED_INPUT = "loadedInput";
 		private static final String EXTRA_IMAGE = "image";
 		private static final String EXTRA_LARGE = "large";
 		private static final String EXTRA_BLACK_AND_WHITE = "blackAndWhite";
-
-		private static final String EXTRA_FORCE_CAPTCHA = "forceCaptcha";
-		private static final String EXTRA_MAY_SHOW_LOAD_BUTTON = "mayShowLoadButton";
 
 		private ReadCaptchaTask.CaptchaState captchaState;
 		private ChanConfiguration.Captcha.Input loadedInput;
@@ -266,7 +262,6 @@ public class ForegroundManager implements Handler.Callback {
 			args.putString(EXTRA_REQUIREMENT, requirement);
 			args.putString(EXTRA_BOARD_NAME, boardName);
 			args.putString(EXTRA_THREAD_NUMBER, threadNumber);
-			args.putString(EXTRA_TASK_NAME, "read_captcha_" + UUID.randomUUID().toString());
 			args.putString(EXTRA_DESCRIPTION, description);
 			setArguments(args);
 		}
@@ -274,6 +269,7 @@ public class ForegroundManager implements Handler.Callback {
 		@Override
 		public void onActivityCreated(Bundle savedInstanceState) {
 			super.onActivityCreated(savedInstanceState);
+
 			CaptchaPendingData pendingData = getPendingDataOrDismiss();
 			if (pendingData == null) {
 				return;
@@ -297,6 +293,9 @@ public class ForegroundManager implements Handler.Callback {
 			if (needLoad) {
 				reloadCaptcha(pendingData, false, true, false);
 			}
+
+			CaptchaViewModel viewModel = new ViewModelProvider(this).get(CaptchaViewModel.class);
+			viewModel.observe(this, this);
 		}
 
 		@Override
@@ -309,8 +308,8 @@ public class ForegroundManager implements Handler.Callback {
 			outState.putBoolean(EXTRA_BLACK_AND_WHITE, blackAndWhite);
 		}
 
-		private void reloadCaptcha(CaptchaPendingData pendingData, boolean forceCaptcha, boolean mayShowLoadButton,
-				boolean restart) {
+		private void reloadCaptcha(CaptchaPendingData pendingData,
+				boolean forceCaptcha, boolean mayShowLoadButton, boolean restart) {
 			pendingData.captchaData = null;
 			pendingData.loadedCaptchaType = null;
 			captchaState = null;
@@ -319,95 +318,41 @@ public class ForegroundManager implements Handler.Callback {
 			blackAndWhite = false;
 			updatePositiveButtonState();
 			captchaForm.showLoading();
-			HashMap<String, Object> extra = new HashMap<>();
-			extra.put(EXTRA_FORCE_CAPTCHA, forceCaptcha);
-			extra.put(EXTRA_MAY_SHOW_LOAD_BUTTON, mayShowLoadButton);
-			AsyncManager.get(this).startTask(requireArguments().getString(EXTRA_TASK_NAME), this, extra, restart);
-		}
-
-		private static class ReadCaptchaHolder extends AsyncManager.Holder implements ReadCaptchaTask.Callback {
-			@Override
-			public void onReadCaptchaSuccess(ReadCaptchaTask.CaptchaState captchaState,
-					ChanPerformer.CaptchaData captchaData, String captchaType, ChanConfiguration.Captcha.Input input,
-					ChanConfiguration.Captcha.Validity validity, Bitmap image, boolean large, boolean blackAndWhite) {
-				storeResult("onReadCaptchaSuccess", captchaState, captchaData, captchaType, input, validity,
-						image, large, blackAndWhite);
-			}
-
-			@Override
-			public void onReadCaptchaError(ErrorItem errorItem) {
-				storeResult("onReadCaptchaError", errorItem);
+			CaptchaViewModel viewModel = new ViewModelProvider(this).get(CaptchaViewModel.class);
+			if (restart || !viewModel.hasTaskOrValue()) {
+				Bundle args = requireArguments();
+				Chan chan = Chan.get(args.getString(EXTRA_CHAN_NAME));
+				List<String> captchaPass = forceCaptcha || chan.name == null ? null : Preferences.getCaptchaPass(chan);
+				ReadCaptchaTask task = new ReadCaptchaTask(viewModel.callback, pendingData.captchaReader,
+						args.getString(EXTRA_CAPTCHA_TYPE), args.getString(EXTRA_REQUIREMENT), captchaPass,
+						mayShowLoadButton, chan, args.getString(EXTRA_BOARD_NAME), args.getString(EXTRA_THREAD_NUMBER));
+				task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+				viewModel.attach(task);
 			}
 		}
 
-		@Override
-		public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
-			Bundle args = requireArguments();
-			Chan chan = Chan.get(args.getString(EXTRA_CHAN_NAME));
-			boolean forceCaptcha = (boolean) extra.get(EXTRA_FORCE_CAPTCHA);
-			boolean mayShowLoadButton = (boolean) extra.get(EXTRA_MAY_SHOW_LOAD_BUTTON);
-			List<String> captchaPass = forceCaptcha || chan.name == null ? null : Preferences.getCaptchaPass(chan);
-			CaptchaPendingData pendingData = getPendingData();
-			if (pendingData == null) {
-				return null;
-			}
-			ReadCaptchaHolder holder = new ReadCaptchaHolder();
-			ReadCaptchaTask task = new ReadCaptchaTask(holder, pendingData.captchaReader,
-					args.getString(EXTRA_CAPTCHA_TYPE), args.getString(EXTRA_REQUIREMENT), captchaPass,
-					mayShowLoadButton, chan, args.getString(EXTRA_BOARD_NAME), args.getString(EXTRA_THREAD_NUMBER));
-			task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
-			return holder.attach(task);
-		}
+		public static class CaptchaViewModel extends TaskViewModel.Proxy<ReadCaptchaTask, ReadCaptchaTask.Callback> {}
 
-		@Override
-		public void onFinishTaskExecution(String name, AsyncManager.Holder holder) {
-			String methodName = holder.nextArgument();
-			if ("onReadCaptchaSuccess".equals(methodName)) {
-				ReadCaptchaTask.CaptchaState captchaState = holder.nextArgument();
-				ChanPerformer.CaptchaData captchaData = holder.nextArgument();
-				String captchaType = holder.nextArgument();
-				ChanConfiguration.Captcha.Input input = holder.nextArgument();
-				ChanConfiguration.Captcha.Validity validity = holder.nextArgument();
-				Bitmap image = holder.nextArgument();
-				boolean large = holder.nextArgument();
-				boolean blackAndWhite = holder.nextArgument();
-				onReadCaptchaSuccess(captchaState, captchaData, captchaType, input, validity,
-						image, large, blackAndWhite);
-			} else if ("onReadCaptchaError".equals(methodName)) {
-				ErrorItem errorItem = holder.nextArgument();
-				onReadCaptchaError(errorItem);
-			}
-		}
-
-		@Override
-		public void onRequestTaskCancel(String name, Object task) {
-			((ReadCaptchaTask) task).cancel();
-		}
-
-		@Override
-		public void onReadCaptchaSuccess(ReadCaptchaTask.CaptchaState captchaState,
-				ChanPerformer.CaptchaData captchaData, String captchaType, ChanConfiguration.Captcha.Input input,
-				ChanConfiguration.Captcha.Validity validity, Bitmap image, boolean large, boolean blackAndWhite) {
+		public void onReadCaptchaSuccess(ReadCaptchaTask.Result result) {
 			CaptchaPendingData pendingData = getPendingDataOrDismiss();
 			if (pendingData == null) {
 				return;
 			}
-			pendingData.captchaData = captchaData != null ? captchaData : new ChanPerformer.CaptchaData();
-			pendingData.loadedCaptchaType = captchaType;
-			showCaptcha(captchaState, captchaType, input, image, large, blackAndWhite);
-			if (isResumed() && captchaState == ReadCaptchaTask.CaptchaState.SKIP) {
+			pendingData.captchaData = result.captchaData != null ? result.captchaData : new ChanPerformer.CaptchaData();
+			pendingData.loadedCaptchaType = result.captchaType;
+			showCaptcha(result.captchaState, result.captchaType, result.input,
+					result.image, result.large, result.blackAndWhite);
+			if (result.captchaState == ReadCaptchaTask.CaptchaState.SKIP) {
 				onConfirmCaptcha();
 			}
 		}
 
 		@Override
 		public void onReadCaptchaError(ErrorItem errorItem) {
-			CaptchaPendingData pendingData = getPendingDataOrDismiss();
-			if (pendingData == null) {
-				return;
+			if (getPendingDataOrDismiss() != null) {
+				ToastUtils.show(requireContext(), errorItem);
+				captchaForm.showError();
 			}
-			ToastUtils.show(requireContext(), errorItem);
-			captchaForm.showError();
 		}
 
 		private void showCaptcha(ReadCaptchaTask.CaptchaState captchaState, String captchaType,
@@ -428,10 +373,6 @@ public class ForegroundManager implements Handler.Callback {
 					.getDialogBackground(requireContext()));
 			captchaForm.showCaptcha(captchaState, input, image, large, invertColors);
 			updatePositiveButtonState();
-		}
-
-		private void cancelTask() {
-			AsyncManager.get(this).cancelTask(requireArguments().getString(EXTRA_TASK_NAME), this);
 		}
 
 		private void updatePositiveButtonState() {
@@ -461,7 +402,7 @@ public class ForegroundManager implements Handler.Callback {
 			captchaForm = new CaptchaForm(this, false, true, container, null, captchaInputView, captcha);
 			AlertDialog alertDialog = new AlertDialog.Builder(requireContext())
 					.setTitle(R.string.confirmation).setView(container)
-					.setPositiveButton(android.R.string.ok, (dialog, which) -> confirmCaptchaInternal(false))
+					.setPositiveButton(android.R.string.ok, (dialog, which) -> confirmCaptchaInternal())
 					.setNegativeButton(android.R.string.cancel, (dialog, which) -> cancelInternal())
 					.create();
 			alertDialog.setCanceledOnTouchOutside(false);
@@ -489,19 +430,8 @@ public class ForegroundManager implements Handler.Callback {
 
 		@Override
 		public void onConfirmCaptcha() {
-			confirmCaptchaInternal(true);
-		}
-
-		private void confirmCaptchaInternal(boolean dismiss) {
-			cancelTask();
-			if (dismiss) {
-				dismiss();
-			}
-			notifyResult(pendingData -> {
-				if (pendingData.captchaData != null) {
-					pendingData.captchaData.put(ChanPerformer.CaptchaData.INPUT, captchaForm.getInput());
-				}
-			});
+			dismiss();
+			confirmCaptchaInternal();
 		}
 
 		@Override
@@ -510,8 +440,15 @@ public class ForegroundManager implements Handler.Callback {
 			cancelInternal();
 		}
 
+		private void confirmCaptchaInternal() {
+			notifyResult(pendingData -> {
+				if (pendingData.captchaData != null) {
+					pendingData.captchaData.put(ChanPerformer.CaptchaData.INPUT, captchaForm.getInput());
+				}
+			});
+		}
+
 		private void cancelInternal() {
-			cancelTask();
 			notifyResult(pendingData -> {
 				pendingData.captchaData = null;
 				pendingData.loadedCaptchaType = null;

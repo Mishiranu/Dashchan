@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Pair;
 import androidx.core.content.pm.PackageInfoCompat;
 import chan.content.Chan;
 import chan.content.ChanManager;
@@ -33,13 +34,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ReadUpdateTask extends HttpHolderTask<Void, Boolean> {
+public class ReadUpdateTask extends HttpHolderTask<Void, Pair<ErrorItem, ReadUpdateTask.UpdateDataMap>> {
 	private final Context context;
 	private final Callback callback;
-
-	private HashMap<String, List<UpdateItem>> updateDataMap;
-	private HashMap<String, List<UpdateItem>> installDataMap;
-	private ErrorItem errorItem;
 
 	public static class UpdateDataMap implements Parcelable {
 		private final Map<String, List<UpdateItem>> update;
@@ -344,15 +341,15 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Boolean> {
 	}
 
 	@Override
-	protected Boolean run(HttpHolder holder) {
-		long timeThreshold = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000; // One week left
+	protected Pair<ErrorItem, UpdateDataMap> run(HttpHolder holder) {
 		File directory = FileProvider.getUpdatesDirectory();
 		if (directory == null) {
-			errorItem = new ErrorItem(ErrorItem.Type.NO_ACCESS_TO_MEMORY);
-			return false;
+			return new Pair<>(new ErrorItem(ErrorItem.Type.NO_ACCESS_TO_MEMORY), null);
 		}
 		File[] files = directory.listFiles();
 		if (files != null) {
+			// One week
+			long timeThreshold = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000;
 			for (File file : files) {
 				if (file.lastModified() < timeThreshold) {
 					file.delete();
@@ -391,16 +388,15 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Boolean> {
 			}
 		}
 		if (isCancelled()) {
-			return false;
+			return null;
 		}
 
 		Iterable<Response> responses = readData(holder, extensionItems);
 		if (!responses.iterator().hasNext()) {
-			errorItem = new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE);
-			return false;
+			return new Pair<>(new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE), null);
 		}
 		if (isCancelled()) {
-			return false;
+			return null;
 		}
 
 		for (Response response : responses) {
@@ -431,7 +427,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Boolean> {
 				Log.persistent().stack(e);
 			}
 			if (isCancelled()) {
-				return false;
+				return null;
 			}
 		}
 
@@ -464,23 +460,19 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Boolean> {
 				Log.persistent().stack(e);
 			}
 			if (isCancelled()) {
-				return false;
+				return null;
 			}
 		}
 
 		if (updateDataMap.size() > 0) {
-			this.updateDataMap = updateDataMap;
-			this.installDataMap = installDataMap;
-			return true;
+			return new Pair<>(null, new UpdateDataMap(updateDataMap, installDataMap));
 		} else {
-			this.errorItem = new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE);
-			return false;
+			return new Pair<>(new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE), null);
 		}
 	}
 
 	@Override
-	protected void onComplete(Boolean success) {
-		callback.onReadUpdateComplete(updateDataMap != null && installDataMap != null
-				? new UpdateDataMap(updateDataMap, installDataMap) : null, errorItem);
+	protected void onComplete(Pair<ErrorItem, UpdateDataMap> result) {
+		callback.onReadUpdateComplete(result.second, result.first);
 	}
 }

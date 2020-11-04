@@ -35,6 +35,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
@@ -46,7 +47,7 @@ import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
-import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
@@ -100,8 +101,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class MainActivity extends StateActivity implements DrawerForm.Callback,
-		FavoritesStorage.Observer, WatcherService.Client.Callback, UiManager.Callback, UiManager.LocalNavigator,
-		FragmentHandler, PageFragment.Callback, ReadUpdateTask.Callback {
+		FavoritesStorage.Observer, WatcherService.Client.Callback,
+		UiManager.Callback, UiManager.LocalNavigator, FragmentHandler, PageFragment.Callback {
 	private static final String EXTRA_FRAGMENTS = "fragments";
 	private static final String EXTRA_STACK_PAGE_ITEMS = "stackPageItems";
 	private static final String EXTRA_PRESERVED_PAGE_ITEMS = "preservedPageItems";
@@ -141,7 +142,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	private ViewGroup drawerWide;
 	private boolean wideMode;
 
-	private ReadUpdateTask readUpdateTask;
 	private Intent navigateIntentOnResume;
 	private StorageRequestState storageRequestState;
 
@@ -383,9 +383,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				currentFragment = null;
 				currentPageItem = null;
 			}
-			if (currentFragment == null) {
-				startUpdateTask();
-			} else {
+			if (currentFragment != null) {
 				updatePostFragmentConfiguration();
 			}
 		}
@@ -408,6 +406,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			}
 		}
 
+		startUpdateTask(savedInstanceState == null);
 		ExtensionsTrustLoop.handleUntrustedExtensions(this, extensionsTrustLoopState, configurationLock);
 		if (storageRequestState == StorageRequestState.INSTRUCTIONS) {
 			showStorageInstructionsDialog();
@@ -1206,10 +1205,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	protected void onFinish() {
 		super.onFinish();
 
-		if (readUpdateTask != null) {
-			readUpdateTask.cancel();
-			readUpdateTask = null;
-		}
 		if (postingBinder != null) {
 			postingBinder.unregister(postingGlobalCallback);
 			postingBinder = null;
@@ -1992,27 +1987,29 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 	}
 
-	private void startUpdateTask() {
-		if (!Preferences.isCheckUpdatesOnStart() || System.currentTimeMillis()
-				- Preferences.getLastUpdateCheck() < 12 * 60 * 60 * 1000) {
-			// Check for updates ones per 12 hours
-			return;
+	public static class UpdateViewModel extends TaskViewModel.Proxy<ReadUpdateTask, ReadUpdateTask.Callback> {}
+
+	private void startUpdateTask(boolean allowStart) {
+		// Check for updates once per 12 hours
+		UpdateViewModel viewModel = new ViewModelProvider(this).get(UpdateViewModel.class);
+		if (allowStart && !viewModel.hasTaskOrValue() && Preferences.isCheckUpdatesOnStart() &&
+				System.currentTimeMillis() - Preferences.getLastUpdateCheck() >= 12 * 60 * 60 * 1000) {
+			ReadUpdateTask task = new ReadUpdateTask(this, viewModel.callback);
+			task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+			viewModel.attach(task);
 		}
-		readUpdateTask = new ReadUpdateTask(this, this);
-		readUpdateTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+		viewModel.observe(this, (updateDataMap, errorItem) -> {
+			Preferences.setLastUpdateCheck(System.currentTimeMillis());
+			if (updateDataMap != null) {
+				int count = UpdateFragment.checkNewVersions(updateDataMap);
+				if (count > 0) {
+					handleUpdateData(updateDataMap, count);
+				}
+			}
+		});
 	}
 
-	@Override
-	public void onReadUpdateComplete(ReadUpdateTask.UpdateDataMap updateDataMap, ErrorItem errorItem) {
-		readUpdateTask = null;
-		if (updateDataMap == null) {
-			return;
-		}
-		Preferences.setLastUpdateCheck(System.currentTimeMillis());
-		int count = UpdateFragment.checkNewVersions(updateDataMap);
-		if (count <= 0) {
-			return;
-		}
+	private void handleUpdateData(ReadUpdateTask.UpdateDataMap updateDataMap, int count) {
 		NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		if (C.API_OREO) {
 			notificationManager.createNotificationChannel(AndroidUtils

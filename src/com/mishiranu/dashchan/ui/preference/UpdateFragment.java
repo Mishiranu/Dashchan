@@ -20,6 +20,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
 import chan.content.ChanManager;
@@ -29,8 +30,8 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.UpdaterActivity;
-import com.mishiranu.dashchan.content.async.AsyncManager;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
+import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
@@ -47,21 +48,18 @@ import com.mishiranu.dashchan.widget.ThemeEngine;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-public class UpdateFragment extends BaseListFragment implements ActivityHandler, AsyncManager.Callback {
+public class UpdateFragment extends BaseListFragment implements ActivityHandler {
 	private static final String VERSION_TITLE_RELEASE = "Release";
 
 	private static final String EXTRA_UPDATE_DATA_MAP = "updateDataMap";
-	private static final String EXTRA_UPDATE_DOWNLOAD_ERROR = "updateDownloadError";
+	private static final String EXTRA_UPDATE_ERROR_ITEM = "updateErrorItem";
 	private static final String EXTRA_TARGET_PREFIX = "target_";
 
-	private static final String TASK_READ_UPDATES = "readUpdates";
-
 	private ReadUpdateTask.UpdateDataMap updateDataMap;
-	private ErrorItem updateDownloadError;
+	private ErrorItem updateErrorItem;
 
 	private View progressView;
 
@@ -175,13 +173,31 @@ public class UpdateFragment extends BaseListFragment implements ActivityHandler,
 		} else {
 			updateDataMap = savedInstanceState != null
 					? savedInstanceState.getParcelable(EXTRA_UPDATE_DATA_MAP) : null;
-			updateDownloadError = savedInstanceState != null
-					? savedInstanceState.getParcelable(EXTRA_UPDATE_DOWNLOAD_ERROR) : null;
-			if (updateDownloadError != null) {
-				setErrorText(updateDownloadError.toString());
+			updateErrorItem = savedInstanceState != null
+					? savedInstanceState.getParcelable(EXTRA_UPDATE_ERROR_ITEM) : null;
+			if (updateErrorItem != null) {
+				setErrorText(updateErrorItem.toString());
 			} else if (updateDataMap == null) {
-				AsyncManager.get(this).startTask(TASK_READ_UPDATES, this, null, false);
 				progressView.setVisibility(View.VISIBLE);
+				UpdateViewModel viewModel = new ViewModelProvider(this).get(UpdateViewModel.class);
+				if (!viewModel.hasTaskOrValue()) {
+					ReadUpdateTask task = new ReadUpdateTask(requireContext(), viewModel.callback);
+					task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+					viewModel.attach(task);
+				}
+				viewModel.observe(getViewLifecycleOwner(), (updateDataMap, errorItem) -> {
+					progressView.setVisibility(View.GONE);
+					if (updateDataMap != null) {
+						this.updateDataMap = updateDataMap;
+						Adapter adapter = (Adapter) getRecyclerView().getAdapter();
+						adapter.listItems = buildData(requireContext(), updateDataMap, null);
+						adapter.notifyDataSetChanged();
+						updateTitle();
+					} else {
+						updateErrorItem = errorItem;
+						setErrorText(errorItem.toString());
+					}
+				});
 			}
 		}
 		Adapter adapter = new Adapter(getRecyclerView().getContext(), this::onItemClick);
@@ -190,11 +206,6 @@ public class UpdateFragment extends BaseListFragment implements ActivityHandler,
 			adapter.listItems = buildData(requireContext(), updateDataMap, savedInstanceState);
 		}
 		updateTitle();
-	}
-
-	@Override
-	public void onTerminate() {
-		AsyncManager.get(this).cancelTask(TASK_READ_UPDATES, this);
 	}
 
 	@Override
@@ -210,7 +221,7 @@ public class UpdateFragment extends BaseListFragment implements ActivityHandler,
 		}
 		if (!isUpdateDataProvided()) {
 			outState.putParcelable(EXTRA_UPDATE_DATA_MAP, updateDataMap);
-			outState.putParcelable(EXTRA_UPDATE_DOWNLOAD_ERROR, updateDownloadError);
+			outState.putParcelable(EXTRA_UPDATE_ERROR_ITEM, updateErrorItem);
 		}
 	}
 
@@ -499,45 +510,7 @@ public class UpdateFragment extends BaseListFragment implements ActivityHandler,
 		}
 	}
 
-	private static class ReadUpdateHolder extends AsyncManager.Holder implements ReadUpdateTask.Callback {
-		@Override
-		public void onReadUpdateComplete(ReadUpdateTask.UpdateDataMap updateDataMap, ErrorItem errorItem) {
-			storeResult(updateDataMap, errorItem);
-		}
-	}
-
-	@Override
-	public AsyncManager.Holder onCreateAndExecuteTask(String name, HashMap<String, Object> extra) {
-		ReadUpdateHolder holder = new ReadUpdateHolder();
-		ReadUpdateTask task = new ReadUpdateTask(requireContext(), holder);
-		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
-		return holder.attach(task);
-	}
-
-	@Override
-	public void onFinishTaskExecution(String name, AsyncManager.Holder holder) {
-		ReadUpdateTask.UpdateDataMap updateDataMap = holder.nextArgument();
-		ErrorItem errorItem = holder.nextArgument();
-		progressView.setVisibility(View.GONE);
-		if (updateDataMap != null) {
-			this.updateDataMap = updateDataMap;
-			Adapter adapter = (Adapter) getRecyclerView().getAdapter();
-			adapter.listItems = buildData(requireContext(), updateDataMap, null);
-			adapter.notifyDataSetChanged();
-			updateTitle();
-		} else {
-			if (errorItem == null) {
-				errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
-			}
-			updateDownloadError = errorItem;
-			setErrorText(errorItem.toString());
-		}
-	}
-
-	@Override
-	public void onRequestTaskCancel(String name, Object task) {
-		((ReadUpdateTask) task).cancel();
-	}
+	public static class UpdateViewModel extends TaskViewModel.Proxy<ReadUpdateTask, ReadUpdateTask.Callback> {}
 
 	private static class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 		private enum ViewType {ITEM, HEADER}
