@@ -12,8 +12,8 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.ui.ActivityHandler;
+import com.mishiranu.dashchan.ui.DialogMenu;
 import com.mishiranu.dashchan.ui.FragmentHandler;
-import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.widget.CursorAdapter;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
@@ -141,7 +141,7 @@ public class CookiesFragment extends BaseListFragment implements ActivityHandler
 			Bundle args = requireArguments();
 			boolean blocked = args.getBoolean(EXTRA_BLOCKED);
 			DialogMenu dialogMenu = new DialogMenu(requireContext());
-			dialogMenu.add(R.string.block, blocked, () -> ((CookiesFragment) getParentFragment())
+			dialogMenu.addCheck(R.string.block, blocked, () -> ((CookiesFragment) getParentFragment())
 					.setBlocked(args.getString(EXTRA_COOKIE), !args.getBoolean(EXTRA_BLOCKED)));
 			if (!blocked) {
 				dialogMenu.add(R.string.delete, () -> ((CookiesFragment) getParentFragment())

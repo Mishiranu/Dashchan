@@ -35,6 +35,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
@@ -70,7 +71,6 @@ import com.mishiranu.dashchan.ui.preference.UpdateFragment;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ConcatIterable;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.DrawerToggle;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -100,7 +100,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
-public class MainActivity extends StateActivity implements DrawerForm.Callback,
+public class MainActivity extends StateActivity implements DrawerForm.Callback, ThemeDialog.Callback,
 		FavoritesStorage.Observer, WatcherService.Client.Callback,
 		UiManager.Callback, UiManager.LocalNavigator, FragmentHandler, PageFragment.Callback {
 	private static final String EXTRA_FRAGMENTS = "fragments";
@@ -122,8 +122,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	private PageItem currentPageItem;
 
 	private UiManager uiManager;
-	private RetainFragment retainFragment;
-	private ConfigurationLock configurationLock;
+	private RetainViewModel retainViewModel;
 	private final WatcherService.Client watcherServiceClient = new WatcherService.Client(this);
 	private final ExtensionsTrustLoop.State extensionsTrustLoopState = new ExtensionsTrustLoop.State();
 	private DownloadDialog downloadDialog;
@@ -178,7 +177,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		Preferences.PREFERENCES.registerOnSharedPreferenceChangeListener(preferencesListener);
 		ChanManager.getInstance().observable.register(chanManagerCallback);
 		watcherServiceClient.bind(this);
-		configurationLock = new ConfigurationLock(this);
 		drawerCommon = findViewById(R.id.drawer_common);
 		drawerWide = findViewById(R.id.drawer_wide);
 		ThemeEngine.Theme theme = ThemeEngine.getTheme(this);
@@ -198,7 +196,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 		drawerCommon.setBackgroundColor(drawerBackground);
 		drawerWide.setBackgroundColor(drawerBackground);
-		drawerForm = new DrawerForm(drawerContext, this, configurationLock, watcherServiceClient);
+		drawerForm = new DrawerForm(drawerContext, this, getSupportFragmentManager(), watcherServiceClient);
 		drawerParent = new FrameLayout(this);
 		drawerParent.addView(drawerForm.getContentView());
 		drawerCommon.addView(drawerParent);
@@ -239,7 +237,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			drawerLayout.addDrawerListener(new ExpandedScreenDrawerLocker());
 		}
 
-		downloadDialog = new DownloadDialog(this, configurationLock, new DownloadDialog.Callback() {
+		downloadDialog = new DownloadDialog(this, new DownloadDialog.Callback() {
 			@Override
 			public void resolve(DownloadService.ChoiceRequest choiceRequest,
 					DownloadService.DirectRequest directRequest) {
@@ -268,7 +266,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		expandedScreen = new ExpandedScreen(expandedScreenInit, drawerLayout, toolbarLayout, drawerInterlayer,
 				drawerParent, drawerForm.getContentView(), drawerForm.getHeaderView());
 		expandedScreen.setDrawerOverToolbarEnabled(!wideMode);
-		uiManager = new UiManager(this, this, this, configurationLock);
+		uiManager = new UiManager(this, this, this);
+		uiManager.attach(this);
 		ViewGroup contentFragment = findViewById(R.id.content_fragment);
 		contentFragment.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
 			@Override
@@ -302,14 +301,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 					savedInstanceState.getBoolean(EXTRA_DRAWER_CHAN_SELECT_MODE));
 		}
 
-		FragmentManager fragmentManager = getSupportFragmentManager();
-		retainFragment = (RetainFragment) fragmentManager.findFragmentByTag(RetainFragment.class.getName());
-		if (retainFragment == null) {
-			retainFragment = new RetainFragment();
-			fragmentManager.beginTransaction()
-					.add(retainFragment, RetainFragment.class.getName())
-					.commit();
-		}
+		retainViewModel = new ViewModelProvider(this).get(RetainViewModel.class);
 		storageRequestState = savedInstanceState != null ? StorageRequestState
 				.valueOf(savedInstanceState.getString(EXTRA_STORAGE_REQUEST_STATE)) : StorageRequestState.NONE;
 
@@ -371,7 +363,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				currentPageItem = pair.second;
 			}
 			if (currentFragmentFromSaved != null) {
-				fragmentManager.beginTransaction()
+				getSupportFragmentManager().beginTransaction()
 						.replace(R.id.content_fragment, currentFragmentFromSaved)
 						.commit();
 				updatePostFragmentConfiguration();
@@ -407,7 +399,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 
 		startUpdateTask(savedInstanceState == null);
-		ExtensionsTrustLoop.handleUntrustedExtensions(this, extensionsTrustLoopState, configurationLock);
+		ExtensionsTrustLoop.handleUntrustedExtensions(this, extensionsTrustLoopState);
 		if (storageRequestState == StorageRequestState.INSTRUCTIONS) {
 			showStorageInstructionsDialog();
 		}
@@ -1016,7 +1008,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				String retainId = REFERENCE_FRAGMENT.getRetainId();
 				retainIds.add(retainId);
 			}
-			retainFragment.extras.keySet().retainAll(retainIds);
+			retainViewModel.extras.keySet().retainAll(retainIds);
 		}
 	}
 
@@ -1061,26 +1053,21 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 	}
 
 	@Override
-	public ConfigurationLock getConfigurationLock() {
-		return configurationLock;
-	}
-
-	@Override
 	public UiManager getUiManager() {
 		return uiManager;
 	}
 
 	@Override
 	public Object getRetainExtra(String retainId) {
-		return retainFragment.extras.get(retainId);
+		return retainViewModel.extras.get(retainId);
 	}
 
 	@Override
 	public void storeRetainExtra(String retainId, Object extra) {
 		if (extra != null) {
-			retainFragment.extras.put(retainId, extra);
+			retainViewModel.extras.put(retainId, extra);
 		} else {
-			retainFragment.extras.remove(retainId);
+			retainViewModel.extras.remove(retainId);
 		}
 	}
 
@@ -1215,7 +1202,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		}
 		unbindService(postingConnection);
 		unbindService(downloadConnection);
-		uiManager.onFinish();
 		watcherServiceClient.unbind(this);
 		ClickableToast.unregister(clickableToastHolder);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
@@ -1412,15 +1398,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 				try {
 					switch (item.getItemId()) {
 						case R.id.menu_change_theme: {
-							ThemeDialog.show(this, configurationLock, theme -> {
-								if (theme != null) {
-									Preferences.setTheme(theme.name);
-									recreate();
-								} else {
-									fragments.clear();
-									navigateFragment(new ThemesFragment(), null, true);
-								}
-							});
+							new ThemeDialog().show(getSupportFragmentManager(), ThemeDialog.class.getName());
 							return true;
 						}
 						case R.id.menu_expanded_screen: {
@@ -1454,6 +1432,17 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 			}
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	public void onThemeSelected(ThemeEngine.Theme theme) {
+		if (theme != null) {
+			Preferences.setTheme(theme.name);
+			recreate();
+		} else {
+			fragments.clear();
+			navigateFragment(new ThemesFragment(), null, true);
+		}
 	}
 
 	private final SharedPreferences.OnSharedPreferenceChangeListener preferencesListener = (p, key) -> {
@@ -1809,8 +1798,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 
 		@Override
 		public void onUntrustedExtensionInstalled() {
-			ExtensionsTrustLoop.handleUntrustedExtensions(MainActivity.this,
-					extensionsTrustLoopState, configurationLock);
+			ExtensionsTrustLoop.handleUntrustedExtensions(MainActivity.this, extensionsTrustLoopState);
 		}
 
 		@Override
@@ -2135,13 +2123,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback,
 		public void onDrawerStateChanged(int newState) {}
 	}
 
-	public static class RetainFragment extends Fragment {
+	public static class RetainViewModel extends ViewModel {
 		private final HashMap<String, Object> extras = new HashMap<>();
-
-		@Override
-		public void onCreate(Bundle savedInstanceState) {
-			super.onCreate(savedInstanceState);
-			setRetainInstance(true);
-		}
 	}
 }

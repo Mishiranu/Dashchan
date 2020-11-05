@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+	<attr name="isOverlay" format="boolean" />
 	<attr name="isPopup" format="boolean" />
 	<attr name="overlayTheme" format="reference" />
 

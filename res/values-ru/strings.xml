@@ -99,7 +99,7 @@
 	<string name="context_menu">Контекстное меню</string>
 	<string name="context_menu_description__sentence">Используйте долгое нажатие для отображения
 		контекстного меню.</string>
-	<string name="copy__ellipsis">Копировать…</string>
+	<string name="copy">Копировать</string>
 	<string name="copy_email">Копировать email</string>
 	<string name="copy_link">Копировать ссылку</string>
 	<string name="copy_markup">Копировать разметку</string>
@@ -192,7 +192,6 @@
 	<string name="headers_order">Порядок категорий</string>
 	<string name="hidden_posts">Скрытые сообщения</string>
 	<string name="hide">Скрыть</string>
-	<string name="hide__ellipsis">Скрыть…</string>
 	<string name="hide_eventually__imperfective">Скрывать со временем</string>
 	<string name="hide_on_tap__imperfective">Скрывать при нажатии</string>
 	<string name="hide_pages">Скрывать страницы</string>
@@ -449,7 +448,7 @@
 	<string name="sent_posts">Отправленные сообщения</string>
 	<string name="services">Сервисы</string>
 	<string name="sfw_mode">SFW режим</string>
-	<string name="share__ellipsis">Отправить…</string>
+	<string name="share">Отправить</string>
 	<string name="share_file">Отправить файл</string>
 	<string name="share_link">Отправить ссылку</string>
 	<string name="share_text">Отправить текст</string>

@@ -4,7 +4,9 @@ import android.net.Uri;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import chan.content.Chan;
 import chan.content.ChanPerformer;
 import chan.content.model.ThreadSummary;
 import chan.util.StringUtils;
@@ -13,10 +15,11 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.ReadThreadSummariesTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
+import com.mishiranu.dashchan.ui.DialogMenu;
+import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.adapter.ArchiveAdapter;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -92,19 +95,27 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 	@Override
 	public boolean onItemLongClick(String threadNumber) {
 		Page page = getPage();
-		DialogMenu dialogMenu = new DialogMenu(getContext());
-		dialogMenu.add(R.string.copy_link, () -> {
-			Uri uri = getChan().locator.safe(true).createThreadUri(page.boardName, threadNumber);
-			if (uri != null) {
-				StringUtils.copyToClipboard(getContext(), uri.toString());
-			}
-		});
-		if (!FavoritesStorage.getInstance().hasFavorite(page.chanName, page.boardName, threadNumber)) {
-			dialogMenu.add(R.string.add_to_favorites, () -> FavoritesStorage.getInstance()
-					.add(page.chanName, page.boardName, threadNumber, null, 0));
-		}
-		dialogMenu.show(getUiManager().getConfigurationLock());
+		showItemPopupMenu(getFragmentManager(), page.chanName, page.boardName, threadNumber);
 		return true;
+	}
+
+	private static void showItemPopupMenu(FragmentManager fragmentManager,
+			String chanName, String boardName, String threadNumber) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			DialogMenu dialogMenu = new DialogMenu(provider.getContext());
+			dialogMenu.add(R.string.copy_link, () -> {
+				Chan chan = Chan.get(chanName);
+				Uri uri = chan.locator.safe(true).createThreadUri(boardName, threadNumber);
+				if (uri != null) {
+					StringUtils.copyToClipboard(provider.getContext(), uri.toString());
+				}
+			});
+			if (!FavoritesStorage.getInstance().hasFavorite(chanName, boardName, threadNumber)) {
+				dialogMenu.add(R.string.add_to_favorites, () -> FavoritesStorage.getInstance()
+						.add(chanName, boardName, threadNumber, null, 0));
+			}
+			return dialogMenu.create();
+		});
 	}
 
 	@Override

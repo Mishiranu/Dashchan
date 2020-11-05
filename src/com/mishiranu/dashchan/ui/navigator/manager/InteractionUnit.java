@@ -5,7 +5,9 @@ import android.content.Context;
 import android.net.Uri;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.view.ContextThemeWrapper;
 import android.view.View;
+import androidx.fragment.app.FragmentManager;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanLocator;
@@ -18,9 +20,11 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.text.style.LinkSuffixSpan;
+import com.mishiranu.dashchan.ui.DialogMenu;
+import com.mishiranu.dashchan.ui.InstanceDialog;
+import com.mishiranu.dashchan.ui.SearchImageDialog;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
-import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.widget.AttachmentView;
@@ -70,36 +74,7 @@ public class InteractionUnit {
 				if (confirmed) {
 					uiManager.navigator().navigateTargetAllowReturn(chan.name, navigationData);
 				} else {
-					int messageId;
-					if (sameChan) {
-						switch (navigationData.target) {
-							case THREADS: {
-								messageId = R.string.go_to_threads_list__sentence;
-								break;
-							}
-							case POSTS: {
-								messageId = R.string.open_thread__sentence;
-								break;
-							}
-							case SEARCH: {
-								messageId = R.string.go_to_search__sentence;
-								break;
-							}
-							default: {
-								throw new IllegalArgumentException();
-							}
-						}
-					} else {
-						messageId = R.string.follow_the_link__sentence;
-					}
-					final ChanLocator.NavigationData navigationDataFinal = navigationData;
-					AlertDialog dialog = new AlertDialog.Builder(uiManager.getContext())
-							.setMessage(messageId)
-							.setNegativeButton(android.R.string.cancel, null)
-							.setPositiveButton(android.R.string.ok, (d, which) -> uiManager.navigator()
-									.navigateTargetAllowReturn(chan.name, navigationDataFinal))
-							.show();
-					uiManager.getConfigurationLock().lockConfiguration(dialog);
+					handleLinkNavigation(configurationSet.fragmentManager, chan.name, navigationData, sameChan);
 				}
 			}
 		}
@@ -108,7 +83,50 @@ public class InteractionUnit {
 		}
 	}
 
-	public void handleLinkLongClick(Uri uri) {
+	private static void handleLinkNavigation(FragmentManager fragmentManager,
+			String chanName, ChanLocator.NavigationData navigationData, boolean sameChan) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			int messageId;
+			if (sameChan) {
+				switch (navigationData.target) {
+					case THREADS: {
+						messageId = R.string.go_to_threads_list__sentence;
+						break;
+					}
+					case POSTS: {
+						messageId = R.string.open_thread__sentence;
+						break;
+					}
+					case SEARCH: {
+						messageId = R.string.go_to_search__sentence;
+						break;
+					}
+					default: {
+						throw new IllegalArgumentException();
+					}
+				}
+			} else {
+				messageId = R.string.follow_the_link__sentence;
+			}
+			final ChanLocator.NavigationData navigationDataFinal = navigationData;
+			return new AlertDialog.Builder(provider.getContext())
+					.setMessage(messageId)
+					.setNegativeButton(android.R.string.cancel, null)
+					.setPositiveButton(android.R.string.ok, (d, which) -> UiManager.extract(provider).navigator()
+							.navigateTargetAllowReturn(chanName, navigationDataFinal))
+					.create();
+		});
+	}
+
+	public void handleLinkLongClick(UiManager.ConfigurationSet configurationSet, Uri uri) {
+		handleLinkLongClick(configurationSet.fragmentManager, uri);
+	}
+
+	private static void handleLinkLongClick(FragmentManager fragmentManager, Uri uri) {
+		new InstanceDialog(fragmentManager, null, provider -> createLinkLongClick(provider, uri));
+	}
+
+	private static AlertDialog createLinkLongClick(InstanceDialog.Provider provider, Uri uri) {
 		Chan chan = Chan.getPreferred(null, uri);
 		String fileName = null;
 		String boardName = null;
@@ -126,7 +144,7 @@ public class InteractionUnit {
 		String finalFileName = fileName;
 		String finalBoardName = boardName;
 		String finalThreadNumber = threadNumber;
-		Context context = uiManager.getContext();
+		Context context = provider.getContext();
 		DialogMenu dialogMenu = new DialogMenu(context);
 		dialogMenu.add(R.string.copy_link, () -> StringUtils.copyToClipboard(context, uri.toString()));
 		dialogMenu.add(R.string.share_link, () -> NavigationUtils.shareLink(context, null, uri));
@@ -138,7 +156,7 @@ public class InteractionUnit {
 		}
 		if (isAttachment) {
 			dialogMenu.add(R.string.download_file, () -> {
-				DownloadService.Binder binder = uiManager.callback().getDownloadBinder();
+				DownloadService.Binder binder = UiManager.extract(provider).callback().getDownloadBinder();
 				if (binder != null) {
 					binder.downloadStorage(uri, finalFileName, null,
 							chan.name, finalBoardName, finalThreadNumber, null);
@@ -146,11 +164,11 @@ public class InteractionUnit {
 			});
 		}
 		if (threadNumber != null) {
-			dialogMenu.add(R.string.open_thread, () -> uiManager.navigator()
+			dialogMenu.add(R.string.open_thread, () -> UiManager.extract(provider).navigator()
 					.navigateTargetAllowReturn(chan.name, new ChanLocator.NavigationData
 							(ChanLocator.NavigationData.Target.POSTS, finalBoardName, finalThreadNumber, null, null)));
 		}
-		dialogMenu.show(uiManager.getConfigurationLock());
+		return dialogMenu.create();
 	}
 
 	private static class ThumbnailClickListenerImpl implements UiManager.ThumbnailClickListener {
@@ -174,14 +192,14 @@ public class InteractionUnit {
 		@Override
 		public void onClick(View v) {
 			UiManager.Holder holder = ListViewUtils.getViewHolder(v, UiManager.Holder.class);
-			Chan chan = Chan.get(holder.getConfigurationSet().chanName);
-			List<AttachmentItem> attachmentItems = holder.getPostItem().getAttachmentItems();
-			if (attachmentItems != null) {
+			PostItem postItem = holder.getPostItem();
+			List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
+			if (attachmentItems != null && !attachmentItems.isEmpty()) {
 				GalleryItem.Set gallerySet = holder.getGallerySet();
-				int startImageIndex = gallerySet.findIndex(holder.getPostItem());
+				int startImageIndex = gallerySet.findIndex(postItem);
 				if (mayShowDialog) {
-					uiManager.dialog().openAttachmentOrDialog(holder.getConfigurationSet().stackInstance, v,
-							chan.name, attachmentItems, startImageIndex, navigatePostMode, gallerySet);
+					uiManager.dialog().openAttachmentOrDialog(holder.getConfigurationSet(), v,
+							attachmentItems, startImageIndex, navigatePostMode, gallerySet);
 				} else {
 					int index = this.index;
 					int imageIndex = startImageIndex;
@@ -190,20 +208,15 @@ public class InteractionUnit {
 							imageIndex++;
 						}
 					}
-					uiManager.dialog().openAttachment(v, chan.name, attachmentItems, index, imageIndex,
-							navigatePostMode, gallerySet);
+					uiManager.dialog().openAttachment(v, holder.getConfigurationSet().chanName,
+							attachmentItems, index, imageIndex, navigatePostMode, gallerySet);
 				}
 			}
 		}
 	}
 
 	private static class ThumbnailLongClickListenerImpl implements UiManager.ThumbnailLongClickListener {
-		private final UiManager uiManager;
 		private AttachmentItem attachmentItem;
-
-		public ThumbnailLongClickListenerImpl(UiManager uiManager) {
-			this.uiManager = uiManager;
-		}
 
 		@Override
 		public void update(AttachmentItem attachmentItem) {
@@ -213,9 +226,8 @@ public class InteractionUnit {
 		@Override
 		public boolean onLongClick(View v) {
 			UiManager.Holder holder = ListViewUtils.getViewHolder(v, UiManager.Holder.class);
-			Chan chan = Chan.get(holder.getConfigurationSet().chanName);
-			showThumbnailLongClickDialog(uiManager, chan, attachmentItem, (AttachmentView) v, true,
-					holder.getGallerySet().getThreadTitle());
+			showThumbnailLongClickDialogStatic(holder.getConfigurationSet(),
+					attachmentItem, (AttachmentView) v, holder.getGallerySet().getThreadTitle());
 			return true;
 		}
 	}
@@ -225,16 +237,27 @@ public class InteractionUnit {
 	}
 
 	public UiManager.ThumbnailLongClickListener createThumbnailLongClickListener() {
-		return new ThumbnailLongClickListenerImpl(uiManager);
+		return new ThumbnailLongClickListenerImpl();
 	}
 
-	private static void showThumbnailLongClickDialog(UiManager uiManager, Chan chan, AttachmentItem attachmentItem,
-			AttachmentView attachmentView, boolean hasViewHolder, String threadTitle) {
-		Context context = attachmentView.getContext();
+	private static void showThumbnailLongClickDialogStatic(UiManager.ConfigurationSet configurationSet,
+			AttachmentItem attachmentItem, AttachmentView attachmentView, String threadTitle) {
+		String chanName = configurationSet.chanName;
+		Chan chan = Chan.get(configurationSet.chanName);
+		boolean canLoadThumbnailManually = attachmentItem.canLoadThumbnailManually(attachmentView, chan);
+		new InstanceDialog(configurationSet.fragmentManager, null, provider -> createThumbnailLongClickDialog(provider,
+				chanName, attachmentItem, threadTitle, canLoadThumbnailManually));
+	}
+
+	private static AlertDialog createThumbnailLongClickDialog(InstanceDialog.Provider provider,
+			String chanName, AttachmentItem attachmentItem, String threadTitle, boolean canLoadThumbnailManually) {
+		Chan chan = Chan.get(chanName);
+		Context context = new ContextThemeWrapper(provider.getContext(), R.style.Theme_Gallery);
 		DialogMenu dialogMenu = new DialogMenu(context);
-		dialogMenu.setTitle(attachmentItem.getDialogTitle(chan), true);
+		dialogMenu.setTitle(attachmentItem.getDialogTitle(chan));
 		if (attachmentItem.canDownloadToStorage()) {
 			dialogMenu.add(R.string.download_file, () -> {
+				UiManager uiManager = UiManager.extract(provider);
 				DownloadService.Binder binder = uiManager.callback().getDownloadBinder();
 				if (binder != null) {
 					binder.downloadStorage(attachmentItem.getFileUri(chan), attachmentItem.getFileName(chan),
@@ -248,23 +271,26 @@ public class InteractionUnit {
 					Uri fileUri = attachmentItem.getType() == AttachmentItem.Type.IMAGE
 							? attachmentItem.getFileUri(chan) : attachmentItem.getThumbnailUri(chan);
 					Chan fileChan = Chan.getPreferred(null, fileUri);
-					NavigationUtils.searchImage(context, uiManager.getConfigurationLock(), fileChan.name, fileUri);
+					new SearchImageDialog(fileChan.name, fileUri).show(provider.getFragmentManager(), null);
 				});
 			}
 		}
-		if (hasViewHolder && attachmentItem.canLoadThumbnailManually(attachmentView, chan)) {
-			dialogMenu.add(R.string.show_thumbnail, () -> attachmentItem.startLoad(attachmentView, chan, true));
+		if (canLoadThumbnailManually) {
+			dialogMenu.add(R.string.show_thumbnail, () -> {
+				UiManager uiManager = UiManager.extract(provider);
+				uiManager.reloadAttachmentItem(attachmentItem);
+			});
 		}
 		dialogMenu.add(R.string.copy_link, () -> StringUtils.copyToClipboard(context,
 				attachmentItem.getFileUri(chan).toString()));
 		dialogMenu.add(R.string.share_link, () -> NavigationUtils.shareLink(context, null,
 				attachmentItem.getFileUri(chan)));
-		dialogMenu.show(uiManager.getConfigurationLock());
+		return dialogMenu.create();
 	}
 
-	public void showThumbnailLongClickDialog(Chan chan, AttachmentItem attachmentItem,
-			AttachmentView attachmentView, boolean hasViewHolder, String threadTitle) {
-		showThumbnailLongClickDialog(uiManager, chan, attachmentItem, attachmentView, hasViewHolder, threadTitle);
+	public void showThumbnailLongClickDialog(UiManager.ConfigurationSet configurationSet,
+			AttachmentItem attachmentItem, AttachmentView attachmentView, String threadTitle) {
+		showThumbnailLongClickDialogStatic(configurationSet, attachmentItem, attachmentView, threadTitle);
 	}
 
 	public boolean handlePostClick(View view, UiManager.PostStateProvider postStateProvider,
@@ -288,96 +314,116 @@ public class InteractionUnit {
 		}
 	}
 
-	public boolean handlePostContextMenu(Chan chan, PostItem postItem, Replyable replyable, boolean userPost,
-			boolean allowMyMarkEdit, boolean allowHiding, boolean allowGoToPost) {
-		if (postItem != null) {
-			Context context = uiManager.getContext();
-			ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(postItem.getBoardName());
-			boolean postEmpty = StringUtils.isEmpty(postItem.getComment(chan).toString());
-			final boolean copyText = !postEmpty;
-			final boolean shareText = !postEmpty;
-			DialogMenu dialogMenu = new DialogMenu(context);
-			if (replyable != null && replyable.onRequestReply(false)) {
-				dialogMenu.add(R.string.reply, () -> replyable
-						.onRequestReply(true, new Replyable.ReplyData(postItem.getPostNumber(), null)));
-				if (!postEmpty) {
-					dialogMenu.add(R.string.quote__verb, () -> replyable
-							.onRequestReply(true, new Replyable.ReplyData(postItem.getPostNumber(),
-									getCopyReadyComment(postItem.getComment(chan)))));
-				}
+	public void handlePostContextMenu(UiManager.ConfigurationSet configurationSet, PostItem postItem) {
+		Chan chan = Chan.get(configurationSet.chanName);
+		Context context = uiManager.getContext();
+		ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(postItem.getBoardName());
+		boolean postEmpty = StringUtils.isEmpty(postItem.getComment(chan).toString());
+		boolean copyText = !postEmpty;
+		boolean shareText = !postEmpty;
+		boolean userPost = configurationSet.postStateProvider.isUserPost(postItem.getPostNumber());
+		DialogMenu dialogMenu = new DialogMenu(context);
+		if (configurationSet.replyable != null && configurationSet.replyable.onRequestReply(false)) {
+			dialogMenu.add(R.string.reply, () -> configurationSet.replyable
+					.onRequestReply(true, new Replyable.ReplyData(postItem.getPostNumber(), null)));
+			if (!postEmpty) {
+				dialogMenu.add(R.string.quote__verb, () -> configurationSet.replyable
+						.onRequestReply(true, new Replyable.ReplyData(postItem.getPostNumber(),
+								getCopyReadyComment(postItem.getComment(chan)))));
 			}
-			if (copyText) {
-				dialogMenu.add(R.string.copy__ellipsis, () -> {
-					DialogMenu innerDialogMenu = new DialogMenu(context);
-					innerDialogMenu.add(R.string.copy_text,
-							() -> handlePostContextMenuCopy(chan, postItem, PostCopyShareAction.COPY_TEXT));
-					innerDialogMenu.add(R.string.copy_markup,
-							() -> handlePostContextMenuCopy(chan, postItem, PostCopyShareAction.COPY_MARKUP));
-					innerDialogMenu.add(R.string.copy_link,
-							() -> handlePostContextMenuCopy(chan, postItem, PostCopyShareAction.COPY_LINK));
-					innerDialogMenu.show(uiManager.getConfigurationLock());
-				});
-			} else {
-				dialogMenu.add(R.string.copy_link,
-						() -> handlePostContextMenuCopy(chan, postItem, PostCopyShareAction.COPY_LINK));
-			}
-			if (shareText) {
-				dialogMenu.add(R.string.share__ellipsis, () -> {
-					DialogMenu innerDialogMenu = new DialogMenu(context);
-					innerDialogMenu.add(R.string.share_text,
-							() -> handlePostContextMenuCopy(chan, postItem, PostCopyShareAction.SHARE_TEXT));
-					innerDialogMenu.add(R.string.share_link,
-							() -> handlePostContextMenuCopy(chan, postItem, PostCopyShareAction.SHARE_LINK));
-					innerDialogMenu.show(uiManager.getConfigurationLock());
-				});
-			} else {
-				dialogMenu.add(R.string.share_link,
-						() -> handlePostContextMenuCopy(chan, postItem, PostCopyShareAction.SHARE_LINK));
-			}
-			if (!postItem.isDeleted()) {
-				if (board.allowReporting) {
-					dialogMenu.add(R.string.report, () -> uiManager.dialog()
-							.performSendReportPosts(chan.name, postItem.getBoardName(),
-									postItem.getThreadNumber(), Collections.singletonList(postItem.getPostNumber())));
-				}
-				if (board.allowDeleting) {
-					dialogMenu.add(R.string.delete, () -> uiManager.dialog()
-							.performSendDeletePosts(chan.name, postItem.getBoardName(),
-									postItem.getThreadNumber(), Collections.singletonList(postItem.getPostNumber())));
-				}
-			}
-			if (allowMyMarkEdit) {
-				dialogMenu.add(R.string.my_post, userPost, () -> uiManager
-						.sendPostItemMessage(postItem, UiManager.Message.PERFORM_SWITCH_USER_MARK));
-			}
-			if (allowGoToPost) {
-				dialogMenu.add(R.string.go_to_post, () -> uiManager
-						.sendPostItemMessage(postItem, UiManager.Message.PERFORM_GO_TO_POST));
-			}
-			if (allowHiding && !postItem.getHideState().hidden) {
-				dialogMenu.add(R.string.hide__ellipsis, () -> {
-					DialogMenu innerDialogMenu = new DialogMenu(context);
-					innerDialogMenu.add(R.string.this_post, () -> uiManager
-							.sendPostItemMessage(postItem, UiManager.Message.PERFORM_SWITCH_HIDE));
-					innerDialogMenu.add(R.string.replies_tree, () -> uiManager
-							.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_REPLIES));
-					innerDialogMenu.add(R.string.posts_with_same_name, () -> uiManager
-							.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_NAME));
-					innerDialogMenu.add(R.string.similar_posts, () -> uiManager
-							.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_SIMILAR));
-					innerDialogMenu.show(uiManager.getConfigurationLock());
-				});
-			}
-			dialogMenu.show(uiManager.getConfigurationLock());
-			return true;
 		}
-		return false;
+		if (copyText) {
+			dialogMenu.addMore(R.string.copy, () -> showPostCopyDialog(configurationSet.fragmentManager,
+					configurationSet.chanName, postItem));
+		} else {
+			dialogMenu.add(R.string.copy_link, () -> handlePostContextMenuCopy(context,
+					configurationSet.chanName, postItem, PostCopyShareAction.COPY_LINK));
+		}
+		if (shareText) {
+			dialogMenu.addMore(R.string.share, () -> showPostShareDialog(configurationSet.fragmentManager,
+					configurationSet.chanName, postItem));
+		} else {
+			dialogMenu.add(R.string.share_link, () -> handlePostContextMenuCopy(context,
+					configurationSet.chanName, postItem, PostCopyShareAction.SHARE_LINK));
+		}
+		if (!postItem.isDeleted()) {
+			if (board.allowReporting) {
+				dialogMenu.add(R.string.report, () -> uiManager.dialog()
+						.performSendReportPosts(configurationSet.fragmentManager, chan.name, postItem.getBoardName(),
+								postItem.getThreadNumber(), Collections.singletonList(postItem.getPostNumber())));
+			}
+			if (board.allowDeleting) {
+				dialogMenu.add(R.string.delete, () -> uiManager.dialog()
+						.performSendDeletePosts(configurationSet.fragmentManager, chan.name, postItem.getBoardName(),
+								postItem.getThreadNumber(), Collections.singletonList(postItem.getPostNumber())));
+			}
+		}
+		if (configurationSet.allowMyMarkEdit) {
+			dialogMenu.addCheck(R.string.my_post, userPost, () -> uiManager
+					.sendPostItemMessage(postItem, UiManager.Message.PERFORM_SWITCH_USER_MARK));
+		}
+		if (configurationSet.isDialog && configurationSet.allowGoToPost) {
+			dialogMenu.add(R.string.go_to_post, () -> uiManager
+					.sendPostItemMessage(postItem, UiManager.Message.PERFORM_GO_TO_POST));
+		}
+		if (configurationSet.allowHiding && !postItem.getHideState().hidden) {
+			dialogMenu.addMore(R.string.hide,
+					() -> showPostHideDialog(configurationSet.fragmentManager, postItem));
+		}
+		AlertDialog dialog = dialogMenu.create();
+		uiManager.dialog().handlePostContextMenu(configurationSet, postItem.getPostNumber(), true, dialog);
+		dialog.setOnDismissListener(d -> uiManager.dialog().handlePostContextMenu(configurationSet,
+				postItem.getPostNumber(), false, dialog));
+		dialog.show();
+	}
+
+	private static void showPostCopyDialog(FragmentManager fragmentManager, String chanName, PostItem postItem) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			Context context = provider.getContext();
+			DialogMenu dialogMenu = new DialogMenu(context);
+			dialogMenu.add(R.string.copy_text, () -> handlePostContextMenuCopy(context,
+					chanName, postItem, PostCopyShareAction.COPY_TEXT));
+			dialogMenu.add(R.string.copy_markup, () -> handlePostContextMenuCopy(context,
+					chanName, postItem, PostCopyShareAction.COPY_MARKUP));
+			dialogMenu.add(R.string.copy_link, () -> handlePostContextMenuCopy(context,
+					chanName, postItem, PostCopyShareAction.COPY_LINK));
+			return dialogMenu.create();
+		});
+	}
+
+	private static void showPostShareDialog(FragmentManager fragmentManager, String chanName, PostItem postItem) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			Context context = provider.getContext();
+			DialogMenu dialogMenu = new DialogMenu(context);
+			dialogMenu.add(R.string.share_text, () -> handlePostContextMenuCopy(context,
+					chanName, postItem, PostCopyShareAction.SHARE_TEXT));
+			dialogMenu.add(R.string.share_link, () -> handlePostContextMenuCopy(context,
+					chanName, postItem, PostCopyShareAction.SHARE_LINK));
+			return dialogMenu.create();
+		});
+	}
+
+	private static void showPostHideDialog(FragmentManager fragmentManager, PostItem postItem) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			UiManager uiManager = UiManager.extract(provider);
+			DialogMenu dialogMenu = new DialogMenu(provider.getContext());
+			dialogMenu.add(R.string.this_post, () -> uiManager
+					.sendPostItemMessage(postItem, UiManager.Message.PERFORM_SWITCH_HIDE));
+			dialogMenu.add(R.string.replies_tree, () -> uiManager
+					.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_REPLIES));
+			dialogMenu.add(R.string.posts_with_same_name, () -> uiManager
+					.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_NAME));
+			dialogMenu.add(R.string.similar_posts, () -> uiManager
+					.sendPostItemMessage(postItem, UiManager.Message.PERFORM_HIDE_SIMILAR));
+			return dialogMenu.create();
+		});
 	}
 
 	private enum PostCopyShareAction {COPY_TEXT, COPY_MARKUP, COPY_LINK, SHARE_LINK, SHARE_TEXT}
 
-	private void handlePostContextMenuCopy(Chan chan, PostItem postItem, PostCopyShareAction action) {
-		Context context = uiManager.getContext();
+	private static void handlePostContextMenuCopy(Context context,
+			String chanName, PostItem postItem, PostCopyShareAction action) {
+		Chan chan = Chan.get(chanName);
 		switch (action) {
 			case COPY_TEXT: {
 				StringUtils.copyToClipboard(context, getCopyReadyComment(postItem.getComment(chan)));

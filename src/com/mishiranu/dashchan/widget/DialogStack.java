@@ -50,7 +50,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 		this.context = context;
 		styledContext = new ContextThemeWrapper(context, ResourceUtils.getResourceId(context,
 				android.R.attr.dialogTheme, 0));
-		ThemeEngine.addOnDialogCreatedListener(context, () -> switchBackground(true));
+		ThemeEngine.addWeakOnOverlayFocusListener(context, overlayFocusListener);
 		WindowControlFrameLayout contentView = new WindowControlFrameLayout(context);
 		this.contentView = contentView;
 		rootView = new SimpleLayout(context);
@@ -147,17 +147,35 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 	private final LinkedList<Pair<T, DialogView>> visibleViews = new LinkedList<>();
 	private Dialog dialog;
 
+	@SuppressWarnings("FieldCanBeLocal")
+	private final ThemeEngine.OnOverlayFocusListener overlayFocusListener = stack -> {
+		View decorView = dialog != null ? dialog.getWindow().getDecorView() : null;
+		boolean background = false;
+		if (decorView != null) {
+			boolean foundSelf = false;
+			boolean isDimmedByOtherWindow = false;
+			for (ThemeEngine.OnOverlayFocusListener.MutableItem mutableItem : stack) {
+				if (!foundSelf) {
+					if (mutableItem.decorView == decorView) {
+						foundSelf = true;
+					}
+				} else {
+					if (mutableItem.indirect) {
+						// Ignore next windows with dim behind, e.g. gallery -> gallery dialog
+						break;
+					} else {
+						isDimmedByOtherWindow = true;
+					}
+				}
+			}
+			background = isDimmedByOtherWindow;
+		}
+		switchBackground(background);
+	};
+
 	public void push(T viewFactory) {
 		if (dialog == null) {
 			Dialog dialog = new Dialog(context, ResourceUtils.getResourceId(context, R.attr.overlayTheme, 0)) {
-				@Override
-				public void onWindowFocusChanged(boolean hasFocus) {
-					super.onWindowFocusChanged(hasFocus);
-					if (hasFocus) {
-						switchBackground(false);
-					}
-				}
-
 				@Override
 				public void onActionModeStarted(ActionMode mode) {
 					currentActionMode = new WeakReference<>(mode);
@@ -247,7 +265,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 		}
 	}
 
-	public void switchBackground(boolean background) {
+	private void switchBackground(boolean background) {
 		for (Pair<T, DialogView> pair : visibleViews) {
 			pair.second.setBackground(background);
 		}

@@ -1,5 +1,6 @@
 package com.mishiranu.dashchan.ui.gallery;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -15,6 +16,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import chan.content.Chan;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
@@ -24,8 +28,10 @@ import com.mishiranu.dashchan.content.NetworkObserver;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.graphics.SimpleBitmapDrawable;
+import com.mishiranu.dashchan.ui.DialogMenu;
+import com.mishiranu.dashchan.ui.InstanceDialog;
+import com.mishiranu.dashchan.ui.SearchImageDialog;
 import com.mishiranu.dashchan.util.AnimationUtils;
-import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
@@ -62,6 +68,12 @@ public class PagerUnit implements PagerInstance.Callback {
 		viewPagerParent.addView(viewPager, FrameLayout.LayoutParams.MATCH_PARENT,
 				FrameLayout.LayoutParams.MATCH_PARENT);
 		viewPager.setCount(instance.galleryItems.size());
+		PagerUnitViewModel viewModel = new ViewModelProvider(instance.callback).get(PagerUnitViewModel.class);
+		viewModel.pagerUnit = new WeakReference<>(this);
+	}
+
+	public static class PagerUnitViewModel extends ViewModel {
+		private WeakReference<PagerUnit> pagerUnit;
 	}
 
 	public View getView() {
@@ -404,7 +416,7 @@ public class PagerUnit implements PagerInstance.Callback {
 
 		@Override
 		public void onLongClick(PhotoView photoView, float x, float y) {
-			displayPopupMenu();
+			displayPopupMenu(galleryInstance.callback.getChildFragmentManager());
 		}
 
 		private boolean swiping = false;
@@ -573,17 +585,17 @@ public class PagerUnit implements PagerInstance.Callback {
 		}
 	}
 
-	private DialogMenu currentPopupDialogMenu;
+	private static final String TAG_POPUP_MENU = PagerUnit.class.getName() + ":PopupMenu";
 
-	private void displayPopupMenu() {
+	private DialogMenu buildPopupMenu() {
 		GalleryItem galleryItem = pagerInstance.currentHolder.galleryItem;
 		OptionsMenuCapabilities capabilities = obtainOptionsMenuCapabilities();
 		if (capabilities != null && capabilities.available) {
 			Chan chan = Chan.get(galleryInstance.chanName);
 			Context context = galleryInstance.callback.getWindow().getContext();
 			DialogMenu dialogMenu = new DialogMenu(context);
-			dialogMenu.setTitle(!StringUtils.isEmpty(galleryItem.originalName) ? galleryItem.originalName
-					: galleryItem.getFileName(chan), true);
+			dialogMenu.setTitle(!StringUtils.isEmpty(galleryItem.originalName)
+					? galleryItem.originalName : galleryItem.getFileName(chan));
 			if (!galleryInstance.callback.isSystemUiVisible()) {
 				if (capabilities.save) {
 					dialogMenu.add(R.string.save, () -> galleryInstance.callback
@@ -605,8 +617,8 @@ public class PagerUnit implements PagerInstance.Callback {
 			if (capabilities.searchImage) {
 				dialogMenu.add(R.string.search_image, () -> {
 					videoUnit.forcePause();
-					NavigationUtils.searchImage(context, galleryInstance.callback.getConfigurationLock(),
-							galleryInstance.chanName, galleryItem.getDisplayImageUri(chan));
+					new SearchImageDialog(galleryInstance.chanName, galleryItem.getDisplayImageUri(chan))
+							.show(galleryInstance.callback.getChildFragmentManager(), null);
 				});
 			}
 			if (galleryInstance.callback.isAllowNavigatePostManually(true) && capabilities.navigatePost) {
@@ -625,28 +637,44 @@ public class PagerUnit implements PagerInstance.Callback {
 					Uri uri = galleryItem.getFileUri(chan);
 					File file = CacheManager.getInstance().getMediaFile(uri, false);
 					if (file == null) {
-						ToastUtils.show(galleryInstance.callback.getWindow().getContext(),
-								R.string.cache_is_unavailable);
+						ToastUtils.show(context, R.string.cache_is_unavailable);
 					} else {
-						NavigationUtils.shareFile(galleryInstance.callback.getWindow().getContext(), file,
-								galleryItem.getFileName(chan));
+						NavigationUtils.shareFile(context, file, galleryItem.getFileName(chan));
 					}
 				});
 			}
-			dialogMenu.setOnDismissListener(dialog -> {
-				if (dialogMenu == currentPopupDialogMenu) {
-					currentPopupDialogMenu = null;
-				}
-			});
-			dialogMenu.show(galleryInstance.callback.getConfigurationLock());
-			currentPopupDialogMenu = dialogMenu;
+			return dialogMenu;
 		}
+		return null;
+	}
+
+	private static void displayPopupMenu(FragmentManager fragmentManager) {
+		new InstanceDialog(fragmentManager, TAG_POPUP_MENU, provider -> {
+			PagerUnitViewModel viewModel = new ViewModelProvider(provider.getParentFragment())
+					.get(PagerUnitViewModel.class);
+			PagerUnit pagerUnit = viewModel.pagerUnit.get();
+			DialogMenu dialogMenu = pagerUnit.buildPopupMenu();
+			if (dialogMenu != null) {
+				return dialogMenu.create();
+			} else {
+				return provider.createDismissDialog();
+			}
+		});
 	}
 
 	public void invalidatePopupMenu() {
-		if (currentPopupDialogMenu != null) {
-			currentPopupDialogMenu.dismiss();
-			displayPopupMenu();
+		InstanceDialog instanceDialog = (InstanceDialog) galleryInstance.callback
+				.getChildFragmentManager().findFragmentByTag(TAG_POPUP_MENU);
+		if (instanceDialog != null) {
+			AlertDialog dialog = (AlertDialog) instanceDialog.getDialog();
+			if (dialog != null) {
+				DialogMenu dialogMenu = buildPopupMenu();
+				if (dialogMenu != null) {
+					dialogMenu.update(dialog);
+				} else {
+					instanceDialog.dismiss();
+				}
+			}
 		}
 	}
 }

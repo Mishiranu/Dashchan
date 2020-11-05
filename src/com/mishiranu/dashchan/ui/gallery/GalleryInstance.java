@@ -2,8 +2,10 @@ package com.mishiranu.dashchan.ui.gallery;
 
 import android.content.Context;
 import android.view.Window;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelStoreOwner;
 import com.mishiranu.dashchan.content.model.GalleryItem;
-import com.mishiranu.dashchan.util.ConfigurationLock;
+import com.mishiranu.dashchan.ui.InstanceDialog;
 import java.util.List;
 
 public class GalleryInstance {
@@ -29,9 +31,13 @@ public class GalleryInstance {
 		this.galleryItems = galleryItems;
 	}
 
-	public interface Callback {
+	public static Callback getCallback(InstanceDialog.Provider provider) {
+		return (Callback) provider.getParentFragment();
+	}
+
+	public interface Callback extends ViewModelStoreOwner {
 		Window getWindow();
-		ConfigurationLock getConfigurationLock();
+		FragmentManager getChildFragmentManager();
 
 		void downloadGalleryItem(GalleryItem galleryItem);
 		void downloadGalleryItems(List<GalleryItem> galleryItems);

@@ -20,6 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 import chan.content.Chan;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
@@ -30,6 +31,7 @@ import com.mishiranu.dashchan.content.async.ReadVideoTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.graphics.BaseDrawable;
 import com.mishiranu.dashchan.media.VideoPlayer;
+import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.AudioFocus;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
@@ -460,13 +462,19 @@ public class VideoUnit {
 
 	public void viewTechnicalInfo() {
 		if (initialized) {
-			AlertDialog dialog = new AlertDialog
-					.Builder(instance.galleryInstance.callback.getWindow().getContext())
+			Map<String, String> technicalInfo = player.getTechnicalInfo();
+			showTechnicalInfo(instance.galleryInstance.callback.getChildFragmentManager(), technicalInfo);
+		}
+	}
+
+	private static void showTechnicalInfo(FragmentManager fragmentManager, Map<String, String> technicalInfo) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			Context context = GalleryInstance.getCallback(provider).getWindow().getContext();
+			AlertDialog dialog = new AlertDialog.Builder(context)
 					.setTitle(R.string.technical_info)
 					.setPositiveButton(android.R.string.ok, null)
 					.create();
 			SummaryLayout layout = new SummaryLayout(dialog);
-			Map<String, String> technicalInfo = player.getTechnicalInfo();
 			String videoFormat = technicalInfo.get("video_format");
 			String width = technicalInfo.get("width");
 			String height = technicalInfo.get("height");
@@ -514,9 +522,8 @@ public class VideoUnit {
 			if (!StringUtils.isEmptyOrWhitespace(title)) {
 				layout.add("Title", title);
 			}
-			instance.galleryInstance.callback.getConfigurationLock().lockConfiguration(dialog);
-			dialog.show();
-		}
+			return dialog;
+		});
 	}
 
 	private boolean controlsVisible = false;

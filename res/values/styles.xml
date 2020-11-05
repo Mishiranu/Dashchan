@@ -178,9 +178,10 @@
 
 	<style name="Theme.Overlay.Dark" parent="@style/Theme.Main.Dark">
 
+		<item name="isOverlay">true</item>
 		<item name="android:windowNoTitle">true</item>
 		<item name="android:windowBackground">@android:color/transparent</item>
-		<item name="android:windowActionBarOverlay">true</item>
+		<item name="android:windowActionModeOverlay">true</item>
 		<item name="android:colorBackgroundCacheHint">@null</item>
 		<item name="android:windowFrame">@null</item>
 		<item name="android:windowContentOverlay">@null</item>
@@ -191,9 +192,10 @@
 
 	<style name="Theme.Overlay.Light" parent="@style/Theme.Main.Light">
 
+		<item name="isOverlay">true</item>
 		<item name="android:windowNoTitle">true</item>
 		<item name="android:windowBackground">@android:color/transparent</item>
-		<item name="android:windowActionBarOverlay">true</item>
+		<item name="android:windowActionModeOverlay">true</item>
 		<item name="android:colorBackgroundCacheHint">@null</item>
 		<item name="android:windowFrame">@null</item>
 		<item name="android:windowContentOverlay">@null</item>

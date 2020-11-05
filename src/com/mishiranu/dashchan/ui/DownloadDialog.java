@@ -37,7 +37,6 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.MimeTypes;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
@@ -61,7 +60,6 @@ public class DownloadDialog {
 	}
 
 	private final Context context;
-	private final ConfigurationLock configurationLock;
 	private final Callback callback;
 
 	private static class DialogHolder<Request> {
@@ -93,9 +91,8 @@ public class DownloadDialog {
 	private final DialogHolder<DownloadService.ReplaceRequest> replaceDialog = new DialogHolder<>();
 	private final DialogHolder<DownloadService.PrepareRequest> prepareDialog = new DialogHolder<>();
 
-	public DownloadDialog(Context context, ConfigurationLock configurationLock, Callback callback) {
+	public DownloadDialog(Context context, Callback callback) {
 		this.context = new ContextThemeWrapper(context, R.style.Theme_Gallery);
-		this.configurationLock = configurationLock;
 		this.callback = callback;
 	}
 
@@ -133,8 +130,26 @@ public class DownloadDialog {
 		}
 	}
 
+	private static class ChoiceState {
+		public boolean subdirectory;
+		public boolean detailedName;
+		public boolean originalName;
+		public String path;
+	}
+
 	private AlertDialog createChoice(DownloadService.ChoiceRequest choiceRequest,
 			AlertDialog.OnDismissListener onDismissListener) {
+		boolean newState = false;
+		if (!(choiceRequest.state instanceof ChoiceState)) {
+			choiceRequest.state = new ChoiceState();
+			newState = true;
+		}
+		ChoiceState state = (ChoiceState) choiceRequest.state;
+		if (newState) {
+			state.detailedName = Preferences.isDownloadDetailName();
+			state.originalName = Preferences.isDownloadOriginalName();
+		}
+
 		DataFile root = DataFile.obtain(context, DataFile.Target.DOWNLOADS, null);
 		InputMethodManager inputMethodManager = (InputMethodManager) context
 				.getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -150,12 +165,14 @@ public class DownloadDialog {
 			allowDetailName = false;
 		}
 		if (allowDetailName) {
-			detailNameCheckBox.setChecked(Preferences.isDownloadDetailName());
+			detailNameCheckBox.setChecked(state.detailedName);
+			detailNameCheckBox.setOnCheckedChangeListener((b, isChecked) -> state.detailedName = isChecked);
 		} else {
 			detailNameCheckBox.setVisibility(View.GONE);
 		}
 		if (allowOriginalName) {
-			originalNameCheckBox.setChecked(Preferences.isDownloadOriginalName());
+			originalNameCheckBox.setChecked(state.originalName);
+			originalNameCheckBox.setOnCheckedChangeListener((b, isChecked) -> state.originalName = isChecked);
 		} else {
 			originalNameCheckBox.setVisibility(View.GONE);
 		}
@@ -173,8 +190,23 @@ public class DownloadDialog {
 			}
 			String text = Preferences.getSubdir(choiceRequest.chanName, chanTitle,
 					choiceRequest.boardName, choiceRequest.threadNumber, threadTitle);
-			editText.setText(text);
-			editText.setSelection(text.length());
+			if (newState) {
+				state.path = text;
+			}
+			editText.setText(state.path);
+			editText.setSelection(editText.getText().length());
+			editText.addTextChangedListener(new TextWatcher() {
+				@Override
+				public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+				@Override
+				public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+				@Override
+				public void afterTextChanged(Editable s) {
+					state.path = s.toString();
+				}
+			});
 			if (StringUtils.isEmpty(text)) {
 				text = Preferences.formatSubdir(Preferences.DEFAULT_SUBDIR_PATTERN, choiceRequest.chanName,
 						chanTitle, choiceRequest.boardName, choiceRequest.threadNumber, threadTitle);
@@ -182,7 +214,6 @@ public class DownloadDialog {
 			editText.setHint(text);
 		}
 
-		editText.setEnabled(false);
 		editText.setOnItemClickListener((parent, v, position, id) -> v.post(() -> {
 			Adapter adapter = (Adapter) editText.getAdapter();
 			adapter.items = Collections.emptyList();
@@ -193,10 +224,10 @@ public class DownloadDialog {
 		Runnable dropDownRunnable = editText::showDropDown;
 
 		RadioGroup radioGroup = view.findViewById(R.id.download_choice);
-		radioGroup.check(R.id.download_common);
 		radioGroup.setOnCheckedChangeListener((rg, checkedId) -> {
 			boolean enabled = checkedId == R.id.download_subdirectory;
 			editText.setEnabled(enabled);
+			state.subdirectory = enabled;
 			if (enabled) {
 				editText.dismissDropDown();
 				refreshDropDownContents(editText);
@@ -210,6 +241,7 @@ public class DownloadDialog {
 				editText.removeCallbacks(dropDownRunnable);
 			}
 		});
+		radioGroup.check(state.subdirectory ? R.id.download_subdirectory : R.id.download_common);
 		view.<RadioButton>findViewById(R.id.download_common)
 				.setText(context.getString(R.string.save_to_directory__format, root.getName()));
 
@@ -236,9 +268,9 @@ public class DownloadDialog {
 			dialog.dismiss();
 			return true;
 		});
-		configurationLock.lockConfiguration(dialog, dismissDialog -> {
+		dialog.setOnDismissListener(d -> {
 			adapter.shutdown();
-			onDismissListener.onDismiss(dismissDialog);
+			onDismissListener.onDismiss(d);
 		});
 		dialog.show();
 		return dialog;
@@ -272,8 +304,17 @@ public class DownloadDialog {
 		callback.resolve(choiceRequest, directRequest);
 	}
 
+	private static class ReplaceState {
+		public int selectedId;
+	}
+
 	private AlertDialog createReplace(DownloadService.ReplaceRequest replaceRequest,
 			AlertDialog.OnDismissListener onDismissListener) {
+		if (!(replaceRequest.state instanceof ReplaceState)) {
+			replaceRequest.state = new ReplaceState();
+		}
+		ReplaceState state = (ReplaceState) replaceRequest.state;
+
 		int count = replaceRequest.queued + replaceRequest.exists;
 		float density = ResourceUtils.obtainDensity(context);
 		int padding = context.getResources().getDimensionPixelSize(R.dimen.dialog_padding_view);
@@ -285,7 +326,7 @@ public class DownloadDialog {
 				(R.plurals.number_files_already_exist__sentence_format, count, count));
 		linearLayout.addView(textView);
 
-		final RadioGroup radioGroup = new RadioGroup(context);
+		RadioGroup radioGroup = new RadioGroup(context);
 		radioGroup.setOrientation(RadioGroup.VERTICAL);
 		int[] options = {R.string.replace, R.string.keep_all, R.string.skip};
 		int[] ids = {android.R.id.button1, android.R.id.button2, android.R.id.button3};
@@ -295,8 +336,12 @@ public class DownloadDialog {
 			radioButton.setId(ids[i]);
 			radioGroup.addView(radioButton);
 		}
-		radioGroup.check(ids[0]);
+		if (state.selectedId == 0) {
+			state.selectedId = ids[0];
+		}
+		radioGroup.check(state.selectedId);
 		radioGroup.setPadding(0, (int) (12f * density), 0, 0);
+		radioGroup.setOnCheckedChangeListener((g, id) -> state.selectedId = id);
 		linearLayout.addView(radioGroup);
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(context)
@@ -349,7 +394,7 @@ public class DownloadDialog {
 		} else {
 			dialog = builder.create();
 		}
-		configurationLock.lockConfiguration(dialog, onDismissListener);
+		dialog.setOnDismissListener(onDismissListener);
 		dialog.show();
 		return dialog;
 	}

@@ -93,7 +93,7 @@
     <string name="context_menu">Menu contestuale</string>
     <string name="context_menu_description__sentence">Usa pressione prolungata per mostrare il menu
         contestuale.</string>
-    <string name="copy__ellipsis">Copia…</string>
+    <string name="copy">Copia</string>
     <string name="copy_email">Copia email</string>
     <string name="copy_link">Copia link</string>
     <string name="copy_markup">Copia markup</string>
@@ -184,7 +184,6 @@
     <string name="headers_order">Ordine categorie</string>
     <string name="hidden_posts">Post nascosti</string>
     <string name="hide">Nascondi</string>
-    <string name="hide__ellipsis">Nascondi…</string>
     <string name="hide_eventually__imperfective">Nascondi eventualmente</string>
     <string name="hide_on_tap__imperfective">Nascondi al tocco</string>
     <string name="hide_pages">Nascondi pagine</string>
@@ -412,7 +411,7 @@
     <string name="sent_posts">Post inviati</string>
     <string name="services">Servizi</string>
     <string name="sfw_mode">Modalità SFW</string>
-    <string name="share__ellipsis">Condividi…</string>
+    <string name="share">Condividi</string>
     <string name="share_file">Condividi file</string>
     <string name="share_link">Condividi link</string>
     <string name="share_text">Condividi testo</string>

@@ -1,6 +1,8 @@
 package chan.content;
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 import chan.annotation.Extendable;
 import chan.annotation.Public;
 import chan.util.CommonUtils;
@@ -33,7 +35,7 @@ public class ChanLocator implements Chan.Linked {
 	}
 
 	@Public
-	public static final class NavigationData {
+	public static final class NavigationData implements Parcelable {
 		@Public public static final int TARGET_THREADS = 0;
 		@Public public static final int TARGET_POSTS = 1;
 		@Public public static final int TARGET_SEARCH = 2;
@@ -82,6 +84,40 @@ public class ChanLocator implements Chan.Linked {
 				}
 			}
 		}
+
+		@Override
+		public int describeContents() {
+			return 0;
+		}
+
+		@Override
+		public void writeToParcel(Parcel dest, int flags) {
+			dest.writeString(target.name());
+			dest.writeString(boardName);
+			dest.writeString(threadNumber);
+			dest.writeByte((byte) (postNumber != null ? 1 : 0));
+			if (postNumber != null) {
+				postNumber.writeToParcel(dest, flags);
+			}
+			dest.writeString(searchQuery);
+		}
+
+		public static final Creator<NavigationData> CREATOR = new Creator<NavigationData>() {
+			@Override
+			public NavigationData createFromParcel(Parcel source) {
+				Target target = Target.valueOf(source.readString());
+				String boardName = source.readString();
+				String threadNumber = source.readString();
+				PostNumber postNumber = source.readByte() != 0 ? PostNumber.CREATOR.createFromParcel(source) : null;
+				String searchQuery = source.readString();
+				return new NavigationData(target, boardName, threadNumber, postNumber, searchQuery);
+			}
+
+			@Override
+			public NavigationData[] newArray(int size) {
+				return new NavigationData[size];
+			}
+		};
 	}
 
 	static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();

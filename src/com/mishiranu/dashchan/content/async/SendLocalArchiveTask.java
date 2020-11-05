@@ -54,10 +54,13 @@ public class SendLocalArchiveTask extends ExecutorTask<Integer, SendLocalArchive
 	private final boolean saveThumbnails;
 	private final boolean saveFiles;
 
+	public interface DownloadResult {
+		void run(DownloadService.Binder binder);
+	}
+
 	public interface Callback {
-		DownloadService.Binder getDownloadBinder();
 		void onLocalArchivationProgressUpdate(int handledPostsCount);
-		void onLocalArchivationComplete(boolean success);
+		void onLocalArchivationComplete(DownloadResult result);
 	}
 
 	public SendLocalArchiveTask(Callback callback, Chan chan, String boardName, String threadNumber,
@@ -288,6 +291,7 @@ public class SendLocalArchiveTask extends ExecutorTask<Integer, SendLocalArchive
 	@SuppressWarnings("CharsetObjectCanBeUsed")
 	@Override
 	protected void onComplete(Result result) {
+		DownloadResult downloadResult = null;
 		if (result != null) {
 			byte[] htmlBytes;
 			try {
@@ -295,12 +299,18 @@ public class SendLocalArchiveTask extends ExecutorTask<Integer, SendLocalArchive
 			} catch (UnsupportedEncodingException e) {
 				throw new RuntimeException(e);
 			}
-			performDownload(".nomedia", new ByteArrayInputStream(new byte[0]));
-			performDownload(result.archiveName + ".html", new ByteArrayInputStream(htmlBytes));
-			performDownload(result.archiveName + "/" + DIRECTORY_THUMBNAILS, result.thumbnailsToDownload);
-			performDownload(result.archiveName + "/" + DIRECTORY_FILES, result.filesToDownload);
+			ArrayList<DownloadResult> results = new ArrayList<>();
+			results.add(createDownload(".nomedia", new ByteArrayInputStream(new byte[0])));
+			results.add(createDownload(result.archiveName + ".html", new ByteArrayInputStream(htmlBytes)));
+			results.add(createDownload(result.archiveName + "/" + DIRECTORY_THUMBNAILS, result.thumbnailsToDownload));
+			results.add(createDownload(result.archiveName + "/" + DIRECTORY_FILES, result.filesToDownload));
+			downloadResult = binder -> {
+				for (DownloadResult innerDownloadResult : results) {
+					innerDownloadResult.run(binder);
+				}
+			};
 		}
-		callback.onLocalArchivationComplete(result != null);
+		callback.onLocalArchivationComplete(downloadResult);
 	}
 
 	private long lastNotifyIncrement = 0L;
@@ -315,20 +325,16 @@ public class SendLocalArchiveTask extends ExecutorTask<Integer, SendLocalArchive
 		}
 	}
 
-	private void performDownload(String name, InputStream input) {
-		DownloadService.Binder binder = callback.getDownloadBinder();
-		if (binder != null) {
-			binder.downloadDirect(DataFile.Target.DOWNLOADS,
-					DIRECTORY_ARCHIVE, name, input);
-		}
+	private static DownloadResult createDownload(String name, InputStream input) {
+		return binder -> binder.downloadDirect(DataFile.Target.DOWNLOADS, DIRECTORY_ARCHIVE, name, input);
 	}
 
-	private void performDownload(String path, List<DownloadService.DownloadItem> downloadItems) {
-		DownloadService.Binder binder = callback.getDownloadBinder();
-		if (path != null && downloadItems.size() > 0 && binder != null) {
-			binder.downloadDirect(DataFile.Target.DOWNLOADS,
-					DIRECTORY_ARCHIVE + "/" + path, false, downloadItems);
-		}
+	private static DownloadResult createDownload(String path, List<DownloadService.DownloadItem> downloadItems) {
+		return binder -> {
+			if (path != null && downloadItems.size() > 0) {
+				binder.downloadDirect(DataFile.Target.DOWNLOADS, DIRECTORY_ARCHIVE + "/" + path, false, downloadItems);
+			}
+		};
 	}
 
 	public static class Result {

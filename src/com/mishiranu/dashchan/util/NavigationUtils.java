@@ -145,30 +145,6 @@ public class NavigationUtils {
 				C.OPENABLE_VIDEO_EXTENSIONS.contains(extension);
 	}
 
-	public static void searchImage(Context context, ConfigurationLock configurationLock,
-			final String chanName, Uri uri) {
-		ChanLocator locator = Chan.getFallback().locator;
-		String imageUriString = Chan.get(chanName).locator.convert(uri).toString();
-		new DialogMenu(context)
-				.add("Google", () -> searchImageUri(context, locator.buildQueryWithHost("www.google.com",
-						"searchbyimage", "image_url", imageUriString)))
-				.add("Yandex", () -> searchImageUri(context, locator.buildQueryWithHost("yandex.ru",
-						"images/search", "rpt", "imageview", "img_url", imageUriString)))
-				.add("TinEye", () -> searchImageUri(context, locator.buildQueryWithHost("www.tineye.com",
-						"search", "url", imageUriString)))
-				.add("SauceNAO", () -> searchImageUri(context, locator.buildQueryWithHost("saucenao.com",
-						"search.php", "url", imageUriString)))
-				.add("iqdb.org", () -> searchImageUri(context, locator.buildQueryWithHost("iqdb.org",
-						"/", "url", imageUriString)))
-				.add("trace.moe", () -> searchImageUri(context, locator.buildQueryWithHost("trace.moe",
-						"/", "url", imageUriString)))
-				.show(configurationLock);
-	}
-
-	private static void searchImageUri(Context context, Uri searchUri) {
-		handleUri(context, null, searchUri, BrowserType.EXTERNAL);
-	}
-
 	public static void shareText(Context context, String subject, String text, Uri uri) {
 		Intent intent = new Intent(Intent.ACTION_SEND);
 		intent.setType("text/plain");

@@ -2,6 +2,10 @@ package com.mishiranu.dashchan.ui.navigator.manager;
 
 import android.content.Context;
 import android.view.View;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanLocator;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
@@ -9,15 +13,17 @@ import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.DownloadService;
+import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
-import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.ThemeEngine;
+import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 
 public class UiManager {
 	private final Context context;
@@ -28,25 +34,18 @@ public class UiManager {
 
 	private final Callback callback;
 	private final LocalNavigator localNavigator;
-	private final ConfigurationLock configurationLock;
 
-	public UiManager(Context context, Callback callback,
-			LocalNavigator localNavigator, ConfigurationLock configurationLock) {
+	public UiManager(Context context, Callback callback, LocalNavigator localNavigator) {
 		this.context = context;
 		viewUnit = new ViewUnit(this);
 		dialogUnit = new DialogUnit(this);
 		interactionUnit = new InteractionUnit(this);
 		this.callback = callback;
 		this.localNavigator = localNavigator;
-		this.configurationLock = configurationLock;
 	}
 
 	Context getContext() {
 		return context;
-	}
-
-	public ConfigurationLock getConfigurationLock() {
-		return configurationLock;
 	}
 
 	public ViewUnit view() {
@@ -81,7 +80,8 @@ public class UiManager {
 	}
 
 	public interface Observer {
-		void onPostItemMessage(PostItem postItem, Message message);
+		default void onPostItemMessage(PostItem postItem, Message message) {}
+		default void onReloadAttachmentItem(AttachmentItem attachmentItem) {}
 	}
 
 	public void sendPostItemMessage(View view, Message message) {
@@ -92,6 +92,17 @@ public class UiManager {
 	public void sendPostItemMessage(PostItem postItem, Message message) {
 		for (Observer observer : observable) {
 			observer.onPostItemMessage(postItem, message);
+		}
+	}
+
+	public void reloadAttachmentItem(AttachmentItem attachmentItem) {
+		Iterator<Observer> iterator = observable.iterator();
+		Observer observer = null;
+		while (iterator.hasNext()) {
+			observer = iterator.next();
+		}
+		if (observer != null) {
+			observer.onReloadAttachmentItem(attachmentItem);
 		}
 	}
 
@@ -161,6 +172,7 @@ public class UiManager {
 		public final PostsProvider postsProvider;
 		public final PostStateProvider postStateProvider;
 		public final GalleryItem.Provider galleryProvider;
+		public final FragmentManager fragmentManager;
 		public final DialogUnit.StackInstance stackInstance;
 		public final CommentTextView.LinkListener linkListener;
 		public final ListViewUtils.ClickCallback<PostItem, RecyclerView.ViewHolder> clickCallback;
@@ -172,8 +184,9 @@ public class UiManager {
 		public final boolean allowGoToPost;
 		public final PostNumber repliesToPost;
 
-		public ConfigurationSet(String chanName, Replyable replyable, PostsProvider postsProvider,
-				PostStateProvider postStateProvider, GalleryItem.Provider galleryProvider,
+		public ConfigurationSet(String chanName, Replyable replyable,
+				PostsProvider postsProvider, PostStateProvider postStateProvider,
+				GalleryItem.Provider galleryProvider, FragmentManager fragmentManager,
 				DialogUnit.StackInstance stackInstance, CommentTextView.LinkListener linkListener,
 				ListViewUtils.ClickCallback<PostItem, RecyclerView.ViewHolder> clickCallback,
 				boolean mayCollapse, boolean isDialog, boolean allowMyMarkEdit,
@@ -184,6 +197,7 @@ public class UiManager {
 			this.postStateProvider = postStateProvider;
 			this.galleryProvider = galleryProvider;
 			this.stackInstance = stackInstance;
+			this.fragmentManager = fragmentManager;
 			this.linkListener = linkListener;
 			this.clickCallback = clickCallback;
 
@@ -197,8 +211,8 @@ public class UiManager {
 
 		public ConfigurationSet copy(ListViewUtils.ClickCallback<PostItem, RecyclerView.ViewHolder> clickCallback,
 				boolean mayCollapse, boolean isDialog, PostNumber repliesToPost) {
-			return new ConfigurationSet(chanName, replyable,
-					postsProvider, postStateProvider, galleryProvider, stackInstance, linkListener, clickCallback,
+			return new ConfigurationSet(chanName, replyable, postsProvider, postStateProvider,
+					galleryProvider, fragmentManager, stackInstance, linkListener, clickCallback,
 					mayCollapse, isDialog, allowMyMarkEdit, allowHiding, allowGoToPost, repliesToPost);
 		}
 	}
@@ -220,7 +234,19 @@ public class UiManager {
 		}
 	}
 
-	public void onFinish() {
-		dialogUnit.onFinish();
+	public static class UiManagerViewModel extends ViewModel {
+		private WeakReference<UiManager> uiManager;
+	}
+
+	public static UiManager extract(InstanceDialog.Provider provider) {
+		FragmentActivity activity = provider.getActivity();
+		UiManagerViewModel viewModel = new ViewModelProvider(activity).get(UiManagerViewModel.class);
+		UiManager uiManager = viewModel.uiManager != null ? viewModel.uiManager.get() : null;
+		return uiManager != null && uiManager.context == activity ? uiManager : null;
+	}
+
+	public void attach(FragmentActivity activity) {
+		UiManagerViewModel viewModel = new ViewModelProvider(activity).get(UiManagerViewModel.class);
+		viewModel.uiManager = new WeakReference<>(this);
 	}
 }

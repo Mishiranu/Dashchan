@@ -214,14 +214,6 @@ public class ViewUtils {
 		}
 	}
 
-	public static void dismissDialogQuietly(DialogInterface dialog) {
-		try {
-			dialog.dismiss();
-		} catch (IllegalArgumentException e) {
-			// May be detached from window manager
-		}
-	}
-
 	public static void setSelectableItemBackground(View view) {
 		setBackgroundPreservePadding(view, ResourceUtils
 				.getDrawable(view.getContext(), android.R.attr.selectableItemBackground, 0));

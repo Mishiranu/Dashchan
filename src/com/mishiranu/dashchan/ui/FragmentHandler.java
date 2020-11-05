@@ -8,7 +8,6 @@ import androidx.fragment.app.Fragment;
 import chan.content.ChanLocator;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.DownloadService;
-import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import java.util.Collection;
 
@@ -26,7 +25,6 @@ public interface FragmentHandler {
 	void removeFragment();
 
 	DownloadService.Binder getDownloadBinder();
-	ConfigurationLock getConfigurationLock();
 	boolean requestStorage();
 
 	void navigateTargetAllowReturn(String chanName, ChanLocator.NavigationData navigationData);

@@ -28,8 +28,7 @@
 
 		<activity
 			android:name=".ui.MainActivity"
-			android:launchMode="singleTask"
-			android:configChanges="uiMode">
+			android:launchMode="singleTask">
 
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
@@ -51,7 +50,6 @@
 			android:taskAffinity=".postingshare"
 			android:launchMode="singleInstance"
 			android:excludeFromRecents="true"
-			android:configChanges="uiMode"
 			android:theme="@android:style/Theme.Translucent.NoTitleBar">
 
 			<intent-filter>
@@ -71,7 +69,6 @@
 		<activity
 			android:name=".content.UpdaterActivity"
 			android:excludeFromRecents="true"
-			android:configChanges="uiMode"
 			android:theme="@android:style/Theme.Panel" />
 
 		<service

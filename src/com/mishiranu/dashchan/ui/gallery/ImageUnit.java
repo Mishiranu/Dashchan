@@ -1,12 +1,14 @@
 package com.mishiranu.dashchan.ui.gallery;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.Pair;
+import androidx.fragment.app.FragmentManager;
 import chan.content.Chan;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
@@ -22,6 +24,7 @@ import com.mishiranu.dashchan.graphics.SimpleBitmapDrawable;
 import com.mishiranu.dashchan.media.AnimatedPngDecoder;
 import com.mishiranu.dashchan.media.GifDecoder;
 import com.mishiranu.dashchan.media.JpegData;
+import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.widget.PhotoView;
@@ -199,34 +202,39 @@ public class ImageUnit {
 	}
 
 	public void viewTechnicalInfo() {
-		AlertDialog.Builder dialogBuilder = new AlertDialog
-				.Builder(instance.galleryInstance.callback.getWindow().getContext())
-				.setTitle(R.string.technical_info)
-				.setPositiveButton(android.R.string.ok, null);
-		String geolocation = instance.currentHolder.jpegData.getGeolocation(false);
-		if (geolocation != null) {
-			String fileName = instance.currentHolder.galleryItem
-					.getFileName(Chan.get(instance.galleryInstance.chanName));
-			Uri uri = new Uri.Builder().scheme("geo").appendQueryParameter("q",
-					geolocation + "(" + fileName + ")").build();
-			final Intent intent = new Intent(Intent.ACTION_VIEW).setData(uri);
-			if (!instance.galleryInstance.context.getPackageManager().queryIntentActivities(intent,
-					PackageManager.MATCH_DEFAULT_ONLY).isEmpty()) {
-				dialogBuilder.setNeutralButton(R.string.show_on_map,
-						(dialog, which) -> instance.galleryInstance.context.startActivity(intent));
+		String fileName = instance.currentHolder.galleryItem
+				.getFileName(Chan.get(instance.galleryInstance.chanName));
+		showTechnicalInfo(instance.galleryInstance.callback.getChildFragmentManager(),
+				instance.currentHolder.jpegData, fileName);
+	}
+
+	private static void showTechnicalInfo(FragmentManager fragmentManager, JpegData jpegData, String fileName) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			Context context = GalleryInstance.getCallback(provider).getWindow().getContext();
+			AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context)
+					.setTitle(R.string.technical_info)
+					.setPositiveButton(android.R.string.ok, null);
+			String geolocation = jpegData.getGeolocation(false);
+			if (geolocation != null) {
+				Uri uri = new Uri.Builder().scheme("geo").appendQueryParameter("q",
+						geolocation + "(" + fileName + ")").build();
+				Intent intent = new Intent(Intent.ACTION_VIEW).setData(uri);
+				if (!context.getPackageManager().queryIntentActivities(intent,
+						PackageManager.MATCH_DEFAULT_ONLY).isEmpty()) {
+					dialogBuilder.setNeutralButton(R.string.show_on_map, (d, w) -> context.startActivity(intent));
+				}
 			}
-		}
-		AlertDialog dialog = dialogBuilder.create();
-		SummaryLayout layout = new SummaryLayout(dialog);
-		for (Pair<String, String> pair : instance.currentHolder.jpegData.getUserMetadata()) {
-			if (pair != null) {
-				layout.add(pair.first, pair.second);
-			} else {
-				layout.addDivider();
+			AlertDialog dialog = dialogBuilder.create();
+			SummaryLayout layout = new SummaryLayout(dialog);
+			for (Pair<String, String> pair : jpegData.getUserMetadata()) {
+				if (pair != null) {
+					layout.add(pair.first, pair.second);
+				} else {
+					layout.addDivider();
+				}
 			}
-		}
-		instance.galleryInstance.callback.getConfigurationLock().lockConfiguration(dialog);
-		dialog.show();
+			return dialog;
+		});
 	}
 
 	private class DecodeBitmapTask extends ExecutorTask<Void, Void> {

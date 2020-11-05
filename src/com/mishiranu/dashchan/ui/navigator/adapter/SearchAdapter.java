@@ -4,10 +4,12 @@ import android.content.Context;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.util.CommonUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
@@ -45,11 +47,12 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 	private boolean groupMode = false;
 
-	public SearchAdapter(Context context, Callback callback, String chanName, UiManager uiManager, String searchQuery) {
+	public SearchAdapter(Context context, Callback callback, String chanName,
+			UiManager uiManager, FragmentManager fragmentManager, String searchQuery) {
 		this.context = context;
 		this.uiManager = uiManager;
 		configurationSet = new UiManager.ConfigurationSet(chanName, null, null, UiManager.PostStateProvider.DEFAULT,
-				gallerySet, uiManager.dialog().createStackInstance(), null, callback,
+				gallerySet, fragmentManager, uiManager.dialog().createStackInstance(), null, callback,
 				true, false, false, false, false, null);
 		demandSet.highlightText = Collections.singleton(searchQuery);
 	}
@@ -76,7 +79,21 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 	@Override
 	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-		uiManager.view().bindPostView(holder, getItem(position), configurationSet, demandSet);
+		onBindViewHolder(holder, position, Collections.emptyList());
+	}
+
+	@Override
+	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder,
+			int position, @NonNull List<Object> payloads) {
+		if (payloads.isEmpty()) {
+			uiManager.view().bindPostView(holder, getItem(position), configurationSet, demandSet);
+		} else {
+			for (Object object : payloads) {
+				if (object instanceof AttachmentItem) {
+					uiManager.view().bindPostViewReloadAttachment(holder, (AttachmentItem) object);
+				}
+			}
+		}
 	}
 
 	public UiManager.ConfigurationSet getConfigurationSet() {
@@ -145,6 +162,16 @@ public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 			gallerySet.put(postItem.getPostNumber(), postItem.getAttachmentItems());
 		}
 		notifyDataSetChanged();
+	}
+
+	public void reloadAttachment(AttachmentItem attachmentItem) {
+		for (int i = 0; i < getItemCount(); i++) {
+			PostItem postItem = getItem(i);
+			if (postItem.getPostNumber().equals(attachmentItem.getPostNumber())) {
+				notifyItemChanged(i, attachmentItem);
+				break;
+			}
+		}
 	}
 
 	public DividerItemDecoration.Configuration configureDivider

@@ -24,8 +24,10 @@ import android.widget.ScrollView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toolbar;
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.graphics.ColorUtils;
+import androidx.core.view.ViewCompat;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
@@ -38,6 +40,9 @@ import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.util.WeakIterator;
+import com.mishiranu.dashchan.util.WeakObservable;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -157,12 +162,81 @@ public class ThemeEngine {
 		}
 	}
 
+	public interface OnOverlayFocusListener {
+		class MutableItem {
+			public View decorView;
+			public boolean indirect;
+		}
+
+		void onOverlayFocusChanged(Iterable<MutableItem> stack);
+	}
+
+	private static class OverlayStack implements Iterable<OnOverlayFocusListener.MutableItem>,
+			WeakIterator.Provider<OverlayStack.StackItem, View, OnOverlayFocusListener.MutableItem> {
+		private static class StackItem {
+			public final WeakReference<View> decorView;
+			public final boolean indirect;
+
+			private StackItem(View decorView, boolean indirect) {
+				this.decorView = new WeakReference<>(decorView);
+				this.indirect = indirect;
+			}
+		}
+
+		private final ArrayList<StackItem> stackItems = new ArrayList<>();
+		private final OnOverlayFocusListener.MutableItem mutableItem = new OnOverlayFocusListener.MutableItem();
+
+		public void handleOverlayFocused(View decorView, boolean direct, boolean dialog) {
+			StackItem topStackItem = null;
+			Iterator<StackItem> iterator = stackItems.iterator();
+			while (iterator.hasNext()) {
+				StackItem stackItem = iterator.next();
+				View itemDecorView = stackItem.decorView.get();
+				if (itemDecorView == null) {
+					iterator.remove();
+				} else if (itemDecorView == decorView) {
+					topStackItem = stackItem;
+					iterator.remove();
+				}
+			}
+			if (topStackItem == null) {
+				boolean indirect = !direct && !dialog;
+				topStackItem = new StackItem(decorView, indirect);
+			}
+			stackItems.add(topStackItem);
+		}
+
+		@NonNull
+		@Override
+		public Iterator<OnOverlayFocusListener.MutableItem> iterator() {
+			return new WeakIterator<>(stackItems.iterator(), this);
+		}
+
+		@Override
+		public WeakReference<View> getWeakReference(StackItem data) {
+			return data.decorView;
+		}
+
+		@Override
+		public OnOverlayFocusListener.MutableItem transform(StackItem data, View referenced) {
+			if (ViewCompat.isAttachedToWindow(referenced)) {
+				OnOverlayFocusListener.MutableItem mutableItem = this.mutableItem;
+				mutableItem.decorView = referenced;
+				mutableItem.indirect = data.indirect;
+				return mutableItem;
+			} else {
+				return null;
+			}
+		}
+	}
+
 	private static class ThemeContext extends ContextWrapper {
 		private Theme theme;
 		private ColorScheme colorScheme;
 		private ThemeLayoutInflater layoutInflater;
 
-		private final HashSet<Runnable> dialogCreatedListeners = new HashSet<>();
+		private final OverlayStack overlayStack = new OverlayStack();
+		private final WeakObservable<OnOverlayFocusListener> overlayFocusListeners = new WeakObservable<>();
 
 		public ThemeContext(Context base) {
 			super(base);
@@ -173,16 +247,17 @@ public class ThemeEngine {
 			if (LAYOUT_INFLATER_SERVICE.equals(name)) {
 				if (layoutInflater == null) {
 					layoutInflater = new ThemeLayoutInflater(LayoutInflater
-							.from(getBaseContext()), this, true, false, false);
+							.from(getBaseContext()), this, true, false, false, false);
 				}
 				return layoutInflater;
 			}
 			return super.getSystemService(name);
 		}
 
-		public void dispatchDialogCreated() {
-			for (Runnable runnable : dialogCreatedListeners) {
-				runnable.run();
+		public void dispatchOverlayFocused(View decorView, boolean direct, boolean dialog) {
+			overlayStack.handleOverlayFocused(decorView, direct, dialog);
+			for (OnOverlayFocusListener listener : overlayFocusListeners) {
+				listener.onOverlayFocusChanged(overlayStack);
 			}
 		}
 
@@ -271,8 +346,15 @@ public class ThemeEngine {
 		default void onViewDetachedFromWindow(View v) {}
 	}
 
-	private static class DialogAttachListener implements AttachListener {
-		public boolean processed = false;
+	private static class OverlayAttachListener implements AttachListener {
+		private final boolean direct;
+		private final boolean dialog;
+		private boolean processed = false;
+
+		public OverlayAttachListener(boolean direct, boolean dialog) {
+			this.direct = direct;
+			this.dialog = dialog;
+		}
 
 		@Override
 		public boolean isProcessed() {
@@ -287,10 +369,23 @@ public class ThemeEngine {
 				if ("DecorView".equals(decorView.getClass().getSimpleName())) {
 					ThemeContext themeContext = obtainThemeContext(decorView.getContext());
 					if (themeContext != null) {
-						if (C.API_LOLLIPOP && shouldApplyStyle(decorView.getContext())) {
+						if (dialog && C.API_LOLLIPOP && shouldApplyStyle(decorView.getContext())) {
 							decorView.setBackgroundTintList(ColorStateList.valueOf(themeContext.theme.card));
 						}
-						themeContext.dispatchDialogCreated();
+						Object tag = decorView.getTag(R.id.tag_theme_engine);
+						boolean forceDialog = tag instanceof Boolean && (boolean) tag;
+						boolean dialog = this.dialog || forceDialog;
+						themeContext.dispatchOverlayFocused(decorView, direct, dialog);
+						ViewGroup viewGroup = (ViewGroup) decorView;
+						viewGroup.addView(new View(decorView.getContext()) {
+							@Override
+							public void onWindowFocusChanged(boolean hasWindowFocus) {
+								super.onWindowFocusChanged(hasWindowFocus);
+								if (hasWindowFocus) {
+									themeContext.dispatchOverlayFocused(decorView, direct, dialog);
+								}
+							}
+						}, 0, 0);
 					}
 				}
 			}
@@ -346,24 +441,26 @@ public class ThemeEngine {
 		}
 
 		protected ThemeLayoutInflater(LayoutInflater original, Context newContext,
-				boolean direct, boolean dialog, boolean popup) {
+				boolean direct, boolean dialog, boolean overlay, boolean popup) {
 			super(original, newContext);
 			this.direct = direct;
-			attachListener = dialog ? new DialogAttachListener()
+			attachListener = dialog || overlay ? new OverlayAttachListener(direct, dialog)
 					: C.API_LOLLIPOP && popup ? POPUP_ATTACH_LISTENER : null;
 		}
 
-		private static final int[] CLONE_ATTRS = new int[] {android.R.attr.windowIsFloating, R.attr.isPopup};
+		private static final int[] CLONE_ATTRS = {android.R.attr.windowIsFloating, R.attr.isOverlay, R.attr.isPopup};
 
 		@Override
 		public LayoutInflater cloneInContext(Context newContext) {
 			TypedArray typedArray = newContext.obtainStyledAttributes(CLONE_ATTRS);
 			boolean dialog = typedArray.getBoolean(0, false);
-			boolean popup = typedArray.getBoolean(1, false);
+			boolean overlay = typedArray.getBoolean(1, false);
+			boolean popup = typedArray.getBoolean(2, false);
 			typedArray.recycle();
-			// Keep "direct" flag for dialog/popup children only and apply "direct" flag for activity children
-			boolean direct = isDirect() && (dialog || popup) || newContext instanceof Activity;
-			return new ThemeLayoutInflater(this, newContext, direct, dialog, popup);
+			boolean inheritDirect = dialog || popup;
+			boolean forceDirect = newContext instanceof Activity;
+			boolean direct = isDirect() && inheritDirect || forceDirect;
+			return new ThemeLayoutInflater(this, newContext, direct, dialog, overlay, popup);
 		}
 
 		@Override
@@ -610,8 +707,13 @@ public class ThemeEngine {
 		return false;
 	}
 
-	public static void addOnDialogCreatedListener(Context context, Runnable runnable) {
-		requireThemeContext(context).dialogCreatedListeners.add(runnable);
+	public static void addWeakOnOverlayFocusListener(Context context, OnOverlayFocusListener listener) {
+		requireThemeContext(context).overlayFocusListeners.register(listener);
+	}
+
+	/** Dirty hack, see {@link OverlayAttachListener#handleView(View)} **/
+	public static void markDecorAsDialog(View decorView) {
+		decorView.setTag(R.id.tag_theme_engine, true);
 	}
 
 	private static final int[] DEFAULT_THEME_RESOURCES = {R.raw.theme_normie, R.raw.theme_tomorrow};

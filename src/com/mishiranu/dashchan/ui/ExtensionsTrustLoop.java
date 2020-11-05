@@ -13,7 +13,6 @@ import androidx.annotation.NonNull;
 import chan.content.ChanManager;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.text.style.MonospaceSpan;
-import com.mishiranu.dashchan.util.ConfigurationLock;
 import java.lang.ref.WeakReference;
 
 public class ExtensionsTrustLoop {
@@ -36,7 +35,7 @@ public class ExtensionsTrustLoop {
 		}
 	}
 
-	public static void handleUntrustedExtensions(Context context, State state, ConfigurationLock configurationLock) {
+	public static void handleUntrustedExtensions(Context context, State state) {
 		if (state.currentDialog != null) {
 			AlertDialog currentDialog = state.currentDialog.get();
 			if (currentDialog != null) {
@@ -80,26 +79,24 @@ public class ExtensionsTrustLoop {
 					.setCancelable(false)
 					.setPositiveButton(android.R.string.ok, (d, w) -> {
 						ChanManager.getInstance().changeUntrustedExtensionState(extensionItem.extensionName, true);
-						handleUntrustedExtensions(context, state, configurationLock);
+						handleUntrustedExtensions(context, state);
 					})
 					.setNegativeButton(android.R.string.cancel, (d, w) -> {
 						ChanManager.getInstance().changeUntrustedExtensionState(extensionItem.extensionName, false);
-						handleUntrustedExtensions(context, state, configurationLock);
+						handleUntrustedExtensions(context, state);
 					})
 					.setNeutralButton(R.string.details, (d, w) -> {
 						context.startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
 								.setData(Uri.parse("package:" + extensionItem.packageName)));
-						handleUntrustedExtensions(context, state, configurationLock);
+						handleUntrustedExtensions(context, state);
 					})
 					.show();
 			state.currentDialog = new WeakReference<>(dialog);
-			if (configurationLock != null) {
-				configurationLock.lockConfiguration(dialog, d -> {
-					if (state.currentDialog != null && state.currentDialog.get() == dialog) {
-						state.currentDialog = null;
-					}
-				});
-			}
+			dialog.setOnDismissListener(d -> {
+				if (state.currentDialog != null && state.currentDialog.get() == dialog) {
+					state.currentDialog = null;
+				}
+			});
 		}
 	}
 }

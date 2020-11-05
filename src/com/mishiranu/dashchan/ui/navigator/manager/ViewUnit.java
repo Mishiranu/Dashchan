@@ -179,7 +179,8 @@ public class ViewUnit {
 
 		@Override
 		public void onLinkLongClick(CommentTextView view, Uri uri, Extra extra) {
-			uiManager.interaction().handleLinkLongClick(uri);
+			UiManager.Holder holder = ListViewUtils.getViewHolder(view, UiManager.Holder.class);
+			uiManager.interaction().handleLinkLongClick(holder.getConfigurationSet(), uri);
 		}
 	};
 
@@ -343,6 +344,15 @@ public class ViewUnit {
 		holder.threadContent.getLayoutParams().height = contentHeight;
 	}
 
+	public void bindThreadViewReloadAttachment(RecyclerView.ViewHolder viewHolder, AttachmentItem attachmentItem) {
+		ThreadViewHolder holder = (ThreadViewHolder) viewHolder;
+		List<AttachmentItem> attachmentItems = holder.getPostItem().getAttachmentItems();
+		if (attachmentItems != null && !attachmentItems.isEmpty() && attachmentItems.get(0) == attachmentItem) {
+			Chan chan = Chan.get(holder.getConfigurationSet().chanName);
+			attachmentItem.startLoad(holder.thumbnail, chan, true);
+		}
+	}
+
 	public void bindThreadHiddenView(RecyclerView.ViewHolder viewHolder,
 			PostItem postItem, UiManager.ConfigurationSet configurationSet) {
 		HiddenViewHolder holder = (HiddenViewHolder) viewHolder;
@@ -480,6 +490,26 @@ public class ViewUnit {
 	public void bindPostViewInvalidateComment(RecyclerView.ViewHolder viewHolder) {
 		PostViewHolder holder = (PostViewHolder) viewHolder;
 		holder.comment.invalidateAllSpans();
+	}
+
+	public void bindPostViewReloadAttachment(RecyclerView.ViewHolder viewHolder, AttachmentItem attachmentItem) {
+		PostViewHolder holder = (PostViewHolder) viewHolder;
+		List<AttachmentItem> attachmentItems = holder.getPostItem().getAttachmentItems();
+		AttachmentView attachmentView = null;
+		if (attachmentItems != null) {
+			int index = attachmentItems.indexOf(attachmentItem);
+			if (index >= 0) {
+				if (holder.attachmentViewCount >= 2) {
+					attachmentView = holder.attachmentHolders.get(index).thumbnail;
+				} else {
+					attachmentView = holder.thumbnail;
+				}
+			}
+		}
+		if (attachmentView != null) {
+			Chan chan = Chan.get(holder.getConfigurationSet().chanName);
+			attachmentItem.startLoad(attachmentView, chan, true);
+		}
 	}
 
 	public void bindPostHiddenView(RecyclerView.ViewHolder viewHolder,
@@ -811,7 +841,8 @@ public class ViewUnit {
 									break;
 								}
 							}
-							uiManager.dialog().showPostDescriptionDialog(icons, configurationSet.chanName, emailToCopy);
+							uiManager.dialog().showPostDescriptionDialog(configurationSet.fragmentManager,
+									icons, configurationSet.chanName, emailToCopy);
 						}
 						return true;
 					}

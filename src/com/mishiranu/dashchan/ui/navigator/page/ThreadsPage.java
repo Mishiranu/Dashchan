@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
@@ -26,17 +27,19 @@ import com.mishiranu.dashchan.content.HidePerformer;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadThreadsTask;
 import com.mishiranu.dashchan.content.database.CommonDatabase;
+import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.service.PostingService;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
+import com.mishiranu.dashchan.ui.DialogMenu;
 import com.mishiranu.dashchan.ui.DrawerForm;
+import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.adapter.ThreadsAdapter;
 import com.mishiranu.dashchan.ui.navigator.manager.DialogUnit;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -52,7 +55,7 @@ import java.util.HashSet;
 import java.util.List;
 
 public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
-		FavoritesStorage.Observer, ReadThreadsTask.Callback {
+		FavoritesStorage.Observer, UiManager.Observer, ReadThreadsTask.Callback {
 	private static class RetainExtra {
 		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
 
@@ -61,6 +64,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		public int startPageNumber;
 		public int boardSpeed;
 		public HttpValidator validator;
+		public boolean redirected;
 
 		public DialogUnit.StackInstance.State dialogsState;
 	}
@@ -138,7 +142,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		UiManager uiManager = getUiManager();
 		uiManager.view().bindThreadsPostRecyclerView(recyclerView);
 		ThreadsAdapter adapter = new ThreadsAdapter(context, this, page.chanName, uiManager,
-				postStateProvider, parcelableExtra.catalogSort);
+				postStateProvider, getFragmentManager(), parcelableExtra.catalogSort);
 		recyclerView.setAdapter(adapter);
 		recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
 			@Override
@@ -150,16 +154,19 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		});
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), adapter::configureDivider));
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
+		uiManager.observable().register(this);
 		layoutManager.setSpanCount(adapter.setThreadsView(Preferences.getThreadsView()));
 		adapter.applyFilter(getInitSearch().currentQuery);
 		InitRequest initRequest = getInitRequest();
-		if (initRequest.shouldLoad || retainExtra.cachedPostItems.isEmpty()) {
+		if (initRequest.shouldLoad || retainExtra.cachedPostItems.isEmpty() && !retainExtra.redirected) {
 			ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(page.boardName);
 			retainExtra.cachedPostItems.clear();
 			retainExtra.startPageNumber = board.allowCatalog && Preferences.isLoadCatalog(chan)
 					? PAGE_NUMBER_CATALOG : 0;
 			refreshThreads(RefreshPage.CURRENT, false);
-		} else  {
+		} else if (retainExtra.cachedPostItems.isEmpty() && retainExtra.redirected) {
+			switchView(ViewType.ERROR, R.string.board_doesnt_exist);
+		} else {
 			adapter.setItems(retainExtra.cachedPostItems, retainExtra.startPageNumber == PAGE_NUMBER_CATALOG);
 			restoreListPosition();
 			if (retainExtra.dialogsState != null) {
@@ -177,6 +184,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			readTask = null;
 		}
 		getUiManager().dialog().closeDialogs(getAdapter().getConfigurationSet().stackInstance);
+		getUiManager().observable().unregister(this);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 	}
 
@@ -238,33 +246,41 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	@Override
 	public boolean onItemLongClick(PostItem postItem) {
 		if (postItem != null) {
-			Page page = getPage();
-			DialogMenu dialogMenu = new DialogMenu(getContext());
+			showItemPopupMenu(getFragmentManager(), postItem);
+			return true;
+		}
+		return false;
+	}
+
+	private static void showItemPopupMenu(FragmentManager fragmentManager, PostItem postItem) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			ThreadsPage threadsPage = extract(provider);
+			Page page = threadsPage.getPage();
+			DialogMenu dialogMenu = new DialogMenu(provider.getContext());
 			dialogMenu.add(R.string.copy_link, () -> {
-				Uri uri = getChan().locator.safe(true).createThreadUri(page.boardName, postItem.getThreadNumber());
+				Uri uri = threadsPage.getChan().locator.safe(true)
+						.createThreadUri(page.boardName, postItem.getThreadNumber());
 				if (uri != null) {
-					StringUtils.copyToClipboard(getContext(), uri.toString());
+					StringUtils.copyToClipboard(provider.getContext(), uri.toString());
 				}
 			});
 			dialogMenu.add(R.string.share_link, () -> {
-				Uri uri = getChan().locator.safe(true)
+				Uri uri = threadsPage.getChan().locator.safe(true)
 						.createThreadUri(page.boardName, postItem.getThreadNumber());
 				String subject = postItem.getSubjectOrComment();
 				if (StringUtils.isEmptyOrWhitespace(subject)) {
 					subject = uri.toString();
 				}
-				NavigationUtils.shareLink(getContext(), subject, uri);
+				NavigationUtils.shareLink(provider.getContext(), subject, uri);
 			});
 			if (!postItem.getHideState().hidden) {
 				dialogMenu.add(R.string.hide, () -> {
-					setThreadHideState(postItem, PostItem.HideState.HIDDEN);
-					getAdapter().notifyDataSetChanged();
+					threadsPage.setThreadHideState(postItem, PostItem.HideState.HIDDEN);
+					threadsPage.getAdapter().notifyDataSetChanged();
 				});
 			}
-			dialogMenu.show(getUiManager().getConfigurationLock());
-			return true;
-		}
-		return false;
+			return dialogMenu.create();
+		});
 	}
 
 	private void setThreadHideState(PostItem postItem, PostItem.HideState hideState) {
@@ -368,68 +384,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 				return true;
 			}
 			case R.id.menu_summary: {
-				Chan chan = getChan();
-				AlertDialog dialog = new AlertDialog.Builder(getContext())
-						.setTitle(R.string.summary)
-						.setPositiveButton(android.R.string.ok, null)
-						.create();
-				SummaryLayout layout = new SummaryLayout(dialog);
-				String boardName = page.boardName;
-				if (boardName != null) {
-					String title = chan.configuration.getBoardTitle(boardName);
-					title = StringUtils.formatBoardTitle(page.chanName, boardName, title);
-					layout.add(getString(R.string.board), title);
-					String description = chan.configuration.getBoardDescription(boardName);
-					if (!StringUtils.isEmpty(description)) {
-						layout.add(getString(R.string.description), description);
-					}
-				}
-				int pagesCount = Math.max(chan.configuration.getPagesCount(boardName), 1);
-				if (pagesCount != ChanConfiguration.PAGES_COUNT_INVALID) {
-					layout.add(getString(R.string.pages_count), Integer.toString(pagesCount));
-				}
-				ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(boardName);
-				ChanConfiguration.Posting posting = board.allowPosting
-						? chan.configuration.safe().obtainPosting(boardName, true) : null;
-				if (posting != null) {
-					int bumpLimit = chan.configuration.getBumpLimit(boardName);
-					if (bumpLimit != ChanConfiguration.BUMP_LIMIT_INVALID) {
-						layout.add(getString(R.string.bump_limit), getResources()
-								.getQuantityString(R.plurals.number_posts__format, bumpLimit, bumpLimit));
-					}
-				}
-				layout.addDivider();
-				if (posting != null) {
-					StringBuilder builder = new StringBuilder();
-					if (!posting.allowSubject) {
-						builder.append("\u2022 ").append(getString(R.string.subjects_are_disabled)).append('\n');
-					}
-					if (!posting.allowName) {
-						builder.append("\u2022 ").append(getString(R.string.names_are_disabled)).append('\n');
-					} else if (!posting.allowTripcode) {
-						builder.append("\u2022 ").append(getString(R.string.tripcodes_are_disabled)).append('\n');
-					}
-					if (posting.attachmentCount <= 0) {
-						builder.append("\u2022 ").append(getString(R.string.images_are_disabled)).append('\n');
-					}
-					if (!posting.optionSage) {
-						builder.append("\u2022 ").append(getString(R.string.sage_is_disabled)).append('\n');
-					}
-					if (posting.hasCountryFlags) {
-						builder.append("\u2022 ").append(getString(R.string.flags_are_enabled)).append('\n');
-					}
-					if (posting.userIcons.size() > 0) {
-						builder.append("\u2022 ").append(getString(R.string.icons_are_enabled)).append('\n');
-					}
-					if (builder.length() > 0) {
-						builder.setLength(builder.length() - 1);
-						layout.add(getString(R.string.configuration), builder);
-					}
-				} else {
-					layout.add(getString(R.string.configuration), getString(R.string.read_only));
-				}
-				dialog.show();
-				getUiManager().getConfigurationLock().lockConfiguration(dialog);
+				showSummaryDialog(getFragmentManager(), page.chanName, page.boardName);
 				return true;
 			}
 			case R.id.menu_star_text:
@@ -466,6 +421,72 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			}
 		}
 		return false;
+	}
+
+	private static void showSummaryDialog(FragmentManager fragmentManager, String chanName, String boardName) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			Chan chan = Chan.get(chanName);
+			Context context = provider.getContext();
+			AlertDialog dialog = new AlertDialog.Builder(context)
+					.setTitle(R.string.summary)
+					.setPositiveButton(android.R.string.ok, null)
+					.create();
+			SummaryLayout layout = new SummaryLayout(dialog);
+			if (boardName != null) {
+				String title = chan.configuration.getBoardTitle(boardName);
+				title = StringUtils.formatBoardTitle(chanName, boardName, title);
+				layout.add(context.getString(R.string.board), title);
+				String description = chan.configuration.getBoardDescription(boardName);
+				if (!StringUtils.isEmpty(description)) {
+					layout.add(context.getString(R.string.description), description);
+				}
+			}
+			int pagesCount = Math.max(chan.configuration.getPagesCount(boardName), 1);
+			if (pagesCount != ChanConfiguration.PAGES_COUNT_INVALID) {
+				layout.add(context.getString(R.string.pages_count), Integer.toString(pagesCount));
+			}
+			ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(boardName);
+			ChanConfiguration.Posting posting = board.allowPosting
+					? chan.configuration.safe().obtainPosting(boardName, true) : null;
+			if (posting != null) {
+				int bumpLimit = chan.configuration.getBumpLimit(boardName);
+				if (bumpLimit != ChanConfiguration.BUMP_LIMIT_INVALID) {
+					layout.add(context.getString(R.string.bump_limit), context.getResources()
+							.getQuantityString(R.plurals.number_posts__format, bumpLimit, bumpLimit));
+				}
+			}
+			layout.addDivider();
+			if (posting != null) {
+				StringBuilder builder = new StringBuilder();
+				if (!posting.allowSubject) {
+					builder.append("\u2022 ").append(context.getString(R.string.subjects_are_disabled)).append('\n');
+				}
+				if (!posting.allowName) {
+					builder.append("\u2022 ").append(context.getString(R.string.names_are_disabled)).append('\n');
+				} else if (!posting.allowTripcode) {
+					builder.append("\u2022 ").append(context.getString(R.string.tripcodes_are_disabled)).append('\n');
+				}
+				if (posting.attachmentCount <= 0) {
+					builder.append("\u2022 ").append(context.getString(R.string.images_are_disabled)).append('\n');
+				}
+				if (!posting.optionSage) {
+					builder.append("\u2022 ").append(context.getString(R.string.sage_is_disabled)).append('\n');
+				}
+				if (posting.hasCountryFlags) {
+					builder.append("\u2022 ").append(context.getString(R.string.flags_are_enabled)).append('\n');
+				}
+				if (posting.userIcons.size() > 0) {
+					builder.append("\u2022 ").append(context.getString(R.string.icons_are_enabled)).append('\n');
+				}
+				if (builder.length() > 0) {
+					builder.setLength(builder.length() - 1);
+					layout.add(context.getString(R.string.configuration), builder);
+				}
+			} else {
+				layout.add(context.getString(R.string.configuration), context.getString(R.string.read_only));
+			}
+			return dialog;
+		});
 	}
 
 	@Override
@@ -590,6 +611,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			return false;
 		} else {
 			RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+			retainExtra.redirected = false;
 			HttpValidator validator = !append && retainExtra.cachedPostItems.size() == 1
 					&& retainExtra.startPageNumber == pageNumber ? retainExtra.validator : null;
 			readTask = new ReadThreadsTask(this, chan, page.boardName, pageNumber, validator, append);
@@ -691,19 +713,13 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	public void onReadThreadsRedirect(RedirectException.Target target) {
 		readTask = null;
 		getRecyclerView().getWrapper().cancelBusyState();
+		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		retainExtra.redirected = true;
 		if (!CommonUtils.equals(target.chanName, getPage().chanName)) {
 			if (getAdapter().isRealEmpty()) {
-				switchView(ViewType.ERROR, R.string.empty_response);
+				switchView(ViewType.ERROR, R.string.board_doesnt_exist);
 			}
-			String message = getString(R.string.open_forum__format_sentence,
-					Chan.get(target.chanName).configuration.getTitle());
-			AlertDialog dialog = new AlertDialog.Builder(getContext())
-					.setMessage(message)
-					.setNegativeButton(android.R.string.cancel, null)
-					.setPositiveButton(android.R.string.ok,
-							(d, which) -> handleRedirect(target.chanName, target.boardName, null, null))
-					.show();
-			getUiManager().getConfigurationLock().lockConfiguration(dialog);
+			showRedirectDialog(getFragmentManager(), target);
 		} else {
 			handleRedirect(target.chanName, target.boardName, null, null);
 		}
@@ -720,5 +736,24 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		} else {
 			ClickableToast.show(getContext(), message);
 		}
+	}
+
+	private static void showRedirectDialog(FragmentManager fragmentManager, RedirectException.Target target) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			ThreadsPage threadsPage = extract(provider);
+			String message = provider.getContext().getString(R.string.open_forum__format_sentence,
+					Chan.get(target.chanName).configuration.getTitle());
+			return new AlertDialog.Builder(provider.getContext())
+					.setMessage(message)
+					.setNegativeButton(android.R.string.cancel, null)
+					.setPositiveButton(android.R.string.ok, (d, which) -> threadsPage
+							.handleRedirect(target.chanName, target.boardName, null, null))
+					.create();
+		});
+	}
+
+	@Override
+	public void onReloadAttachmentItem(AttachmentItem attachmentItem) {
+		getAdapter().reloadAttachment(attachmentItem);
 	}
 }

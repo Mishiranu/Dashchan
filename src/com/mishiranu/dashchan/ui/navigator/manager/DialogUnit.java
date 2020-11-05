@@ -6,7 +6,6 @@ import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -32,6 +31,8 @@ import android.widget.RadioGroup;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
@@ -42,10 +43,10 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.async.ReadSinglePostTask;
 import com.mishiranu.dashchan.content.async.SendLocalArchiveTask;
 import com.mishiranu.dashchan.content.async.SendMultifunctionalTask;
+import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
@@ -53,8 +54,8 @@ import com.mishiranu.dashchan.content.model.Post;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
-import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
+import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.AnimationUtils;
@@ -79,6 +80,7 @@ import com.mishiranu.dashchan.widget.WindowControlFrameLayout;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -106,15 +108,19 @@ public class DialogUnit {
 		public static class State {
 			private final ArrayList<DialogProvider.Factory<?>> factories;
 			private final AttachmentDialog attachmentDialog;
+			private final PostNumber postContextMenu;
 
-			public State(ArrayList<DialogProvider.Factory<?>> factories, AttachmentDialog attachmentDialog) {
+			public State(ArrayList<DialogProvider.Factory<?>> factories, AttachmentDialog attachmentDialog,
+					PostNumber postContextMenu) {
 				this.factories = factories;
 				this.attachmentDialog = attachmentDialog;
+				this.postContextMenu = postContextMenu;
 			}
 		}
 
 		private final DialogStack<DialogFactory> dialogStack;
 		private Pair<AttachmentDialog, Dialog> attachmentDialog;
+		private Pair<PostNumber, Dialog> postContextMenu;
 
 		private StackInstance(DialogStack<DialogFactory> dialogStack) {
 			this.dialogStack = dialogStack;
@@ -128,7 +134,8 @@ public class DialogUnit {
 				}
 				factories.add(pair.first.delegate.factory);
 			}
-			return new State(factories, attachmentDialog != null ? attachmentDialog.first : null);
+			return new State(factories, attachmentDialog != null ? attachmentDialog.first : null,
+					postContextMenu != null ? postContextMenu.first : null);
 		}
 	}
 
@@ -182,7 +189,7 @@ public class DialogUnit {
 			recyclerView.setAdapter(adapter);
 			recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 					(c, position) -> c.need(true).horizontal(dividerPadding, dividerPadding)));
-			DialogHolder<T> holder = new DialogHolder<>(adapter, provider, content, recyclerView, progress);
+			DialogHolder<T> holder = new DialogHolder<>(adapter, provider, recyclerView, progress);
 			provider.uiManager.observable().register(holder);
 			content.setTag(holder);
 			if (factory.listPosition != null) {
@@ -230,15 +237,13 @@ public class DialogUnit {
 		public final DialogPostsAdapter<T> adapter;
 		public final DialogProvider<T> dialogProvider;
 
-		public final View content;
 		public final RecyclerView recyclerView;
 		public final View progress;
 
-		public DialogHolder(DialogPostsAdapter<T> adapter, DialogProvider<T> dialogProvider, View content,
+		public DialogHolder(DialogPostsAdapter<T> adapter, DialogProvider<T> dialogProvider,
 				RecyclerView recyclerView, View progress) {
 			this.adapter = adapter;
 			this.dialogProvider = dialogProvider;
-			this.content = content;
 			this.recyclerView = recyclerView;
 			this.progress = progress;
 		}
@@ -279,6 +284,12 @@ public class DialogUnit {
 					break;
 				}
 			}
+		}
+
+		@Override
+		public void onReloadAttachmentItem(AttachmentItem attachmentItem) {
+			dialogProvider.onReloadAttachmentItem(attachmentItem);
+			adapter.reloadAttachment(attachmentItem);
 		}
 
 		public void requestUpdate() {
@@ -396,20 +407,13 @@ public class DialogUnit {
 		@Override
 		public boolean onItemClick(RecyclerView.ViewHolder holder, int position, PostItem postItem, boolean longClick) {
 			if (longClick) {
-				Chan chan = Chan.get(configurationSet.chanName);
-				boolean userPost = configurationSet.postStateProvider.isUserPost(postItem.getPostNumber());
-				return uiManager.interaction().handlePostContextMenu(chan, postItem,
-						configurationSet.replyable, userPost, configurationSet.allowMyMarkEdit,
-						configurationSet.allowHiding, configurationSet.allowGoToPost);
+				uiManager.interaction().handlePostContextMenu(configurationSet, postItem);
 			} else {
 				uiManager.interaction().handlePostClick(holder.itemView,
 						configurationSet.postStateProvider, postItem, this);
-				return true;
 			}
+			return true;
 		}
-
-		@Override
-		public void onPostItemMessage(PostItem postItem, UiManager.Message message) {}
 	}
 
 	private static class SingleDialogProvider extends DialogProvider<SingleDialogProvider> {
@@ -471,7 +475,7 @@ public class DialogUnit {
 				GalleryItem.Set gallerySet = new GalleryItem.Set(false);
 				return new ThreadDialogProvider(uiManager, dialogProvider -> new UiManager
 						.ConfigurationSet(configurationSet.chanName, replyable, dialogProvider,
-						UiManager.PostStateProvider.DEFAULT, gallerySet,
+						UiManager.PostStateProvider.DEFAULT, gallerySet, configurationSet.fragmentManager,
 						configurationSet.stackInstance, dialogProvider, dialogProvider,
 						false, true, false, false, false, null), postItem, gallerySet);
 			}
@@ -563,7 +567,7 @@ public class DialogUnit {
 
 		@Override
 		public void onLinkLongClick(CommentTextView view, Uri uri, Extra extra) {
-			uiManager.interaction().handleLinkLongClick(uri);
+			uiManager.interaction().handleLinkLongClick(configurationSet, uri);
 		}
 	}
 
@@ -668,7 +672,7 @@ public class DialogUnit {
 	}
 
 	private static class AsyncDialogProvider extends DialogProvider<AsyncDialogProvider>
-			implements ReadSinglePostTask.Callback {
+			implements ReadSinglePostTask.Callback, UiManager.PostsProvider {
 		public static class Factory extends DialogProvider.Factory<AsyncDialogProvider> {
 			private final String chanName;
 			private final String boardName;
@@ -688,8 +692,9 @@ public class DialogUnit {
 			public AsyncDialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
 				GalleryItem.Set gallerySet = new GalleryItem.Set(false);
 				return new AsyncDialogProvider(uiManager, dialogProvider -> new UiManager
-						.ConfigurationSet(configurationSet.chanName, null, null, UiManager.PostStateProvider.DEFAULT,
-						gallerySet, configurationSet.stackInstance, null, dialogProvider,
+						.ConfigurationSet(configurationSet.chanName, null, dialogProvider,
+						UiManager.PostStateProvider.DEFAULT, gallerySet, configurationSet.fragmentManager,
+						configurationSet.stackInstance, null, dialogProvider,
 						false, true, false, false, false, null), this,
 						chanName, boardName, threadNumber, postNumber, gallerySet);
 			}
@@ -727,6 +732,12 @@ public class DialogUnit {
 		@Override
 		protected AsyncDialogProvider getThis() {
 			return this;
+		}
+
+		@Override
+		public PostItem findPostItem(PostNumber postNumber) {
+			return factory.postItem != null && factory.postItem.getPostNumber().equals(postNumber)
+					? factory.postItem : null;
 		}
 
 		@NonNull
@@ -794,6 +805,10 @@ public class DialogUnit {
 	}
 
 	public void closeDialogs(StackInstance stackInstance) {
+		if (stackInstance.postContextMenu != null) {
+			stackInstance.postContextMenu.second.dismiss();
+			stackInstance.postContextMenu = null;
+		}
 		if (stackInstance.attachmentDialog != null) {
 			stackInstance.attachmentDialog.second.dismiss();
 			stackInstance.attachmentDialog = null;
@@ -839,9 +854,15 @@ public class DialogUnit {
 			uiManager.callback().onDialogStackOpen();
 		}
 		if (state.attachmentDialog != null) {
-			showAttachmentsGrid(configurationSet.stackInstance, configurationSet.chanName,
+			showAttachmentsGrid(configurationSet,
 					state.attachmentDialog.attachmentItems, state.attachmentDialog.startImageIndex,
 					state.attachmentDialog.navigatePostMode, state.attachmentDialog.gallerySet);
+		}
+		if (state.postContextMenu != null && configurationSet.postsProvider != null) {
+			PostItem postItem = configurationSet.postsProvider.findPostItem(state.postContextMenu);
+			if (postItem != null) {
+				uiManager.interaction().handlePostContextMenu(configurationSet, postItem);
+			}
 		}
 	}
 
@@ -922,11 +943,18 @@ public class DialogUnit {
 			PostItem postItem = getItem(position);
 			switch (ViewUnit.ViewType.values()[holder.getItemViewType()]) {
 				case POST: {
-					if (payloads.contains(PAYLOAD_INVALIDATE_COMMENT)) {
-						uiManager.view().bindPostViewInvalidateComment(holder);
-					} else {
+					if (payloads.isEmpty()) {
 						dialogProvider.onRequestUpdateDemandSet(demandSet, position);
 						uiManager.view().bindPostView(holder, postItem, dialogProvider.configurationSet, demandSet);
+					} else {
+						if (payloads.contains(PAYLOAD_INVALIDATE_COMMENT)) {
+							uiManager.view().bindPostViewInvalidateComment(holder);
+						}
+						for (Object object : payloads) {
+							if (object instanceof AttachmentItem) {
+								uiManager.view().bindPostViewReloadAttachment(holder, (AttachmentItem) object);
+							}
+						}
 					}
 					break;
 				}
@@ -940,33 +968,33 @@ public class DialogUnit {
 		public void invalidateComment(int position) {
 			notifyItemChanged(position, PAYLOAD_INVALIDATE_COMMENT);
 		}
+
+		public void reloadAttachment(AttachmentItem attachmentItem) {
+			for (int i = 0; i < postItems.size(); i++) {
+				PostItem postItem = postItems.get(i);
+				if (postItem.getPostNumber().equals(attachmentItem.getPostNumber())) {
+					notifyItemChanged(i, attachmentItem);
+					break;
+				}
+			}
+		}
 	}
 
 	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
-	private void showAttachmentsGrid(StackInstance stackInstance, String chanName, List<AttachmentItem> attachmentItems,
+	private void showAttachmentsGrid(UiManager.ConfigurationSet configurationSet, List<AttachmentItem> attachmentItems,
 			int startImageIndex, GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.Set gallerySet) {
-		if (stackInstance.attachmentDialog != null) {
-			stackInstance.attachmentDialog.second.dismiss();
-			stackInstance.attachmentDialog = null;
-		}
 		Context context = uiManager.getContext();
 		Dialog dialog = new Dialog(context, R.style.Theme_Gallery);
 		Context styledContext = dialog.getContext();
 		Pair<StackInstance.AttachmentDialog, Dialog> attachmentDialog = new Pair<>(new StackInstance
 				.AttachmentDialog(attachmentItems, startImageIndex, navigatePostMode, gallerySet), dialog);
-		stackInstance.attachmentDialog = attachmentDialog;
 		dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 		dialog.setOnKeyListener((d, keyCode, event) -> {
 			if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN && event.isLongPress()) {
-				closeDialogs(stackInstance);
+				closeDialogs(configurationSet.stackInstance);
 				return true;
 			}
 			return false;
-		});
-		dialog.setOnDismissListener(dialogInterface -> {
-			if (stackInstance.attachmentDialog == attachmentDialog) {
-				stackInstance.attachmentDialog = null;
-			}
 		});
 		View.OnClickListener closeListener = v -> dialog.cancel();
 		LayoutInflater inflater = LayoutInflater.from(styledContext);
@@ -1006,9 +1034,10 @@ public class DialogUnit {
 					imageIndex++;
 				}
 			}
-			openAttachment(v, chanName, attachmentItems, index, imageIndex, navigatePostMode, gallerySet);
+			openAttachment(v, configurationSet.chanName,
+					attachmentItems, index, imageIndex, navigatePostMode, gallerySet);
 		};
-		Chan chan = Chan.get(chanName);
+		Chan chan = Chan.get(configurationSet.chanName);
 		Configuration configuration = context.getResources().getConfiguration();
 		boolean tablet = ResourceUtils.isTablet(configuration);
 		boolean tabletLarge = ResourceUtils.isTabletLarge(configuration);
@@ -1018,6 +1047,7 @@ public class DialogUnit {
 		int padding = (int) (8f * density);
 		int size = (int) ((tabletLarge ? 180f : tablet ? 160f : 120f) * density);
 		int columns = tablet ? 3 : 2;
+		HashMap<AttachmentItem, AttachmentView> attachmentViews = new HashMap<>();
 		for (int i = 0; i < attachmentItems.size(); i++) {
 			int column = total++ % columns;
 			if (column == 0) {
@@ -1045,8 +1075,8 @@ public class DialogUnit {
 			View clickView = view.findViewById(R.id.attachment_click);
 			clickView.setOnClickListener(clickListener);
 			clickView.setOnLongClickListener(v -> {
-				uiManager.interaction().showThumbnailLongClickDialog(chan, attachmentItem,
-						attachmentView, false, gallerySet.getThreadTitle());
+				uiManager.interaction().showThumbnailLongClickDialog(configurationSet,
+						attachmentItem, attachmentView, gallerySet.getThreadTitle());
 				return true;
 			});
 			clickView.setTag(i);
@@ -1059,6 +1089,7 @@ public class DialogUnit {
 				totalSize += padding;
 			}
 			linearLayout.addView(view, totalSize, size);
+			attachmentViews.put(attachmentItem, attachmentView);
 		}
 		dialog.setContentView(rootView);
 		Window window = dialog.getWindow();
@@ -1077,16 +1108,39 @@ public class DialogUnit {
 			window.setNavigationBarColor(0x00000000);
 			ViewUtils.setWindowLayoutFullscreen(window);
 		}
+		ThemeEngine.markDecorAsDialog(window.getDecorView());
+		UiManager.Observer observer = new UiManager.Observer() {
+			@Override
+			public void onReloadAttachmentItem(AttachmentItem attachmentItem) {
+				AttachmentView attachmentView = attachmentViews.get(attachmentItem);
+				if (attachmentView != null) {
+					attachmentItem.configureAndLoad(attachmentView, Chan.get(configurationSet.chanName), false, true);
+				}
+			}
+		};
+		if (configurationSet.stackInstance.attachmentDialog != null) {
+			configurationSet.stackInstance.attachmentDialog.second.dismiss();
+			configurationSet.stackInstance.attachmentDialog = null;
+		}
+		configurationSet.stackInstance.attachmentDialog = attachmentDialog;
+		uiManager.observable().register(observer);
+		dialog.setOnDismissListener(dialogInterface -> {
+			if (configurationSet.stackInstance.attachmentDialog == attachmentDialog) {
+				configurationSet.stackInstance.attachmentDialog = null;
+			}
+			uiManager.observable().unregister(observer);
+		});
 		dialog.show();
 	}
 
-	public void openAttachmentOrDialog(StackInstance stackInstance, View imageView,
-			String chanName, List<AttachmentItem> attachmentItems, int imageIndex,
+	public void openAttachmentOrDialog(UiManager.ConfigurationSet configurationSet, View imageView,
+			List<AttachmentItem> attachmentItems, int imageIndex,
 			GalleryOverlay.NavigatePostMode navigatePostMode, GalleryItem.Set gallerySet) {
 		if (attachmentItems.size() > 1) {
-			showAttachmentsGrid(stackInstance, chanName, attachmentItems, imageIndex, navigatePostMode, gallerySet);
+			showAttachmentsGrid(configurationSet, attachmentItems, imageIndex, navigatePostMode, gallerySet);
 		} else {
-			openAttachment(imageView, chanName, attachmentItems, 0, imageIndex, navigatePostMode, gallerySet);
+			openAttachment(imageView, configurationSet.chanName,
+					attachmentItems, 0, imageIndex, navigatePostMode, gallerySet);
 		}
 	}
 
@@ -1109,6 +1163,21 @@ public class DialogUnit {
 		}
 	}
 
+	void handlePostContextMenu(UiManager.ConfigurationSet configurationSet, PostNumber postNumber,
+			boolean show, AlertDialog dialog) {
+		if (show) {
+			if (configurationSet.stackInstance.postContextMenu != null) {
+				configurationSet.stackInstance.postContextMenu.second.dismiss();
+			}
+			configurationSet.stackInstance.postContextMenu = new Pair<>(postNumber, dialog);
+		} else {
+			if (configurationSet.stackInstance.postContextMenu != null &&
+					configurationSet.stackInstance.postContextMenu.second == dialog) {
+				configurationSet.stackInstance.postContextMenu = null;
+			}
+		}
+	}
+
 	public static class IconData {
 		private final String title;
 		private final int attrId;
@@ -1127,8 +1196,19 @@ public class DialogUnit {
 		}
 	}
 
-	public void showPostDescriptionDialog(Collection<IconData> icons, String chanName, final String emailToCopy) {
-		Context context = uiManager.getContext();
+	public void showPostDescriptionDialog(FragmentManager fragmentManager,
+			Collection<IconData> icons, String chanName, String emailToCopy) {
+		showPostDescriptionDialogStatic(fragmentManager, icons, chanName, emailToCopy);
+	}
+
+	private static void showPostDescriptionDialogStatic(FragmentManager fragmentManager,
+			Collection<IconData> icons, String chanName, String emailToCopy) {
+		new InstanceDialog(fragmentManager, null, provider -> createPostDescriptionDialog(provider.getContext(),
+				icons, chanName, emailToCopy));
+	}
+
+	private static AlertDialog createPostDescriptionDialog(Context context,
+			Collection<IconData> icons, String chanName, String emailToCopy) {
 		float density = ResourceUtils.obtainDensity(context);
 		ImageLoader imageLoader = ImageLoader.getInstance();
 		Chan chan = Chan.get(chanName);
@@ -1170,17 +1250,17 @@ public class DialogUnit {
 				textView.setAllCaps(true);
 			}
 		}
-		AlertDialog.Builder alertDialog = new AlertDialog.Builder(context).setPositiveButton(android.R.string.ok, null);
+		AlertDialog.Builder builder = new AlertDialog.Builder(context).setPositiveButton(android.R.string.ok, null);
 		if (!StringUtils.isEmpty(emailToCopy)) {
-			alertDialog.setNeutralButton(R.string.copy_email,
-					(dialog, which) -> StringUtils.copyToClipboard(uiManager.getContext(), emailToCopy));
+			builder.setNeutralButton(R.string.copy_email,
+					(dialog, which) -> StringUtils.copyToClipboard(context, emailToCopy));
 		}
-		AlertDialog dialog = alertDialog.setView(container).show();
-		uiManager.getConfigurationLock().lockConfiguration(dialog);
+		builder.setView(container);
+		return builder.create();
 	}
 
-	public void performSendDeletePosts(String chanName, String boardName, String threadNumber,
-			List<PostNumber> postNumbers) {
+	public void performSendDeletePosts(FragmentManager fragmentManager,
+			String chanName, String boardName, String threadNumber, List<PostNumber> postNumbers) {
 		Chan chan = Chan.get(chanName);
 		ChanConfiguration.Deleting deleting = chan.configuration.safe().obtainDeleting(boardName);
 		if (deleting == null) {
@@ -1194,84 +1274,97 @@ public class DialogUnit {
 					context.getString(R.string.files_only)));
 		}
 		SendMultifunctionalTask.State state = new SendMultifunctionalTask.State(SendMultifunctionalTask
-				.Operation.DELETE, chan, boardName, threadNumber, null, options, deleting.password);
+				.Operation.DELETE, chanName, boardName, threadNumber, null, options, deleting.password);
 		state.postNumbers = postNumbers;
-		showPerformSendDialog(state, null, Preferences.getPassword(chan), null, null, true);
+		showPerformSendDialog(fragmentManager, state, null, Preferences.getPassword(chan), null, null, true);
 	}
 
-	public void performSendReportPosts(String chanName, String boardName, String threadNumber,
-			List<PostNumber> postNumbers) {
+	public void performSendReportPosts(FragmentManager fragmentManager,
+			String chanName, String boardName, String threadNumber, List<PostNumber> postNumbers) {
 		Chan chan = Chan.get(chanName);
 		ChanConfiguration.Reporting reporting = chan.configuration.safe().obtainReporting(boardName);
 		if (reporting == null) {
 			return;
 		}
 		SendMultifunctionalTask.State state = new SendMultifunctionalTask.State(SendMultifunctionalTask
-				.Operation.REPORT, chan, boardName, threadNumber, reporting.types,
+				.Operation.REPORT, chanName, boardName, threadNumber, reporting.types,
 				reporting.options, reporting.comment);
 		state.postNumbers = postNumbers;
-		showPerformSendDialog(state, null, null, null, null, true);
+		showPerformSendDialog(fragmentManager, state, null, null, null, null, true);
 	}
 
-	public void performSendArchiveThread(String chanName, String boardName, String threadNumber,
-			String threadTitle, Collection<Post> posts) {
-		Context context = uiManager.getContext();
+	public void performSendArchiveThread(FragmentManager fragmentManager,
+			String chanName, String boardName, String threadNumber, String threadTitle, Collection<Post> posts) {
+		performSendArchiveThread(uiManager.getContext(), fragmentManager,
+				chanName, boardName, threadNumber, threadTitle, posts);
+	}
+
+	private static void performSendArchiveThread(Context context, FragmentManager fragmentManager,
+			String chanName, String boardName, String threadNumber, String threadTitle, Collection<Post> posts) {
 		Chan chan = Chan.get(chanName);
 		boolean canArchiveLocal = !chan.configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
 		List<String> archiveChanNames = ChanManager.getInstance().getArchiveChanNames(chanName);
 		SendMultifunctionalTask.State state = new SendMultifunctionalTask.State(SendMultifunctionalTask
-				.Operation.ARCHIVE, chan, boardName, threadNumber, null, null, false);
+				.Operation.ARCHIVE, chanName, boardName, threadNumber, null, null, false);
 		state.archiveThreadTitle = threadTitle;
 		if (canArchiveLocal && archiveChanNames.size() > 0 || archiveChanNames.size() > 1) {
-			Chan[] archiveChans = new Chan[archiveChanNames.size() + (canArchiveLocal ? 1 : 0)];
-			String[] items = new String[archiveChanNames.size() + (canArchiveLocal ? 1 : 0)];
-			if (canArchiveLocal) {
-				items[0] = context.getString(R.string.local_archive);
-			}
-			for (int i = 0; i < archiveChanNames.size(); i++) {
-				Chan archiveChan = Chan.get(archiveChanNames.get(i));
-				archiveChans[canArchiveLocal ? i + 1 : i] = archiveChan;
-				items[canArchiveLocal ? i + 1 : i] = archiveChan.configuration.getTitle();
-			}
-			AlertDialog dialog = new AlertDialog.Builder(context)
-					.setTitle(R.string.archive__verb)
-					.setItems(items, (d, which) -> performSendArchiveThreadInternal(state, archiveChans[which], posts))
-					.show();
-			uiManager.getConfigurationLock().lockConfiguration(dialog);
+			new InstanceDialog(fragmentManager, null, provider -> {
+				String[] chanNameItems = new String[archiveChanNames.size() + (canArchiveLocal ? 1 : 0)];
+				String[] items = new String[archiveChanNames.size() + (canArchiveLocal ? 1 : 0)];
+				if (canArchiveLocal) {
+					items[0] = provider.getContext().getString(R.string.local_archive);
+				}
+				for (int i = 0; i < archiveChanNames.size(); i++) {
+					Chan archiveChan = Chan.get(archiveChanNames.get(i));
+					chanNameItems[canArchiveLocal ? i + 1 : i] = archiveChan.name;
+					items[canArchiveLocal ? i + 1 : i] = archiveChan.configuration.getTitle();
+				}
+				return new AlertDialog.Builder(provider.getContext())
+						.setTitle(R.string.archive__verb)
+						.setItems(items, (d, which) -> performSendArchiveThreadInternal(provider.getContext(),
+								provider.getFragmentManager(), state, chanNameItems[which], posts))
+						.create();
+			});
 		} else if (canArchiveLocal) {
 			Chan archiveChan = canArchiveLocal ? null : Chan.get(archiveChanNames.get(0));
-			performSendArchiveThreadInternal(state, archiveChan, posts);
+			performSendArchiveThreadInternal(context, fragmentManager, state, archiveChan.name, posts);
 		}
 	}
 
 	public static final String OPTION_THUMBNAILS = "thumbnails";
 	public static final String OPTION_FILES = "files";
 
-	private void performSendArchiveThreadInternal(SendMultifunctionalTask.State state, Chan archiveChan,
-			Collection<Post> posts) {
-		Context context = uiManager.getContext();
+	private static void performSendArchiveThreadInternal(Context context, FragmentManager fragmentManager,
+			SendMultifunctionalTask.State state, String archiveChanName, Collection<Post> posts) {
 		ChanConfiguration.Archivation archivation;
-		if (archiveChan == null) {
+		if (archiveChanName == null) {
 			archivation = new ChanConfiguration.Archivation();
 			archivation.options.add(new Pair<>(OPTION_THUMBNAILS, context.getString(R.string.save_thumbnails)));
 			archivation.options.add(new Pair<>(OPTION_FILES, context.getString(R.string.save_files)));
 		} else {
+			Chan archiveChan = Chan.get(archiveChanName);
 			archivation = archiveChan.configuration.safe().obtainArchivation();
 		}
 		if (archivation == null) {
 			return;
 		}
-		state.archiveChan = archiveChan;
+		state.archiveChanName = archiveChanName;
 		state.options = archivation.options;
-		showPerformSendDialog(state, null, null, null, posts, true);
+		showPerformSendDialog(fragmentManager, state, null, null, null, posts, true);
 	}
 
-	private ExecutorTask<?, ?> sendTask;
+	private static void showPerformSendDialog(FragmentManager fragmentManager,
+			SendMultifunctionalTask.State state, String defaultType, String defaultText, List<String> defaultOptions,
+			Collection<Post> posts, boolean firstTime) {
+		new InstanceDialog(fragmentManager, null, provider -> createPerformSendDialog(provider,
+				state, defaultType, defaultText, defaultOptions, posts, firstTime));
+	}
 
-	private void showPerformSendDialog(SendMultifunctionalTask.State state, String defaultType,
+	private static Dialog createPerformSendDialog(InstanceDialog.Provider provider,
+			SendMultifunctionalTask.State state, String defaultType,
 			String defaultText, List<String> defaultOptions, Collection<Post> posts, boolean firstTime) {
-		Context context = uiManager.getContext();
-		final RadioGroup radioGroup;
+		Context context = provider.getContext();
+		RadioGroup radioGroup;
 		if (state.types != null && state.types.size() > 0) {
 			radioGroup = new RadioGroup(context);
 			radioGroup.setOrientation(RadioGroup.VERTICAL);
@@ -1369,7 +1462,7 @@ public class DialogUnit {
 			builder.setView(scrollView);
 		} else {
 			if (!firstTime) {
-				return;
+				return provider.createDismissDialog();
 			}
 			int resId = 0;
 			switch (state.operation) {
@@ -1389,7 +1482,7 @@ public class DialogUnit {
 			builder.setMessage(resId);
 		}
 
-		AlertDialog dialog = builder.setPositiveButton(android.R.string.ok, (d, which) -> {
+		return builder.setPositiveButton(android.R.string.ok, (d, which) -> {
 			String type = radioGroup != null ? state.types.get(radioGroup.getCheckedRadioButtonId()).first : null;
 			String text = editText != null ? editText.getText().toString() : null;
 			ArrayList<String> options = null;
@@ -1402,120 +1495,118 @@ public class DialogUnit {
 					}
 				}
 			}
-			if (state.operation == SendMultifunctionalTask.Operation.ARCHIVE && state.archiveChan == null) {
+			if (state.operation == SendMultifunctionalTask.Operation.ARCHIVE && state.archiveChanName == null) {
 				if (posts.isEmpty()) {
-					ToastUtils.show(uiManager.getContext(), R.string.cache_is_unavailable);
+					ToastUtils.show(context, R.string.cache_is_unavailable);
 				} else {
-					SendLocalArchiveTask task = new SendLocalArchiveTask(new PerformSendCallback(posts.size()),
-							state.chan, state.boardName, state.threadNumber, posts,
+					startLocalArchiveProcess(provider.getFragmentManager(), state.chanName,
+							state.boardName, state.threadNumber, posts,
 							options.contains(OPTION_THUMBNAILS), options.contains(OPTION_FILES));
-					task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
-					sendTask = task;
 				}
 			} else {
-				SendMultifunctionalTask task = new SendMultifunctionalTask(new PerformSendCallback(-1),
-						state, type, text, options);
-				task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
-				sendTask = task;
+				startMultifunctionalProcess(provider.getFragmentManager(), state, type, text, options);
 			}
-		}).setNegativeButton(android.R.string.cancel, null).show();
-		uiManager.getConfigurationLock().lockConfiguration(dialog);
+		}).setNegativeButton(android.R.string.cancel, null).create();
 	}
 
-	private class PerformSendCallback implements SendMultifunctionalTask.Callback, SendLocalArchiveTask.Callback,
-			DialogInterface.OnCancelListener {
-		private final ProgressDialog dialog;
+	public static class MultifunctionalViewModel extends
+			TaskViewModel.Proxy<SendMultifunctionalTask, SendMultifunctionalTask.Callback> {}
 
-		public PerformSendCallback(int localArchiveMax) {
-			Context context = uiManager.getContext();
-			if (localArchiveMax >= 0) {
-				dialog = new ProgressDialog(context, "%d / %d");
-				dialog.setMessage(context.getString(R.string.processing_data__ellipsis));
-				dialog.setMax(localArchiveMax);
-			} else {
-				dialog = new ProgressDialog(context, null);
-				dialog.setMessage(context.getString(R.string.sending__ellipsis));
+	private static void startMultifunctionalProcess(FragmentManager fragmentManager,
+			SendMultifunctionalTask.State state, String type, String text, List<String> options) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			Context context = provider.getContext();
+			ProgressDialog dialog = new ProgressDialog(context, null);
+			dialog.setMessage(context.getString(R.string.sending__ellipsis));
+			MultifunctionalViewModel viewModel = provider.getViewModel(MultifunctionalViewModel.class);
+			if (!viewModel.hasTaskOrValue()) {
+				SendMultifunctionalTask task = new SendMultifunctionalTask(viewModel.callback,
+						state, type, text, options);
+				task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+				viewModel.attach(task);
 			}
-			dialog.setCanceledOnTouchOutside(false);
-			dialog.setOnCancelListener(this);
-			uiManager.getConfigurationLock().lockConfiguration(dialog);
-			dialog.show();
-		}
-
-		private void completeTask() {
-			sendTask = null;
-			ViewUtils.dismissDialogQuietly(dialog);
-		}
-
-		@Override
-		public void onCancel(DialogInterface dialog) {
-			cancelSendTasks();
-			completeTask();
-		}
-
-		@Override
-		public void onSendSuccess(SendMultifunctionalTask.State state,
-				String archiveBoardName, String archiveThreadNumber) {
-			completeTask();
-			Context context = uiManager.getContext();
-			switch (state.operation) {
-				case DELETE:
-				case REPORT: {
-					ToastUtils.show(context, R.string.request_has_been_sent_successfully);
-					break;
-				}
-				case ARCHIVE: {
-					if (archiveThreadNumber != null) {
-						String chanName = state.archiveChan.name;
-						FavoritesStorage.getInstance().add(chanName, archiveBoardName,
-								archiveThreadNumber, state.archiveThreadTitle, 0);
-						ClickableToast.show(context, context.getString(R.string.completed),
-								context.getString(R.string.open_thread), false, () -> uiManager.navigator()
-										.navigatePosts(chanName, archiveBoardName,
-												archiveThreadNumber, null, state.archiveThreadTitle));
-					} else {
-						ToastUtils.show(context, R.string.completed);
+			viewModel.observe(provider.getLifecycleOwner(), new SendMultifunctionalTask.Callback() {
+				@Override
+				public void onSendSuccess(String archiveBoardName, String archiveThreadNumber) {
+					provider.dismiss();
+					switch (state.operation) {
+						case DELETE:
+						case REPORT: {
+							ToastUtils.show(context, R.string.request_has_been_sent_successfully);
+							break;
+						}
+						case ARCHIVE: {
+							if (archiveThreadNumber != null) {
+								String chanName = state.archiveChanName;
+								FavoritesStorage.getInstance().add(chanName, archiveBoardName,
+										archiveThreadNumber, state.archiveThreadTitle, 0);
+								UiManager uiManager = UiManager.extract(provider);
+								ClickableToast.show(context, context.getString(R.string.completed),
+										context.getString(R.string.open_thread), false, () -> uiManager.navigator()
+												.navigatePosts(chanName, archiveBoardName, archiveThreadNumber, null,
+														state.archiveThreadTitle));
+							} else {
+								ToastUtils.show(context, R.string.completed);
+							}
+							break;
+						}
 					}
-					break;
 				}
-			}
-		}
 
-		@Override
-		public void onSendFail(SendMultifunctionalTask.State state, String type, String text,
-				ArrayList<String> options, ErrorItem errorItem) {
-			completeTask();
-			ToastUtils.show(uiManager.getContext(), errorItem);
-			showPerformSendDialog(state, type, text, options, null, false);
-		}
+				@Override
+				public void onSendFail(ErrorItem errorItem) {
+					provider.dismiss();
+					ToastUtils.show(context, errorItem);
+					showPerformSendDialog(provider.getFragmentManager(), state, type, text, options, null, false);
+				}
+			});
+			return dialog;
+		});
+	}
 
-		@Override
-		public DownloadService.Binder getDownloadBinder() {
-			return uiManager.callback().getDownloadBinder();
-		}
+	private static final SendLocalArchiveTask.DownloadResult DOWNLOAD_RESULT_ERROR = binder -> {};
+
+	public static class LocalArchiveViewModel extends TaskViewModel<SendLocalArchiveTask,
+			SendLocalArchiveTask.DownloadResult> implements SendLocalArchiveTask.Callback {
+		public final MutableLiveData<Integer> progress = new MutableLiveData<>();
 
 		@Override
 		public void onLocalArchivationProgressUpdate(int handledPostsCount) {
-			dialog.setValue(handledPostsCount);
+			progress.setValue(handledPostsCount);
 		}
 
 		@Override
-		public void onLocalArchivationComplete(boolean success) {
-			completeTask();
-			if (!success) {
-				ToastUtils.show(uiManager.getContext(), R.string.unknown_error);
+		public void onLocalArchivationComplete(SendLocalArchiveTask.DownloadResult result) {
+			handleResult(result != null ? result : DOWNLOAD_RESULT_ERROR);
+		}
+	}
+
+	private static void startLocalArchiveProcess(FragmentManager fragmentManager,
+			String chanName, String boardName, String threadNumber, Collection<Post> posts,
+			boolean saveThumbnails, boolean saveFiles) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			Context context = provider.getContext();
+			ProgressDialog dialog = new ProgressDialog(context, "%d / %d");
+			dialog.setMessage(context.getString(R.string.processing_data__ellipsis));
+			dialog.setMax(posts.size());
+			LocalArchiveViewModel viewModel = provider.getViewModel(LocalArchiveViewModel.class);
+			if (!viewModel.hasTaskOrValue()) {
+				SendLocalArchiveTask task = new SendLocalArchiveTask(viewModel, Chan.get(chanName),
+						boardName, threadNumber, posts, saveThumbnails, saveFiles);
+				task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+				viewModel.attach(task);
 			}
-		}
-	}
-
-	private void cancelSendTasks() {
-		if (sendTask != null) {
-			sendTask.cancel();
-			sendTask = null;
-		}
-	}
-
-	void onFinish() {
-		cancelSendTasks();
+			viewModel.observe(provider.getLifecycleOwner(), result -> {
+				provider.dismiss();
+				if (result == DOWNLOAD_RESULT_ERROR) {
+					ToastUtils.show(context, R.string.unknown_error);
+				} else {
+					UiManager uiManager = UiManager.extract(provider);
+					result.run(uiManager.callback().getDownloadBinder());
+				}
+			});
+			viewModel.progress.observe(provider.getLifecycleOwner(), dialog::setValue);
+			return dialog;
+		});
 	}
 }

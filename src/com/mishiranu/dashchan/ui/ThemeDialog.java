@@ -1,16 +1,19 @@
 package com.mishiranu.dashchan.ui;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
-import com.mishiranu.dashchan.util.ConfigurationLock;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -20,10 +23,13 @@ import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.Collections;
 import java.util.List;
 
-public class ThemeDialog {
-	public interface Callback extends ListViewUtils.ClickCallback<ThemeEngine.Theme, RecyclerView.ViewHolder> {
+public class ThemeDialog extends DialogFragment {
+	public interface Callback {
 		void onThemeSelected(ThemeEngine.Theme theme);
+	}
 
+	private interface InnerCallback extends Callback,
+			ListViewUtils.ClickCallback<ThemeEngine.Theme, RecyclerView.ViewHolder> {
 		@Override
 		default boolean onItemClick(RecyclerView.ViewHolder holder,
 				int position, ThemeEngine.Theme theme, boolean longClick) {
@@ -32,7 +38,15 @@ public class ThemeDialog {
 		}
 	}
 
-	public static void show(Context context, ConfigurationLock configurationLock, Callback callback) {
+	private void notifyThemeSelected(ThemeEngine.Theme theme) {
+		Callback callback = (Callback) requireActivity();
+		ConcurrentUtils.HANDLER.post(() -> callback.onThemeSelected(theme));
+	}
+
+	@NonNull
+	@Override
+	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		Context context = requireContext();
 		PaddedRecyclerView recyclerView = new PaddedRecyclerView(context);
 		recyclerView.setLayoutManager(new LinearLayoutManager(context));
 		if (C.API_LOLLIPOP) {
@@ -41,22 +55,21 @@ public class ThemeDialog {
 		} else {
 			recyclerView.addItemDecoration(new DividerItemDecoration(context, (c, p) -> c.need(true)));
 		}
-		final AlertDialog dialog = new AlertDialog.Builder(context)
+		AlertDialog dialog = new AlertDialog.Builder(context)
 				.setTitle(R.string.change_theme)
 				.setView(recyclerView)
 				.setNegativeButton(android.R.string.cancel, null)
-				.setNeutralButton(R.string.more_themes, (d, w) -> callback.onThemeSelected(null))
+				.setNeutralButton(R.string.more_themes, (d, w) -> notifyThemeSelected(null))
 				.create();
 		List<ThemeEngine.Theme> themes = ThemeEngine.getThemes();
 		Collections.sort(themes);
 		recyclerView.setAdapter(new Adapter(context, themes, theme -> {
 			dialog.dismiss();
 			if (theme != ThemeEngine.getTheme(context)) {
-				callback.onThemeSelected(theme);
+				notifyThemeSelected(theme);
 			}
 		}));
-		configurationLock.lockConfiguration(dialog);
-		dialog.show();
+		return dialog;
 	}
 
 	private static class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -77,11 +90,11 @@ public class ThemeDialog {
 			}
 		}
 
-		private final Callback callback;
+		private final InnerCallback callback;
 		private final Preference.Runtime<?> iconPreference;
 		private final List<ThemeEngine.Theme> themes;
 
-		public Adapter(Context context, List<ThemeEngine.Theme> themes, Callback callback) {
+		public Adapter(Context context, List<ThemeEngine.Theme> themes, InnerCallback callback) {
 			this.callback = callback;
 			iconPreference = new Preference.Runtime<>(context, "", null, "title", p -> null);
 			this.themes = themes;

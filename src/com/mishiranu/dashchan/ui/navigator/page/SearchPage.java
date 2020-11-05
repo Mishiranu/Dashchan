@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import chan.content.ChanConfiguration;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.ReadSearchTask;
+import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
@@ -28,7 +29,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-public class SearchPage extends ListPage implements SearchAdapter.Callback, ReadSearchTask.Callback {
+public class SearchPage extends ListPage implements SearchAdapter.Callback,
+		UiManager.Observer, ReadSearchTask.Callback {
 	private static class RetainExtra {
 		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
 
@@ -84,13 +86,15 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 		uiManager.view().bindThreadsPostRecyclerView(recyclerView);
 		float density = ResourceUtils.obtainDensity(getResources());
 		int dividerPadding = (int) (12f * density);
-		SearchAdapter adapter = new SearchAdapter(getContext(), this, page.chanName, uiManager, page.searchQuery);
+		SearchAdapter adapter = new SearchAdapter(getContext(), this, page.chanName,
+				uiManager, getFragmentManager(), page.searchQuery);
 		recyclerView.setAdapter(adapter);
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				(c, position) -> adapter.configureDivider(c, position).horizontal(dividerPadding, dividerPadding)));
 		recyclerView.addItemDecoration(new HeaderItemDecoration(adapter::configureItemHeader,
 				(c, position) -> adapter.getItemHeader(position)));
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
+		uiManager.observable().register(this);
 		InitRequest initRequest = getInitRequest();
 		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
@@ -122,6 +126,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 			readTask.cancel();
 			readTask = null;
 		}
+		getUiManager().observable().unregister(this);
 	}
 
 	@Override
@@ -143,17 +148,15 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 
 	@Override
 	public void onItemClick(PostItem postItem) {
-		if (postItem != null) {
-			Page page = getPage();
-			getUiManager().navigator().navigatePosts(page.chanName, page.boardName,
-					postItem.getThreadNumber(), postItem.getPostNumber(), null);
-		}
+		Page page = getPage();
+		getUiManager().navigator().navigatePosts(page.chanName, page.boardName,
+				postItem.getThreadNumber(), postItem.getPostNumber(), null);
 	}
 
 	@Override
 	public boolean onItemLongClick(PostItem postItem) {
-		return postItem != null && getUiManager().interaction()
-				.handlePostContextMenu(getChan(), postItem, null, false, false, false, false);
+		getUiManager().interaction().handlePostContextMenu(getAdapter().getConfigurationSet(), postItem);
+		return true;
 	}
 
 	private boolean allowSearch = false;
@@ -319,5 +322,10 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback, Read
 		} else {
 			ClickableToast.show(getContext(), errorItem.toString());
 		}
+	}
+
+	@Override
+	public void onReloadAttachmentItem(AttachmentItem attachmentItem) {
+		getAdapter().reloadAttachment(attachmentItem);
 	}
 }

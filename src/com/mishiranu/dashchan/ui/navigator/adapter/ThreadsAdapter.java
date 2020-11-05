@@ -5,11 +5,13 @@ import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
@@ -80,12 +82,12 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	private GridMode gridMode;
 
 	public ThreadsAdapter(Context context, Callback callback, String chanName, UiManager uiManager,
-			UiManager.PostStateProvider postStateProvider, CatalogSort catalogSort) {
+			UiManager.PostStateProvider postStateProvider, FragmentManager fragmentManager, CatalogSort catalogSort) {
 		this.context = context;
 		this.uiManager = uiManager;
 		configurationSet = new UiManager.ConfigurationSet(chanName, null, null, postStateProvider,
-				this, uiManager.dialog().createStackInstance(), null, callback,
-				false, true, false, false, false, null);
+				this, fragmentManager, uiManager.dialog().createStackInstance(), null, callback,
+				false, false, false, false, false, null);
 		this.catalogSort = catalogSort;
 	}
 
@@ -97,11 +99,25 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 	@Override
 	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+		onBindViewHolder(holder, position, Collections.emptyList());
+	}
+
+	@Override
+	public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder,
+			int position, @NonNull List<Object> payloads) {
 		PostItem postItem = getItem(position);
 		switch (ViewUnit.ViewType.values()[holder.getItemViewType()]) {
 			case THREAD:
 			case THREAD_CARD: {
-				uiManager.view().bindThreadView(holder, postItem, configurationSet);
+				if (payloads.isEmpty()) {
+					uiManager.view().bindThreadView(holder, postItem, configurationSet);
+				} else {
+					for (Object object : payloads) {
+						if (object instanceof AttachmentItem) {
+							uiManager.view().bindThreadViewReloadAttachment(holder, (AttachmentItem) object);
+						}
+					}
+				}
 				break;
 			}
 			case THREAD_HIDDEN:
@@ -110,8 +126,16 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 				break;
 			}
 			case THREAD_CARD_CELL: {
-				uiManager.view().bindThreadCellView(holder, postItem, configurationSet,
-						gridMode.small, gridMode.gridItemContentHeight);
+				if (payloads.isEmpty()) {
+					uiManager.view().bindThreadCellView(holder, postItem, configurationSet,
+							gridMode.small, gridMode.gridItemContentHeight);
+				} else {
+					for (Object object : payloads) {
+						if (object instanceof AttachmentItem) {
+							uiManager.view().bindThreadViewReloadAttachment(holder, (AttachmentItem) object);
+						}
+					}
+				}
 				break;
 			}
 		}
@@ -284,6 +308,15 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 				}
 			} else {
 				filteredPostItems = null;
+			}
+		}
+	}
+
+	public void reloadAttachment(AttachmentItem attachmentItem) {
+		for (int i = 0; i < getItemCount(); i++) {
+			PostItem postItem = getItem(i);
+			if (postItem.getPostNumber().equals(attachmentItem.getPostNumber())) {
+				notifyItemChanged(i, attachmentItem);
 			}
 		}
 	}

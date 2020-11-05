@@ -12,14 +12,18 @@ import chan.http.HttpHolder;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class SendMultifunctionalTask extends HttpHolderTask<Void, Boolean> {
 	private final State state;
 	private final String type;
 	private final String text;
-	private final ArrayList<String> options;
+	private final List<String> options;
 	private final Callback callback;
+
+	private final Chan chan;
+	private final Chan archiveChan;
 
 	private String archiveBoardName;
 	private String archiveThreadNumber;
@@ -28,15 +32,15 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Boolean> {
 	public enum Operation {DELETE, REPORT, ARCHIVE}
 
 	public interface Callback {
-		void onSendSuccess(State state, String archiveBoardName, String archiveThreadNumber);
-		void onSendFail(State state, String type, String text, ArrayList<String> options, ErrorItem errorItem);
+		void onSendSuccess(String archiveBoardName, String archiveThreadNumber);
+		void onSendFail(ErrorItem errorItem);
 	}
 
 	public static final String OPTION_FILES_ONLY = "filesOnly";
 
 	public static class State {
 		public final Operation operation;
-		public final Chan chan;
+		public final String chanName;
 		public final String boardName;
 		public final String threadNumber;
 
@@ -47,12 +51,12 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Boolean> {
 
 		public List<PostNumber> postNumbers;
 		public String archiveThreadTitle;
-		public Chan archiveChan;
+		public String archiveChanName;
 
-		public State(Operation operation, Chan chan, String boardName, String threadNumber,
+		public State(Operation operation, String chanName, String boardName, String threadNumber,
 				List<Pair<String, String>> types, List<Pair<String, String>> options, boolean commentField) {
 			this.operation = operation;
-			this.chan = chan;
+			this.chanName = chanName;
 			this.boardName = boardName;
 			this.threadNumber = threadNumber;
 			this.types = types;
@@ -60,19 +64,20 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Boolean> {
 			this.commentField = commentField;
 		}
 
-		private Chan getWorkChan() {
-			return archiveChan != null ? archiveChan : chan;
+		private String getWorkChanName() {
+			return archiveChanName != null ? archiveChanName : chanName;
 		}
 	}
 
-	public SendMultifunctionalTask(Callback callback,
-			State state, String type, String text, ArrayList<String> options) {
-		super(state.getWorkChan());
+	public SendMultifunctionalTask(Callback callback, State state, String type, String text, List<String> options) {
+		super(Chan.get(state.getWorkChanName()));
 		this.state = state;
 		this.type = type;
 		this.text = text;
-		this.options = options;
+		this.options = options != null ? Collections.unmodifiableList(options) : null;
 		this.callback = callback;
+		chan = Chan.get(state.chanName);
+		archiveChan = state.archiveChanName != null ? Chan.get(state.archiveChanName) : null;
 	}
 
 	private static List<String> createPostNumberList(List<PostNumber> numbers) {
@@ -85,7 +90,7 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Boolean> {
 
 	@Override
 	protected Boolean run(HttpHolder holder) {
-		Chan chan = state.chan;
+		Chan chan = this.chan;
 		try {
 			switch (state.operation) {
 				case DELETE: {
@@ -108,7 +113,7 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Boolean> {
 						errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
 						return false;
 					}
-					Chan archiveChan = state.archiveChan;
+					Chan archiveChan = this.archiveChan;
 					if (archiveChan == null) {
 						errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
 						return false;
@@ -139,9 +144,9 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Boolean> {
 	@Override
 	protected void onComplete(Boolean success) {
 		if (success) {
-			callback.onSendSuccess(state, archiveBoardName, archiveThreadNumber);
+			callback.onSendSuccess(archiveBoardName, archiveThreadNumber);
 		} else {
-			callback.onSendFail(state, type, text, options, errorItem);
+			callback.onSendFail(errorItem);
 		}
 	}
 }

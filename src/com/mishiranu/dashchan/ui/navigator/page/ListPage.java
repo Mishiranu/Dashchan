@@ -9,14 +9,20 @@ import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
 import chan.content.Chan;
 import com.mishiranu.dashchan.content.model.PostNumber;
+import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
+import java.lang.ref.WeakReference;
 
 public abstract class ListPage implements PullableWrapper.PullCallback {
 	private enum State {INIT, LOCKED, RESUMED, PAUSED, DESTROYED}
@@ -53,8 +59,9 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 		}
 	}
 
-	private Callback callback;
 	private Page page;
+	private Callback callback;
+	private Fragment fragment;
 	private PullableRecyclerView recyclerView;
 	private ListPosition listPosition;
 	private UiManager uiManager;
@@ -65,12 +72,13 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 
 	private State state = State.INIT;
 
-	public final void init(Callback callback, Page page, PullableRecyclerView recyclerView,
+	public final void init(Page page, Callback callback, Fragment fragment, PullableRecyclerView recyclerView,
 			ListPosition listPosition, UiManager uiManager, Object retainExtra, Parcelable parcelableExtra,
 			InitRequest initRequest, InitSearch initSearch) {
 		if (state == State.INIT) {
 			state = State.LOCKED;
 			this.callback = callback;
+			this.fragment = fragment;
 			this.page = page;
 			this.recyclerView = recyclerView;
 			this.listPosition = listPosition;
@@ -79,6 +87,7 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 			this.parcelableExtra = parcelableExtra;
 			this.initRequest = initRequest;
 			this.initSearch = initSearch;
+			getViewModel(fragment).update(this);
 			onCreate();
 			this.initRequest = null;
 			this.initSearch = null;
@@ -112,6 +121,10 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 
 	protected final Page getPage() {
 		return page;
+	}
+
+	protected final FragmentManager getFragmentManager() {
+		return fragment.getChildFragmentManager();
 	}
 
 	protected final UiManager getUiManager() {
@@ -322,6 +335,25 @@ public abstract class ListPage implements PullableWrapper.PullCallback {
 	public final Pair<Object, Parcelable> getExtraToStore(boolean saveToStack) {
 		onRequestStoreExtra(saveToStack);
 		return new Pair<>(retainExtra, parcelableExtra);
+	}
+
+	public static class PageViewModel extends ViewModel {
+		private WeakReference<ListPage> listPage;
+
+		public void update(ListPage listPage) {
+			this.listPage = listPage != null ? new WeakReference<>(listPage) : null;
+		}
+	}
+
+	private static PageViewModel getViewModel(Fragment fragment) {
+		return new ViewModelProvider(fragment).get(PageViewModel.class);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected static <T extends ListPage> T extract(InstanceDialog.Provider provider) {
+		PageViewModel viewModel = getViewModel(provider.getParentFragment());
+		ListPage listPage = viewModel.listPage != null ? viewModel.listPage.get() : null;
+		return (T) listPage;
 	}
 
 	public interface Callback {

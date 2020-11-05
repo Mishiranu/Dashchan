@@ -12,11 +12,13 @@ import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
 import chan.util.CommonUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.HidePerformer;
+import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
@@ -72,11 +74,11 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 	private boolean selection = false;
 
 	public PostsAdapter(Callback callback, String chanName, UiManager uiManager, Replyable replyable,
-			UiManager.PostStateProvider postStateProvider, RecyclerView recyclerView,
+			UiManager.PostStateProvider postStateProvider, FragmentManager fragmentManager, RecyclerView recyclerView,
 			Map<PostNumber, PostItem> postItemsMap) {
 		this.uiManager = uiManager;
 		configurationSet = new UiManager.ConfigurationSet(chanName, replyable, this, postStateProvider,
-				gallerySet, uiManager.dialog().createStackInstance(), this, callback,
+				gallerySet, fragmentManager, uiManager.dialog().createStackInstance(), this, callback,
 				true, false, true, true, true, null);
 		recyclerKeeper = new CommentTextView.RecyclerKeeper(recyclerView);
 		super.registerAdapterDataObserver(recyclerKeeper);
@@ -138,10 +140,17 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 				demandSet.selection = selection ? selected.contains(postItem.getPostNumber())
 						? UiManager.Selection.SELECTED : UiManager.Selection.NOT_SELECTED : UiManager.Selection.DISABLED;
 				demandSet.lastInList = position == getItemCount() - 1;
-				if (payloads.contains(PAYLOAD_INVALIDATE_COMMENT)) {
-					uiManager.view().bindPostViewInvalidateComment(holder);
-				} else {
+				if (payloads.isEmpty() || payloads.contains(SimpleViewHolder.EMPTY_PAYLOAD)) {
 					uiManager.view().bindPostView(holder, postItem, configurationSet, demandSet);
+				} else {
+					if (payloads.contains(PAYLOAD_INVALIDATE_COMMENT)) {
+						uiManager.view().bindPostViewInvalidateComment(holder);
+					}
+					for (Object object : payloads) {
+						if (object instanceof AttachmentItem) {
+							uiManager.view().bindPostViewReloadAttachment(holder, (AttachmentItem) object);
+						}
+					}
 				}
 				break;
 			}
@@ -227,7 +236,7 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 	@Override
 	public void onLinkLongClick(CommentTextView view, Uri uri, Extra extra) {
-		uiManager.interaction().handleLinkLongClick(uri);
+		uiManager.interaction().handleLinkLongClick(configurationSet, uri);
 	}
 
 	private void removeOldReferences(Collection<PostNumber> changedOrRemoved) {
@@ -302,6 +311,10 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
 	public void invalidateComment(int position) {
 		notifyItemChanged(position, PAYLOAD_INVALIDATE_COMMENT);
+	}
+
+	public void reloadAttachment(int position, AttachmentItem attachmentItem) {
+		notifyItemChanged(position, attachmentItem);
 	}
 
 	public boolean clearDeletedPosts() {

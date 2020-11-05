@@ -164,7 +164,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		super.onActivityCreated(savedInstanceState);
 
 		setHasOptionsMenu(true);
-		listPage.init(this, getPage(), recyclerView, listPosition, getCallback().getUiManager(),
+		listPage.init(getPage(), this, this, recyclerView, listPosition, getCallback().getUiManager(),
 				getCallback().getRetainExtra(getRetainId()), parcelableExtra, initRequest,
 				new ListPage.InitSearch(searchCurrentQuery, searchSubmitQuery));
 		initRequest = null;

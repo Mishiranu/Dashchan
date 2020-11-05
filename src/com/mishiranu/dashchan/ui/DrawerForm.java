@@ -30,6 +30,7 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
@@ -44,8 +45,6 @@ import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.WatcherService;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.graphics.ChanIconDrawable;
-import com.mishiranu.dashchan.util.ConfigurationLock;
-import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
@@ -74,7 +73,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		WatcherService.Client.Callback {
 	private final Context context;
 	private final Callback callback;
-	private final ConfigurationLock configurationLock;
+	private final FragmentManager fragmentManager;
 	private final WatcherView.ColorSet watcherViewColorSet;
 	private final SortableHelper<ViewHolder> sortableHelper;
 	private final int drawerIconColor;
@@ -152,11 +151,11 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		void restartApplication();
 	}
 
-	public DrawerForm(Context context, Callback callback, ConfigurationLock configurationLock,
+	public DrawerForm(Context context, Callback callback, FragmentManager fragmentManager,
 			WatcherService.Client watcherServiceClient) {
 		this.context = context;
 		this.callback = callback;
-		this.configurationLock = configurationLock;
+		this.fragmentManager = fragmentManager;
 		this.watcherServiceClient = watcherServiceClient;
 
 		int enabledColor = ThemeEngine.getTheme(context).accent;
@@ -482,76 +481,86 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		switch (listItem.type) {
 			case PAGE:
 			case FAVORITE: {
-				DialogMenu dialogMenu = new DialogMenu(context);
-				dialogMenu.add(R.string.copy_link, () -> onCopyShareLink(listItem, false));
-				if (listItem.isThreadItem()) {
-					dialogMenu.add(R.string.share_link, () -> onCopyShareLink(listItem, true));
-				}
-				if (listItem.type != ListItem.Type.FAVORITE && !FavoritesStorage.getInstance()
-						.hasFavorite(listItem.chanName, listItem.boardName, listItem.threadNumber)) {
-					dialogMenu.add(R.string.add_to_favorites, () -> {
-						if (listItem.isThreadItem()) {
-							FavoritesStorage.getInstance().add(listItem.chanName, listItem.boardName,
-									listItem.threadNumber, listItem.title, 0);
-						} else {
-							FavoritesStorage.getInstance().add(listItem.chanName, listItem.boardName);
-						}
-					});
-				}
-				if (listItem.type == ListItem.Type.FAVORITE) {
-					dialogMenu.add(R.string.remove_from_favorites, () -> FavoritesStorage.getInstance()
-							.remove(listItem.chanName, listItem.boardName, listItem.threadNumber));
-					if (listItem.threadNumber != null) {
-						dialogMenu.add(R.string.rename, () -> {
-							EditText editText = new SafePasteEditText(context);
-							editText.setSingleLine(true);
-							editText.setText(listItem.title);
-							editText.setSelection(editText.length());
-							LinearLayout linearLayout = new LinearLayout(context);
-							linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-							linearLayout.addView(editText, LinearLayout.LayoutParams.MATCH_PARENT,
-									LinearLayout.LayoutParams.WRAP_CONTENT);
-							int padding = context.getResources().getDimensionPixelSize(R.dimen
-									.dialog_padding_view);
-							linearLayout.setPadding(padding, padding, padding, padding);
-							AlertDialog dialog = new AlertDialog.Builder(context)
-									.setView(linearLayout).setTitle(R.string.rename)
-									.setNegativeButton(android.R.string.cancel, null)
-									.setPositiveButton(android.R.string.ok, (d, which) -> {
-										String newTitle = editText.getText().toString();
-										FavoritesStorage.getInstance().updateTitle(listItem.chanName,
-												listItem.boardName, listItem.threadNumber, newTitle, true);
-									}).create();
-							dialog.getWindow().setSoftInputMode(WindowManager
-									.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
-							configurationLock.lockConfiguration(dialog);
-							dialog.show();
-						});
-					}
-				}
-				dialogMenu.show(configurationLock);
+				showPageFavoriteMenu(fragmentManager, listItem.type == ListItem.Type.FAVORITE, listItem.isThreadItem(),
+						listItem.chanName, listItem.boardName, listItem.threadNumber, listItem.title);
 				return true;
 			}
 		}
 		return false;
 	}
 
-	private void onCopyShareLink(ListItem listItem, boolean share) {
-		Chan chan = Chan.get(listItem.chanName);
-		Uri uri = listItem.isThreadItem() ? chan.locator.safe(true).createThreadUri
-				(listItem.boardName, listItem.threadNumber)
-				: chan.locator.safe(true).createBoardUri(listItem.boardName, 0);
+	private static void showPageFavoriteMenu(FragmentManager fragmentManager, boolean isFavorite, boolean isThread,
+			String chanName, String boardName, String threadNumber, String title) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			Context context = provider.getContext();
+			DialogMenu dialogMenu = new DialogMenu(provider.getContext());
+			dialogMenu.add(R.string.copy_link, () -> onCopyShareLink(context, isThread, false,
+					chanName, boardName, threadNumber, title));
+			if (isThread) {
+				dialogMenu.add(R.string.share_link, () -> onCopyShareLink(context, isThread, true,
+						chanName, boardName, threadNumber, title));
+			}
+			if (isFavorite) {
+				dialogMenu.add(R.string.remove_from_favorites, () -> FavoritesStorage.getInstance()
+						.remove(chanName, boardName, threadNumber));
+				if (threadNumber != null) {
+					dialogMenu.add(R.string.rename, () -> showRenameFragment(provider.getFragmentManager(),
+							chanName, boardName, threadNumber, title));
+				}
+			} else if (!FavoritesStorage.getInstance().hasFavorite(chanName, boardName, threadNumber)) {
+				dialogMenu.add(R.string.add_to_favorites, () -> {
+					if (isThread) {
+						FavoritesStorage.getInstance().add(chanName, boardName, threadNumber, title, 0);
+					} else {
+						FavoritesStorage.getInstance().add(chanName, boardName);
+					}
+				});
+			}
+			return dialogMenu.create();
+		});
+	}
+
+	private static void onCopyShareLink(Context context, boolean isThread, boolean share,
+			String chanName, String boardName, String threadNumber, String title) {
+		Chan chan = Chan.get(chanName);
+		Uri uri = isThread ? chan.locator.safe(true).createThreadUri(boardName, threadNumber)
+				: chan.locator.safe(true).createBoardUri(boardName, 0);
 		if (uri != null) {
 			if (share) {
-				String subject = listItem.title;
-				if (StringUtils.isEmptyOrWhitespace(subject)) {
-					subject = uri.toString();
-				}
-				NavigationUtils.shareLink(context, subject, uri);
+				NavigationUtils.shareLink(context, StringUtils.isEmptyOrWhitespace(title)
+						? uri.toString() : title, uri);
 			} else {
 				StringUtils.copyToClipboard(context, uri.toString());
 			}
 		}
+	}
+
+	private static void showRenameFragment(FragmentManager fragmentManager,
+			String chanName, String boardName, String threadNumber, String title) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			Context context = provider.getContext();
+			EditText editText = new SafePasteEditText(context);
+			editText.setId(android.R.id.edit);
+			editText.setSingleLine(true);
+			editText.setText(title);
+			editText.setSelection(editText.length());
+			LinearLayout linearLayout = new LinearLayout(context);
+			linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+			linearLayout.addView(editText, LinearLayout.LayoutParams.MATCH_PARENT,
+					LinearLayout.LayoutParams.WRAP_CONTENT);
+			int padding = context.getResources().getDimensionPixelSize(R.dimen
+					.dialog_padding_view);
+			linearLayout.setPadding(padding, padding, padding, padding);
+			AlertDialog dialog = new AlertDialog.Builder(context)
+					.setView(linearLayout).setTitle(R.string.rename)
+					.setNegativeButton(android.R.string.cancel, null)
+					.setPositiveButton(android.R.string.ok, (d, which) -> {
+						String newTitle = editText.getText().toString();
+						FavoritesStorage.getInstance().updateTitle(chanName, boardName, threadNumber, newTitle, true);
+					}).create();
+			dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+			return dialog;
+		});
 	}
 
 	@Override
@@ -946,17 +955,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 										builder.append("\n\u2022 ").append(formatBoardThreadTitle(true,
 												favoriteItem.boardName, favoriteItem.threadNumber, favoriteItem.title));
 									}
-									AlertDialog dialog = new AlertDialog.Builder(context)
-											.setMessage(builder)
-											.setNegativeButton(android.R.string.cancel, null)
-											.setPositiveButton(android.R.string.ok, (d, which) -> {
-												for (FavoritesStorage.FavoriteItem favoriteItem : deleteFavoriteItems) {
-													favoritesStorage.remove(favoriteItem.chanName,
-															favoriteItem.boardName, favoriteItem.threadNumber);
-												}
-											})
-											.show();
-									configurationLock.lockConfiguration(dialog);
+									showDeleteFavoritesDialog(fragmentManager, builder, deleteFavoriteItems);
 									return true;
 								}
 							}
@@ -969,6 +968,22 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 			}
 		}
 	};
+
+	private static void showDeleteFavoritesDialog(FragmentManager fragmentManager,
+			CharSequence message, List<FavoritesStorage.FavoriteItem> deleteFavoriteItems) {
+		new InstanceDialog(fragmentManager, null, provider -> new AlertDialog
+				.Builder(provider.getContext())
+				.setMessage(message)
+				.setNegativeButton(android.R.string.cancel, null)
+				.setPositiveButton(android.R.string.ok, (d, which) -> {
+					FavoritesStorage favoritesStorage = FavoritesStorage.getInstance();
+					for (FavoritesStorage.FavoriteItem favoriteItem : deleteFavoriteItems) {
+						favoritesStorage.remove(favoriteItem.chanName,
+								favoriteItem.boardName, favoriteItem.threadNumber);
+					}
+				})
+				.create());
+	}
 
 	private enum ViewType {
 		HEADER(false, false, false),

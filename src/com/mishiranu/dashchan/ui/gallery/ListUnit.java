@@ -1,5 +1,6 @@
 package com.mishiranu.dashchan.ui.gallery;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
@@ -20,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
@@ -31,8 +33,10 @@ import com.mishiranu.dashchan.content.ImageLoader;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.graphics.SelectorBorderDrawable;
 import com.mishiranu.dashchan.graphics.SelectorCheckDrawable;
+import com.mishiranu.dashchan.ui.DialogMenu;
+import com.mishiranu.dashchan.ui.InstanceDialog;
+import com.mishiranu.dashchan.ui.SearchImageDialog;
 import com.mishiranu.dashchan.util.AnimationUtils;
-import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -200,27 +204,38 @@ public class ListUnit implements ActionMode.Callback {
 		if (selectionMode != null) {
 			return false;
 		}
-		GalleryItem galleryItem = getAdapter().getItem(position);
-		Chan chan = Chan.get(instance.chanName);
-		Context context = instance.callback.getWindow().getContext();
+		showItemMenu(instance.callback.getChildFragmentManager(), instance.chanName,
+				getAdapter().getItem(position), instance.callback.isAllowNavigatePostManually(false));
+		return true;
+	}
+
+	private static void showItemMenu(FragmentManager fragmentManager,
+			String chanName, GalleryItem galleryItem, boolean allowNavigatePostManually) {
+		new InstanceDialog(fragmentManager, null, provider -> createItemMenu(provider,
+				chanName, galleryItem, allowNavigatePostManually));
+	}
+
+	private static AlertDialog createItemMenu(InstanceDialog.Provider provider,
+			String chanName, GalleryItem galleryItem, boolean allowNavigatePostManually) {
+		GalleryInstance.Callback callback = GalleryInstance.getCallback(provider);
+		Context context = callback.getWindow().getContext();
+		Chan chan = Chan.get(chanName);
 		DialogMenu dialogMenu = new DialogMenu(context);
-		dialogMenu.setTitle(!StringUtils.isEmpty(galleryItem.originalName) ? galleryItem.originalName
-				: galleryItem.getFileName(chan), true);
-		dialogMenu.add(R.string.download_file, () -> instance.callback.downloadGalleryItem(galleryItem));
+		dialogMenu.setTitle(!StringUtils.isEmpty(galleryItem.originalName)
+				? galleryItem.originalName : galleryItem.getFileName(chan));
+		dialogMenu.add(R.string.download_file, () -> callback.downloadGalleryItem(galleryItem));
 		if (galleryItem.getDisplayImageUri(chan) != null) {
-			dialogMenu.add(R.string.search_image, () -> NavigationUtils.searchImage(context,
-					instance.callback.getConfigurationLock(), instance.chanName,
-					galleryItem.getDisplayImageUri(chan)));
+			dialogMenu.add(R.string.search_image, () -> new SearchImageDialog(chanName,
+					galleryItem.getDisplayImageUri(chan)).show(provider.getFragmentManager(), null));
 		}
 		dialogMenu.add(R.string.copy_link, () -> StringUtils.copyToClipboard(context,
 				galleryItem.getFileUri(chan).toString()));
-		if (instance.callback.isAllowNavigatePostManually(false) && galleryItem.postNumber != null) {
-			dialogMenu.add(R.string.go_to_post, () -> instance.callback.navigatePost(galleryItem, true, true));
+		if (allowNavigatePostManually && galleryItem.postNumber != null) {
+			dialogMenu.add(R.string.go_to_post, () -> callback.navigatePost(galleryItem, true, true));
 		}
 		dialogMenu.add(R.string.share_link, () -> NavigationUtils.shareLink(context, null,
 				galleryItem.getFileUri(chan)));
-		dialogMenu.show(instance.callback.getConfigurationLock());
-		return true;
+		return dialogMenu.create();
 	}
 
 	public void onConfigurationChanged(Configuration newConfig) {

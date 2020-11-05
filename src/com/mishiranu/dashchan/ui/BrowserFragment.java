@@ -2,6 +2,7 @@ package com.mishiranu.dashchan.ui;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
@@ -26,6 +27,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import chan.content.Chan;
 import chan.content.ChanLocator;
@@ -227,13 +229,8 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 					navigationData = chan.locator.safe(true).handleUriClickSpecial(uri);
 				}
 				if (navigationData != null) {
-					AlertDialog alertDialog = new AlertDialog.Builder(requireContext())
-							.setMessage(R.string.follow_the_link__sentence)
-							.setNegativeButton(android.R.string.cancel, null)
-							.setPositiveButton(android.R.string.ok, (dialog, which) -> ((FragmentHandler)
-									requireActivity()).navigateTargetAllowReturn(chan.name, navigationData))
-							.show();
-					((FragmentHandler) requireActivity()).getConfigurationLock().lockConfiguration(alertDialog);
+					LinkDialog dialog = new LinkDialog(chan.name, navigationData);
+					dialog.show(getChildFragmentManager(), LinkDialog.class.getName());
 					return true;
 				}
 			}
@@ -256,6 +253,33 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 			} else {
 				handler.proceed();
 			}
+		}
+	}
+
+	public static class LinkDialog extends DialogFragment {
+		private static final String EXTRA_CHAN_NAME = "chanName";
+		private static final String EXTRA_NAVIGATION_DATA = "navigationData";
+
+		public LinkDialog() {}
+
+		public LinkDialog(String chanName, ChanLocator.NavigationData navigationData) {
+			Bundle args = new Bundle();
+			args.putString(EXTRA_CHAN_NAME, chanName);
+			args.putParcelable(EXTRA_NAVIGATION_DATA, navigationData);
+			setArguments(args);
+		}
+
+		@NonNull
+		@Override
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
+			String chanName = requireArguments().getString(EXTRA_CHAN_NAME);
+			ChanLocator.NavigationData navigationData = requireArguments().getParcelable(EXTRA_NAVIGATION_DATA);
+			return new AlertDialog.Builder(requireContext())
+					.setMessage(R.string.follow_the_link__sentence)
+					.setNegativeButton(android.R.string.cancel, null)
+					.setPositiveButton(android.R.string.ok, (dialog, which) -> ((FragmentHandler)
+							requireActivity()).navigateTargetAllowReturn(chanName, navigationData))
+					.create();
 		}
 	}
 

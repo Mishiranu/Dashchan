@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.net.Uri;
 import android.view.Menu;
 import android.view.MenuItem;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import chan.content.Chan;
 import chan.util.StringUtils;
@@ -14,9 +15,10 @@ import com.mishiranu.dashchan.content.async.GetHistoryTask;
 import com.mishiranu.dashchan.content.database.CommonDatabase;
 import com.mishiranu.dashchan.content.database.HistoryDatabase;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
+import com.mishiranu.dashchan.ui.DialogMenu;
+import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.ui.navigator.adapter.HistoryAdapter;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.DialogMenu;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
@@ -74,16 +76,19 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback, Ge
 
 	@Override
 	public void onItemClick(HistoryDatabase.HistoryItem historyItem) {
-		if (historyItem != null) {
-			getUiManager().navigator().navigatePosts(historyItem.chanName, historyItem.boardName,
-					historyItem.threadNumber, null, null);
-		}
+		getUiManager().navigator().navigatePosts(historyItem.chanName, historyItem.boardName,
+				historyItem.threadNumber, null, null);
 	}
 
 	@Override
 	public boolean onItemLongClick(HistoryDatabase.HistoryItem historyItem) {
-		if (historyItem != null) {
-			DialogMenu dialogMenu = new DialogMenu(getContext());
+		showItemPopupMenu(getFragmentManager(), historyItem);
+		return true;
+	}
+
+	private void showItemPopupMenu(FragmentManager fragmentManager, HistoryDatabase.HistoryItem historyItem) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			DialogMenu dialogMenu = new DialogMenu(provider.getContext());
 			dialogMenu.add(R.string.copy_link, () -> {
 				Uri uri = Chan.get(historyItem.chanName).locator.safe(true)
 						.createThreadUri(historyItem.boardName, historyItem.threadNumber);
@@ -99,10 +104,8 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback, Ge
 			}
 			dialogMenu.add(R.string.remove_from_history, () -> CommonDatabase.getInstance().getHistory()
 					.remove(historyItem.chanName, historyItem.boardName, historyItem.threadNumber));
-			dialogMenu.show(getUiManager().getConfigurationLock());
-			return true;
-		}
-		return false;
+			return dialogMenu.create();
+		});
 	}
 
 	@Override
@@ -117,17 +120,21 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback, Ge
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case R.id.menu_clear: {
-				AlertDialog dialog = new AlertDialog.Builder(getContext())
-						.setMessage(R.string.clear_history__sentence)
-						.setNegativeButton(android.R.string.cancel, null)
-						.setPositiveButton(android.R.string.ok, (d, w) -> CommonDatabase
-								.getInstance().getHistory().clearHistory(chanName))
-						.show();
-				getUiManager().getConfigurationLock().lockConfiguration(dialog);
+				showClearHistoryDialog(getFragmentManager(), chanName);
 				return true;
 			}
 		}
 		return false;
+	}
+
+	private static void showClearHistoryDialog(FragmentManager fragmentManager, String chanName) {
+		new InstanceDialog(fragmentManager, null, provider -> new AlertDialog
+				.Builder(provider.getContext())
+				.setMessage(R.string.clear_history__sentence)
+				.setNegativeButton(android.R.string.cancel, null)
+				.setPositiveButton(android.R.string.ok, (d, w) -> CommonDatabase
+						.getInstance().getHistory().clearHistory(chanName))
+				.create());
 	}
 
 	@Override

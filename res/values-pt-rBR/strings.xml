@@ -63,7 +63,7 @@
 	<string name="connection">Conexão</string>
 	<string name="connection_was_reset">Conexão foi reiniciada</string>
 	<string name="contents">Conteúdo</string>
-	<string name="copy__ellipsis">Copiar…</string>
+	<string name="copy">Copiar</string>
 	<string name="copy_email">Copiar email</string>
 	<string name="copy_link">Copiar link</string>
 	<string name="copy_markup">Copiar remarcação</string>
@@ -127,7 +127,6 @@
 	<string name="group">Grupo</string>
 	<string name="hidden_posts">Posts ocultos</string>
 	<string name="hide">Hide</string>
-	<string name="hide__ellipsis">Hide…</string>
 	<string name="hide_eventually__imperfective">Esconder eventualmente</string>
 	<string name="hide_on_tap__imperfective">Esconder ao tocar</string>
 	<string name="hide_pages">Esconder páginas</string>
@@ -309,7 +308,7 @@
 	<string name="sending_number_of_number__ellipsis_format">Enviando %1$d de %2$d…</string>
 	<string name="services">Serviços</string>
 	<string name="sfw_mode">Modo SFW</string>
-	<string name="share__ellipsis">Compartilhar…</string>
+	<string name="share">Compartilhar</string>
 	<string name="share_file">Compartilhar arquivo</string>
 	<string name="share_link">Compartilhar link</string>
 	<string name="share_text">Compartilhar texto</string>

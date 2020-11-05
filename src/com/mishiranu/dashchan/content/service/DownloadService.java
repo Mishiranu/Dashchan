@@ -1223,6 +1223,8 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		public final String threadTitle;
 		public final boolean allowWrite;
 
+		public Object state;
+
 		protected ChoiceRequest(boolean shouldHandle, boolean allowWrite,
 				String chanName, String boardName, String threadNumber, String threadTitle) {
 			this.shouldHandle = shouldHandle;
@@ -1272,6 +1274,8 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		public final DataFile lastExistingFile;
 		public final int queued;
 		public final int exists;
+
+		public Object state;
 
 		private ReplaceRequest(DirectRequest directRequest, List<DownloadItem> availableItems,
 				DataFile lastExistingFile, int queued, int exists) {

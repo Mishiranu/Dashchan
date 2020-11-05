@@ -44,7 +44,6 @@ import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.ConfigurationLock;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -428,11 +427,6 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 	public Window getWindow() {
 		GalleryDialog dialog = getDialog();
 		return dialog != null ? dialog.getWindow() : null;
-	}
-
-	@Override
-	public ConfigurationLock getConfigurationLock() {
-		return ((FragmentHandler) requireActivity()).getConfigurationLock();
 	}
 
 	@Override

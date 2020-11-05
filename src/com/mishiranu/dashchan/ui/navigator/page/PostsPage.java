@@ -21,6 +21,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
@@ -50,6 +51,7 @@ import com.mishiranu.dashchan.content.service.PostingService;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.ui.DrawerForm;
+import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.adapter.PostsAdapter;
@@ -282,7 +284,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			return board.allowPosting;
 		};
 		PostsAdapter adapter = new PostsAdapter(this, page.chanName, uiManager,
-				replyable, postStateProvider, recyclerView, retainExtra.postItems);
+				replyable, postStateProvider, getFragmentManager(), recyclerView, retainExtra.postItems);
 		recyclerView.setAdapter(adapter);
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				(c, position) -> adapter.configureDivider(c, position).horizontal(dividerPadding, dividerPadding)));
@@ -490,10 +492,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		if (selectionMode != null) {
 			return false;
 		}
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		boolean userPost = retainExtra.userPosts.contains(postItem.getPostNumber());
-		return postItem != null && getUiManager().interaction()
-				.handlePostContextMenu(getChan(), postItem, replyable, userPost, true, true, false);
+		getUiManager().interaction().handlePostContextMenu(getAdapter().getConfigurationSet(), postItem);
+		return true;
 	}
 
 	private void setPostUserPost(PostItem postItem, boolean userPost) {
@@ -616,14 +616,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				return true;
 			}
 			case R.id.menu_erase: {
-				AlertDialog dialog = new AlertDialog.Builder(getContext())
-						.setTitle(R.string.erase)
-						.setMessage(R.string.thread_will_be_deleted_from_cache__sentence)
-						.setPositiveButton(android.R.string.ok,
-								(d, which) -> enqueueCleanup(PagesDatabase.Cleanup.ERASE))
-						.setNegativeButton(android.R.string.cancel, null)
-						.show();
-				getUiManager().getConfigurationLock().lockConfiguration(dialog);
+				showEraseDialog(getFragmentManager());
 				return true;
 			}
 			case R.id.menu_clear_old: {
@@ -631,93 +624,16 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				return true;
 			}
 			case R.id.menu_clear_deleted: {
-				AlertDialog dialog = new AlertDialog.Builder(getContext())
-						.setTitle(R.string.clear_deleted)
-						.setMessage(R.string.deleted_posts_will_be_deleted__sentence)
-						.setPositiveButton(android.R.string.ok,
-								(d, which) -> enqueueCleanup(PagesDatabase.Cleanup.DELETED))
-						.setNegativeButton(android.R.string.cancel, null)
-						.show();
-				getUiManager().getConfigurationLock().lockConfiguration(dialog);
+				showClearDeletedDialog(getFragmentManager());
 				return true;
 			}
 			case R.id.menu_summary: {
-				RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-				int files = 0;
-				int postsWithFiles = 0;
-				int links = 0;
-				for (PostItem postItem : adapter) {
-					List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
-					if (attachmentItems != null) {
-						int itFiles = 0;
-						for (AttachmentItem attachmentItem : attachmentItems) {
-							AttachmentItem.GeneralType generalType = attachmentItem.getGeneralType();
-							switch (generalType) {
-								case FILE:
-								case EMBEDDED: {
-									itFiles++;
-									break;
-								}
-								case LINK: {
-									links++;
-									break;
-								}
-							}
-						}
-						if (itFiles > 0) {
-							postsWithFiles++;
-							files += itFiles;
-						}
-					}
-				}
-				AlertDialog dialog = new AlertDialog.Builder(getContext())
-						.setTitle(R.string.summary)
-						.setPositiveButton(android.R.string.ok, null)
-						.create();
-				SummaryLayout layout = new SummaryLayout(dialog);
-				String boardName = page.boardName;
-				if (boardName != null) {
-					String title = getChan().configuration.getBoardTitle(boardName);
-					title = StringUtils.formatBoardTitle(page.chanName, boardName, title);
-					layout.add(getString(R.string.board), title);
-				}
-				layout.add(getString(R.string.files__genitive), Integer.toString(files));
-				layout.add(getString(R.string.posts_with_files__genitive), Integer.toString(postsWithFiles));
-				layout.add(getString(R.string.links_attachments__genitive), Integer.toString(links));
-				if (retainExtra.uniquePosters > 0) {
-					layout.add(getString(R.string.unique_posters__genitive),
-							Integer.toString(retainExtra.uniquePosters));
-				}
-				dialog.show();
-				getUiManager().getConfigurationLock().lockConfiguration(dialog);
+				showSummaryDialog(getFragmentManager());
 				return true;
 			}
 			case R.id.menu_hidden_posts: {
 				List<String> localFilters = hidePerformer.getReadableLocalFilters(getContext());
-				final boolean[] checked = new boolean[localFilters.size()];
-				AlertDialog dialog = new AlertDialog.Builder(getContext())
-						.setTitle(R.string.remove_rules)
-						.setMultiChoiceItems(CommonUtils.toArray(localFilters, String.class),
-								checked, (d, which, isChecked) -> checked[which] = isChecked)
-						.setPositiveButton(android.R.string.ok, (d, which) -> {
-							boolean hasDeleted = false;
-							for (int i = 0, j = 0; i < checked.length; i++, j++) {
-								if (checked[i]) {
-									hidePerformer.removeLocalFilter(j--);
-									hasDeleted = true;
-								}
-							}
-							if (hasDeleted) {
-								adapter.invalidateHidden();
-								notifyAllAdaptersChanged();
-								encodeAndStoreThreadExtra();
-								adapter.preloadPosts(((LinearLayoutManager) getRecyclerView().getLayoutManager())
-										.findFirstVisibleItemPosition());
-							}
-						})
-						.setNegativeButton(android.R.string.cancel, null)
-						.show();
-				getUiManager().getConfigurationLock().lockConfiguration(dialog);
+				showHiddenPostsDialog(getFragmentManager(), localFilters);
 				return true;
 			}
 			case R.id.menu_star_text:
@@ -759,13 +675,123 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					posts.add(postItem.getPost());
 				}
 				if (!posts.isEmpty()) {
-					getUiManager().dialog().performSendArchiveThread(page.chanName, page.boardName,
-							page.threadNumber, threadTitle, posts);
+					getUiManager().dialog().performSendArchiveThread(getFragmentManager(),
+							page.chanName, page.boardName, page.threadNumber, threadTitle, posts);
 				}
 				return true;
 			}
 		}
 		return false;
+	}
+
+	private static void showEraseDialog(FragmentManager fragmentManager) {
+		new InstanceDialog(fragmentManager, null, provider -> new AlertDialog
+				.Builder(provider.getContext())
+				.setTitle(R.string.erase)
+				.setMessage(R.string.thread_will_be_deleted_from_cache__sentence)
+				.setPositiveButton(android.R.string.ok, (d, w) -> {
+					PostsPage postsPage = extract(provider);
+					postsPage.enqueueCleanup(PagesDatabase.Cleanup.ERASE);
+				})
+				.setNegativeButton(android.R.string.cancel, null)
+				.create());
+	}
+
+	private static void showClearDeletedDialog(FragmentManager fragmentManager) {
+		new InstanceDialog(fragmentManager, null, provider -> new AlertDialog
+				.Builder(provider.getContext())
+				.setTitle(R.string.clear_deleted)
+				.setMessage(R.string.deleted_posts_will_be_deleted__sentence)
+				.setPositiveButton(android.R.string.ok, (d, w) -> {
+					PostsPage postsPage = extract(provider);
+					postsPage.enqueueCleanup(PagesDatabase.Cleanup.DELETED);
+				})
+				.setNegativeButton(android.R.string.cancel, null)
+				.create());
+	}
+
+	private static void showSummaryDialog(FragmentManager fragmentManager) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			Context context = provider.getContext();
+			PostsPage postsPage = extract(provider);
+			Page page = postsPage.getPage();
+			RetainExtra retainExtra = postsPage.getRetainExtra(RetainExtra.FACTORY);
+			int files = 0;
+			int postsWithFiles = 0;
+			int links = 0;
+			for (PostItem postItem : postsPage.getAdapter()) {
+				List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
+				if (attachmentItems != null) {
+					int itFiles = 0;
+					for (AttachmentItem attachmentItem : attachmentItems) {
+						AttachmentItem.GeneralType generalType = attachmentItem.getGeneralType();
+						switch (generalType) {
+							case FILE:
+							case EMBEDDED: {
+								itFiles++;
+								break;
+							}
+							case LINK: {
+								links++;
+								break;
+							}
+						}
+					}
+					if (itFiles > 0) {
+						postsWithFiles++;
+						files += itFiles;
+					}
+				}
+			}
+			AlertDialog dialog = new AlertDialog.Builder(context)
+					.setTitle(R.string.summary)
+					.setPositiveButton(android.R.string.ok, null)
+					.create();
+			SummaryLayout layout = new SummaryLayout(dialog);
+			String boardName = page.boardName;
+			if (boardName != null) {
+				String title = Chan.get(page.chanName).configuration.getBoardTitle(boardName);
+				title = StringUtils.formatBoardTitle(page.chanName, boardName, title);
+				layout.add(context.getString(R.string.board), title);
+			}
+			layout.add(context.getString(R.string.files__genitive), Integer.toString(files));
+			layout.add(context.getString(R.string.posts_with_files__genitive), Integer.toString(postsWithFiles));
+			layout.add(context.getString(R.string.links_attachments__genitive), Integer.toString(links));
+			if (retainExtra.uniquePosters > 0) {
+				layout.add(context.getString(R.string.unique_posters__genitive),
+						Integer.toString(retainExtra.uniquePosters));
+			}
+			return dialog;
+		});
+	}
+
+	private static void showHiddenPostsDialog(FragmentManager fragmentManager, List<String> localFilters) {
+		boolean[] checked = new boolean[localFilters.size()];
+		new InstanceDialog(fragmentManager, null, provider -> new AlertDialog
+				.Builder(provider.getContext())
+				.setTitle(R.string.remove_rules)
+				.setMultiChoiceItems(CommonUtils.toArray(localFilters, String.class),
+						checked, (d, which, isChecked) -> checked[which] = isChecked)
+				.setPositiveButton(android.R.string.ok, (d, which) -> {
+					PostsPage postsPage = extract(provider);
+					boolean hasDeleted = false;
+					for (int i = 0, j = 0; i < checked.length; i++, j++) {
+						if (checked[i]) {
+							postsPage.hidePerformer.removeLocalFilter(j--);
+							hasDeleted = true;
+						}
+					}
+					if (hasDeleted) {
+						PostsAdapter adapter = postsPage.getAdapter();
+						adapter.invalidateHidden();
+						postsPage.notifyAllAdaptersChanged();
+						postsPage.encodeAndStoreThreadExtra();
+						adapter.preloadPosts(((LinearLayoutManager) postsPage.getRecyclerView()
+								.getLayoutManager()).findFirstVisibleItemPosition());
+					}
+				})
+				.setNegativeButton(android.R.string.cancel, null)
+				.create());
 	}
 
 	@Override
@@ -843,8 +869,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				if (postItems.size() > 0) {
 					Page page = getPage();
 					String threadTitle = adapter.getItem(0).getSubjectOrComment();
-					new ThreadshotPerformer(getRecyclerView(), getUiManager(), page.chanName, page.boardName,
-							page.threadNumber, threadTitle, postItems);
+					new ThreadshotPerformer(getFragmentManager(), page.chanName, page.boardName, page.threadNumber,
+							threadTitle, postItems, getRecyclerView().getWidth());
 				}
 				mode.finish();
 				return true;
@@ -870,8 +896,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				}
 				if (postNumbers.size() > 0) {
 					Page page = getPage();
-					getUiManager().dialog().performSendDeletePosts(page.chanName, page.boardName,
-							page.threadNumber, postNumbers);
+					getUiManager().dialog().performSendDeletePosts(getFragmentManager(),
+							page.chanName, page.boardName, page.threadNumber, postNumbers);
 				}
 				mode.finish();
 				return true;
@@ -886,8 +912,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				}
 				if (postNumbers.size() > 0) {
 					Page page = getPage();
-					getUiManager().dialog().performSendReportPosts(page.chanName, page.boardName,
-							page.threadNumber, postNumbers);
+					getUiManager().dialog().performSendReportPosts(getFragmentManager(),
+							page.chanName, page.boardName, page.threadNumber, postNumbers);
 				}
 				mode.finish();
 				return true;
@@ -1609,6 +1635,15 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				ListViewUtils.smoothScrollToPosition(recyclerView, position);
 				break;
 			}
+		}
+	}
+
+	@Override
+	public void onReloadAttachmentItem(AttachmentItem attachmentItem) {
+		PostsAdapter adapter = getAdapter();
+		int position = adapter.positionOfPostNumber(attachmentItem.getPostNumber());
+		if (position >= 0) {
+			adapter.reloadAttachment(position, attachmentItem);
 		}
 	}
 
