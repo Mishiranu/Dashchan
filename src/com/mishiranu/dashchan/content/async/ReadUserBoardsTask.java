@@ -1,5 +1,6 @@
 package com.mishiranu.dashchan.content.async;
 
+import android.util.Pair;
 import chan.content.Chan;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
@@ -12,12 +13,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-public class ReadUserBoardsTask extends HttpHolderTask<Long, Boolean> {
+public class ReadUserBoardsTask extends HttpHolderTask<Long, Pair<ErrorItem, List<String>>> {
 	private final Callback callback;
 	private final Chan chan;
-
-	private List<String> boardNames;
-	private ErrorItem errorItem;
 
 	public interface Callback {
 		void onReadUserBoardsSuccess(List<String> boardNames);
@@ -31,7 +29,7 @@ public class ReadUserBoardsTask extends HttpHolderTask<Long, Boolean> {
 	}
 
 	@Override
-	protected Boolean run(HttpHolder holder) {
+	protected Pair<ErrorItem, List<String>> run(HttpHolder holder) {
 		try {
 			ChanPerformer.ReadUserBoardsResult result = chan.performer.safe()
 					.onReadUserBoards(new ChanPerformer.ReadUserBoardsData(holder));
@@ -54,25 +52,22 @@ public class ReadUserBoardsTask extends HttpHolderTask<Long, Boolean> {
 				}
 			}
 			if (boardNamesList.isEmpty()) {
-				errorItem = new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE);
-				return false;
+				return new Pair<>(new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE), null);
 			}
-			this.boardNames = boardNamesList;
-			return true;
+			return new Pair<>(null, boardNamesList);
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {
-			errorItem = e.getErrorItemAndHandle();
-			return false;
+			return new Pair<>(e.getErrorItemAndHandle(), null);
 		} finally {
 			chan.configuration.commit();
 		}
 	}
 
 	@Override
-	public void onComplete(Boolean success) {
-		if (success) {
-			callback.onReadUserBoardsSuccess(boardNames);
+	protected void onComplete(Pair<ErrorItem, List<String>> result) {
+		if (result.second != null) {
+			callback.onReadUserBoardsSuccess(result.second);
 		} else {
-			callback.onReadUserBoardsFail(errorItem);
+			callback.onReadUserBoardsFail(result.first);
 		}
 	}
 }

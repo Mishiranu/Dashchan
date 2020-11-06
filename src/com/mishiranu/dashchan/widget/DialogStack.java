@@ -226,7 +226,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 			visibleViews.getLast().second.setActive(false);
 			if (visibleViews.size() == VISIBLE_COUNT) {
 				Pair<T, DialogView> first = visibleViews.removeFirst();
-				first.first.destroyView(first.second.getContent());
+				first.first.destroyView(first.second.getContent(), false);
 				hiddenViews.add(first.first);
 				rootView.removeView(first.second.getContainer());
 			}
@@ -243,7 +243,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 			int hiddenTo = viewFactories.size() - VISIBLE_COUNT;
 			if (hiddenTo > 0) {
 				for (Pair<T, DialogView> pair : visibleViews) {
-					pair.first.destroyView(pair.second.getContent());
+					pair.first.destroyView(pair.second.getContent(), false);
 					hiddenViews.add(pair.first);
 					rootView.removeView(pair.second.getContainer());
 				}
@@ -289,7 +289,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 		} else {
 			visibleViews.getLast().second.setActive(true);
 		}
-		last.first.destroyView(last.second.getContent());
+		last.first.destroyView(last.second.getContent(), true);
 		return last.first;
 	}
 
@@ -439,7 +439,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 
 	public interface ViewFactory<T extends ViewFactory<T>> {
 		View createView(DialogStack<T> dialogStack);
-		default void destroyView(View view) {}
+		default void destroyView(View view, boolean remove) {}
 	}
 
 	public Iterable<View> getVisibleViews() {

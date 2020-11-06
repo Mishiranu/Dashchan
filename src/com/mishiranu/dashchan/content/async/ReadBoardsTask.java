@@ -10,11 +10,9 @@ import chan.http.HttpHolder;
 import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 
-public class ReadBoardsTask extends HttpHolderTask<Void, Boolean> {
+public class ReadBoardsTask extends HttpHolderTask<Void, ErrorItem> {
 	private final Callback callback;
 	private final Chan chan;
-
-	private ErrorItem errorItem;
 
 	public interface Callback {
 		void onReadBoardsSuccess();
@@ -28,7 +26,7 @@ public class ReadBoardsTask extends HttpHolderTask<Void, Boolean> {
 	}
 
 	@Override
-	protected Boolean run(HttpHolder holder) {
+	protected ErrorItem run(HttpHolder holder) {
 		try {
 			ChanPerformer.ReadBoardsResult result = chan.performer.safe()
 					.onReadBoards(new ChanPerformer.ReadBoardsData(holder));
@@ -40,24 +38,22 @@ public class ReadBoardsTask extends HttpHolderTask<Void, Boolean> {
 				chan.configuration.updateFromBoards(boardCategories);
 			}
 			if (!ChanDatabase.getInstance().setBoards(chan.name, boardCategories)) {
-				errorItem = new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE);
-				return false;
+				return new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE);
 			}
-			return true;
+			return null;
 		} catch (ExtensionException | HttpException | InvalidResponseException e) {
-			errorItem = e.getErrorItemAndHandle();
-			return false;
+			return e.getErrorItemAndHandle();
 		} finally {
 			chan.configuration.commit();
 		}
 	}
 
 	@Override
-	protected void onComplete(Boolean success) {
-		if (success) {
+	protected void onComplete(ErrorItem result) {
+		if (result == null) {
 			callback.onReadBoardsSuccess();
 		} else {
-			callback.onReadBoardsFail(errorItem);
+			callback.onReadBoardsFail(result);
 		}
 	}
 }

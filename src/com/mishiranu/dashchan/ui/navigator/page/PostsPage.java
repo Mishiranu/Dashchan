@@ -38,6 +38,7 @@ import com.mishiranu.dashchan.content.HidePerformer;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ExtractPostsTask;
 import com.mishiranu.dashchan.content.async.ReadPostsTask;
+import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.database.CommonDatabase;
 import com.mishiranu.dashchan.content.database.PagesDatabase;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
@@ -86,22 +87,18 @@ import java.util.Set;
 
 public class PostsPage extends ListPage implements PostsAdapter.Callback, FavoritesStorage.Observer,
 		UiManager.Observer, ExtractPostsTask.Callback, ReadPostsTask.Callback, ActionMode.Callback {
-	private enum QueuedRefresh {
-		NONE, REFRESH, RELOAD;
-
-		public static QueuedRefresh max(QueuedRefresh queuedRefresh1, QueuedRefresh queuedRefresh2) {
-			return values()[Math.max(queuedRefresh1.ordinal(), queuedRefresh2.ordinal())];
-		}
-	}
-
-	private static class RetainExtra {
-		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
+	private static class RetainableExtra implements Retainable {
+		public static final ExtraFactory<RetainableExtra> FACTORY = RetainableExtra::new;
 
 		public PagesDatabase.Cache cache;
+		public PagesDatabase.Cache.State cacheState;
+		public boolean initialExtract = true;
+		public boolean eraseExtract;
 		public final HashMap<PostNumber, PostItem> postItems = new HashMap<>();
 		public final PostItem.HideState.Map<PostNumber> hiddenPosts = new PostItem.HideState.Map<>();
 		public final HashSet<PostNumber> userPosts = new HashSet<>();
 		public byte[] threadExtra;
+		public ErrorItem errorItem;
 
 		public Uri archivedThreadUri;
 		public int uniquePosters;
@@ -111,6 +108,18 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		public int searchLastIndex;
 
 		public DialogUnit.StackInstance.State dialogsState;
+
+		public boolean shouldExtract() {
+			return cache == null || !cache.state.equals(cacheState);
+		}
+
+		@Override
+		public void clear() {
+			if (dialogsState != null) {
+				dialogsState.dropState();
+				dialogsState = null;
+			}
+		}
 	}
 
 	private static class ParcelableExtra implements Parcelable {
@@ -119,8 +128,6 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		public final HashSet<PostNumber> expandedPosts = new HashSet<>();
 		public final HashSet<PostNumber> unreadPosts = new HashSet<>();
 		public boolean isAddedToHistory = false;
-		public QueuedRefresh queuedRefresh = QueuedRefresh.NONE;
-		public PagesDatabase.Cleanup queuedCleanup = PagesDatabase.Cleanup.NONE;
 		public String threadTitle;
 		public PostNumber scrollToPostNumber;
 		public Set<PostNumber> selectedPosts;
@@ -141,7 +148,6 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				number.writeToParcel(dest, flags);
 			}
 			dest.writeByte((byte) (isAddedToHistory ? 1 : 0));
-			dest.writeString(queuedRefresh.name());
 			dest.writeString(threadTitle);
 			dest.writeByte((byte) (scrollToPostNumber != null ? 1 : 0));
 			if (scrollToPostNumber != null) {
@@ -168,7 +174,6 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					parcelableExtra.unreadPosts.add(PostNumber.CREATOR.createFromParcel(source));
 				}
 				parcelableExtra.isAddedToHistory = source.readByte() != 0;
-				parcelableExtra.queuedRefresh = QueuedRefresh.valueOf(source.readString());
 				parcelableExtra.threadTitle = source.readString();
 				if (source.readByte() != 0) {
 					parcelableExtra.scrollToPostNumber = PostNumber.CREATOR.createFromParcel(source);
@@ -191,8 +196,9 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		};
 	}
 
-	private ExtractPostsTask extractTask;
-	private ReadPostsTask readTask;
+	public static class ExtractViewModel extends TaskViewModel.Proxy<ExtractPostsTask, ExtractPostsTask.Callback> {}
+	public static class ReadViewModel extends TaskViewModel.Proxy<ReadPostsTask, ReadPostsTask.Callback> {}
+
 	private SearchWorker searchWorker;
 
 	private Replyable replyable;
@@ -211,8 +217,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		@Override
 		public boolean isHiddenResolve(PostItem postItem) {
 			if (postItem.getHideState() == PostItem.HideState.UNDEFINED) {
-				RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-				PostItem.HideState hideState = retainExtra.hiddenPosts.get(postItem.getPostNumber());
+				RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+				PostItem.HideState hideState = retainableExtra.hiddenPosts.get(postItem.getPostNumber());
 				if (hideState != PostItem.HideState.UNDEFINED) {
 					postItem.setHidden(hideState, null);
 				} else {
@@ -229,8 +235,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 		@Override
 		public boolean isUserPost(PostNumber postNumber) {
-			RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-			return retainExtra.userPosts.contains(postNumber);
+			RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+			return retainableExtra.userPosts.contains(postNumber);
 		}
 
 		@Override
@@ -273,7 +279,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		float density = ResourceUtils.obtainDensity(context);
 		int dividerPadding = (int) (12f * density);
 		hidePerformer = new HidePerformer(context);
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		replyable = (click, data) -> {
 			ChanConfiguration.Board board = getChan().configuration.safe().obtainBoard(page.boardName);
@@ -284,7 +290,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			return board.allowPosting;
 		};
 		PostsAdapter adapter = new PostsAdapter(this, page.chanName, uiManager,
-				replyable, postStateProvider, getFragmentManager(), recyclerView, retainExtra.postItems);
+				replyable, postStateProvider, getFragmentManager(), recyclerView, retainableExtra.postItems);
 		recyclerView.setAdapter(adapter);
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				(c, position) -> adapter.configureDivider(c, position).horizontal(dividerPadding, dividerPadding)));
@@ -292,6 +298,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		recyclerView.addOnScrollListener(scrollListener);
 		uiManager.observable().register(this);
+		FavoritesStorage.getInstance().getObservable().register(this);
 		hidePerformer.setPostsProvider(adapter);
 
 		Context toolbarContext = getToolbarContext();
@@ -352,47 +359,83 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		searchProcessView = searchProcessLayout;
 
 		InitRequest initRequest = getInitRequest();
+		ExtractViewModel extractViewModel = getViewModel(ExtractViewModel.class);
+		ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
 		if (initRequest.threadTitle != null && parcelableExtra.threadTitle == null) {
 			parcelableExtra.threadTitle = initRequest.threadTitle;
 		}
 		if (initRequest.postNumber != null) {
 			parcelableExtra.scrollToPostNumber = initRequest.postNumber;
 		}
-		FavoritesStorage.getInstance().getObservable().register(this);
 		boolean hasNewPosts = consumeNewPostData();
-		QueuedRefresh queuedRefresh = initRequest.shouldLoad || hasNewPosts
-				? QueuedRefresh.REFRESH : QueuedRefresh.NONE;
-		parcelableExtra.queuedRefresh = QueuedRefresh.max(parcelableExtra.queuedRefresh, queuedRefresh);
-		if (retainExtra.cache != null && retainExtra.postItems.size() > 0) {
-			String searchSubmitQuery = getInitSearch().submitQuery;
-			if (searchSubmitQuery == null) {
-				retainExtra.searching = false;
-			}
-			if (retainExtra.searching && !retainExtra.searchPostNumbers.isEmpty()) {
-				setCustomSearchView(searchControlView);
-				updateSearchTitle();
-			}
-			decodeThreadExtra();
-			onExtractPostsCompleteInternal(true, true, true, null);
-			if (retainExtra.dialogsState != null) {
-				uiManager.dialog().restoreState(adapter.getConfigurationSet(), retainExtra.dialogsState);
-				retainExtra.dialogsState = null;
-			}
+		boolean load = initRequest.shouldLoad || hasNewPosts;
+		if (initRequest.errorItem != null && !load) {
+			switchError(initRequest.errorItem);
 		} else {
-			retainExtra.cache = null;
-			if (!retainExtra.postItems.isEmpty()) {
-				throw new IllegalStateException();
+			boolean extract = true;
+			if (retainableExtra.cache != null && retainableExtra.postItems.size() > 0) {
+				extract = false;
+				onExtractPostsCompleteInternal(true, null);
+				String searchSubmitQuery = getInitSearch().submitQuery;
+				if (searchSubmitQuery == null) {
+					retainableExtra.searching = false;
+				}
+				if (retainableExtra.searching && !retainableExtra.searchPostNumbers.isEmpty()) {
+					setCustomSearchView(searchControlView);
+					updateSearchTitle();
+				}
+				decodeThreadExtra();
+				if (retainableExtra.dialogsState != null) {
+					uiManager.dialog().restoreState(adapter.getConfigurationSet(), retainableExtra.dialogsState);
+					retainableExtra.dialogsState.dropState();
+					retainableExtra.dialogsState = null;
+				}
+			} else {
+				retainableExtra.cache = null;
+				if (!retainableExtra.postItems.isEmpty()) {
+					throw new IllegalStateException();
+				}
+				retainableExtra.initialExtract = true;
+				retainableExtra.searching = false;
 			}
-			retainExtra.searching = false;
-			extractPosts(true, false);
-			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
-			switchView(ViewType.PROGRESS, null);
+			boolean progress = false;
+			if (extractViewModel.hasTaskOrValue()) {
+				progress = true;
+			} else if (extract) {
+				extractPostsWithoutIndication(PagesDatabase.Cleanup.NONE);
+				progress = true;
+			}
+			if (readViewModel.hasTaskOrValue()) {
+				progress = true;
+			} else if (load) {
+				refreshPostsWithoutIndication(false);
+				progress = true;
+			}
+			if (progress) {
+				if (adapter.getItemCount() == 0) {
+					getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+					switchProgress();
+				} else {
+					getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTTOM);
+				}
+			}
+		}
+		extractViewModel.observe(this, this);
+		readViewModel.observe(this, this);
+		if (retainableExtra.dialogsState != null) {
+			retainableExtra.dialogsState.dropState();
+			retainableExtra.dialogsState = null;
 		}
 	}
 
 	@Override
 	protected void onResume() {
 		queueNextRefresh(true);
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+		if (retainableExtra.dialogsState != null) {
+			retainableExtra.dialogsState.dropState();
+			retainableExtra.dialogsState = null;
+		}
 	}
 
 	@Override
@@ -409,7 +452,6 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		getAdapter().cancelPreloading();
 		getUiManager().dialog().closeDialogs(getAdapter().getConfigurationSet().stackInstance);
 		getUiManager().observable().unregister(this);
-		cancelTasks();
 		if (searchWorker != null) {
 			searchWorker.cancel();
 			searchWorker = null;
@@ -447,14 +489,12 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	@Override
 	protected void onRequestStoreExtra(boolean saveToStack) {
 		PostsAdapter adapter = getAdapter();
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		retainExtra.dialogsState = adapter.getConfigurationSet().stackInstance.collectState();
-		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
-		if (readTask != null && !saveToStack) {
-			boolean reload = readTask.isLoadFullThread();
-			parcelableExtra.queuedRefresh = QueuedRefresh.max(parcelableExtra.queuedRefresh,
-					reload ? QueuedRefresh.RELOAD : QueuedRefresh.REFRESH);
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+		if (retainableExtra.dialogsState != null) {
+			retainableExtra.dialogsState.dropState();
 		}
+		retainableExtra.dialogsState = adapter.getConfigurationSet().stackInstance.collectState();
+		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		parcelableExtra.selectedPosts = null;
 		if (selectionMode != null && !saveToStack) {
 			ArrayList<PostItem> selected = adapter.getSelectedItems();
@@ -497,23 +537,23 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	}
 
 	private void setPostUserPost(PostItem postItem, boolean userPost) {
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 		if (userPost) {
-			retainExtra.userPosts.add(postItem.getPostNumber());
+			retainableExtra.userPosts.add(postItem.getPostNumber());
 		} else {
-			retainExtra.userPosts.remove(postItem.getPostNumber());
+			retainableExtra.userPosts.remove(postItem.getPostNumber());
 		}
 		CommonDatabase.getInstance().getPosts().setFlags(true, getPage().chanName, postItem.getBoardName(),
 				postItem.getThreadNumber(), postItem.getPostNumber(),
-				retainExtra.hiddenPosts.get(postItem.getPostNumber()), userPost);
+				retainableExtra.hiddenPosts.get(postItem.getPostNumber()), userPost);
 	}
 
 	private void setPostHideState(PostItem postItem, PostItem.HideState hideState) {
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		retainExtra.hiddenPosts.set(postItem.getPostNumber(), hideState);
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+		retainableExtra.hiddenPosts.set(postItem.getPostNumber(), hideState);
 		CommonDatabase.getInstance().getPosts().setFlags(true, getPage().chanName, postItem.getBoardName(),
 				postItem.getThreadNumber(), postItem.getPostNumber(),
-				hideState, retainExtra.userPosts.contains(postItem.getPostNumber()));
+				hideState, retainableExtra.userPosts.contains(postItem.getPostNumber()));
 		postItem.setHidden(hideState, null);
 	}
 
@@ -553,7 +593,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	public void onPrepareOptionsMenu(Menu menu) {
 		Page page = getPage();
 		PostsAdapter adapter = getAdapter();
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 		menu.findItem(R.id.menu_add_post).setVisible(replyable != null && replyable.onRequestReply(false));
 		menu.findItem(R.id.menu_erase).setVisible(adapter.getItemCount() > 0);
 		menu.findItem(R.id.menu_clear_old).setVisible(adapter.hasOldPosts());
@@ -567,7 +607,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		menu.findItem(R.id.menu_star_icon).setVisible(iconFavorite && !isFavorite);
 		menu.findItem(R.id.menu_unstar_icon).setVisible(iconFavorite && isFavorite);
 		menu.findItem(R.id.menu_open_original_thread)
-				.setVisible(Chan.getPreferred(null, retainExtra.archivedThreadUri).name != null);
+				.setVisible(Chan.getPreferred(null, retainableExtra.archivedThreadUri).name != null);
 		boolean canBeArchived = !ChanManager.getInstance().getArchiveChanNames(page.chanName).isEmpty() ||
 				!getChan().configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
 		menu.findItem(R.id.menu_archive).setVisible(canBeArchived);
@@ -620,7 +660,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				return true;
 			}
 			case R.id.menu_clear_old: {
-				enqueueCleanup(PagesDatabase.Cleanup.OLD);
+				extractPosts(PagesDatabase.Cleanup.OLD);
 				return true;
 			}
 			case R.id.menu_clear_deleted: {
@@ -652,10 +692,10 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				return true;
 			}
 			case R.id.menu_open_original_thread: {
-				RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-				Chan chan = Chan.getPreferred(null, retainExtra.archivedThreadUri);
+				RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+				Chan chan = Chan.getPreferred(null, retainableExtra.archivedThreadUri);
 				if (chan.name != null) {
-					Uri uri = retainExtra.archivedThreadUri;
+					Uri uri = retainableExtra.archivedThreadUri;
 					String boardName = chan.locator.safe(true).getBoardName(uri);
 					String threadNumber = chan.locator.safe(true).getThreadNumber(uri);
 					if (threadNumber != null) {
@@ -691,7 +731,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				.setMessage(R.string.thread_will_be_deleted_from_cache__sentence)
 				.setPositiveButton(android.R.string.ok, (d, w) -> {
 					PostsPage postsPage = extract(provider);
-					postsPage.enqueueCleanup(PagesDatabase.Cleanup.ERASE);
+					postsPage.extractPosts(PagesDatabase.Cleanup.ERASE);
 				})
 				.setNegativeButton(android.R.string.cancel, null)
 				.create());
@@ -704,7 +744,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				.setMessage(R.string.deleted_posts_will_be_deleted__sentence)
 				.setPositiveButton(android.R.string.ok, (d, w) -> {
 					PostsPage postsPage = extract(provider);
-					postsPage.enqueueCleanup(PagesDatabase.Cleanup.DELETED);
+					postsPage.extractPosts(PagesDatabase.Cleanup.DELETED);
 				})
 				.setNegativeButton(android.R.string.cancel, null)
 				.create());
@@ -715,7 +755,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			Context context = provider.getContext();
 			PostsPage postsPage = extract(provider);
 			Page page = postsPage.getPage();
-			RetainExtra retainExtra = postsPage.getRetainExtra(RetainExtra.FACTORY);
+			RetainableExtra retainableExtra = postsPage.getRetainableExtra(RetainableExtra.FACTORY);
 			int files = 0;
 			int postsWithFiles = 0;
 			int links = 0;
@@ -757,9 +797,9 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			layout.add(context.getString(R.string.files__genitive), Integer.toString(files));
 			layout.add(context.getString(R.string.posts_with_files__genitive), Integer.toString(postsWithFiles));
 			layout.add(context.getString(R.string.links_attachments__genitive), Integer.toString(links));
-			if (retainExtra.uniquePosters > 0) {
+			if (retainableExtra.uniquePosters > 0) {
 				layout.add(context.getString(R.string.unique_posters__genitive),
-						Integer.toString(retainExtra.uniquePosters));
+						Integer.toString(retainableExtra.uniquePosters));
 			}
 			return dialog;
 		});
@@ -946,9 +986,9 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 	@Override
 	public void onSearchCancel() {
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		if (retainExtra.searching) {
-			retainExtra.searching = false;
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+		if (retainableExtra.searching) {
+			retainableExtra.searching = false;
 			setCustomSearchView(null);
 			updateOptionsMenu();
 			getAdapter().setHighlightText(Collections.emptyList());
@@ -957,9 +997,9 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 	private void onSearchResult(List<PostNumber> foundPostNumbers, Set<String> queries) {
 		searchWorker = null;
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		retainExtra.searchPostNumbers = foundPostNumbers;
-		retainExtra.searching = true;
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+		retainableExtra.searchPostNumbers = foundPostNumbers;
+		retainableExtra.searching = true;
 		if (foundPostNumbers.isEmpty()) {
 			setCustomSearchView(null);
 			getAdapter().setHighlightText(Collections.emptyList());
@@ -981,25 +1021,25 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					}
 				}
 			}
-			retainExtra.searchLastIndex = index;
+			retainableExtra.searchLastIndex = index;
 			findNext(index);
 		}
 	}
 
 	private void showSearchDialog() {
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		if (!retainExtra.searchPostNumbers.isEmpty()) {
-			getUiManager().dialog().displayList(getAdapter().getConfigurationSet(), retainExtra.searchPostNumbers);
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+		if (!retainableExtra.searchPostNumbers.isEmpty()) {
+			getUiManager().dialog().displayList(getAdapter().getConfigurationSet(), retainableExtra.searchPostNumbers);
 		}
 	}
 
 	private void findNext(int addIndex) {
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		int count = retainExtra.searchPostNumbers.size();
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+		int count = retainableExtra.searchPostNumbers.size();
 		if (count > 0) {
-			retainExtra.searchLastIndex = (retainExtra.searchLastIndex + addIndex + count) % count;
-			int position = getAdapter().positionOfPostNumber(retainExtra.searchPostNumbers
-					.get(retainExtra.searchLastIndex));
+			retainableExtra.searchLastIndex = (retainableExtra.searchLastIndex + addIndex + count) % count;
+			int position = getAdapter().positionOfPostNumber(retainableExtra.searchPostNumbers
+					.get(retainableExtra.searchLastIndex));
 			if (position >= 0) {
 				ListViewUtils.smoothScrollToPosition(getRecyclerView(), position);
 			}
@@ -1008,8 +1048,9 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	}
 
 	private void updateSearchTitle() {
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		searchResultText.setText((retainExtra.searchLastIndex + 1) + "/" + retainExtra.searchPostNumbers.size());
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+		searchResultText.setText((retainableExtra.searchLastIndex + 1) + "/" +
+				retainableExtra.searchPostNumbers.size());
 	}
 
 	private boolean consumeNewPostData() {
@@ -1051,8 +1092,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	public void updatePageConfiguration(PostNumber postNumber) {
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		parcelableExtra.scrollToPostNumber = postNumber;
-		if (extractTask == null && readTask == null) {
-			if (!scrollToPostFromExtra(false)) {
+		if (!scrollToPostFromExtra(false)) {
+			if (!hasReadTask()) {
 				refreshPosts(false);
 			}
 		}
@@ -1060,7 +1101,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 	@Override
 	public void onListPulled(PullableWrapper wrapper, PullableWrapper.Side side) {
-		refreshPosts(false, true);
+		refreshPostsWithoutIndication(false);
 	}
 
 	private boolean scrollToPostFromExtra(boolean instantly) {
@@ -1082,10 +1123,10 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	}
 
 	private void decodeThreadExtra() {
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 		boolean localFiltersDecoded = false;
-		if (retainExtra.threadExtra != null) {
-			try (JsonSerial.Reader reader = JsonSerial.reader(retainExtra.threadExtra)) {
+		if (retainableExtra.threadExtra != null) {
+			try (JsonSerial.Reader reader = JsonSerial.reader(retainableExtra.threadExtra)) {
 				reader.startObject();
 				while (!reader.endStruct()) {
 					switch (reader.nextName()) {
@@ -1102,7 +1143,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				}
 			} catch (ParseException e) {
 				Log.persistent().stack(e);
-				retainExtra.threadExtra = null;
+				retainableExtra.threadExtra = null;
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -1131,8 +1172,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				throw new RuntimeException(e);
 			}
 		}
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		retainExtra.threadExtra = extra;
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+		retainableExtra.threadExtra = extra;
 		Page page = getPage();
 		CommonDatabase.getInstance().getThreads().setStateExtra(true,
 				page.chanName, page.boardName, page.threadNumber, false, null, true, extra);
@@ -1228,45 +1269,37 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		}
 	}
 
-	private void enqueueCleanup(PagesDatabase.Cleanup cleanup) {
-		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
-		parcelableExtra.queuedCleanup = cleanup;
-		if (cleanup != PagesDatabase.Cleanup.NONE && extractTask == null && readTask == null) {
-			extractPosts(false, false);
-			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTTOM);
-		}
+	private void extractPosts(PagesDatabase.Cleanup cleanup) {
+		startProgressIfNecessary();
+		extractPostsWithoutIndication(cleanup);
 	}
 
-	private void cancelTasks() {
-		if (extractTask != null) {
-			extractTask.cancel();
-			extractTask = null;
-		}
-		if (readTask != null) {
-			readTask.cancel();
-			readTask = null;
-		}
-	}
-
-	private void extractPosts(boolean initial, boolean newThread) {
-		cancelTasks();
+	private void extractPostsWithoutIndication(PagesDatabase.Cleanup cleanup) {
 		Page page = getPage();
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
-		PagesDatabase.Cleanup cleanup = parcelableExtra.queuedCleanup;
-		parcelableExtra.queuedCleanup = PagesDatabase.Cleanup.NONE;
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+		if (cleanup == PagesDatabase.Cleanup.ERASE) {
+			retainableExtra.eraseExtract = true;
+		}
 		if (cleanup == PagesDatabase.Cleanup.NONE && Preferences.getCyclicalRefreshMode() ==
 				Preferences.CyclicalRefreshMode.FULL_LOAD_CLEANUP) {
 			cleanup = PagesDatabase.Cleanup.OLD;
 		}
-		extractTask = new ExtractPostsTask(this, retainExtra.cache,
-				getChan(), page.boardName, page.threadNumber, initial, newThread, cleanup);
-		extractTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+		if (retainableExtra.eraseExtract) {
+			cleanup = PagesDatabase.Cleanup.ERASE;
+		}
+		ExtractViewModel extractViewModel = getViewModel(ExtractViewModel.class);
+		ExtractPostsTask task = new ExtractPostsTask(extractViewModel.callback, retainableExtra.cache,
+				getChan(), page.boardName, page.threadNumber, retainableExtra.initialExtract, cleanup);
+		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+		extractViewModel.attach(task);
 	}
 
 	private final Runnable refreshRunnable = () -> {
-		if (extractTask == null && readTask == null) {
-			refreshPosts(false);
+		if (!hasReadTask()) {
+			RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+			if (!retainableExtra.eraseExtract) {
+				refreshPosts(false);
+			}
 		}
 		queueNextRefresh(false);
 	};
@@ -1288,61 +1321,115 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	}
 
 	private void refreshPosts(boolean reload) {
-		refreshPosts(reload, getAdapter().getItemCount() > 0);
+		startProgressIfNecessary();
+		refreshPostsWithoutIndication(reload);
 	}
 
-	private void refreshPosts(boolean reload, boolean showPull) {
-		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
-		if (extractTask != null) {
-			parcelableExtra.queuedRefresh = QueuedRefresh.max(parcelableExtra.queuedRefresh,
-					reload ? QueuedRefresh.RELOAD : QueuedRefresh.REFRESH);
-			return;
-		}
-		parcelableExtra.queuedRefresh = QueuedRefresh.NONE;
-		cancelTasks();
+	private void refreshPostsWithoutIndication(boolean reload) {
 		Page page = getPage();
-		readTask = new ReadPostsTask(this, getChan(), page.boardName, page.threadNumber,
+		ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
+		ReadPostsTask task = new ReadPostsTask(readViewModel.callback, getChan(), page.boardName, page.threadNumber,
 				reload, PostingService.getPendingUserPosts(page.chanName, page.boardName, page.threadNumber));
-		readTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
-		if (showPull) {
-			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTTOM);
-			switchView(ViewType.LIST, null);
+		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+		readViewModel.attach(task);
+	}
+
+	private boolean hasExtractTask() {
+		ExtractViewModel extractViewModel = getViewModel(ExtractViewModel.class);
+		return extractViewModel.hasTaskOrValue();
+	}
+
+	private boolean hasReadTask() {
+		ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
+		return readViewModel.hasTaskOrValue();
+	}
+
+	private void startProgressIfNecessary() {
+		if (!hasExtractTask() && !hasReadTask()) {
+			if (getAdapter().getItemCount() == 0) {
+				getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+				switchProgress();
+			} else {
+				getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTTOM);
+				switchList();
+			}
+		}
+	}
+
+	private void cancelProgressIfNecessary() {
+		if (!hasExtractTask() && !hasReadTask()) {
+			getRecyclerView().getWrapper().cancelBusyState();
+			switchList();
+			RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+			ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
+			if (retainableExtra.errorItem != null) {
+				ErrorItem errorItem = retainableExtra.errorItem;
+				retainableExtra.errorItem = null;
+				showOrSwitchError(errorItem);
+			}
+			if (parcelableExtra.scrollToPostNumber != null) {
+				scrollToPostFromExtra(getRecyclerView().getChildCount() == 0);
+				// Forget about the request on fail
+				parcelableExtra.scrollToPostNumber = null;
+			}
+		}
+	}
+
+	private void handleError(ErrorItem errorItem) {
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+		retainableExtra.errorItem = errorItem;
+		if (!hasExtractTask() && !hasReadTask()) {
+			retainableExtra.errorItem = null;
+			showOrSwitchError(errorItem);
 		} else {
-			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
-			switchView(ViewType.PROGRESS, null);
+			retainableExtra.errorItem = errorItem;
+		}
+	}
+
+	private void showOrSwitchError(ErrorItem errorItem) {
+		if (getAdapter().getItemCount() == 0) {
+			switchError(errorItem);
+		} else {
+			ClickableToast.show(getContext(), errorItem.toString());
 		}
 	}
 
 	@Override
 	public void onExtractPostsComplete(ExtractPostsTask.Result result) {
-		extractTask = null;
-		getRecyclerView().getWrapper().cancelBusyState();
-		switchView(ViewType.LIST, null);
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		PostsAdapter adapter = getAdapter();
 		boolean updateAdapters = false;
 		ListPosition listPositionFromState = null;
 		Pair<PostNumber, Integer> keepPositionPair = null;
+		boolean initial = retainableExtra.initialExtract;
+		retainableExtra.initialExtract = false;
+		boolean erase = retainableExtra.eraseExtract;
+		retainableExtra.eraseExtract = false;
+		boolean wasEmpty = adapter.getItemCount() == 0;
 
 		if (result != null) {
-			if (result.erased) {
+			if (erase && result.cache.isEmpty()) {
 				Page page = getPage();
 				FavoritesStorage.getInstance().remove(page.chanName, page.boardName, page.threadNumber);
 				closePage();
 				return;
 			}
-			if (result.newThread) {
+			if (result.cache.isNewThreadOnce()) {
 				parcelableExtra.unreadPosts.addAll(result.postItems.keySet());
+				StatisticsStorage.getInstance().incrementThreadsViewed(getPage().chanName);
 			} else {
 				parcelableExtra.unreadPosts.addAll(result.newPosts);
 				parcelableExtra.unreadPosts.addAll(result.deletedPosts);
 				parcelableExtra.unreadPosts.addAll(result.editedPosts);
 			}
-			retainExtra.cache = result.cache;
+			retainableExtra.cache = result.cache;
+			if (retainableExtra.cacheState == null) {
+				retainableExtra.cacheState = retainableExtra.cache.state;
+			}
 			if (result.cacheChanged) {
-				retainExtra.archivedThreadUri = result.archivedThreadUri;
-				retainExtra.uniquePosters = result.uniquePosters;
+				retainableExtra.archivedThreadUri = result.archivedThreadUri;
+				retainableExtra.uniquePosters = result.uniquePosters;
 			}
 			if (!result.postItems.isEmpty() || !result.removedPosts.isEmpty()) {
 				if (adapter.getItemCount() > 0) {
@@ -1357,14 +1444,14 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				updateAdapters = true;
 			}
 			if (result.flags != null) {
-				retainExtra.hiddenPosts.clear();
-				retainExtra.hiddenPosts.addAll(result.flags.hiddenPosts);
-				retainExtra.userPosts.clear();
-				retainExtra.userPosts.addAll(result.flags.userPosts);
+				retainableExtra.hiddenPosts.clear();
+				retainableExtra.hiddenPosts.addAll(result.flags.hiddenPosts);
+				retainableExtra.userPosts.clear();
+				retainableExtra.userPosts.addAll(result.flags.userPosts);
 			}
 			if (result.stateExtra != null) {
 				listPositionFromState = transformPairToListPosition(decodeThreadState(result.stateExtra.state));
-				retainExtra.threadExtra = result.stateExtra.extra;
+				retainableExtra.threadExtra = result.stateExtra.extra;
 				decodeThreadExtra();
 			}
 
@@ -1375,18 +1462,19 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				int deletedCount = result.deletedPosts.size();
 				String message;
 				if (result.replyCount > 0 || deletedCount > 0) {
-					message = getQuantityString(R.plurals.number_new__format, newCount, newCount);
+					message = getResources().getQuantityString(R.plurals.number_new__format, newCount, newCount);
 					if (result.replyCount > 0) {
 						message = getString(R.string.__enumeration_format, message,
-								getQuantityString(R.plurals.number_replies__format,
+								getResources().getQuantityString(R.plurals.number_replies__format,
 										result.replyCount, result.replyCount));
 					}
 					if (deletedCount > 0) {
 						message = getString(R.string.__enumeration_format, message,
-								getQuantityString(R.plurals.number_deleted__format, deletedCount, deletedCount));
+								getResources().getQuantityString(R.plurals.number_deleted__format,
+										deletedCount, deletedCount));
 					}
 				} else if (newCount > 0) {
-					message = getQuantityString(R.plurals.number_new_posts__format, newCount, newCount);
+					message = getResources().getQuantityString(R.plurals.number_new_posts__format, newCount, newCount);
 				} else {
 					message = getString(R.string.some_posts_have_been_edited);
 				}
@@ -1394,7 +1482,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					PostNumber newPostNumber = Collections.min(result.newPosts);
 					adapter.preloadPosts(newPostNumber);
 					ClickableToast.show(getContext(), message, getString(R.string.show), true, () -> {
-						if (!isDestroyed()) {
+						if (isRunning()) {
 							int newPostIndex = adapter.positionOfPostNumber(newPostNumber);
 							if (newPostIndex >= 0) {
 								ListViewUtils.smoothScrollToPosition(getRecyclerView(), newPostIndex);
@@ -1413,6 +1501,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				if (newCount > 0) {
 					lastNewPostNumbers = result.newPosts;
 				}
+				retainableExtra.errorItem = null;
 			}
 		}
 
@@ -1424,138 +1513,114 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				listPosition.apply(getRecyclerView());
 			}
 		}
-		onExtractPostsCompleteInternal(result != null, result != null && result.initial, false,
-				listPositionFromState);
+		if (result != null) {
+			if (initial && result.postItems.isEmpty()) {
+				if (!hasReadTask()) {
+					refreshPostsWithoutIndication(false);
+				}
+			} else {
+				if (wasEmpty && !result.postItems.isEmpty()) {
+					getRecyclerView().getWrapper().cancelBusyState();
+					switchList();
+					getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTTOM);
+					showScaleAnimation();
+				}
+				if (retainableExtra.shouldExtract()) {
+					extractPostsWithoutIndication(PagesDatabase.Cleanup.NONE);
+				}
+			}
+			onExtractPostsCompleteInternal(wasEmpty, listPositionFromState);
+		} else {
+			cancelProgressIfNecessary();
+			handleError(new ErrorItem(ErrorItem.Type.UNKNOWN));
+		}
 	}
 
-	private void onExtractPostsCompleteInternal(boolean success, boolean initial, boolean fromState,
-			ListPosition listPositionFromState) {
+	private void onExtractPostsCompleteInternal(boolean firstLayout, ListPosition listPositionFromState) {
 		PostsAdapter adapter = getAdapter();
 		ListPosition listPosition = takeListPosition();
 		if (listPosition == null) {
 			listPosition = listPositionFromState;
 		}
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		Page page = getPage();
 
-		if (success) {
-			if (initial) {
-				if (parcelableExtra.scrollToPostNumber != null) {
-					scrollToPostFromExtra(true);
-				} else if (listPosition != null) {
-					listPosition.apply(getRecyclerView());
-				}
-				if (!fromState) {
-					showScaleAnimation();
-				}
-			} else {
-				FavoritesStorage.getInstance().modifyPostsCount(page.chanName, page.boardName,
-						page.threadNumber, getAdapter().getExistingPostsCount());
-				scrollToPostFromExtra(getRecyclerView().getChildCount() == 0);
-				// Forget about the request on fail
-				parcelableExtra.scrollToPostNumber = null;
-			}
-
-			if (!parcelableExtra.isAddedToHistory) {
-				parcelableExtra.isAddedToHistory = true;
-				CommonDatabase.getInstance().getHistory().addHistoryAsync(page.chanName,
-						page.boardName, page.threadNumber, parcelableExtra.threadTitle);
-			}
-			Iterator<PostItem> iterator = getAdapter().iterator();
-			if (iterator.hasNext()) {
-				String title = iterator.next().getSubjectOrComment();
-				if (StringUtils.isEmptyOrWhitespace(title)) {
-					title = null;
-				}
-				FavoritesStorage.getInstance().updateTitle(page.chanName, page.boardName,
-						page.threadNumber, title, false);
-				if (!CommonUtils.equals(StringUtils.nullIfEmpty(parcelableExtra.threadTitle), title)) {
-					CommonDatabase.getInstance().getHistory()
-							.updateTitleAsync(page.chanName, page.boardName, page.threadNumber, title);
-					parcelableExtra.threadTitle = title;
-					notifyTitleChanged();
-				}
-			}
-
-			if (parcelableExtra.selectedPosts != null) {
-				Set<PostNumber> selected = parcelableExtra.selectedPosts;
-				parcelableExtra.selectedPosts = null;
-				if (success) {
-					for (PostNumber postNumber : selected) {
-						PostItem postItem = adapter.findPostItem(postNumber);
-						if (postItem != null) {
-							adapter.toggleItemSelected(postItem);
-						}
-					}
-					selectionMode = startActionMode(this);
-				}
-			}
-
-			if (parcelableExtra.queuedCleanup != PagesDatabase.Cleanup.NONE) {
-				extractPosts(false, false);
-				getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTTOM);
-			} else if (parcelableExtra.queuedRefresh != QueuedRefresh.NONE ||
-					initial && retainExtra.postItems.isEmpty()) {
-				boolean reload = parcelableExtra.queuedRefresh == QueuedRefresh.RELOAD;
-				refreshPosts(reload);
-			}
-			queueNextRefresh(false);
-			updateOptionsMenu();
-		} else if (initial) {
-			refreshPosts(true);
-		} else {
-			onReadPostsFail(new ErrorItem(ErrorItem.Type.UNKNOWN));
+		if (firstLayout && (parcelableExtra.scrollToPostNumber == null ||
+				!scrollToPostFromExtra(true)) && listPosition != null) {
+			listPosition.apply(getRecyclerView());
 		}
+
+		if (!parcelableExtra.isAddedToHistory) {
+			parcelableExtra.isAddedToHistory = true;
+			CommonDatabase.getInstance().getHistory().addHistoryAsync(page.chanName,
+					page.boardName, page.threadNumber, parcelableExtra.threadTitle);
+		}
+		Iterator<PostItem> iterator = getAdapter().iterator();
+		if (iterator.hasNext()) {
+			String title = iterator.next().getSubjectOrComment();
+			if (StringUtils.isEmptyOrWhitespace(title)) {
+				title = null;
+			}
+			FavoritesStorage.getInstance().updateTitle(page.chanName, page.boardName,
+					page.threadNumber, title, false);
+			if (!CommonUtils.equals(StringUtils.nullIfEmpty(parcelableExtra.threadTitle), title)) {
+				CommonDatabase.getInstance().getHistory()
+						.updateTitleAsync(page.chanName, page.boardName, page.threadNumber, title);
+				parcelableExtra.threadTitle = title;
+				notifyTitleChanged();
+			}
+		}
+		FavoritesStorage.getInstance().modifyPostsCount(page.chanName, page.boardName,
+				page.threadNumber, getAdapter().getExistingPostsCount());
+
+		if (parcelableExtra.selectedPosts != null) {
+			Set<PostNumber> selected = parcelableExtra.selectedPosts;
+			parcelableExtra.selectedPosts = null;
+			for (PostNumber postNumber : selected) {
+				PostItem postItem = adapter.findPostItem(postNumber);
+				if (postItem != null) {
+					adapter.toggleItemSelected(postItem);
+				}
+			}
+			selectionMode = startActionMode(this);
+		}
+
+		updateOptionsMenu();
+		cancelProgressIfNecessary();
 	}
 
 	@Override
-	public void onReadPostsSuccess(boolean newThread, boolean shouldExtract,
+	public void onReadPostsSuccess(PagesDatabase.Cache.State cacheState,
 			Set<PendingUserPost> removedPendingUserPosts) {
-		readTask = null;
 		Page page = getPage();
-		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
-		if (newThread) {
-			StatisticsStorage.getInstance().incrementThreadsViewed(page.chanName);
-		}
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+		retainableExtra.cacheState = cacheState;
 		if (!removedPendingUserPosts.isEmpty()) {
 			PostingService.consumePendingUserPosts(page.chanName, page.boardName, page.threadNumber,
 					removedPendingUserPosts);
 		}
-		if (shouldExtract || parcelableExtra.queuedCleanup != PagesDatabase.Cleanup.NONE) {
-			extractPosts(false, newThread);
+		if (!hasExtractTask() && retainableExtra.shouldExtract()) {
+			extractPostsWithoutIndication(PagesDatabase.Cleanup.NONE);
 		} else {
-			getRecyclerView().getWrapper().cancelBusyState();
-			switchView(ViewType.LIST, null);
-			queueNextRefresh(false);
+			cancelProgressIfNecessary();
 		}
+		queueNextRefresh(false);
 	}
 
 	@Override
 	public void onReadPostsRedirect(RedirectException.Target target) {
-		readTask = null;
-		getRecyclerView().getWrapper().cancelBusyState();
+		cancelProgressIfNecessary();
+		queueNextRefresh(false);
 		handleRedirect(target.chanName, target.boardName, target.threadNumber, target.postNumber);
 	}
 
 	@Override
 	public void onReadPostsFail(ErrorItem errorItem) {
-		readTask = null;
-		getRecyclerView().getWrapper().cancelBusyState();
-		displayDownloadError(true, errorItem.toString());
+		cancelProgressIfNecessary();
+		handleError(errorItem);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		parcelableExtra.scrollToPostNumber = null;
-		if (parcelableExtra.queuedCleanup != PagesDatabase.Cleanup.NONE && getAdapter().getItemCount() > 0) {
-			extractPosts(false, false);
-		}
-	}
-
-	private void displayDownloadError(boolean show, String message) {
-		if (show && getAdapter().getItemCount() > 0) {
-			ClickableToast.show(getContext(), message);
-			return;
-		}
-		switchView(ViewType.ERROR, message);
+		queueNextRefresh(false);
 	}
 
 	private Runnable postNotifyDataSetChanged;

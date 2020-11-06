@@ -1,26 +1,23 @@
 package com.mishiranu.dashchan.content.async;
 
-import android.os.SystemClock;
+import android.util.Pair;
 import chan.content.Chan;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
-import chan.util.CommonUtils;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import java.net.HttpURLConnection;
 
-public class ReadSinglePostTask extends HttpHolderTask<Void, PostItem> {
+public class ReadSinglePostTask extends HttpHolderTask<Void, Pair<ErrorItem, PostItem>> {
 	private final Callback callback;
 	private final Chan chan;
 	private final String boardName;
 	private final String threadNumber;
 	private final PostNumber postNumber;
-
-	private ErrorItem errorItem;
 
 	public interface Callback {
 		void onReadSinglePostSuccess(PostItem postItem);
@@ -38,8 +35,7 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, PostItem> {
 	}
 
 	@Override
-	protected PostItem run(HttpHolder holder) {
-		long startTime = SystemClock.elapsedRealtime();
+	protected Pair<ErrorItem, PostItem> run(HttpHolder holder) {
 		try {
 			String postNumber;
 			if (this.postNumber != null) {
@@ -52,30 +48,28 @@ public class ReadSinglePostTask extends HttpHolderTask<Void, PostItem> {
 			if (result == null || result.post == null) {
 				throw HttpException.createNotFoundException();
 			}
-			startTime = 0L;
-			return PostItem.createPost(result.post.post, chan,
-					boardName, result.post.threadNumber, result.post.originalPostNumber);
+			return new Pair<>(null, PostItem.createPost(result.post.post, chan,
+					boardName, result.post.threadNumber, result.post.originalPostNumber));
 		} catch (HttpException e) {
-			errorItem = e.getErrorItemAndHandle();
+			ErrorItem errorItem = e.getErrorItemAndHandle();
 			if (errorItem.httpResponseCode == HttpURLConnection.HTTP_NOT_FOUND ||
 					errorItem.httpResponseCode == HttpURLConnection.HTTP_GONE) {
 				errorItem = new ErrorItem(ErrorItem.Type.POST_NOT_FOUND);
 			}
+			return new Pair<>(errorItem, null);
 		} catch (ExtensionException | InvalidResponseException e) {
-			errorItem = e.getErrorItemAndHandle();
+			return new Pair<>(e.getErrorItemAndHandle(), null);
 		} finally {
 			chan.configuration.commit();
-			CommonUtils.sleepMaxRealtime(startTime, 500);
 		}
-		return null;
 	}
 
 	@Override
-	protected void onComplete(PostItem result) {
-		if (result != null) {
-			callback.onReadSinglePostSuccess(result);
+	protected void onComplete(Pair<ErrorItem, PostItem> result) {
+		if (result.second != null) {
+			callback.onReadSinglePostSuccess(result.second);
 		} else {
-			callback.onReadSinglePostFail(errorItem);
+			callback.onReadSinglePostFail(result.first);
 		}
 	}
 }

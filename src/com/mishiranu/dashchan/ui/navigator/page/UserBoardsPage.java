@@ -13,6 +13,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.GetBoardsTask;
 import com.mishiranu.dashchan.content.async.ReadUserBoardsTask;
+import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
@@ -61,11 +62,11 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 		};
 	}
 
+	public static class ReadViewModel extends TaskViewModel.Proxy<ReadUserBoardsTask, ReadUserBoardsTask.Callback> {}
+
 	private String searchQuery;
 
 	private GetBoardsTask getTask;
-	private ReadUserBoardsTask readTask;
-	private boolean firstLoad = true;
 
 	private UserBoardsAdapter getAdapter() {
 		return (UserBoardsAdapter) getRecyclerView().getAdapter();
@@ -86,12 +87,30 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 				(c, position) -> c.need(true)));
 		recyclerView.setItemAnimator(null);
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
+
+		InitRequest initRequest = getInitRequest();
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
-		if (parcelableExtra.boardNames.isEmpty()) {
-			refreshBoards(false);
+		ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
+		if (initRequest.errorItem != null) {
+			switchError(initRequest.errorItem);
 		} else {
-			updateBoards();
+			boolean load = true;
+			if (!parcelableExtra.boardNames.isEmpty()) {
+				load = false;
+				updateBoards();
+			}
+			if (readViewModel.hasTaskOrValue()) {
+				if (parcelableExtra.boardNames.isEmpty()) {
+					getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+					switchProgress();
+				} else {
+					recyclerView.getWrapper().startBusyState(PullableWrapper.Side.TOP);
+				}
+			} else if (load) {
+				refreshBoards(false);
+			}
 		}
+		readViewModel.observe(this, this);
 	}
 
 	@Override
@@ -100,10 +119,6 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 		if (getTask != null) {
 			getTask.cancel();
 			getTask = null;
-		}
-		if (readTask != null) {
-			readTask.cancel();
-			readTask = null;
 		}
 	}
 
@@ -190,36 +205,30 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 	}
 
 	private void refreshBoards(boolean showPull) {
-		if (readTask != null) {
-			readTask.cancel();
-		}
-		readTask = new ReadUserBoardsTask(this, getChan());
-		readTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+		ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
+		ReadUserBoardsTask task = new ReadUserBoardsTask(readViewModel.callback, getChan());
+		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+		readViewModel.attach(task);
 		if (showPull) {
 			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
-			switchView(ViewType.LIST, null);
+			switchList();
 		} else {
 			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
-			switchView(ViewType.PROGRESS, null);
+			switchProgress();
 		}
 	}
 
 	@Override
 	public void onGetBoardsResult(ChanDatabase.BoardCursor cursor) {
 		getTask = null;
-		boolean firstLoad = this.firstLoad;
-		this.firstLoad = false;
 		getAdapter().setCursor(cursor);
-		if (firstLoad) {
-			restoreListPosition();
-		}
+		restoreListPosition();
 	}
 
 	@Override
 	public void onReadUserBoardsSuccess(List<String> boardNames) {
-		readTask = null;
 		getRecyclerView().getWrapper().cancelBusyState();
-		switchView(ViewType.LIST, null);
+		switchList();
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		parcelableExtra.boardNames = boardNames;
 		updateBoards();
@@ -228,11 +237,10 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 
 	@Override
 	public void onReadUserBoardsFail(ErrorItem errorItem) {
-		readTask = null;
 		getRecyclerView().getWrapper().cancelBusyState();
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		if (parcelableExtra.boardNames.isEmpty()) {
-			switchView(ViewType.ERROR, errorItem.toString());
+			switchError(errorItem);
 		} else {
 			ClickableToast.show(getContext(), errorItem.toString());
 		}

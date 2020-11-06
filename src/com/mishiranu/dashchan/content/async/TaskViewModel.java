@@ -14,6 +14,10 @@ public class TaskViewModel<Task extends ExecutorTask<?, ?>, Result> extends View
 		return task != null || result.getValue() != null;
 	}
 
+	public Task getTask() {
+		return task;
+	}
+
 	public void attach(Task task) {
 		result.setValue(null);
 		if (this.task != null) {

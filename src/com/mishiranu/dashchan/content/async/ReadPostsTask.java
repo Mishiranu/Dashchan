@@ -41,15 +41,13 @@ public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 	private final boolean loadFullThread;
 	private final HashSet<PendingUserPost> pendingUserPosts;
 
-	private boolean newThread;
-	private boolean shouldExtract;
+	private PagesDatabase.Cache.State cacheState;
 	private HashSet<PendingUserPost> removedPendingUserPosts;
 	private RedirectException.Target target;
 	private ErrorItem errorItem;
 
 	public interface Callback {
-		void onReadPostsSuccess(boolean newThread, boolean shouldExtract,
-				Set<PendingUserPost> removedPendingUserPosts);
+		void onReadPostsSuccess(PagesDatabase.Cache.State cacheState, Set<PendingUserPost> removedPendingUserPosts);
 		void onReadPostsRedirect(RedirectException.Target target);
 		void onReadPostsFail(ErrorItem errorItem);
 	}
@@ -63,10 +61,6 @@ public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 		this.threadNumber = threadNumber;
 		this.loadFullThread = loadFullThread;
 		this.pendingUserPosts = pendingUserPosts != null ? new HashSet<>(pendingUserPosts) : null;
-	}
-
-	public boolean isLoadFullThread() {
-		return loadFullThread;
 	}
 
 	@Override
@@ -179,6 +173,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 				}
 			}
 
+			PagesDatabase.Cache.State cacheState;
 			boolean newThread = meta == null;
 			try {
 				Uri archivedThreadUri = result.archivedThreadUri;
@@ -190,19 +185,20 @@ public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 					uniquePosters = meta.uniquePosters;
 				}
 				meta = new PagesDatabase.Meta(validator, archivedThreadUri, uniquePosters);
-				PagesDatabase.getInstance().insertNewPosts(threadKey, posts, meta, temporary, newThread, partial);
+				cacheState = PagesDatabase.getInstance().insertNewPosts(threadKey,
+						posts, meta, temporary, newThread, partial);
 			} catch (IOException e) {
 				errorItem = new ErrorItem(ErrorItem.Type.NO_ACCESS_TO_MEMORY);
 				return false;
 			}
 
-			this.newThread = newThread;
-			this.shouldExtract = true;
+			this.cacheState = cacheState;
 			this.removedPendingUserPosts = removedPendingUserPosts;
 			return true;
 		} catch (HttpException e) {
 			int responseCode = e.getResponseCode();
 			if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
+				cacheState = PagesDatabase.getInstance().getCacheState(threadKey);
 				return true;
 			}
 			if (responseCode == HttpURLConnection.HTTP_NOT_FOUND ||
@@ -244,7 +240,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 			if (target != null) {
 				callback.onReadPostsRedirect(target);
 			} else {
-				callback.onReadPostsSuccess(newThread, shouldExtract, removedPendingUserPosts != null
+				callback.onReadPostsSuccess(cacheState, removedPendingUserPosts != null
 						? removedPendingUserPosts : Collections.emptySet());
 			}
 		} else {

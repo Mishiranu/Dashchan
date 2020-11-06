@@ -42,14 +42,10 @@ public class ExtractPostsTask extends ExecutorTask<Void, ExtractPostsTask.Result
 		public final Uri archivedThreadUri;
 		public final int uniquePosters;
 
-		public final boolean initial;
-		public final boolean newThread;
-		public final boolean erased;
-
 		public Result(Set<PostNumber> newPosts, Set<PostNumber> deletedPosts, Set<PostNumber> editedPosts,
 				int replyCount, PagesDatabase.Cache cache, boolean cacheChanged, Map<PostNumber, PostItem> postItems,
 				Collection<PostNumber> removedPosts, PostsDatabase.Flags flags, ThreadsDatabase.StateExtra stateExtra,
-				Uri archivedThreadUri, int uniquePosters, boolean initial, boolean newThread, boolean erased) {
+				Uri archivedThreadUri, int uniquePosters) {
 			this.newPosts = newPosts;
 			this.deletedPosts = deletedPosts;
 			this.editedPosts = editedPosts;
@@ -62,9 +58,6 @@ public class ExtractPostsTask extends ExecutorTask<Void, ExtractPostsTask.Result
 			this.stateExtra = stateExtra;
 			this.archivedThreadUri = archivedThreadUri;
 			this.uniquePosters = uniquePosters;
-			this.initial = initial;
-			this.newThread = newThread;
-			this.erased = erased;
 		}
 	}
 
@@ -73,20 +66,18 @@ public class ExtractPostsTask extends ExecutorTask<Void, ExtractPostsTask.Result
 	private final Chan chan;
 	private final String boardName;
 	private final String threadNumber;
-	private final boolean initial;
-	private final boolean newThread;
+	private final boolean extractStateExtra;
 	private final PagesDatabase.Cleanup cleanup;
 	private final CancellationSignal signal = new CancellationSignal();
 
-	public ExtractPostsTask(Callback callback, PagesDatabase.Cache cache, Chan chan, String boardName,
-			String threadNumber, boolean initial, boolean newThread, PagesDatabase.Cleanup cleanup) {
+	public ExtractPostsTask(Callback callback, PagesDatabase.Cache cache, Chan chan,
+			String boardName, String threadNumber, boolean extractStateExtra, PagesDatabase.Cleanup cleanup) {
 		this.callback = callback;
 		this.cache = cache;
 		this.chan = chan;
 		this.boardName = boardName;
 		this.threadNumber = threadNumber;
-		this.initial = initial;
-		this.newThread = newThread;
+		this.extractStateExtra = extractStateExtra;
 		this.cleanup = cleanup;
 	}
 
@@ -108,7 +99,7 @@ public class ExtractPostsTask extends ExecutorTask<Void, ExtractPostsTask.Result
 		boolean cacheChanged = false;
 		Map<PostNumber, PostItem> postItems = Collections.emptyMap();
 		Collection<PostNumber> removedPosts = Collections.emptyList();
-		if (initial) {
+		if (extractStateExtra) {
 			stateExtra = CommonDatabase.getInstance().getThreads()
 					.getStateExtra(chan.name, boardName, threadNumber);
 		}
@@ -125,9 +116,9 @@ public class ExtractPostsTask extends ExecutorTask<Void, ExtractPostsTask.Result
 						boardName, threadNumber, originalPostNumber));
 			}
 		}
-		return new Result(diff.newPosts, diff.deletedPosts, diff.editedPosts, diff.replyCount, diff.cache, cacheChanged,
-				postItems, removedPosts, flags, stateExtra, meta != null ? meta.archivedThreadUri : null,
-				meta != null ? meta.uniquePosters : 0, initial, newThread, cleanup == PagesDatabase.Cleanup.ERASE);
+		return new Result(diff.newPosts, diff.deletedPosts, diff.editedPosts, diff.replyCount,
+				diff.cache, cacheChanged, postItems, removedPosts, flags, stateExtra,
+				meta != null ? meta.archivedThreadUri : null, meta != null ? meta.uniquePosters : 0);
 	}
 
 	@Override

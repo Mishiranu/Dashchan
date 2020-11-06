@@ -45,6 +45,10 @@ public class ReadSearchTask extends HttpHolderTask<Void, List<PostItem>> {
 		this.pageNumber = pageNumber;
 	}
 
+	public int getPageNumber() {
+		return pageNumber;
+	}
+
 	private static final Comparator<SinglePost> TIME_COMPARATOR =
 			(lhs, rhs) -> Long.compare(rhs.post.timestamp, lhs.post.timestamp);
 

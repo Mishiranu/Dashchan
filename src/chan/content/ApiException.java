@@ -233,7 +233,7 @@ public final class ApiException extends Exception {
 	public ErrorItem getErrorItem() {
 		String message = getMessage();
 		if (!StringUtils.isEmpty(message)) {
-			return new ErrorItem(0, message);
+			return new ErrorItem(message);
 		}
 		return new ErrorItem(ErrorItem.Type.API, errorType);
 	}

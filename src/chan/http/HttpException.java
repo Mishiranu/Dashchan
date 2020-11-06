@@ -1,5 +1,6 @@
 package chan.http;
 
+import androidx.annotation.NonNull;
 import chan.annotation.Public;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.model.ErrorItem;
@@ -57,6 +58,7 @@ public final class HttpException extends Exception implements ErrorItem.Holder {
 		return socketException;
 	}
 
+	@NonNull
 	@Override
 	public ErrorItem getErrorItemAndHandle() {
 		if (!StringUtils.isEmpty(responseText)) {

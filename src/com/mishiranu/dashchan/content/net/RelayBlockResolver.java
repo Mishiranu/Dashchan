@@ -129,11 +129,13 @@ public class RelayBlockResolver {
 	private static class WebViewRequestCallback extends IRequestCallback.Stub {
 		public final WebViewClient<?> client;
 		public final Uri initialUri;
+		public final String chanTitle;
 		public final Runnable cancel;
 
-		private WebViewRequestCallback(WebViewClient<?> client, Uri initialUri, Runnable cancel) {
+		private WebViewRequestCallback(WebViewClient<?> client, Uri initialUri, String chanTitle, Runnable cancel) {
 			this.client = client;
 			this.initialUri = initialUri;
+			this.chanTitle = chanTitle;
 			this.cancel = cancel;
 		}
 
@@ -187,7 +189,7 @@ public class RelayBlockResolver {
 		private String requireUserCaptcha(String captchaType, String apiKey, String referer,
 				Object challengeExtra, boolean allowSolveAutomatically, boolean retry) {
 			String description = MainApplication.getInstance().getLocalizedContext().getString
-					(R.string.relay_block__format_sentence, client.getName());
+					(R.string.relay_block__format_sentence, client.getName() + " (" + chanTitle + ")");
 			RelayBlockCaptchaReader reader = new RelayBlockCaptchaReader(apiKey, referer,
 					challengeExtra, allowSolveAutomatically);
 			ChanPerformer.CaptchaData captchaData;
@@ -319,9 +321,10 @@ public class RelayBlockResolver {
 				boolean[] finished = {false};
 				Uri initialUri = session.uri.buildUpon().clearQuery().encodedFragment(null).build();
 				String userAgent = AdvancedPreferences.getUserAgent(session.chan.name);
+				String chanTitle = session.chan.configuration.getTitle();
 				HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(session.chan);
 				boolean verifyCertificate = session.chan.locator.isUseHttps() && Preferences.isVerifyCertificate();
-				WebViewRequestCallback requestCallback = new WebViewRequestCallback(client, initialUri,
+				WebViewRequestCallback requestCallback = new WebViewRequestCallback(client, initialUri, chanTitle,
 						() -> status.cancel = true);
 				String requestId = UUID.randomUUID().toString();
 				Thread blockingCallThread = new Thread(() -> {

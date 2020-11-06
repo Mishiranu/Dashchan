@@ -21,6 +21,7 @@ import androidx.fragment.app.Fragment;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
@@ -39,14 +40,15 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 	private static final String EXTRA_LIST_POSITION = "listPosition";
 	private static final String EXTRA_PARCELABLE_EXTRA = "parcelableExtra";
+	private static final String EXTRA_INIT_ERROR_ITEM = "initErrorItem";
 	private static final String EXTRA_SEARCH_CURRENT_QUERY = "searchCurrentQuery";
 	private static final String EXTRA_SEARCH_SUBMIT_QUERY = "searchSubmitQuery";
 	private static final String EXTRA_SEARCH_FOCUSED = "searchFocused";
 
 	public interface Callback {
 		UiManager getUiManager();
-		Object getRetainExtra(String retainId);
-		void storeRetainExtra(String retainId, Object extra);
+		ListPage.Retainable getRetainableExtra(String retainId);
+		void storeRetainableExtra(String retainId, ListPage.Retainable extra);
 		ActionBar getActionBar();
 		void setPageTitle(String title, String subtitle);
 		void invalidateHomeUpState();
@@ -87,6 +89,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 	private ListPosition listPosition;
 	private Parcelable parcelableExtra;
+	private ErrorItem initErrorItem;
 	private String searchCurrentQuery;
 	private String searchSubmitQuery;
 	private boolean searchFocused;
@@ -94,6 +97,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 	private ListPage.InitRequest initRequest;
 	private boolean resetScroll = false;
 
+	private boolean allowShowScale;
 	private Runnable doOnResume;
 	private Menu currentMenu;
 	private boolean fillMenuOnResume;
@@ -108,6 +112,8 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 				? savedInstanceState.getParcelable(EXTRA_LIST_POSITION) : null;
 		parcelableExtra = savedInstanceState != null ? savedInstanceState
 				.getParcelable(EXTRA_PARCELABLE_EXTRA) : null;
+		initErrorItem = savedInstanceState != null ? savedInstanceState
+				.getParcelable(EXTRA_INIT_ERROR_ITEM) : null;
 		searchCurrentQuery = savedInstanceState != null ? savedInstanceState
 				.getString(EXTRA_SEARCH_CURRENT_QUERY) : null;
 		searchSubmitQuery = savedInstanceState != null ? savedInstanceState
@@ -128,6 +134,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		actionBarLockerPull = "pull-" + UUID.randomUUID();
 		actionBarLockerSearch = "search-" + UUID.randomUUID();
 
+		allowShowScale = true;
 		listPage = getPage().content.newPage();
 		progressView = view.findViewById(R.id.progress);
 		errorView = view.findViewById(R.id.error);
@@ -164,10 +171,16 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		super.onActivityCreated(savedInstanceState);
 
 		setHasOptionsMenu(true);
+		ErrorItem initErrorItem = this.initErrorItem;
+		this.initErrorItem = null;
+		ListPage.InitRequest initRequest = this.initRequest;
+		this.initRequest = null;
+		if (initRequest == null && initErrorItem != null) {
+			initRequest = new ListPage.InitRequest(initErrorItem);
+		}
 		listPage.init(getPage(), this, this, recyclerView, listPosition, getCallback().getUiManager(),
-				getCallback().getRetainExtra(getRetainId()), parcelableExtra, initRequest,
+				getCallback().getRetainableExtra(getRetainId()), parcelableExtra, initRequest,
 				new ListPage.InitSearch(searchCurrentQuery, searchSubmitQuery));
-		initRequest = null;
 		notifyTitleChanged();
 	}
 
@@ -209,8 +222,8 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 		if (listPage != null) {
 			listPosition = listPage.getListPosition();
-			Pair<Object, Parcelable> extraPair = listPage.getExtraToStore(saveToStack);
-			getCallback().storeRetainExtra(getRetainId(), extraPair.first);
+			Pair<ListPage.Retainable, Parcelable> extraPair = listPage.getExtraToStore(saveToStack);
+			getCallback().storeRetainableExtra(getRetainId(), extraPair.first);
 			parcelableExtra = extraPair.second;
 			CustomSearchView searchView = getSearchView(false);
 			if (searchView != null) {
@@ -219,6 +232,9 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		}
 		outState.putParcelable(EXTRA_LIST_POSITION, listPosition);
 		outState.putParcelable(EXTRA_PARCELABLE_EXTRA, parcelableExtra);
+		if (!saveToStack && initErrorItem != null) {
+			outState.putParcelable(EXTRA_INIT_ERROR_ITEM, initErrorItem);
+		}
 		outState.putString(EXTRA_SEARCH_CURRENT_QUERY, searchCurrentQuery);
 		outState.putString(EXTRA_SEARCH_SUBMIT_QUERY, searchSubmitQuery);
 		outState.putBoolean(EXTRA_SEARCH_FOCUSED, searchFocused && !saveToStack);
@@ -454,19 +470,38 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 	}
 
 	@Override
-	public void switchView(ListPage.ViewType viewType, String message) {
-		progressView.setVisibility(viewType == ListPage.ViewType.PROGRESS ? View.VISIBLE : View.GONE);
-		errorView.setVisibility(viewType == ListPage.ViewType.ERROR ? View.VISIBLE : View.GONE);
-		if (viewType == ListPage.ViewType.ERROR) {
-			errorText.setText(message != null ? message : getString(R.string.unknown_error));
+	public void switchList() {
+		initErrorItem = null;
+		progressView.setVisibility(View.GONE);
+		errorView.setVisibility(View.GONE);
+	}
+
+	@Override
+	public void switchProgress() {
+		initErrorItem = null;
+		progressView.setVisibility(View.VISIBLE);
+		errorView.setVisibility(View.GONE);
+	}
+
+	@Override
+	public void switchError(ErrorItem errorItem) {
+		if (errorItem == null) {
+			errorItem = new ErrorItem(ErrorItem.Type.UNKNOWN);
 		}
+		initErrorItem = errorItem;
+		progressView.setVisibility(View.GONE);
+		errorView.setVisibility(View.VISIBLE);
+		errorText.setText(errorItem.toString());
 	}
 
 	@Override
 	public void showScaleAnimation() {
-		Animator animator = AnimatorInflater.loadAnimator(requireContext(), R.animator.fragment_in);
-		animator.setTarget(recyclerView);
-		animator.start();
+		if (allowShowScale) {
+			allowShowScale = false;
+			Animator animator = AnimatorInflater.loadAnimator(requireContext(), R.animator.fragment_in);
+			animator.setTarget(recyclerView);
+			animator.start();
+		}
 	}
 
 	@Override

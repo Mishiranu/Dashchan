@@ -406,7 +406,7 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 	public static class CheckAuthorizationViewModel extends TaskViewModel<CheckAuthorizationTask, ErrorItem> {}
 
 	private static class CheckAuthorizationTask extends HttpHolderTask<Void, ErrorItem> {
-		public static final ErrorItem SUCCESS = new ErrorItem(null);
+		public static final ErrorItem SUCCESS = new ErrorItem("");
 
 		private final CheckAuthorizationViewModel viewModel;
 		private final Chan chan;

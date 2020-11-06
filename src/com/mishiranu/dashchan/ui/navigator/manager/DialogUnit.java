@@ -66,6 +66,7 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.util.WeakObservable;
 import com.mishiranu.dashchan.widget.AttachmentView;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.CommentTextView;
@@ -106,15 +107,21 @@ public class DialogUnit {
 		}
 
 		public static class State {
-			private final ArrayList<DialogProvider.Factory<?>> factories;
+			private final List<DialogProvider.Factory<?>> factories;
 			private final AttachmentDialog attachmentDialog;
 			private final PostNumber postContextMenu;
 
-			public State(ArrayList<DialogProvider.Factory<?>> factories, AttachmentDialog attachmentDialog,
+			public State(List<DialogProvider.Factory<?>> factories, AttachmentDialog attachmentDialog,
 					PostNumber postContextMenu) {
 				this.factories = factories;
 				this.attachmentDialog = attachmentDialog;
 				this.postContextMenu = postContextMenu;
+			}
+
+			public void dropState() {
+				for (DialogProvider.Factory<?> factory : factories) {
+					factory.release();
+				}
 			}
 		}
 
@@ -133,6 +140,7 @@ public class DialogUnit {
 					pair.first.delegate.saveState(pair.second);
 				}
 				factories.add(pair.first.delegate.factory);
+				pair.first.delegate.factory.use();
 			}
 			return new State(factories, attachmentDialog != null ? attachmentDialog.first : null,
 					postContextMenu != null ? postContextMenu.first : null);
@@ -161,8 +169,8 @@ public class DialogUnit {
 		}
 
 		@Override
-		public void destroyView(View view) {
-			delegate.destroyView(view);
+		public void destroyView(View view, boolean remove) {
+			delegate.destroyView(view, remove);
 		}
 	}
 
@@ -172,6 +180,7 @@ public class DialogUnit {
 
 		public TypedDialogFactory(DialogProvider.Factory<T> factory,
 				UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
+			factory.use();
 			this.provider = factory.create(uiManager, configurationSet);
 			this.factory = factory;
 		}
@@ -220,8 +229,11 @@ public class DialogUnit {
 			return content;
 		}
 
-		public void destroyView(View view) {
+		public void destroyView(View view, boolean remove) {
 			saveState(view);
+			if (remove) {
+				factory.release();
+			}
 			DialogHolder<?> holder = (DialogHolder<?>) view.getTag();
 			provider.uiManager.observable().unregister(holder);
 			holder.cancel();
@@ -350,8 +362,21 @@ public class DialogUnit {
 
 		public static abstract class Factory<T> {
 			public ListPosition listPosition;
+			public int useCount;
 
 			public abstract DialogProvider<T> create(UiManager uiManager, UiManager.ConfigurationSet configurationSet);
+			public void destroy() {}
+
+			public final void use() {
+				useCount++;
+			}
+
+			public final void release() {
+				useCount--;
+				if (useCount == 0) {
+					destroy();
+				}
+			}
 		}
 
 		public final UiManager uiManager;
@@ -672,14 +697,19 @@ public class DialogUnit {
 	}
 
 	private static class AsyncDialogProvider extends DialogProvider<AsyncDialogProvider>
-			implements ReadSinglePostTask.Callback, UiManager.PostsProvider {
-		public static class Factory extends DialogProvider.Factory<AsyncDialogProvider> {
+			implements UiManager.PostsProvider {
+		public static class Factory extends DialogProvider.Factory<AsyncDialogProvider>
+				implements ReadSinglePostTask.Callback {
+			private final WeakObservable<Runnable> observable = new WeakObservable<>();
+
 			private final String chanName;
 			private final String boardName;
 			private final String threadNumber;
 			private final PostNumber postNumber;
 
 			private PostItem postItem;
+			private ErrorItem errorItem;
+			private ReadSinglePostTask readTask;
 
 			public Factory(String chanName, String boardName, String threadNumber, PostNumber postNumber) {
 				this.chanName = chanName;
@@ -691,12 +721,54 @@ public class DialogUnit {
 			@Override
 			public AsyncDialogProvider create(UiManager uiManager, UiManager.ConfigurationSet configurationSet) {
 				GalleryItem.Set gallerySet = new GalleryItem.Set(false);
+				if (postItem == null && errorItem == null && readTask == null) {
+					readTask = new ReadSinglePostTask(this, Chan.get(chanName), boardName, threadNumber, postNumber);
+					readTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+				}
 				return new AsyncDialogProvider(uiManager, dialogProvider -> new UiManager
 						.ConfigurationSet(configurationSet.chanName, null, dialogProvider,
 						UiManager.PostStateProvider.DEFAULT, gallerySet, configurationSet.fragmentManager,
 						configurationSet.stackInstance, null, dialogProvider,
 						false, true, false, false, false, null), this,
 						chanName, boardName, threadNumber, postNumber, gallerySet);
+			}
+
+			private void notifyObservers() {
+				// Error will cause observer to unregister
+				ArrayList<Runnable> observers = null;
+				for (Runnable runnable : observable) {
+					if (observers == null) {
+						observers = new ArrayList<>(1);
+					}
+					observers.add(runnable);
+				}
+				if (observers != null) {
+					for (Runnable runnable : observers) {
+						runnable.run();
+					}
+				}
+			}
+
+			@Override
+			public void onReadSinglePostSuccess(PostItem postItem) {
+				readTask = null;
+				this.postItem = postItem;
+				notifyObservers();
+			}
+
+			@Override
+			public void onReadSinglePostFail(ErrorItem errorItem) {
+				readTask = null;
+				this.errorItem = errorItem;
+				notifyObservers();
+			}
+
+			@Override
+			public void destroy() {
+				if (readTask != null) {
+					readTask.cancel();
+					readTask = null;
+				}
 			}
 		}
 
@@ -706,8 +778,6 @@ public class DialogUnit {
 		private final String threadNumber;
 		private final PostNumber postNumber;
 		private final GalleryItem.Set gallerySet;
-
-		private ReadSinglePostTask readTask;
 
 		private AsyncDialogProvider(UiManager uiManager,
 				ConfigurationSetProvider<AsyncDialogProvider> configurationSetProvider, Factory factory,
@@ -721,11 +791,12 @@ public class DialogUnit {
 			this.postNumber = postNumber;
 			this.gallerySet = gallerySet;
 			if (factory.postItem != null) {
-				onReadSinglePostSuccess(factory.postItem);
+				updatePostItem();
+			} else if (factory.errorItem != null) {
+				ConcurrentUtils.HANDLER.post(updateErrorItem);
 			} else {
 				switchState(State.LOADING, null);
-				readTask = new ReadSinglePostTask(this, Chan.get(chanName), boardName, threadNumber, postNumber);
-				readTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+				factory.observable.register(takeResult);
 			}
 		}
 
@@ -759,16 +830,12 @@ public class DialogUnit {
 
 		@Override
 		public void onCancel() {
-			super.onCancel();
-			if (readTask != null) {
-				readTask.cancel();
-				readTask = null;
-			}
+			ConcurrentUtils.HANDLER.removeCallbacks(updateErrorItem);
+			factory.observable.unregister(takeResult);
 		}
 
-		@Override
-		public void onReadSinglePostSuccess(PostItem postItem) {
-			factory.postItem = postItem;
+		private void updatePostItem() {
+			PostItem postItem = factory.postItem;
 			List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 			if (attachmentItems != null) {
 				if (postItem.isOriginalPost()) {
@@ -776,18 +843,29 @@ public class DialogUnit {
 				}
 				gallerySet.put(postItem.getPostNumber(), attachmentItems);
 			}
-			switchState(State.LIST, null);
 		}
 
-		@Override
-		public void onReadSinglePostFail(final ErrorItem errorItem) {
+		private void updateErrorItem() {
+			ErrorItem errorItem = factory.errorItem;
 			switchState(State.ERROR, () -> {
 				Context context = uiManager.getContext();
 				ClickableToast.show(context, errorItem.toString(),
 						context.getString(R.string.open_thread), false, () -> uiManager.navigator()
-						.navigatePosts(chanName, boardName, threadNumber, postNumber, null));
+								.navigatePosts(chanName, boardName, threadNumber, postNumber, null));
 			});
 		}
+
+		private void takeResult() {
+			if (factory.postItem != null) {
+				updatePostItem();
+				switchState(State.LIST, null);
+			} else {
+				updateErrorItem();
+			}
+		}
+
+		private final Runnable updateErrorItem = this::updateErrorItem;
+		private final Runnable takeResult = this::takeResult;
 	}
 
 	public void notifyDataSetChangedToAll(StackInstance stackInstance) {

@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import chan.content.ChanConfiguration;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.async.ReadSearchTask;
+import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostItem;
@@ -31,13 +32,21 @@ import java.util.List;
 
 public class SearchPage extends ListPage implements SearchAdapter.Callback,
 		UiManager.Observer, ReadSearchTask.Callback {
-	private static class RetainExtra {
-		public static final ExtraFactory<RetainExtra> FACTORY = RetainExtra::new;
+	private static class RetainableExtra implements Retainable {
+		public static final ExtraFactory<RetainableExtra> FACTORY = RetainableExtra::new;
 
 		public final ArrayList<PostItem> postItems = new ArrayList<>();
 		public int pageNumber;
 
 		public DialogUnit.StackInstance.State dialogsState;
+
+		@Override
+		public void clear() {
+			if (dialogsState != null) {
+				dialogsState.dropState();
+				dialogsState = null;
+			}
+		}
 	}
 
 	private static class ParcelableExtra implements Parcelable {
@@ -70,8 +79,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 		};
 	}
 
-	private ReadSearchTask readTask;
-	private boolean showScaleOnSuccess;
+	public static class ReadViewModel extends TaskViewModel.Proxy<ReadSearchTask, ReadSearchTask.Callback> {}
 
 	private SearchAdapter getAdapter() {
 		return (SearchAdapter) getRecyclerView().getAdapter();
@@ -95,37 +103,59 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 				(c, position) -> adapter.getItemHeader(position)));
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
 		uiManager.observable().register(this);
+
 		InitRequest initRequest = getInitRequest();
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
+		ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
 		if (initRequest.shouldLoad) {
-			retainExtra.postItems.clear();
-			retainExtra.pageNumber = 0;
 			parcelableExtra.groupMode = false;
-			showScaleOnSuccess = true;
-			refreshSearch(false, false);
+		}
+		adapter.setGroupMode(parcelableExtra.groupMode);
+		if (initRequest.errorItem != null) {
+			switchError(initRequest.errorItem);
 		} else {
-			adapter.setGroupMode(parcelableExtra.groupMode);
-			if (!retainExtra.postItems.isEmpty()) {
-				adapter.setItems(retainExtra.postItems);
+			boolean load = true;
+			if (!initRequest.shouldLoad && !retainableExtra.postItems.isEmpty()) {
+				load = false;
+				adapter.setItems(retainableExtra.postItems);
 				restoreListPosition();
-				if (retainExtra.dialogsState != null) {
-					uiManager.dialog().restoreState(adapter.getConfigurationSet(), retainExtra.dialogsState);
-					retainExtra.dialogsState = null;
+				if (retainableExtra.dialogsState != null) {
+					uiManager.dialog().restoreState(adapter.getConfigurationSet(), retainableExtra.dialogsState);
+					retainableExtra.dialogsState.dropState();
+					retainableExtra.dialogsState = null;
 				}
-			} else {
-				showScaleOnSuccess = true;
+			}
+			if (readViewModel.hasTaskOrValue()) {
+				if (adapter.getItemCount() == 0) {
+					getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+					switchProgress();
+				} else {
+					ReadSearchTask task = readViewModel.getTask();
+					boolean bottom = task != null && task.getPageNumber() > 0;
+					recyclerView.getWrapper().startBusyState(bottom
+							? PullableWrapper.Side.BOTTOM : PullableWrapper.Side.TOP);
+				}
+			} else if (load) {
+				retainableExtra.postItems.clear();
+				retainableExtra.pageNumber = 0;
 				refreshSearch(false, false);
 			}
+		}
+		readViewModel.observe(this, this);
+	}
+
+	@Override
+	protected void onResume() {
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+		if (retainableExtra.dialogsState != null) {
+			retainableExtra.dialogsState.dropState();
+			retainableExtra.dialogsState = null;
 		}
 	}
 
 	@Override
 	protected void onDestroy() {
-		if (readTask != null) {
-			readTask.cancel();
-			readTask = null;
-		}
 		getUiManager().observable().unregister(this);
 	}
 
@@ -137,8 +167,11 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 	@Override
 	protected void onRequestStoreExtra(boolean saveToStack) {
 		SearchAdapter adapter = getAdapter();
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-		retainExtra.dialogsState = adapter.getConfigurationSet().stackInstance.collectState();
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+		if (retainableExtra.dialogsState != null) {
+			retainableExtra.dialogsState.dropState();
+		}
+		retainableExtra.dialogsState = adapter.getConfigurationSet().stackInstance.collectState();
 	}
 
 	@Override
@@ -233,64 +266,62 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 
 	private void refreshSearch(boolean showPull, boolean nextPage) {
 		Page page = getPage();
-		if (readTask != null) {
-			readTask.cancel();
-		}
 		int pageNumber = 0;
 		if (nextPage) {
-			RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
-			if (!retainExtra.postItems.isEmpty()) {
-				pageNumber = retainExtra.pageNumber + 1;
+			RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
+			if (!retainableExtra.postItems.isEmpty()) {
+				pageNumber = retainableExtra.pageNumber + 1;
 			}
 		}
-		readTask = new ReadSearchTask(this, getChan(), page.boardName, page.searchQuery, pageNumber);
-		readTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+		ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
+		ReadSearchTask task = new ReadSearchTask(readViewModel.callback,
+				getChan(), page.boardName, page.searchQuery, pageNumber);
+		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
+		readViewModel.attach(task);
 		if (showPull) {
 			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
-			switchView(ViewType.LIST, null);
+			switchList();
 		} else {
 			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
-			switchView(ViewType.PROGRESS, null);
+			switchProgress();
 		}
 	}
 
 	@Override
 	public void onReadSearchSuccess(List<PostItem> postItems, int pageNumber) {
-		readTask = null;
 		PullableRecyclerView recyclerView = getRecyclerView();
 		recyclerView.getWrapper().cancelBusyState();
 		SearchAdapter adapter = getAdapter();
-		boolean showScale = showScaleOnSuccess;
-		showScaleOnSuccess = false;
-		RetainExtra retainExtra = getRetainExtra(RetainExtra.FACTORY);
+		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 		if (pageNumber == 0 && (postItems == null || postItems.isEmpty())) {
-			switchView(ViewType.ERROR, R.string.not_found);
+			switchError(R.string.not_found);
 			adapter.setItems(null);
-			retainExtra.postItems.clear();
+			retainableExtra.postItems.clear();
 		} else {
-			switchView(ViewType.LIST, null);
+			switchList();
 			if (pageNumber == 0) {
+				boolean showScale = adapter.getItemCount() == 0;
 				adapter.setItems(postItems);
-				retainExtra.postItems.clear();
-				retainExtra.postItems.addAll(postItems);
-				retainExtra.pageNumber = 0;
+				retainableExtra.postItems.clear();
+				retainableExtra.postItems.addAll(postItems);
+				retainableExtra.pageNumber = 0;
 				recyclerView.scrollToPosition(0);
 				if (showScale) {
 					showScaleAnimation();
 				}
 			} else {
 				HashSet<PostNumber> existingPostNumbers = new HashSet<>();
-				for (PostItem postItem : retainExtra.postItems) {
+				for (PostItem postItem : retainableExtra.postItems) {
 					existingPostNumbers.add(postItem.getPostNumber());
 				}
 				if (postItems != null) {
 					for (PostItem postItem : postItems) {
 						if (!existingPostNumbers.contains(postItem.getPostNumber())) {
-							retainExtra.postItems.add(postItem);
+							retainableExtra.postItems.add(postItem);
 						}
 					}
 				}
-				if (retainExtra.postItems.size() > existingPostNumbers.size()) {
+				if (retainableExtra.postItems.size() > existingPostNumbers.size()) {
 					int oldCount = adapter.getItemCount();
 					boolean groupMode = adapter.isGroupMode();
 					boolean needScroll = false;
@@ -301,8 +332,8 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 						needScroll = position + 1 == oldCount &&
 								recyclerView.getHeight() - recyclerView.getPaddingBottom() - child.getBottom() >= 0;
 					}
-					adapter.setItems(retainExtra.postItems);
-					retainExtra.pageNumber = pageNumber;
+					adapter.setItems(retainableExtra.postItems);
+					retainableExtra.pageNumber = pageNumber;
 					if (!groupMode && needScroll) {
 						ListViewUtils.smoothScrollToPosition(recyclerView, oldCount);
 					}
@@ -315,10 +346,9 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 
 	@Override
 	public void onReadSearchFail(ErrorItem errorItem) {
-		readTask = null;
 		getRecyclerView().getWrapper().cancelBusyState();
 		if (getAdapter().getItemCount() == 0) {
-			switchView(ViewType.ERROR, errorItem.toString());
+			switchError(errorItem);
 		} else {
 			ClickableToast.show(getContext(), errorItem.toString());
 		}

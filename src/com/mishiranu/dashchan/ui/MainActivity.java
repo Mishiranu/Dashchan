@@ -1008,7 +1008,15 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 				String retainId = REFERENCE_FRAGMENT.getRetainId();
 				retainIds.add(retainId);
 			}
-			retainViewModel.extras.keySet().retainAll(retainIds);
+			Iterator<HashMap.Entry<String, ListPage.Retainable>> iterator =
+					retainViewModel.extras.entrySet().iterator();
+			while (iterator.hasNext()) {
+				HashMap.Entry<String, ListPage.Retainable> entry = iterator.next();
+				if (!retainIds.contains(entry.getKey())) {
+					entry.getValue().clear();
+					iterator.remove();
+				}
+			}
 		}
 	}
 
@@ -1058,12 +1066,12 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	}
 
 	@Override
-	public Object getRetainExtra(String retainId) {
+	public ListPage.Retainable getRetainableExtra(String retainId) {
 		return retainViewModel.extras.get(retainId);
 	}
 
 	@Override
-	public void storeRetainExtra(String retainId, Object extra) {
+	public void storeRetainableExtra(String retainId, ListPage.Retainable extra) {
 		if (extra != null) {
 			retainViewModel.extras.put(retainId, extra);
 		} else {
@@ -2124,6 +2132,14 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	}
 
 	public static class RetainViewModel extends ViewModel {
-		private final HashMap<String, Object> extras = new HashMap<>();
+		private final HashMap<String, ListPage.Retainable> extras = new HashMap<>();
+
+		@Override
+		protected void onCleared() {
+			for (ListPage.Retainable retainable : extras.values()) {
+				retainable.clear();
+			}
+			extras.clear();
+		}
 	}
 }

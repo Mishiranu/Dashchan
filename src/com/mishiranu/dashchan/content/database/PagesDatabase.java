@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 public class PagesDatabase {
 	private interface Schema {
@@ -242,12 +243,52 @@ public class PagesDatabase {
 	}
 
 	public static class Cache {
+		public static class State {
+			private final UUID id;
+			private boolean newThread;
+
+			private State(UUID id, boolean newThread) {
+				this.id = id;
+				this.newThread = newThread;
+			}
+
+			private boolean isNewThreadOnce() {
+				if (newThread) {
+					synchronized (this) {
+						if (newThread) {
+							newThread = false;
+							return true;
+						}
+					}
+				}
+				return false;
+			}
+
+			@Override
+			public boolean equals(Object o) {
+				if (o == this) {
+					return true;
+				}
+				if (o instanceof State) {
+					return ((State) o).id.equals(id);
+				}
+				return false;
+			}
+
+			@Override
+			public int hashCode() {
+				return id.hashCode();
+			}
+		}
+
 		private final Map<PostNumber, DiffItem> diffItems;
 		public final PostNumber originalPostNumber;
+		public final State state;
 
-		private Cache(Map<PostNumber, DiffItem> diffItems, PostNumber originalPostNumber) {
+		private Cache(Map<PostNumber, DiffItem> diffItems, PostNumber originalPostNumber, State state) {
 			this.diffItems = diffItems;
 			this.originalPostNumber = originalPostNumber;
+			this.state = state;
 		}
 
 		public boolean isEmpty() {
@@ -257,6 +298,10 @@ public class PagesDatabase {
 		public boolean isChanged(Cache oldCache) {
 			// Compare references
 			return oldCache == null || oldCache.diffItems != diffItems;
+		}
+
+		public boolean isNewThreadOnce() {
+			return state.isNewThreadOnce();
 		}
 	}
 
@@ -554,6 +599,20 @@ public class PagesDatabase {
 		return postNumbers != null ? postNumbers : Collections.emptyList();
 	}
 
+	private final HashMap<ThreadKey, Cache.State> cacheStates = new HashMap<>();
+
+	public Cache.State getCacheState(ThreadKey threadKey) {
+		Objects.requireNonNull(threadKey);
+		synchronized (cacheStates) {
+			Cache.State state = cacheStates.get(threadKey);
+			if (state == null) {
+				state = new Cache.State(UUID.randomUUID(), false);
+				cacheStates.put(threadKey, state);
+			}
+			return state;
+		}
+	}
+
 	private void updateFlags(ThreadKey threadKey, Expression.LongIterator iterator, String transform) {
 		// Use filter to properly handle reused rowid
 		Expression.Filter filter = threadKey.filterPosts().build();
@@ -582,7 +641,7 @@ public class PagesDatabase {
 
 	private final Expression.KeyLock<ThreadKey> insertLocks = new Expression.KeyLock<>();
 
-	public void insertNewPosts(@NonNull ThreadKey threadKey, @NonNull List<Post> posts, @NonNull Meta meta,
+	public Cache.State insertNewPosts(@NonNull ThreadKey threadKey, @NonNull List<Post> posts, @NonNull Meta meta,
 			boolean temporary, boolean newThread, boolean partial) throws IOException {
 		Objects.requireNonNull(threadKey);
 		Objects.requireNonNull(posts);
@@ -604,14 +663,12 @@ public class PagesDatabase {
 		}
 		Set<PostNumber> userPosts = CommonDatabase.getInstance().getPosts()
 				.getFlags(threadKey.chanName, threadKey.boardName, threadKey.threadNumber).userPosts;
-
-		insertLocks.lock(threadKey, () -> {
-			insertNewPostsLocked(threadKey, meta, temporary, partial, serializedMap, userPosts);
-			return null;
-		});
+		return insertLocks.lock(threadKey, () -> insertNewPostsLocked(threadKey,
+				meta, temporary, newThread, partial, serializedMap, userPosts));
 	}
 
-	private void insertNewPostsLocked(ThreadKey threadKey, Meta meta, boolean temporary, boolean partial,
+	private Cache.State insertNewPostsLocked(ThreadKey threadKey,
+			Meta meta, boolean temporary, boolean newThread, boolean partial,
 			HashMap<PostNumber, Serialized> serializedMap, Set<PostNumber> userPosts) throws IOException {
 		LongSparseArray<Void> deleted = null;
 		LongSparseArray<Void> restored = null;
@@ -704,6 +761,12 @@ public class PagesDatabase {
 		} finally {
 			database.endTransaction();
 		}
+
+		Cache.State state = new Cache.State(UUID.randomUUID(), newThread);
+		synchronized (cacheStates) {
+			cacheStates.put(threadKey, state);
+		}
+		return state;
 	}
 
 	private final Expression.KeyLock<ThreadKey> collectLocks = new Expression.KeyLock<>();
@@ -780,6 +843,7 @@ public class PagesDatabase {
 		Map<PostNumber, Long> deletedPosts = null;
 		Map<PostNumber, Long> editedPosts = null;
 		Map<PostNumber, Long> replyPosts = null;
+		Cache.State state = getCacheState(threadKey);
 
 		String[] projection = {"rowid", Schema.Posts.Columns.POST_NUMBER_MAJOR,
 				Schema.Posts.Columns.POST_NUMBER_MINOR, Schema.Posts.Columns.FLAGS,
@@ -903,7 +967,7 @@ public class PagesDatabase {
 			}
 		}
 
-		Cache newCache = new Cache(newItems != null ? newItems : oldItems, originalPostNumber);
+		Cache newCache = new Cache(newItems != null ? newItems : oldItems, originalPostNumber, state);
 		return new Diff(newCache, changed != null ? changed : Collections.emptyList(), removed,
 				newPosts != null ? newPosts.keySet() : Collections.emptySet(),
 				deletedPosts != null ? deletedPosts.keySet() : Collections.emptySet(),

@@ -1,5 +1,6 @@
 package chan.content;
 
+import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.Log;
@@ -10,6 +11,7 @@ public class ExtensionException extends Exception implements ErrorItem.Holder {
 		super(throwable);
 	}
 
+	@NonNull
 	@Override
 	public ErrorItem getErrorItemAndHandle() {
 		logException(getCause(), false);

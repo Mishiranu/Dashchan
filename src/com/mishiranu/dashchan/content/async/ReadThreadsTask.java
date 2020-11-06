@@ -52,6 +52,10 @@ public class ReadThreadsTask extends HttpHolderTask<Void, Boolean> {
 		this.append = append;
 	}
 
+	public int getPageNumber() {
+		return pageNumber;
+	}
+
 	@Override
 	protected Boolean run(HttpHolder holder) {
 		try {

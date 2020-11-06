@@ -37,6 +37,10 @@ public class ReadThreadSummariesTask extends HttpHolderTask<Void, List<ThreadSum
 		this.type = type;
 	}
 
+	public int getPageNumber() {
+		return pageNumber;
+	}
+
 	@Override
 	protected List<ThreadSummary> run(HttpHolder holder) {
 		try {

@@ -148,7 +148,7 @@ public class GeneralFragment extends PreferenceFragment implements ActivityHandl
 	public static class CheckViewModel extends TaskViewModel<CheckCaptchaSolvingTask, ErrorItem> {}
 
 	private static class CheckCaptchaSolvingTask extends HttpHolderTask<Void, ErrorItem> {
-		private static final ErrorItem SUCCESS = new ErrorItem(null);
+		private static final ErrorItem SUCCESS = new ErrorItem("");
 
 		private final CheckViewModel viewModel;
 		private final Map<String, String> data;

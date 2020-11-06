@@ -55,7 +55,7 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback, Ge
 		recyclerView.addItemDecoration(new HeaderItemDecoration(adapter::getItemHeader));
 		recyclerView.setItemAnimator(null);
 		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.NONE);
-		switchView(ViewType.PROGRESS, null);
+		switchProgress();
 		updateHistory();
 	}
 
@@ -160,12 +160,12 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback, Ge
 		this.firstLoad = false;
 		getAdapter().setCursor(cursor);
 		if (cursor.hasItems) {
-			switchView(ViewType.LIST, null);
+			switchList();
 			if (firstLoad) {
 				restoreListPosition();
 			}
 		} else {
-			switchView(ViewType.ERROR, R.string.history_is_empty);
+			switchError(R.string.history_is_empty);
 		}
 	}
 }
