@@ -10,6 +10,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.Log;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class CaptchaSolving {
@@ -32,32 +33,53 @@ public class CaptchaSolving {
 		return uri;
 	}
 
-	private boolean checkConfiguration(String endpoint, String token) {
-		return !StringUtils.isEmpty(endpoint) && !StringUtils.isEmpty(token);
+	private Pair<String, String> getConfiguration() {
+		Map<String, String> map = Preferences.getCaptchaSolving();
+		if (map == null) {
+			return null;
+		}
+		String endpoint = map.get(Preferences.SUB_KEY_CAPTCHA_SOLVING_ENDPOINT);
+		String token = map.get(Preferences.SUB_KEY_CAPTCHA_SOLVING_TOKEN);
+		if (StringUtils.isEmpty(endpoint) || StringUtils.isEmpty(token)) {
+			return null;
+		}
+		return new Pair<>(endpoint, token);
 	}
 
-	public void checkService(HttpHolder holder, String endpoint, String token) throws HttpException,
+	public boolean hasConfiguration() {
+		return getConfiguration() != null;
+	}
+
+	public Map<String, String> checkService(HttpHolder holder) throws HttpException,
 			UnsupportedServiceException, InvalidTokenException {
-		if (!checkConfiguration(endpoint, token)) {
+		Pair<String, String> configuration = getConfiguration();
+		if (configuration == null) {
 			throw new UnsupportedServiceException();
 		}
+		String endpoint = configuration.first;
+		String token = configuration.second;
+		LinkedHashMap<String, String> extra = new LinkedHashMap<>();
 		try {
-			checkServiceInternal(holder, endpoint, token);
+			checkServiceInternal(holder, endpoint, token, extra);
 		} catch (UnsupportedServiceException e) {
 			// Check for HTTP exception
 			new HttpRequest(createUri(endpoint), holder).setHeadMethod()
 					.setSuccessOnly(false).perform().cleanupAndDisconnect();
 			throw e;
 		}
+		return extra;
 	}
 
-	private ServiceType checkServiceInternal(HttpHolder holder, String endpoint, String token) throws HttpException,
-			UnsupportedServiceException, InvalidTokenException {
+	private ServiceType checkServiceInternal(HttpHolder holder, String endpoint, String token,
+			Map<String, String> outExtra) throws HttpException, UnsupportedServiceException, InvalidTokenException {
 		ServiceType serviceType = checkServiceType(holder, endpoint);
 		if (serviceType == null) {
 			throw new UnsupportedServiceException();
 		}
-		if (!checkServiceAuthorization(holder, serviceType, endpoint, token)) {
+		if (outExtra != null) {
+			outExtra.put("protocol", serviceType.name());
+		}
+		if (!checkServiceAuthorization(holder, serviceType, endpoint, token, outExtra)) {
 			throw new InvalidTokenException();
 		}
 		return serviceType;
@@ -99,16 +121,18 @@ public class CaptchaSolving {
 
 	private Pair<String, String> lastAuthorization;
 
-	private boolean checkServiceAuthorization(HttpHolder holder,
-			ServiceType serviceType, String endpoint, String token) throws HttpException {
+	private boolean checkServiceAuthorization(HttpHolder holder, ServiceType serviceType,
+			String endpoint, String token, Map<String, String> outExtra) throws HttpException {
 		Uri endpointUri = createUri(endpoint);
 		Pair<String, String> authorization = new Pair<>(endpoint, token);
 		boolean success;
 		switch (serviceType) {
 			case ANTIGATE_LEGACY: {
-				synchronized (this) {
-					if (authorization.equals(lastAuthorization)) {
-						return true;
+				if (outExtra == null) {
+					synchronized (this) {
+						if (authorization.equals(lastAuthorization)) {
+							return true;
+						}
 					}
 				}
 				Uri uri = endpointUri.buildUpon().appendPath("res.php")
@@ -117,15 +141,22 @@ public class CaptchaSolving {
 						.build();
 				String response = new HttpRequest(uri, holder).setSuccessOnly(true).perform().readString();
 				if (response != null && response.startsWith("OK|")) {
+					if (outExtra != null) {
+						outExtra.put("balance", response.substring(3));
+					}
 					success = true;
 				} else if (response != null && response.startsWith("ERROR_") && response.contains("KEY")) {
 					success = false;
 				} else {
 					try {
 						Float.parseFloat(StringUtils.emptyIfNull(response));
+						if (outExtra != null) {
+							outExtra.put("balance", response);
+						}
 						success = true;
 					} catch (NumberFormatException e) {
-						throw new HttpException(ErrorItem.Type.INVALID_RESPONSE, true, false, new Exception(response));
+						throw new HttpException(ErrorItem.Type.INVALID_RESPONSE,
+								true, false, new Exception(response));
 					}
 				}
 				break;
@@ -142,22 +173,6 @@ public class CaptchaSolving {
 		return success;
 	}
 
-	public boolean shouldValidateConfiguration() {
-		Map<String, String> map = Preferences.getCaptchaSolving();
-		if (map == null) {
-			return false;
-		}
-		String endpoint = map.get(Preferences.SUB_KEY_CAPTCHA_SOLVING_ENDPOINT);
-		String token = map.get(Preferences.SUB_KEY_CAPTCHA_SOLVING_TOKEN);
-		if (StringUtils.isEmpty(endpoint) || StringUtils.isEmpty(token)) {
-			return false;
-		}
-		Pair<String, String> authorization = new Pair<>(endpoint, token);
-		synchronized (this) {
-			return !authorization.equals(lastAuthorization);
-		}
-	}
-
 	private void waitOrThrow(int ms) throws HttpException {
 		try {
 			Thread.sleep(ms);
@@ -171,18 +186,15 @@ public class CaptchaSolving {
 	public String solveCaptcha(HttpHolder holder, CaptchaType captchaType,
 			String apiKey, String referer) throws HttpException {
 		try {
-			Map<String, String> map = Preferences.getCaptchaSolving();
-			if (map == null) {
+			Pair<String, String> configuration = getConfiguration();
+			if (configuration == null) {
 				return null;
 			}
-			String endpoint = map.get(Preferences.SUB_KEY_CAPTCHA_SOLVING_ENDPOINT);
-			String token = map.get(Preferences.SUB_KEY_CAPTCHA_SOLVING_TOKEN);
-			if (!checkConfiguration(endpoint, token)) {
-				return null;
-			}
+			String endpoint = configuration.first;
+			String token = configuration.second;
 			ServiceType serviceType;
 			try {
-				serviceType = checkServiceInternal(holder, endpoint, token);
+				serviceType = checkServiceInternal(holder, endpoint, token, null);
 			} catch (UnsupportedServiceException | InvalidTokenException e) {
 				return null;
 			}

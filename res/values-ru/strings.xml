@@ -62,6 +62,7 @@
 	<string name="captcha_solving">Решение капчи</string>
 	<string name="captcha_solving__summary">Использование стороннего сервиса для автоматического решения
 		reCAPTCHA или hCaptcha</string>
+	<string name="captcha_solving_info__sentence">Поддерживаются совместимые с устаревшим Antigate API сервисы.</string>
 	<string name="captcha_type">Тип капчи</string>
 	<string name="cards">Карточки</string>
 	<string name="catalog">Каталог</string>

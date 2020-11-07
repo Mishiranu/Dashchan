@@ -63,6 +63,7 @@
 	<string name="captcha_pass__summary">Allows to skip captcha</string>
 	<string name="captcha_solving">Captcha solving</string>
 	<string name="captcha_solving__summary">Use external service to solve reCAPTCHA or hCaptcha automatically</string>
+	<string name="captcha_solving_info__sentence">Legacy Antigate API-compatible services are supported.</string>
 	<string name="captcha_type">Captcha type</string>
 	<string name="cards">Cards</string>
 	<string name="catalog">Catalog</string>
