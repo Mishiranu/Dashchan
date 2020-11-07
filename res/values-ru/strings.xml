@@ -77,6 +77,8 @@
 	<string name="clear_history__sentence">Очистить историю?</string>
 	<string name="clear_old">Очистить старые</string>
 	<string name="clearing__ellipsis">Очистка…</string>
+	<string name="close">Закрыть</string>
+	<string name="close_all">Закрыть всё</string>
 	<string name="close_pages">Закрытие страниц</string>
 	<string name="close_pages__summary">Закрывать страницы нажатием кнопки \"Назад\"</string>
 	<string name="closed">Закрыто</string>

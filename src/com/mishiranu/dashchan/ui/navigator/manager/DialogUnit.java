@@ -172,6 +172,16 @@ public class DialogUnit {
 		public void destroyView(View view, boolean remove) {
 			delegate.destroyView(view, remove);
 		}
+
+		@Override
+		public boolean isScrolledToTop(View view) {
+			return delegate.isScrolledToTop(view);
+		}
+
+		@Override
+		public boolean isScrolledToBottom(View view) {
+			return delegate.isScrolledToBottom(view);
+		}
 	}
 
 	private static class TypedDialogFactory<T> {
@@ -242,6 +252,24 @@ public class DialogUnit {
 		public void saveState(View view) {
 			DialogHolder<?> holder = (DialogHolder<?>) view.getTag();
 			factory.listPosition = ListPosition.obtain(holder.recyclerView, null);
+		}
+
+		public boolean isScrolledToTop(View view) {
+			DialogHolder<?> holder = (DialogHolder<?>) view.getTag();
+			if (holder.recyclerView.getVisibility() == View.VISIBLE) {
+				return holder.recyclerView.computeVerticalScrollOffset() == 0;
+			}
+			return true;
+		}
+
+		public boolean isScrolledToBottom(View view) {
+			DialogHolder<?> holder = (DialogHolder<?>) view.getTag();
+			if (holder.recyclerView.getVisibility() == View.VISIBLE) {
+				return holder.recyclerView.computeVerticalScrollOffset() +
+						holder.recyclerView.computeVerticalScrollExtent() >=
+						holder.recyclerView.computeVerticalScrollRange();
+			}
+			return true;
 		}
 	}
 

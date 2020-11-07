@@ -78,6 +78,8 @@
 	<string name="clear_history__sentence">Clear history?</string>
 	<string name="clear_old">Clear old</string>
 	<string name="clearing__ellipsis">Clearing…</string>
+	<string name="close">Close</string>
+	<string name="close_all">Close all</string>
 	<string name="close_pages">Close pages</string>
 	<string name="close_pages__summary">Close pages by clicking the \"Back\" button</string>
 	<string name="closed">Closed</string>
