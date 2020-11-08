@@ -14,7 +14,7 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.CheckPreference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
-import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 
 public class CompatibilityFragment extends PreferenceFragment {
 	private CheckPreference drawOverOtherApplicationsPreference;
@@ -36,7 +36,7 @@ public class CompatibilityFragment extends PreferenceFragment {
 					startActivity(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
 							.setData(Uri.parse("package:" + requireContext().getPackageName())));
 				} catch (ActivityNotFoundException e) {
-					ToastUtils.show(requireContext(), R.string.unknown_address);
+					ClickableToast.show(R.string.unknown_address);
 				}
 			});
 		}

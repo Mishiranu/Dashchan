@@ -14,7 +14,7 @@ import com.mishiranu.dashchan.content.storage.ThemesStorage;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.NavigationUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -206,7 +206,7 @@ public class BackupManager {
 			binder.downloadStorage(input, null, null, null, null,
 					"backup-" + System.currentTimeMillis() + ".zip", false, false);
 		} else {
-			ToastUtils.show(context, R.string.no_access);
+			ClickableToast.show(R.string.no_access);
 		}
 	}
 
@@ -238,7 +238,7 @@ public class BackupManager {
 		if (success) {
 			NavigationUtils.restartApplication(context);
 		} else {
-			ToastUtils.show(context, R.string.unknown_error);
+			ClickableToast.show(R.string.unknown_error);
 		}
 	}
 }

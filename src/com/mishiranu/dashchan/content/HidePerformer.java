@@ -12,7 +12,7 @@ import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
-import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -196,9 +196,9 @@ public class HidePerformer {
 		return AddResult.SUCCESS;
 	}
 
-	public AddResult addHideByName(Context context, Chan chan, PostItem postItem) {
+	public AddResult addHideByName(Chan chan, PostItem postItem) {
 		if (postItem.isUseDefaultName()) {
-			ToastUtils.show(context, R.string.default_name_cant_be_hidden);
+			ClickableToast.show(R.string.default_name_cant_be_hidden);
 			return AddResult.FAIL;
 		}
 		if (names == null) {
@@ -212,11 +212,11 @@ public class HidePerformer {
 		return AddResult.SUCCESS;
 	}
 
-	public AddResult addHideSimilar(Context context, Chan chan, PostItem postItem) {
+	public AddResult addHideSimilar(Chan chan, PostItem postItem) {
 		String comment = postItem.getComment(chan).toString();
 		SimilarTextEstimator.WordsData<PostNumber> wordsData = estimator.getWords(comment);
 		if (wordsData == null) {
-			ToastUtils.show(context, R.string.too_few_meaningful_words);
+			ClickableToast.show(R.string.too_few_meaningful_words);
 			return AddResult.FAIL;
 		}
 		if (similar == null) {

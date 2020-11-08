@@ -22,8 +22,8 @@ import com.mishiranu.dashchan.ui.MainActivity;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.AudioFocus;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.io.File;
 
@@ -124,7 +124,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 				cleanup(false, false);
 				CacheManager cacheManager = CacheManager.getInstance();
 				if (!cacheManager.isCacheAvailable()) {
-					ToastUtils.show(this, R.string.cache_is_unavailable);
+					ClickableToast.show(R.string.cache_is_unavailable);
 					cleanup(true, true);
 				} else {
 					Uri uri = intent.getData();
@@ -132,7 +132,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 					fileName = intent.getStringExtra(EXTRA_FILE_NAME);
 					File cachedFile = cacheManager.getMediaFile(uri, true);
 					if (cachedFile == null) {
-						ToastUtils.show(this, R.string.cache_is_unavailable);
+						ClickableToast.show(R.string.cache_is_unavailable);
 						cleanup(true, true);
 					} else {
 						wakeLock.acquire();
@@ -200,7 +200,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 		if (success) {
 			notifyToggle();
 		} else {
-			ToastUtils.show(this, R.string.playback_error);
+			ClickableToast.show(R.string.playback_error);
 			cleanup(true, true);
 		}
 	}
@@ -271,7 +271,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
-		ToastUtils.show(this, R.string.playback_error);
+		ClickableToast.show(R.string.playback_error);
 		if (audioFile != null) {
 			audioFile.delete();
 		}
@@ -310,7 +310,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 		} catch (Exception e) {
 			audioFile.delete();
 			CacheManager.getInstance().handleDownloadedFile(audioFile, false);
-			ToastUtils.show(this, R.string.playback_error);
+			ClickableToast.show(R.string.playback_error);
 			cleanup(true, true);
 			return;
 		}

@@ -76,7 +76,6 @@ import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.CustomDrawerLayout;
@@ -148,8 +147,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	private static final String LOCKER_NON_PAGE = "nonPage";
 	private static final String LOCKER_ACTION_MODE = "actionMode";
 
-	private final ClickableToast.Holder clickableToastHolder = new ClickableToast.Holder(this);
-
 	@Override
 	protected void attachBaseContext(Context newBase) {
 		super.attachBaseContext(ThemeEngine.attach(LocaleManager.getInstance().apply(newBase)));
@@ -171,7 +168,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 				: ViewUtils.SOFT_INPUT_ADJUST_RESIZE_COMPAT);
 		float density = ResourceUtils.obtainDensity(this);
 		setContentView(R.layout.activity_main);
-		ClickableToast.register(clickableToastHolder);
+		ClickableToast.register(this);
 		ForegroundManager.getInstance().register(this);
 		FavoritesStorage.getInstance().getObservable().register(this);
 		Preferences.PREFERENCES.registerOnSharedPreferenceChangeListener(preferencesListener);
@@ -385,16 +382,15 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 			navigateIntent(getIntent(), false);
 		}
 		if (getCurrentFragment() == null) {
-			boolean hasChans = navigateInitial(false);
-			if (!hasChans) {
-				ClickableToast.show(this, getString(R.string.no_extensions_installed),
-						getString(R.string.install), false, () -> {
-					if (getCurrentFragment() instanceof UpdateFragment) {
-						navigateFragment(new UpdateFragment(), null, true);
-					} else {
-						pushFragment(new UpdateFragment());
-					}
-				});
+			if (!navigateInitial(false)) {
+				ClickableToast.show(getString(R.string.no_extensions_installed), null,
+						new ClickableToast.Button(R.string.install, false, () -> {
+							if (getCurrentFragment() instanceof UpdateFragment) {
+								navigateFragment(new UpdateFragment(), null, true);
+							} else {
+								pushFragment(new UpdateFragment());
+							}
+						}));
 			}
 		}
 
@@ -650,7 +646,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 			Uri uri = intent.getData();
 			if (uri != null) {
 				if (intent.getBooleanExtra(C.EXTRA_FROM_CLIENT, false) || !navigateUri(uri)) {
-					ToastUtils.show(this, R.string.unknown_address);
+					ClickableToast.show(R.string.unknown_address);
 				}
 			} else {
 				String chanName = intent.getStringExtra(C.EXTRA_CHAN_NAME);
@@ -981,7 +977,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		if (currentFragment instanceof ActivityHandler) {
 			((ActivityHandler) currentFragment).onTerminate();
 		}
-		ClickableToast.cancel(this);
+		ClickableToast.cancel();
 		InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
 		if (inputMethodManager != null) {
 			View view = getCurrentFocus();
@@ -1162,11 +1158,11 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		super.onResume();
 
 		watcherServiceClient.start();
-		clickableToastHolder.onResume();
 		drawerForm.updateRestartViewVisibility();
 		drawerForm.updateItems(true, true);
 		updateWideConfiguration(false);
 		handleChansChangedDelayed();
+		ClickableToast.register(this);
 		ForegroundManager.getInstance().register(this);
 
 		Intent navigateIntentOnResume = this.navigateIntentOnResume;
@@ -1183,9 +1179,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	@Override
 	protected void onPause() {
 		super.onPause();
-
 		watcherServiceClient.stop();
-		clickableToastHolder.onPause();
 	}
 
 	@Override
@@ -1211,7 +1205,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		unbindService(postingConnection);
 		unbindService(downloadConnection);
 		watcherServiceClient.unbind(this);
-		ClickableToast.unregister(clickableToastHolder);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		Preferences.PREFERENCES.unregisterOnSharedPreferenceChangeListener(preferencesListener);
 		ChanManager.getInstance().observable.unregister(chanManagerCallback);
@@ -1282,7 +1275,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 			}
 			if (!handled) {
 				if (allowTimeout && SystemClock.elapsedRealtime() - backPressed > 2000) {
-					ClickableToast.show(this, R.string.press_again_to_exit);
+					ClickableToast.show(R.string.press_again_to_exit);
 					backPressed = SystemClock.elapsedRealtime();
 				} else {
 					close.run();
@@ -1313,12 +1306,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		}
 		super.onActionModeFinished(mode);
 		expandedScreen.setActionModeState(false);
-	}
-
-	@Override
-	public void onWindowFocusChanged(boolean hasFocus) {
-		super.onWindowFocusChanged(hasFocus);
-		clickableToastHolder.onWindowFocusChanged(hasFocus);
 	}
 
 	@Override
@@ -1949,7 +1936,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 					try {
 						startActivityForResult(intent, C.REQUEST_CODE_OPEN_URI_TREE);
 					} catch (ActivityNotFoundException e) {
-						ToastUtils.show(this, R.string.unknown_address);
+						ClickableToast.show(R.string.unknown_address);
 						storageRequestState = StorageRequestState.NONE;
 						handleStorageRequestResult(true);
 					}

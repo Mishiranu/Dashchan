@@ -40,8 +40,8 @@ import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ThemeEngine;
@@ -443,7 +443,7 @@ public class UpdateFragment extends BaseListFragment implements ActivityHandler 
 					MessageDialog.create(this, getString(R.string.update_reminder__sentence), true);
 					UpdaterActivity.startUpdater(requests);
 				} else {
-					ToastUtils.show(requireContext(), R.string.no_available_updates);
+					ClickableToast.show(R.string.no_available_updates);
 				}
 				return true;
 			}

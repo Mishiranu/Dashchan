@@ -58,6 +58,7 @@
 	<item type="id" name="menu_unstar_text" />
 
 	<item type="id" name="tag_async_manager" />
+	<item type="id" name="tag_clickable_toast" />
 	<item type="id" name="tag_drag_layout_data" />
 	<item type="id" name="tag_image_loader" />
 	<item type="id" name="tag_insets_draw_data" />

@@ -338,7 +338,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 						ListViewUtils.smoothScrollToPosition(recyclerView, oldCount);
 					}
 				} else {
-					ClickableToast.show(getContext(), R.string.search_completed);
+					ClickableToast.show(R.string.search_completed);
 				}
 			}
 		}
@@ -350,7 +350,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 		if (getAdapter().getItemCount() == 0) {
 			switchError(errorItem);
 		} else {
-			ClickableToast.show(getContext(), errorItem.toString());
+			ClickableToast.show(errorItem);
 		}
 	}
 

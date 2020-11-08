@@ -28,7 +28,7 @@ import com.mishiranu.dashchan.ui.preference.core.MultipleEditPreference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.util.Arrays;
 import java.util.Collection;
@@ -114,9 +114,9 @@ public class GeneralFragment extends PreferenceFragment implements ActivityHandl
 				captchaSolvingCheckDialog.dismiss();
 				captchaSolvingCheckDialog = null;
 				if (result.second != null) {
-					ToastUtils.show(requireContext(), R.string.validation_completed);
+					ClickableToast.show(R.string.validation_completed);
 				} else {
-					ToastUtils.show(requireContext(), result.first);
+					ClickableToast.show(result.first);
 					captchaSolvingPreference.performClick();
 				}
 			}

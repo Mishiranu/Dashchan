@@ -37,8 +37,8 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.WebViewUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.UUID;
 
@@ -206,7 +206,7 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 			startActivity(new Intent(Intent.ACTION_VIEW).setData(Uri.parse(url))
 					.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 		} catch (ActivityNotFoundException e) {
-			ToastUtils.show(requireContext(), R.string.unknown_address);
+			ClickableToast.show(R.string.unknown_address);
 		}
 	}
 
@@ -248,7 +248,7 @@ public class BrowserFragment extends Fragment implements ActivityHandler, Downlo
 		@Override
 		public void onReceivedSslError(WebView view, SslErrorHandler handler, SslError error) {
 			if (Preferences.isVerifyCertificate()) {
-				ToastUtils.show(requireContext(), R.string.invalid_certificate);
+				ClickableToast.show(R.string.invalid_certificate);
 				super.onReceivedSslError(view, handler, error);
 			} else {
 				handler.proceed();

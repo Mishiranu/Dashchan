@@ -28,6 +28,7 @@ import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.ui.MainActivity;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -96,9 +97,9 @@ public class NavigationUtils {
 		try {
 			context.startActivity(intent);
 		} catch (ActivityNotFoundException e) {
-			ToastUtils.show(context, R.string.unknown_address);
+			ClickableToast.show(R.string.unknown_address);
 		} catch (Exception e) {
-			ToastUtils.show(context, e.getMessage());
+			ClickableToast.show(e.getMessage());
 		}
 	}
 
@@ -183,7 +184,7 @@ public class NavigationUtils {
 	public static void shareFile(Context context, File file, String fileName) {
 		Pair<Uri, String> data = CacheManager.getInstance().prepareFileForShare(file, fileName);
 		if (data == null) {
-			ToastUtils.show(context, R.string.cache_is_unavailable);
+			ClickableToast.show(R.string.cache_is_unavailable);
 			return;
 		}
 		context.startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND)

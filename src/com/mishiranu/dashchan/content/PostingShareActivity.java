@@ -4,12 +4,12 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.widget.Toast;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.ui.MainActivity;
-import com.mishiranu.dashchan.util.ToastUtils;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,11 +53,11 @@ public class PostingShareActivity extends Activity {
 		}
 
 		if (success > 0) {
-			ToastUtils.show(this, R.string.draft_saved);
+			Toast.makeText(this, R.string.draft_saved, Toast.LENGTH_SHORT).show();
 		} else if (contentUri != null) {
 			startActivity(new Intent(this, MainActivity.class).setData(contentUri));
 		} else {
-			ToastUtils.show(this, R.string.unknown_address);
+			Toast.makeText(this, R.string.unknown_address, Toast.LENGTH_SHORT).show();
 		}
 		finish();
 	}

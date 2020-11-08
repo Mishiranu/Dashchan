@@ -39,8 +39,8 @@ import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.MimeTypes;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.io.File;
 import java.util.ArrayList;
@@ -387,7 +387,7 @@ public class DownloadDialog {
 						context.startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(uri, type)
 								.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION));
 					} catch (ActivityNotFoundException e) {
-						ToastUtils.show(context, R.string.unknown_address);
+						ClickableToast.show(R.string.unknown_address);
 					}
 				}
 			}));

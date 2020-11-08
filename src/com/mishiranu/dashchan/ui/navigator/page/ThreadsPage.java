@@ -44,7 +44,6 @@ import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.PullableRecyclerView;
@@ -638,7 +637,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		if (pageNumber < PAGE_NUMBER_CATALOG || pageNumber >=
 				Math.max(chan.configuration.getPagesCount(page.boardName), 1)) {
 			getRecyclerView().getWrapper().cancelBusyState();
-			ToastUtils.show(getContext(), getString(R.string.number_page_doesnt_exist__format, pageNumber));
+			ClickableToast.show(getString(R.string.number_page_doesnt_exist__format, pageNumber));
 			readViewModel.attach(null);
 			return false;
 		} else {
@@ -737,7 +736,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		} else if (adapter.isRealEmpty()) {
 			switchError(R.string.empty_response);
 		} else {
-			ClickableToast.show(getContext(), R.string.empty_response);
+			ClickableToast.show(R.string.empty_response);
 		}
 	}
 
@@ -762,7 +761,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		if (getAdapter().isRealEmpty()) {
 			switchError(message);
 		} else {
-			ClickableToast.show(getContext(), message);
+			ClickableToast.show(message);
 		}
 	}
 

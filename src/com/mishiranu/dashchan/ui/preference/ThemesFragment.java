@@ -42,8 +42,8 @@ import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.Log;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ThemeEngine;
@@ -113,7 +113,7 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler 
 					updateThemes();
 				} else {
 					availableJsonThemes = Collections.emptyList();
-					ToastUtils.show(requireContext(), result.first);
+					ClickableToast.show(result.first);
 				}
 			});
 		}
@@ -188,7 +188,7 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler 
 							if (theme != null) {
 								installTheme(theme, false);
 							} else {
-								ToastUtils.show(requireContext(), R.string.invalid_data_format);
+								ClickableToast.show(R.string.invalid_data_format);
 							}
 						}
 					}
@@ -240,7 +240,7 @@ public class ThemesFragment extends BaseListFragment implements ActivityHandler 
 			if (ThemeEngine.addTheme(theme)) {
 				updateThemes();
 			} else {
-				ToastUtils.show(requireContext(), R.string.no_access);
+				ClickableToast.show(R.string.no_access);
 				return;
 			}
 		}

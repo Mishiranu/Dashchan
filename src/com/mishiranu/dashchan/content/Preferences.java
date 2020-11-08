@@ -18,7 +18,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.SafeSharedPreferences;
-import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -540,7 +540,7 @@ public class Preferences {
 		}
 		if (uri == null || "com.android.providers.downloads.documents".equals(uri.getAuthority())) {
 			// Downloads provider fails when ".nomedia" files present
-			ToastUtils.show(context, R.string.no_access_to_memory);
+			ClickableToast.show(R.string.no_access_to_memory);
 		} else {
 			contentResolver.takePersistableUriPermission(uri, uriFlags &
 					(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION));

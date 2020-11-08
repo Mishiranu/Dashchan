@@ -242,7 +242,7 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 		if (parcelableExtra.boardNames.isEmpty()) {
 			switchError(errorItem);
 		} else {
-			ClickableToast.show(getContext(), errorItem.toString());
+			ClickableToast.show(errorItem);
 		}
 	}
 }

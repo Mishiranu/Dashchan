@@ -194,7 +194,7 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 			if (adapter.isRealEmpty()) {
 				switchError(R.string.empty_response);
 			} else {
-				ClickableToast.show(getContext(), R.string.empty_response);
+				ClickableToast.show(R.string.empty_response);
 			}
 		} else {
 			switchList();
@@ -238,7 +238,7 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 		if (getAdapter().isRealEmpty()) {
 			switchError(errorItem);
 		} else {
-			ClickableToast.show(getContext(), errorItem.toString());
+			ClickableToast.show(errorItem);
 		}
 	}
 }

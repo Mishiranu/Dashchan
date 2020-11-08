@@ -228,7 +228,7 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback,
 		if (getAdapter().isRealEmpty()) {
 			switchError(errorItem);
 		} else {
-			ClickableToast.show(getContext(), errorItem.toString());
+			ClickableToast.show(errorItem);
 		}
 	}
 }

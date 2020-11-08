@@ -28,7 +28,7 @@ import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
@@ -225,7 +225,7 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 			PostNumber postNumber = chan.locator.safe(false).getPostNumber(uri);
 			int position = postNumber == null ? 0 : positionOfPostNumber(postNumber);
 			if (position < 0) {
-				ToastUtils.show(view.getContext(), R.string.post_is_not_found);
+				ClickableToast.show(R.string.post_is_not_found);
 				return;
 			}
 			uiManager.dialog().displaySingle(configurationSet, getItem(position));

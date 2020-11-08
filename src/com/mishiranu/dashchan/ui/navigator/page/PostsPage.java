@@ -66,7 +66,6 @@ import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.SearchHelper;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
@@ -1003,7 +1002,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		if (foundPostNumbers.isEmpty()) {
 			setCustomSearchView(null);
 			getAdapter().setHighlightText(Collections.emptyList());
-			ToastUtils.show(getContext(), R.string.not_found);
+			ClickableToast.show(R.string.not_found);
 			updateSearchTitle();
 		} else {
 			setCustomSearchView(searchControlView);
@@ -1077,7 +1076,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					ListViewUtils.smoothScrollToPosition(getRecyclerView(), position);
 					success = true;
 				} else {
-					ToastUtils.show(getContext(), R.string.post_is_not_found);
+					ClickableToast.show(R.string.post_is_not_found);
 				}
 			}
 		}
@@ -1390,9 +1389,35 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		if (getAdapter().getItemCount() == 0) {
 			switchError(errorItem);
 		} else {
-			ClickableToast.show(getContext(), errorItem.toString());
+			ClickableToast.show(errorItem);
 		}
 	}
+
+	private static class LastToast {
+		public String id;
+		public int newCount;
+		public int deletedCount;
+		public boolean hasEdited;
+		public int replyCount;
+		public PostNumber postNumber;
+
+		public boolean update(boolean toastVisible, int newCount, int deletedCount, boolean hasEdited, int replyCount) {
+			if (toastVisible) {
+				this.newCount += newCount;
+				this.deletedCount += deletedCount;
+				this.hasEdited |= hasEdited;
+				this.replyCount += replyCount;
+			} else {
+				this.newCount = newCount;
+				this.deletedCount = deletedCount;
+				this.hasEdited = hasEdited;
+				this.replyCount = replyCount;
+			}
+			return this.newCount > 0 || this.deletedCount > 0 || this.hasEdited || this.replyCount > 0;
+		}
+	}
+
+	private final LastToast lastToast = new LastToast();
 
 	@Override
 	public void onExtractPostsComplete(ExtractPostsTask.Result result) {
@@ -1455,51 +1480,68 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				decodeThreadExtra();
 			}
 
-			if (!result.newPosts.isEmpty() || !result.deletedPosts.isEmpty() ||
-					!result.editedPosts.isEmpty() || result.replyCount > 0) {
+			int newCount = result.newPosts.size();
+			int deletedCount = result.deletedPosts.size();
+			boolean hasEdited = !result.editedPosts.isEmpty();
+			int replyCount = result.replyCount;
+			boolean toastVisible = ClickableToast.isShowing(lastToast.id);
+			if (lastToast.update(toastVisible, newCount, deletedCount, hasEdited, replyCount)) {
 				updateAdapters = true;
-				int newCount = result.newPosts.size();
-				int deletedCount = result.deletedPosts.size();
 				String message;
-				if (result.replyCount > 0 || deletedCount > 0) {
-					message = getResources().getQuantityString(R.plurals.number_new__format, newCount, newCount);
-					if (result.replyCount > 0) {
+				if (lastToast.replyCount > 0 || lastToast.deletedCount > 0) {
+					message = getResources().getQuantityString(R.plurals.number_new__format,
+							lastToast.newCount, lastToast.newCount);
+					if (lastToast.replyCount > 0) {
 						message = getString(R.string.__enumeration_format, message,
 								getResources().getQuantityString(R.plurals.number_replies__format,
-										result.replyCount, result.replyCount));
+										lastToast.replyCount, lastToast.replyCount));
 					}
-					if (deletedCount > 0) {
+					if (lastToast.deletedCount > 0) {
 						message = getString(R.string.__enumeration_format, message,
 								getResources().getQuantityString(R.plurals.number_deleted__format,
-										deletedCount, deletedCount));
+										lastToast.deletedCount, lastToast.deletedCount));
 					}
-				} else if (newCount > 0) {
-					message = getResources().getQuantityString(R.plurals.number_new_posts__format, newCount, newCount);
+				} else if (lastToast.newCount > 0) {
+					message = getResources().getQuantityString(R.plurals.number_new_posts__format,
+							lastToast.newCount, lastToast.newCount);
 				} else {
 					message = getString(R.string.some_posts_have_been_edited);
 				}
-				if (newCount > 0) {
-					PostNumber newPostNumber = Collections.min(result.newPosts);
-					adapter.preloadPosts(newPostNumber);
-					ClickableToast.show(getContext(), message, getString(R.string.show), true, () -> {
-						if (isRunning()) {
-							int newPostIndex = adapter.positionOfPostNumber(newPostNumber);
-							if (newPostIndex >= 0) {
-								ListViewUtils.smoothScrollToPosition(getRecyclerView(), newPostIndex);
-							}
-						}
-					});
+
+				if (lastToast.newCount > 0) {
+					PostNumber showPostNumber;
+					if (toastVisible && lastToast.postNumber != null) {
+						showPostNumber = lastToast.postNumber;
+					} else {
+						showPostNumber = Collections.min(result.newPosts);
+						adapter.preloadPosts(showPostNumber);
+						lastToast.postNumber = showPostNumber;
+					}
+					lastToast.id = ClickableToast.show(message, lastToast.id,
+							new ClickableToast.Button(R.string.show, true, () -> {
+								if (isRunning()) {
+									int newPostIndex = adapter.positionOfPostNumber(showPostNumber);
+									if (newPostIndex >= 0) {
+										ListViewUtils.smoothScrollToPosition(getRecyclerView(), newPostIndex);
+									}
+								}
+							}));
 				} else {
-					ClickableToast.show(getContext(), message);
+					lastToast.id = ClickableToast.show(message, lastToast.id, null);
 				}
 
-				if (deletedCount > 0 || !result.editedPosts.isEmpty()) {
-					lastEditedPostNumbers = new HashSet<>();
-					lastEditedPostNumbers.addAll(result.deletedPosts);
-					lastEditedPostNumbers.addAll(result.editedPosts);
+				if (deletedCount > 0 || hasEdited) {
+					HashSet<PostNumber> editedPostNumbers = toastVisible
+							? new HashSet<>(lastEditedPostNumbers) : new HashSet<>();
+					editedPostNumbers.addAll(result.deletedPosts);
+					editedPostNumbers.addAll(result.editedPosts);
+					lastEditedPostNumbers = editedPostNumbers;
 				}
 				if (newCount > 0) {
-					lastNewPostNumbers = result.newPosts;
+					HashSet<PostNumber> newPostNumbers = toastVisible
+							? new HashSet<>(lastNewPostNumbers) : new HashSet<>();
+					newPostNumbers.addAll(result.newPosts);
+					lastNewPostNumbers = newPostNumbers;
 				}
 				retainableExtra.errorItem = null;
 			}
@@ -1668,11 +1710,11 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 						break;
 					}
 					case PERFORM_HIDE_NAME: {
-						result = hidePerformer.addHideByName(getContext(), getChan(), postItem);
+						result = hidePerformer.addHideByName(getChan(), postItem);
 						break;
 					}
 					case PERFORM_HIDE_SIMILAR: {
-						result = hidePerformer.addHideSimilar(getContext(), getChan(), postItem);
+						result = hidePerformer.addHideSimilar(getChan(), postItem);
 						break;
 					}
 					default: {

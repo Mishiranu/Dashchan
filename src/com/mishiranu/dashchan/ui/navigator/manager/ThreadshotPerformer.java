@@ -20,7 +20,7 @@ import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.io.ByteArrayInputStream;
@@ -74,7 +74,7 @@ public class ThreadshotPerformer {
 								"threadshot-" + System.currentTimeMillis() + ".png", true, false);
 					}
 				} else {
-					ToastUtils.show(provider.getContext(), R.string.unknown_error);
+					ClickableToast.show(R.string.unknown_error);
 				}
 			});
 			return dialog;

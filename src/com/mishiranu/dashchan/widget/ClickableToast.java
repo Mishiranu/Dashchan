@@ -2,9 +2,9 @@ package com.mishiranu.dashchan.widget;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.PixelFormat;
@@ -22,20 +22,31 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import androidx.activity.ComponentActivity;
 import androidx.annotation.NonNull;
+import androidx.core.view.ViewCompat;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.OnLifecycleEvent;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.graphics.BaseDrawable;
+import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.FlagUtils;
+import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashMap;
+import java.util.Objects;
+import java.util.UUID;
 
-public class ClickableToast {
+public class ClickableToast implements LifecycleObserver {
 	private static final int Y_OFFSET;
 	private static final int LAYOUT_ID;
 
@@ -47,39 +58,8 @@ public class ClickableToast {
 		LAYOUT_ID = resources.getIdentifier("transient_notification", "layout", "android");
 	}
 
-	public static class Holder {
-		private final Context context;
-
-		public Holder(Context context) {
-			this.context = context;
-		}
-
-		private boolean hasFocus = true;
-		private boolean resumed = false;
-
-		public void onWindowFocusChanged(boolean hasFocus) {
-			this.hasFocus = hasFocus;
-			invalidate();
-		}
-
-		public void onResume() {
-			resumed = true;
-			invalidate();
-		}
-
-		public void onPause() {
-			resumed = false;
-			invalidate();
-		}
-
-		private void invalidate() {
-			ClickableToast.invalidate(context);
-		}
-	}
-
 	private final View container;
 	private final WindowManager windowManager;
-	private final Holder holder;
 
 	private final PartialClickDrawable partialClickDrawable;
 	private final TextView message;
@@ -87,124 +67,166 @@ public class ClickableToast {
 
 	private ViewGroup currentContainer;
 	private Runnable onClickListener;
-	private boolean showing, clickable, realClickable, clickableOnlyWhenRoot;
+	private String showing;
+	private boolean clickable;
+	private boolean realClickable;
+	private boolean clickableOnlyWhenRoot;
 
-	private static final HashMap<Context, ClickableToast> TOASTS = new HashMap<>();
+	private boolean resumed;
+	private boolean focused;
 
-	private static Context obtainBaseContext(Context context) {
-		while (context instanceof ContextWrapper) {
-			context = ((ContextWrapper) context).getBaseContext();
+	private static WeakReference<ComponentActivity> activity;
+
+	private static View getTagView(ComponentActivity activity) {
+		return activity.getWindow().getDecorView();
+	}
+
+	private static ClickableToast getToast(ComponentActivity activity) {
+		return (ClickableToast) getTagView(activity).getTag(R.id.tag_clickable_toast);
+	}
+
+	private static ClickableToast getCurrentToast() {
+		if (activity != null) {
+			ComponentActivity activity = ClickableToast.activity.get();
+			return activity != null ? getToast(activity) : null;
 		}
-		return context;
+		return null;
 	}
 
-	public static void register(Holder holder) {
-		Context context = obtainBaseContext(holder.context);
-		ClickableToast clickableToast = TOASTS.get(context);
-		if (clickableToast == null) {
-			TOASTS.put(context, new ClickableToast(holder));
+	public static void register(@NonNull ComponentActivity activity) {
+		Objects.requireNonNull(activity);
+		if (ClickableToast.activity != null) {
+			ComponentActivity oldActivity = ClickableToast.activity.get();
+			if (oldActivity == activity) {
+				return;
+			}
+			if (oldActivity != null) {
+				getToast(oldActivity).cancelInternal();
+			}
 		}
-	}
-
-	public static void unregister(Holder holder) {
-		ClickableToast clickableToast = TOASTS.remove(obtainBaseContext(holder.context));
-		if (clickableToast != null) {
-			clickableToast.cancelInternal();
-		}
-	}
-
-	public static void show(Context context, int message) {
-		show(context, context.getString(message));
-	}
-
-	public static void show(Context context, CharSequence message) {
-		show(context, message, null, true, null);
-	}
-
-	public static void show(Context context, CharSequence message, String button,
-			boolean clickableOnlyWhenRoot, Runnable listener) {
-		ClickableToast clickableToast = TOASTS.get(obtainBaseContext(context));
-		if (clickableToast != null) {
-			clickableToast.showInternal(message, button, listener, clickableOnlyWhenRoot);
-		}
-	}
-
-	public static void cancel(Context context) {
-		ClickableToast clickableToast = TOASTS.get(obtainBaseContext(context));
-		if (clickableToast != null) {
-			clickableToast.cancelInternal();
+		ClickableToast.activity = null;
+		Lifecycle.State state = activity.getLifecycle().getCurrentState();
+		if (state.isAtLeast(Lifecycle.State.INITIALIZED)) {
+			if (getToast(activity) == null) {
+				getTagView(activity).setTag(R.id.tag_clickable_toast, new ClickableToast(activity));
+			}
+			ClickableToast.activity = new WeakReference<>(activity);
 		}
 	}
 
-	private static void invalidate(Context context) {
-		ClickableToast clickableToast = TOASTS.get(obtainBaseContext(context));
-		if (clickableToast != null && clickableToast.showing) {
-			clickableToast.updateLayoutAndRealClickable();
+	public static class Button {
+		private final int titleResId;
+		private final boolean clickableOnlyWhenRoot;
+		private final Runnable callback;
+
+		public Button(int titleResId, boolean clickableOnlyWhenRoot, Runnable callback) {
+			this.titleResId = titleResId;
+			this.clickableOnlyWhenRoot = clickableOnlyWhenRoot;
+			this.callback = callback;
 		}
 	}
 
-	private Rect getViewTotalPadding(View parent, View view) {
-		Rect rect = new Rect(0, 0, 0, 0);
-		while (view != parent) {
-			rect.left += view.getLeft();
-			rect.top += view.getTop();
-			int right = view.getRight();
-			int bottom = view.getBottom();
-			view = (View) view.getParent();
-			rect.right += view.getWidth() - right;
-			rect.bottom += view.getHeight() - bottom;
-		}
-		return rect;
+	public static String show(int message) {
+		return show(new ErrorItem(message));
 	}
 
-	private ClickableToast(Holder holder) {
-		this.holder = holder;
-		Context context = holder.context;
-		float density = ResourceUtils.obtainDensity(context);
+	public static String show(ErrorItem errorItem) {
+		return show((errorItem != null ? errorItem : new ErrorItem(ErrorItem.Type.UNKNOWN)).toString());
+	}
+
+	public static String show(CharSequence message) {
+		return show(message, null, null);
+	}
+
+	public static String show(CharSequence message, String updateId, Button button) {
+		if (ConcurrentUtils.isMain()) {
+			ClickableToast toast = getCurrentToast();
+			if (toast != null) {
+				return toast.showInternal(message, updateId, button);
+			} else {
+				return null;
+			}
+		} else {
+			return ConcurrentUtils.mainGet(() -> show(message, updateId, null));
+		}
+	}
+
+	public static boolean isShowing(String id) {
+		ClickableToast toast = getCurrentToast();
+		return toast != null && id != null && id.equals(toast.showing);
+	}
+
+	public static void cancel() {
+		ClickableToast toast = getCurrentToast();
+		if (toast != null) {
+			toast.cancelInternal();
+		}
+	}
+
+	private ClickableToast(ComponentActivity activity) {
+		activity.getLifecycle().addObserver(this);
+		resumed = activity.getLifecycle().getCurrentState() == Lifecycle.State.RESUMED;
+		float density = ResourceUtils.obtainDensity(activity);
 		int innerPadding = (int) (8f * density);
-		LayoutInflater inflater = LayoutInflater.from(context);
+		LayoutInflater inflater = LayoutInflater.from(activity);
 		View toast1 = inflater.inflate(LAYOUT_ID, null);
 		View toast2 = inflater.inflate(LAYOUT_ID, null);
 		TextView message1 = toast1.findViewById(android.R.id.message);
 		TextView message2 = toast2.findViewById(android.R.id.message);
-		View backgroundSource = null;
 		Drawable backgroundDrawable = toast1.getBackground();
 		if (backgroundDrawable == null) {
-			backgroundDrawable = message1.getBackground();
-			if (backgroundDrawable == null) {
-				View messageParent = (View) message1.getParent();
-				if (messageParent != null) {
-					backgroundDrawable = messageParent.getBackground();
-					backgroundSource = messageParent;
+			View view = message1;
+			while (view != null) {
+				backgroundDrawable = message1.getBackground();
+				if (backgroundDrawable == null) {
+					break;
 				}
-			} else {
-				backgroundSource = message1;
+				view = (View) view.getParent();
 			}
-		} else {
-			backgroundSource = toast1;
 		}
 
+		// Make long text to avoid minimum widths
 		StringBuilder builder = new StringBuilder();
-		for (int i = 0; i < 100; i++) builder.append('W'); // Make long text
-		message1.setText(builder); // Avoid minimum widths
-		int measureSize = (int) (context.getResources().getConfiguration().screenWidthDp * density + 0.5f);
+		for (int i = 0; i < 100; i++) {
+			builder.append('W');
+		}
+		message1.setText(builder);
+		int measureSize = (int) (activity.getResources().getConfiguration().screenWidthDp * density + 0.5f);
 		toast1.measure(View.MeasureSpec.makeMeasureSpec(measureSize, View.MeasureSpec.AT_MOST),
 				View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+		int lineCount = message1.getLayout().getLineCount();
+		if (lineCount >= 2) {
+			builder.setLength(message1.getLayout().getLineEnd(0));
+			message1.setText(builder);
+			toast1.measure(View.MeasureSpec.makeMeasureSpec(measureSize, View.MeasureSpec.AT_MOST),
+					View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+		}
 		toast1.layout(0, 0, toast1.getMeasuredWidth(), toast1.getMeasuredHeight());
-		Rect backgroundSourceTotalPadding = getViewTotalPadding(toast1, backgroundSource);
-		Rect messageTotalPadding = getViewTotalPadding(toast1, message1);
-		messageTotalPadding.left -= backgroundSourceTotalPadding.left;
-		messageTotalPadding.top -= backgroundSourceTotalPadding.top;
-		messageTotalPadding.right -= backgroundSourceTotalPadding.right;
-		messageTotalPadding.bottom -= backgroundSourceTotalPadding.bottom;
-		int horizontalPadding = Math.max(messageTotalPadding.left, messageTotalPadding.right) +
-				Math.max(message1.getPaddingLeft(), message1.getPaddingRight());
-		int verticalPadding = Math.max(messageTotalPadding.top, messageTotalPadding.bottom) +
-				Math.max(message1.getPaddingTop(), message1.getPaddingBottom());
+		Rect totalPadding = new Rect(message1.getPaddingLeft(), message1.getPaddingTop(),
+				message1.getPaddingRight(), message1.getPaddingBottom());
+		int messageMeasuredHeight = message1.getHeight();
+		View measureView = message1;
+		while (true) {
+			View parent = (View) measureView.getParent();
+			if (parent == null) {
+				break;
+			}
+			totalPadding.left += measureView.getLeft();
+			totalPadding.top += measureView.getTop();
+			totalPadding.right += parent.getWidth() - measureView.getRight();
+			totalPadding.bottom += parent.getHeight() - measureView.getBottom();
+			measureView = parent;
+		}
+		message1.measure(View.MeasureSpec.makeMeasureSpec(message1.getWidth(), View.MeasureSpec.EXACTLY),
+				View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+		int extraHeight = messageMeasuredHeight - message1.getMeasuredHeight();
+		totalPadding.top += extraHeight / 2;
+		totalPadding.bottom += extraHeight / 2;
+		int horizontalPadding = Math.max(totalPadding.left, totalPadding.right);
 
 		ViewUtils.removeFromParent(message1);
 		ViewUtils.removeFromParent(message2);
-		LinearLayout linearLayout = new LinearLayout(context);
+		LinearLayout linearLayout = new LinearLayout(activity);
 		linearLayout.setOrientation(LinearLayout.HORIZONTAL);
 		linearLayout.setDividerDrawable(new ToastDividerDrawable(message1.getTextColors().getDefaultColor(),
 				(int) (density + 0.5f)));
@@ -214,15 +236,15 @@ public class ClickableToast {
 		linearLayout.addView(message1, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 		linearLayout.addView(message2, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 		((LinearLayout.LayoutParams) message1.getLayoutParams()).weight = 1f;
-		linearLayout.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
+		linearLayout.setPadding(horizontalPadding, totalPadding.top, horizontalPadding, totalPadding.bottom);
 
-		partialClickDrawable = new PartialClickDrawable(backgroundDrawable);
+		partialClickDrawable = new PartialClickDrawable(activity, backgroundDrawable);
 		message1.setBackground(null);
 		message2.setBackground(null);
 		linearLayout.setBackground(partialClickDrawable);
 		linearLayout.setOnTouchListener(partialClickDrawable);
 		message1.setPadding(0, 0, 0, 0);
-		message2.setPadding(innerPadding, 0, 0, 0);
+		ViewCompat.setPaddingRelative(message2, innerPadding, 0, 0, 0);
 		message1.setSingleLine(true);
 		message2.setSingleLine(true);
 		message1.setEllipsize(TextUtils.TruncateAt.END);
@@ -231,20 +253,73 @@ public class ClickableToast {
 		message = message1;
 		button = message2;
 
-		windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+		windowManager = (WindowManager) activity.getSystemService(Context.WINDOW_SERVICE);
+		ViewGroup viewGroup = (ViewGroup) activity.getWindow().getDecorView();
+		viewGroup.addView(new View(activity) {
+			@Override
+			public void onWindowFocusChanged(boolean hasWindowFocus) {
+				super.onWindowFocusChanged(hasWindowFocus);
+				focused = hasWindowFocus;
+				updateAndApplyLayoutChecked();
+			}
+		}, 0, 0);
 	}
 
-	private void showInternal(CharSequence message, String button, Runnable listener, boolean clickableOnlyWhenRoot) {
-		ToastUtils.cancel();
+	@SuppressWarnings("unused")
+	@OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+	public void onResume() {
+		resumed = true;
+		updateAndApplyLayoutChecked();
+	}
+
+	@SuppressWarnings("unused")
+	@OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+	public void onPause() {
+		resumed = false;
+		updateAndApplyLayoutChecked();
+	}
+
+	@SuppressWarnings("unused")
+	@OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+	public void onDestroy(LifecycleOwner owner) {
+		if (activity != null && activity.get() == owner) {
+			activity = null;
+		}
 		cancelInternal();
+	}
+
+	private String showInternal(CharSequence message, String updateId, Button button) {
+		boolean update = updateId != null && updateId.equals(showing);
+		if (update) {
+			container.removeCallbacks(cancelRunnable);
+		} else {
+			cancelInternal();
+		}
+		clickable = button != null;
 		this.message.setText(message);
-		this.button.setText(button);
-		onClickListener = listener;
+		if (button != null) {
+			this.button.setText(button.titleResId);
+		}
+		onClickListener = button != null ? button.callback : null;
 		partialClickDrawable.clicked = false;
 		partialClickDrawable.invalidateSelf();
-		clickable = !StringUtils.isEmpty(button);
-		this.clickableOnlyWhenRoot = clickableOnlyWhenRoot;
-		updateLayoutAndRealClickableInternal();
+		clickableOnlyWhenRoot = button == null || button.clickableOnlyWhenRoot;
+		updateLayout();
+		if (update) {
+			applyLayout();
+			container.postDelayed(cancelRunnable, TIMEOUT);
+			return updateId;
+		} else if (addContainerToWindowManager()) {
+			String id = UUID.randomUUID().toString();
+			showing = id;
+			container.postDelayed(cancelRunnable, TIMEOUT);
+			return id;
+		} else {
+			return null;
+		}
+	}
+
+	private boolean addContainerToWindowManager() {
 		boolean added = false;
 		if (C.API_OREO) {
 			// TYPE_APPLICATION_OVERLAY requires SYSTEM_ALERT_WINDOW permission
@@ -269,10 +344,7 @@ public class ClickableToast {
 			// TYPE_APPLICATION can't even properly overlay dialogs, used as fallback option
 			added = addContainerToWindowManager(WindowManager.LayoutParams.TYPE_APPLICATION);
 		}
-		if (added) {
-			showing = true;
-			container.postDelayed(cancelRunnable, TIMEOUT);
-		}
+		return added;
 	}
 
 	private boolean addContainerToWindowManager(int type) {
@@ -299,8 +371,8 @@ public class ClickableToast {
 	}
 
 	private WindowManager.LayoutParams updateLayoutParams(WindowManager.LayoutParams layoutParams) {
-		layoutParams.flags = FlagUtils.set(layoutParams.flags, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-				!realClickable);
+		layoutParams.flags = FlagUtils.set(layoutParams.flags,
+				WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, !realClickable);
 		return layoutParams;
 	}
 
@@ -327,17 +399,21 @@ public class ClickableToast {
 		return updateLayoutParams(layoutParams);
 	}
 
-	private void updateLayoutAndRealClickableInternal() {
-		realClickable = clickable && (holder.hasFocus || !clickableOnlyWhenRoot) && holder.resumed;
-		button.setVisibility(realClickable ? View.VISIBLE : View.GONE);
-		message.setPadding(0, 0, realClickable ? button.getPaddingLeft() : 0, 0);
+	private void updateAndApplyLayoutChecked() {
+		if (showing != null && clickable) {
+			updateLayout();
+			applyLayout();
+		}
 	}
 
-	private void updateLayoutAndRealClickable() {
-		if (!clickable) {
-			return;
-		}
-		updateLayoutAndRealClickableInternal();
+	private void updateLayout() {
+		realClickable = clickable && (focused || !clickableOnlyWhenRoot) && resumed;
+		button.setVisibility(realClickable ? View.VISIBLE : View.GONE);
+		message.setPadding(realClickable ? button.getPaddingRight() : 0, 0,
+				realClickable ? button.getPaddingLeft() : 0, 0);
+	}
+
+	private void applyLayout() {
 		if (currentContainer != null) {
 			windowManager.updateViewLayout(currentContainer,
 					updateLayoutParams((WindowManager.LayoutParams) currentContainer.getLayoutParams()));
@@ -345,11 +421,11 @@ public class ClickableToast {
 	}
 
 	private void cancelInternal() {
-		if (!showing) {
+		if (showing == null) {
 			return;
 		}
 		container.removeCallbacks(cancelRunnable);
-		showing = false;
+		showing = null;
 		clickable = false;
 		realClickable = false;
 		removeCurrentContainer();
@@ -373,12 +449,23 @@ public class ClickableToast {
 
 	private class PartialClickDrawable extends BaseDrawable implements View.OnTouchListener, Drawable.Callback {
 		private final Drawable drawable;
-		private final ColorFilter colorFilter = new ColorMatrixColorFilter(BRIGHTNESS_MATRIX);
+		private final ColorFilter colorFilter;
 
 		private boolean clicked = false;
 
-		public PartialClickDrawable(Drawable drawable) {
+		public PartialClickDrawable(Context context, Drawable drawable) {
 			this.drawable = drawable;
+			int color = GraphicsUtils.getDrawableColor(context, drawable, Gravity.CENTER);
+			boolean isLight = GraphicsUtils.isLight(color);
+			float source = (Color.red(color) + Color.green(color) + Color.blue(color)) / 3f / 0xff;
+			float target = source + (isLight ? -0.15f : 0.2f);
+			float multiplier = target / source;
+			float[] matrix = new float[20];
+			for (int i = 0; i < 3; i++) {
+				matrix[6 * i] = multiplier;
+			}
+			matrix[18] = 1f;
+			colorFilter = new ColorMatrixColorFilter(matrix);
 			drawable.setCallback(this);
 		}
 
@@ -442,8 +529,13 @@ public class ClickableToast {
 				drawable.setColorFilter(colorFilter);
 				canvas.save();
 				Rect bounds = getBounds();
-				int shift = button.getLeft();
-				canvas.clipRect(bounds.left + shift, bounds.top, bounds.right, bounds.bottom);
+				if (ViewCompat.getLayoutDirection(button) == ViewCompat.LAYOUT_DIRECTION_RTL) {
+					int shift = button.getRight();
+					canvas.clipRect(bounds.left + shift, bounds.top, bounds.left + shift, bounds.bottom);
+				} else {
+					int shift = button.getLeft();
+					canvas.clipRect(bounds.left + shift, bounds.top, bounds.right, bounds.bottom);
+				}
 				drawable.draw(canvas);
 				canvas.restore();
 				drawable.setColorFilter(null);
@@ -486,13 +578,6 @@ public class ClickableToast {
 			unscheduleSelf(what);
 		}
 	}
-
-	private static final float[] BRIGHTNESS_MATRIX = {
-		2f, 0f, 0f, 0f, 0f,
-		0f, 2f, 0f, 0f, 0f,
-		0f, 0f, 2f, 0f, 0f,
-		0f, 0f, 0f, 1f, 0f
-	};
 
 	private static class ToastDividerDrawable extends ColorDrawable {
 		private final int width;

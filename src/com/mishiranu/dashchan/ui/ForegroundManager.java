@@ -53,8 +53,8 @@ import com.mishiranu.dashchan.graphics.SelectorCheckDrawable;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -350,7 +350,7 @@ public class ForegroundManager implements Handler.Callback {
 		@Override
 		public void onReadCaptchaError(ErrorItem errorItem) {
 			if (getPendingDataOrDismiss() != null) {
-				ToastUtils.show(requireContext(), errorItem);
+				ClickableToast.show(errorItem);
 				captchaForm.showError();
 			}
 		}
@@ -943,10 +943,7 @@ public class ForegroundManager implements Handler.Callback {
 				return true;
 			}
 			case MESSAGE_SHOW_CAPTCHA_INVALID: {
-				FragmentActivity activity = getActivity();
-				if (activity != null) {
-					ToastUtils.show(activity, R.string.captcha_is_not_valid);
-				}
+				ClickableToast.show(R.string.captcha_is_not_valid);
 				return true;
 			}
 		}

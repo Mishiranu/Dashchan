@@ -18,7 +18,7 @@ import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
-import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -93,7 +93,7 @@ public class AboutFragment extends PreferenceFragment implements ActivityHandler
 				RestoreDialog dialog = new RestoreDialog(filesMap);
 				dialog.show(getChildFragmentManager(), RestoreDialog.class.getName());
 			} else {
-				ToastUtils.show(requireContext(), R.string.backups_not_found);
+				ClickableToast.show(R.string.backups_not_found);
 			}
 		}
 	}

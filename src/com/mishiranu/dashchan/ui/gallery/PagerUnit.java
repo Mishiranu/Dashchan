@@ -34,7 +34,7 @@ import com.mishiranu.dashchan.ui.SearchImageDialog;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.PhotoView;
 import com.mishiranu.dashchan.widget.PhotoViewPager;
 import java.io.File;
@@ -637,7 +637,7 @@ public class PagerUnit implements PagerInstance.Callback {
 					Uri uri = galleryItem.getFileUri(chan);
 					File file = CacheManager.getInstance().getMediaFile(uri, false);
 					if (file == null) {
-						ToastUtils.show(context, R.string.cache_is_unavailable);
+						ClickableToast.show(R.string.cache_is_unavailable);
 					} else {
 						NavigationUtils.shareFile(context, file, galleryItem.getFileName(chan));
 					}

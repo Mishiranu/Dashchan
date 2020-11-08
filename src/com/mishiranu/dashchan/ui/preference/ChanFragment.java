@@ -34,7 +34,7 @@ import com.mishiranu.dashchan.ui.preference.core.MultipleEditPreference;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,7 +112,7 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 						String value = p.getValue();
 						if (StringUtils.isEmpty(value)) {
 							p.setValue(Preferences.getPassword(Chan.get(chanName)));
-							ToastUtils.show(requireContext(), R.string.new_password_was_generated);
+							ClickableToast.show(R.string.new_password_was_generated);
 						}
 					});
 		}
@@ -234,7 +234,7 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 			proxyPreference.setOnAfterChangeListener(p -> {
 				boolean success = HttpClient.getInstance().checkProxyValid(p.getValue());
 				if (!success) {
-					ToastUtils.show(requireContext(), R.string.enter_valid_data);
+					ClickableToast.show(R.string.enter_valid_data);
 					proxyPreference.performClick();
 				}
 			});
@@ -380,9 +380,9 @@ public class ChanFragment extends PreferenceFragment implements ActivityHandler 
 			viewModel.observe(this, result -> {
 				dismiss();
 				if (result == CheckAuthorizationTask.SUCCESS) {
-					ToastUtils.show(requireContext(), R.string.validation_completed);
+					ClickableToast.show(R.string.validation_completed);
 				} else {
-					ToastUtils.show(requireContext(), result);
+					ClickableToast.show(result);
 					ChanFragment chanFragment = (ChanFragment) getParentFragment();
 					Preference<?> preference = null;
 					switch (AuthorizationType.valueOf(requireArguments().getString(EXTRA_AUTHORIZATION_TYPE))) {

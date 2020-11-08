@@ -84,7 +84,6 @@ import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DropdownView;
@@ -947,7 +946,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 				try {
 					startActivityForResult(intent, C.REQUEST_CODE_ATTACH);
 				} catch (ActivityNotFoundException e) {
-					ToastUtils.show(requireContext(), R.string.unknown_address);
+					ClickableToast.show(R.string.unknown_address);
 				}
 				break;
 			}
@@ -1159,11 +1158,11 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 	public void handleFailResult(PostingService.FailResult failResult) {
 		if (isResumed()) {
 			if (failResult.extra != null) {
-				ClickableToast.show(requireContext(), failResult.errorItem.toString(),
-						getString(R.string.details), false, () -> new SendPostFailDetailsDialog(failResult.extra)
-								.show(getChildFragmentManager(), SendPostFailDetailsDialog.TAG));
+				ClickableToast.show(failResult.errorItem.toString(), null, new ClickableToast
+						.Button(R.string.details, false, () -> new SendPostFailDetailsDialog(failResult.extra)
+						.show(getChildFragmentManager(), null)));
 			} else {
-				ClickableToast.show(requireContext(), failResult.errorItem.toString());
+				ClickableToast.show(failResult.errorItem);
 			}
 			if (failResult.errorItem.httpResponseCode == 0 && !failResult.keepCaptcha) {
 				refreshCaptcha(false, !failResult.captchaError, true);
@@ -1203,7 +1202,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 
 	@Override
 	public void onReadCaptchaError(ErrorItem errorItem) {
-		ClickableToast.show(requireContext(), errorItem.toString());
+		ClickableToast.show(errorItem);
 		captchaForm.showError();
 		updatePostingConfigurationIfNeeded();
 	}
@@ -1297,7 +1296,7 @@ public class PostingFragment extends Fragment implements ActivityHandler, Captch
 		}
 		int errorCount = addedCount - newCount;
 		if (errorCount > 0) {
-			ClickableToast.show(requireContext(), getResources().getQuantityString(R.plurals
+			ClickableToast.show(getResources().getQuantityString(R.plurals
 					.number_files_havent_been_attached__format, errorCount, errorCount));
 		}
 	}

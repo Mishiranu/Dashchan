@@ -41,8 +41,8 @@ import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.MimeTypes;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
+import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -585,7 +585,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		public void onPermissionResult(PermissionResult result) {
 			if (result != PermissionResult.SUCCESS) {
 				if (result == PermissionResult.FAIL) {
-					ToastUtils.show(DownloadService.this, R.string.no_access_to_memory);
+					ClickableToast.show(R.string.no_access_to_memory);
 				}
 				cleanupRequests();
 			}
@@ -644,7 +644,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 										(allowWrite ? Intent.FLAG_GRANT_WRITE_URI_PERMISSION : 0))
 								.setDataAndType(uri, type));
 					} catch (ActivityNotFoundException e) {
-						ToastUtils.show(DownloadService.this, R.string.unknown_address);
+						ClickableToast.show(R.string.unknown_address);
 					}
 				};
 				Pair<File, Uri> fileOrUri = file.getFileOrUri();

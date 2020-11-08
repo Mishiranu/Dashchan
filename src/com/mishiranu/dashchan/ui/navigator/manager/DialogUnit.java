@@ -64,7 +64,6 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
-import com.mishiranu.dashchan.util.ToastUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.util.WeakObservable;
 import com.mishiranu.dashchan.widget.AttachmentView;
@@ -875,12 +874,9 @@ public class DialogUnit {
 
 		private void updateErrorItem() {
 			ErrorItem errorItem = factory.errorItem;
-			switchState(State.ERROR, () -> {
-				Context context = uiManager.getContext();
-				ClickableToast.show(context, errorItem.toString(),
-						context.getString(R.string.open_thread), false, () -> uiManager.navigator()
-								.navigatePosts(chanName, boardName, threadNumber, postNumber, null));
-			});
+			switchState(State.ERROR, () -> ClickableToast.show(errorItem.toString(), null,
+					new ClickableToast.Button(R.string.open_thread, false, () -> uiManager.navigator()
+							.navigatePosts(chanName, boardName, threadNumber, postNumber, null))));
 		}
 
 		private void takeResult() {
@@ -1603,7 +1599,7 @@ public class DialogUnit {
 			}
 			if (state.operation == SendMultifunctionalTask.Operation.ARCHIVE && state.archiveChanName == null) {
 				if (posts.isEmpty()) {
-					ToastUtils.show(context, R.string.cache_is_unavailable);
+					ClickableToast.show(R.string.cache_is_unavailable);
 				} else {
 					startLocalArchiveProcess(provider.getFragmentManager(), state.chanName,
 							state.boardName, state.threadNumber, posts,
@@ -1638,7 +1634,7 @@ public class DialogUnit {
 					switch (state.operation) {
 						case DELETE:
 						case REPORT: {
-							ToastUtils.show(context, R.string.request_has_been_sent_successfully);
+							ClickableToast.show(R.string.request_has_been_sent_successfully);
 							break;
 						}
 						case ARCHIVE: {
@@ -1647,12 +1643,12 @@ public class DialogUnit {
 								FavoritesStorage.getInstance().add(chanName, archiveBoardName,
 										archiveThreadNumber, state.archiveThreadTitle, 0);
 								UiManager uiManager = UiManager.extract(provider);
-								ClickableToast.show(context, context.getString(R.string.completed),
-										context.getString(R.string.open_thread), false, () -> uiManager.navigator()
-												.navigatePosts(chanName, archiveBoardName, archiveThreadNumber, null,
-														state.archiveThreadTitle));
+								ClickableToast.show(context.getString(R.string.completed), null,
+										new ClickableToast.Button(R.string.open_thread, false,
+												() -> uiManager.navigator().navigatePosts(chanName, archiveBoardName,
+														archiveThreadNumber, null, state.archiveThreadTitle)));
 							} else {
-								ToastUtils.show(context, R.string.completed);
+								ClickableToast.show(R.string.completed);
 							}
 							break;
 						}
@@ -1662,7 +1658,7 @@ public class DialogUnit {
 				@Override
 				public void onSendFail(ErrorItem errorItem) {
 					provider.dismiss();
-					ToastUtils.show(context, errorItem);
+					ClickableToast.show(errorItem);
 					showPerformSendDialog(provider.getFragmentManager(), state, type, text, options, null, false);
 				}
 			});
@@ -1705,7 +1701,7 @@ public class DialogUnit {
 			viewModel.observe(provider.getLifecycleOwner(), result -> {
 				provider.dismiss();
 				if (result == DOWNLOAD_RESULT_ERROR) {
-					ToastUtils.show(context, R.string.unknown_error);
+					ClickableToast.show(R.string.unknown_error);
 				} else {
 					UiManager uiManager = UiManager.extract(provider);
 					result.run(uiManager.callback().getDownloadBinder());
