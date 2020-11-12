@@ -3,7 +3,7 @@
 
 #include <jni.h>
 
-jlong preInit(JNIEnv *, jint);
+jlong preInit(JNIEnv *, jint, jint);
 void init(JNIEnv *, jlong, jobject, jboolean);
 void destroy(JNIEnv *, jlong, jboolean);
 

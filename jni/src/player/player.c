@@ -59,6 +59,7 @@ struct Player {
 		int interrupt;
 		int errorCode;
 		int seekAnyFrame;
+		int logFd;
 	} meta;
 
 	struct {
@@ -213,6 +214,20 @@ static Bridge * obtainBridge(Player * player, JNIEnv * env) {
 		sparseArrayAdd(&player->bridge.array, index, bridge);
 	}
 	return bridge;
+}
+
+static void persistentLog(Player * player, const char * format, ...) {
+	va_list argp;
+	va_start(argp, format);
+	if (player->meta.logFd >= 0) {
+		char buffer[200];
+		size_t result = vsnprintf(buffer, sizeof(buffer), format, argp);
+		if (result > 0) {
+			result = result >= sizeof(buffer) ? sizeof(buffer) : result + 1;
+			buffer[result - 1] = '\n';
+			write(player->meta.logFd, buffer, result);
+		}
+	}
 }
 
 static int getBytesPerPixel(int videoFormat) {
@@ -1216,9 +1231,10 @@ static Player * createPlayer() {
 #define NEED_RESAMPLE_MAY_48000 1
 #define NEED_RESAMPLE_FORCE_44100 2
 
-jlong preInit(UNUSED JNIEnv * env, jint fd) {
+jlong preInit(UNUSED JNIEnv * env, jint fd, jint logFd) {
 	Player * player = createPlayer();
 	player->file.fd = fd;
+	player->meta.logFd = logFd;
 	return (jlong) (long) player;
 }
 
@@ -1315,10 +1331,12 @@ void init(JNIEnv * env, jlong pointer, jobject nativeBridge, jboolean seekAnyFra
 		const SLboolean volumeRequired[] = {SL_BOOLEAN_FALSE};
 		result = (*slEngine)->CreateOutputMix(slEngine, &player->audio.sl.outputMix, 1, volumeIds, volumeRequired);
 		if (result != SL_RESULT_SUCCESS) {
+			persistentLog(player, "SLES CreateOutputMix: result=%d", (int) result);
 			goto HANDLE_SL_INIT_ERROR;
 		}
 		result = (*player->audio.sl.outputMix)->Realize(player->audio.sl.outputMix, SL_BOOLEAN_FALSE);
 		if (result != SL_RESULT_SUCCESS) {
+			persistentLog(player, "SLES outputMix.Realize: result=%d", (int) result);
 			goto HANDLE_SL_INIT_ERROR;
 		}
 		SLDataLocator_AndroidSimpleBufferQueue locatorQueue = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
@@ -1361,6 +1379,8 @@ void init(JNIEnv * env, jlong pointer, jobject nativeBridge, jboolean seekAnyFra
 			formatPCM.samplesPerSec = slSampleRate;
 			result = (*slEngine)->CreateAudioPlayer(slEngine, &player->audio.sl.player,
 					&dataSource, &dataSink, 1, queueIds, queueRequired);
+			persistentLog(player, "SLES CreateAudioPlayer: result=%d, resampleSampleRate=%d",
+					(int) result, (int) player->audio.resampleSampleRate);
 			if (result == SL_RESULT_CONTENT_UNSUPPORTED && mayRepeat) {
 				if (needResampleSR == NEED_RESAMPLE_NO) {
 					needResampleSR = NEED_RESAMPLE_MAY_48000;
@@ -1376,24 +1396,29 @@ void init(JNIEnv * env, jlong pointer, jobject nativeBridge, jboolean seekAnyFra
 		}
 		result = (*player->audio.sl.player)->Realize(player->audio.sl.player, SL_BOOLEAN_FALSE);
 		if (result != SL_RESULT_SUCCESS) {
+			persistentLog(player, "SLES player.Realize: result=%d", (int) result);
 			goto HANDLE_SL_INIT_ERROR;
 		}
 		result = (*player->audio.sl.player)->GetInterface(player->audio.sl.player,
 				SL_IID_BUFFERQUEUE, &player->audio.sl.queue);
 		if (result != SL_RESULT_SUCCESS) {
+			persistentLog(player, "SLES player.GetInterface(SL_IID_BUFFERQUEUE): result=%d", (int) result);
 			goto HANDLE_SL_INIT_ERROR;
 		}
 		result = (*player->audio.sl.player)->GetInterface(player->audio.sl.player,
 				SL_IID_PLAY, &player->audio.sl.play);
 		if (result != SL_RESULT_SUCCESS) {
+			persistentLog(player, "SLES player.GetInterface(SL_IID_PLAY): result=%d", (int) result);
 			goto HANDLE_SL_INIT_ERROR;
 		}
 		result = (*player->audio.sl.queue)->RegisterCallback(player->audio.sl.queue, audioPlayerCallback, player);
 		if (result != SL_RESULT_SUCCESS) {
+			persistentLog(player, "SLES player.RegisterCallback: result=%d", (int) result);
 			goto HANDLE_SL_INIT_ERROR;
 		}
 		result = (*player->audio.sl.play)->SetPlayState(player->audio.sl.play, SL_PLAYSTATE_PLAYING);
 		if (result != SL_RESULT_SUCCESS) {
+			persistentLog(player, "SLES player.SetPlayState: result=%d", (int) result);
 			goto HANDLE_SL_INIT_ERROR;
 		}
 		success = 1;

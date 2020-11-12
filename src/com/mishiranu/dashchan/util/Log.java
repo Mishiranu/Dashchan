@@ -1,21 +1,23 @@
 package com.mishiranu.dashchan.util;
 
-import android.content.Context;
-import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.os.Build;
-import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
 import chan.util.CommonUtils;
+import com.mishiranu.dashchan.BuildConfig;
+import com.mishiranu.dashchan.content.MainApplication;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Locale;
 
-@SuppressWarnings({"deprecation", "unused"})
 public enum Log {
-	ELAPSED_MARK, ELAPSED_MARK_UPDATE, FILE_NAME, DISABLE_QUOTES, TYPE_WARNING, TYPE_ERROR;
+	FILE_NAME, DISABLE_QUOTES, TYPE_WARNING, TYPE_ERROR;
 
 	private static final String STACK_TRACE_DIVIDER = "----------------------------------------";
 
@@ -23,18 +25,14 @@ public enum Log {
 	private static final int MAX_FILES_COUNT = 20;
 	private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS", Locale.US);
 
-	private static final ThreadLocal<Long> MARK_TIME = new ThreadLocal<>();
 	private static final Persistent PERSISTENT = new Persistent();
 
 	private static String technicalData;
 	private static PrintStream logOutput;
+	private static ParcelFileDescriptor pipeFd;
 
 	public static class Persistent {
 		private Persistent() {}
-
-		public void mark() {
-			Log.mark();
-		}
 
 		public void write(Object... data) {
 			Log.write(data);
@@ -43,6 +41,11 @@ public enum Log {
 		public void stack(Throwable t) {
 			Log.stack(t);
 		}
+
+		public int getFd() {
+			ParcelFileDescriptor fd = pipeFd;
+			return fd != null ? fd.getFd() : -1;
+		}
 	}
 
 	public static Persistent persistent() {
@@ -50,16 +53,11 @@ public enum Log {
 	}
 
 	@Deprecated
-	public static void mark() {
-		MARK_TIME.set(System.nanoTime());
-	}
-
-	@Deprecated
 	public static void write(Object... data) {
 		StringBuilder builder = new StringBuilder();
 		Log typeFlag = null;
 		Log lastFlag = null;
-		boolean qouteStrings = true;
+		boolean quote = true;
 		if (data == null || data.length == 0) {
 			builder.append("no arguments");
 		} else {
@@ -68,20 +66,10 @@ public enum Log {
 				lastFlag = null;
 				if (data[i] instanceof Log) {
 					Log flag = (Log) data[i];
-					if (flag == ELAPSED_MARK || flag == ELAPSED_MARK_UPDATE) {
-						if (builder.length() > 0) {
-							builder.append(' ');
-						}
-						Long markTime = MARK_TIME.get();
-						// noinspection IntegerDivisionInFloatingPointContext
-						builder.append((System.nanoTime() - (markTime != null ? markTime : 0L)) / 1000 / 1000f);
-						if (flag == ELAPSED_MARK_UPDATE) {
-							mark();
-						}
-					} else if (i == 0 && (flag == TYPE_ERROR || flag == TYPE_WARNING)) {
+					if (i == 0 && (flag == TYPE_ERROR || flag == TYPE_WARNING)) {
 						typeFlag = flag;
 					} else if (flag == DISABLE_QUOTES) {
-						qouteStrings = false;
+						quote = false;
 					}
 					lastFlag = flag;
 					continue;
@@ -93,11 +81,11 @@ public enum Log {
 					builder.append("null");
 				} else if (data[i] instanceof CharSequence) {
 					String string = data[i].toString().replace("\n", "[LF]").replace("\r", "[CR]");
-					if (qouteStrings) {
+					if (quote) {
 						builder.append('"');
 					}
 					builder.append(string);
-					if (qouteStrings) {
+					if (quote) {
 						builder.append('"');
 					}
 				} else if (data[i] instanceof Boolean) {
@@ -192,18 +180,40 @@ public enum Log {
 		CommonUtils.sleepMaxRealtime(SystemClock.elapsedRealtime(), interval);
 	}
 
-	public static void init(Context context) {
-		PackageInfo packageInfo;
-		try {
-			packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), 0);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+	public static void init() {
+		technicalData = "Device: " + Build.MANUFACTURER + " " + Build.DEVICE + " (" + Build.MODEL + ")\n" +
+				"API: " + Build.VERSION.SDK_INT + " (" + Build.VERSION.RELEASE + ")\n" +
+				"Application: " + BuildConfig.VERSION_CODE + " (" + BuildConfig.VERSION_NAME + ")\n";
+		File cacheDirectory = MainApplication.getInstance().getExternalCacheDir();
+		if (cacheDirectory != null) {
+			File packageDirectory = cacheDirectory.getParentFile();
+			initDirectories(packageDirectory);
 		}
-		technicalData = "Device: " + Build.MANUFACTURER + " " + Build.DEVICE + " (" + Build.MODEL + ")\n"
-				+ "SDK: " + Build.VERSION.SDK_INT + " (" + Build.VERSION.RELEASE + ")\n"
-				+ "Application: " + packageInfo.versionCode + " (" + packageInfo.versionName + ")\n";
-		File packageDirectory = new File(Environment.getExternalStorageDirectory(),  "Android/data/"
-				+ context.getPackageName());
+		ParcelFileDescriptor[] pipe = null;
+		try {
+			pipe = ParcelFileDescriptor.createPipe();
+		} catch (IOException e) {
+			persistent().stack(e);
+		}
+		if (pipe != null) {
+			pipeFd = pipe[1];
+			ParcelFileDescriptor input = pipe[0];
+			@SuppressWarnings("InfiniteLoopStatement")
+			Runnable runnable = () -> {
+				try (BufferedReader reader = new BufferedReader(new FileReader(input.getFileDescriptor()))) {
+					while (true) {
+						String line = reader.readLine();
+						persistent().write(line);
+					}
+				} catch (IOException e) {
+					persistent().stack(e);
+				}
+			};
+			new Thread(runnable, "PipeLogger").start();
+		}
+	}
+
+	private static void initDirectories(File packageDirectory) {
 		File logsDirectory = new File(packageDirectory, "logs");
 		if (logsDirectory.exists() && logsDirectory.isDirectory()) {
 			File[] files = logsDirectory.listFiles();
@@ -228,8 +238,8 @@ public enum Log {
 			File logFile = new File(logsDirectory, "log-" + System.currentTimeMillis() + ".txt");
 			try {
 				logOutput = new PrintStream(logFile);
-			} catch (Exception e) {
-				// Ignore exception
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 		File errorsDirectory = new File(packageDirectory, "errors");
@@ -243,7 +253,7 @@ public enum Log {
 					stream.println(STACK_TRACE_DIVIDER);
 					ex.printStackTrace(stream);
 				} catch (Throwable t) {
-					// It's OK to catch Throwable here, let's forget about it...
+					// Ignore any exceptions in default exception handler
 				} finally {
 					systemHandler.uncaughtException(thread, ex);
 				}

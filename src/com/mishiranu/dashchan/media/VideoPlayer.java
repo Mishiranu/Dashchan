@@ -141,7 +141,7 @@ public class VideoPlayer {
 					try (ParcelFileDescriptor parcelFileDescriptor = ParcelFileDescriptor
 							.open(file, ParcelFileDescriptor.MODE_READ_ONLY)) {
 						int fd = parcelFileDescriptor.detachFd();
-						initPointer = holder.preInit(fd);
+						initPointer = holder.preInit(fd, Log.persistent().getFd());
 					}
 					if (rangeCallback == null) {
 						long length = file.length();
@@ -673,7 +673,7 @@ public class VideoPlayer {
 	}
 
 	private interface HolderInterface {
-		long preInit(int fd);
+		long preInit(int fd, int logFd);
 		void init(long pointer, Object nativeBridge, boolean seekAnyFrame);
 		void destroy(long pointer, boolean initOnly);
 
@@ -717,7 +717,7 @@ public class VideoPlayer {
 			return methods.get(method.getName()).invoke(this, args);
 		}
 
-		@Override public native long preInit(int fd);
+		@Override public native long preInit(int fd, int logFd);
 		@Override public native void init(long pointer, Object nativeBridge, boolean seekAnyFrame);
 		@Override public native void destroy(long pointer, boolean initOnly);
 

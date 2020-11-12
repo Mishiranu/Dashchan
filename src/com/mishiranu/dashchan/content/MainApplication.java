@@ -63,8 +63,7 @@ public class MainApplication extends Application {
 
 		LocaleManager.getInstance().updateConfiguration(getResources().getConfiguration());
 		if (isMainProcess()) {
-			Log.init(this);
-			// Init
+			Log.init();
 			ChanManager.getInstance();
 			HttpClient.getInstance();
 			CommonDatabase.getInstance();
