@@ -23,7 +23,6 @@ import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.database.PagesDatabase;
 import com.mishiranu.dashchan.media.VideoPlayer;
-import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.DrawerForm;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
@@ -36,7 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 
-public class ContentsFragment extends PreferenceFragment implements ActivityHandler {
+public class ContentsFragment extends PreferenceFragment implements FragmentHandler.Callback {
 	private static final String EXTRA_IN_STORAGE_REQUEST = "inStorageRequest";
 
 	private Preference<?> downloadUriTreePreference;

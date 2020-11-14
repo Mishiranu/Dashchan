@@ -37,6 +37,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.PhotoView;
 import com.mishiranu.dashchan.widget.PhotoViewPager;
+import com.mishiranu.dashchan.widget.ViewFactory;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -274,7 +275,7 @@ public class PagerUnit implements PagerInstance.Callback {
 			return;
 		}
 		galleryInstance.callback.modifySystemUiVisibility(GalleryInstance.Flags.LOCKED_ERROR, false);
-		holder.errorView.setVisibility(View.GONE);
+		holder.errorHolder.layout.setVisibility(View.GONE);
 		boolean thumbnailReady = holder.photoViewThumbnail;
 		if (!thumbnailReady) {
 			holder.recyclePhotoView();
@@ -375,8 +376,8 @@ public class PagerUnit implements PagerInstance.Callback {
 			holder.photoView.clearInitialScaleAnimationData();
 			holder.recyclePhotoView();
 			interrupt(false);
-			holder.errorView.setVisibility(View.VISIBLE);
-			holder.errorText.setText(!StringUtils.isEmpty(message) ? message
+			holder.errorHolder.layout.setVisibility(View.VISIBLE);
+			holder.errorHolder.text.setText(!StringUtils.isEmpty(message) ? message
 					: galleryInstance.context.getString(R.string.unknown_error));
 			holder.progressBar.cancelVisibilityTransient();
 			holder.loadState = PagerInstance.LoadState.ERROR;
@@ -479,17 +480,17 @@ public class PagerUnit implements PagerInstance.Callback {
 
 		@Override
 		public View onCreateView(ViewGroup parent) {
-			View view = LayoutInflater.from(galleryInstance.context).inflate(R.layout.list_item_gallery,
-					parent, false);
+			FrameLayout view = (FrameLayout) LayoutInflater.from(galleryInstance.context)
+					.inflate(R.layout.list_item_gallery, parent, false);
 			PagerInstance.ViewHolder holder = new PagerInstance.ViewHolder();
 			holder.photoView = view.findViewById(R.id.photo_view);
 			holder.surfaceParent = view.findViewById(R.id.surface_parent);
-			holder.errorView = view.findViewById(R.id.error);
-			holder.errorText = view.findViewById(R.id.error_text);
+			holder.errorHolder = ViewFactory.createErrorLayout(view);
 			holder.progressBar = view.findViewById(android.R.id.progress);
 			holder.playButton = view.findViewById(R.id.play);
 			holder.playButton.setBackground(new ShapeDrawable(new PlayShape()));
 			holder.photoView.setListener(photoViewListener);
+			view.addView(holder.errorHolder.layout);
 			view.setTag(holder);
 			return view;
 		}
@@ -502,7 +503,7 @@ public class PagerUnit implements PagerInstance.Callback {
 		private void applySideViewData(PagerInstance.ViewHolder holder, int index, boolean active) {
 			GalleryItem galleryItem = galleryItems.get(index);
 			holder.playButton.setVisibility(View.GONE);
-			holder.errorView.setVisibility(View.GONE);
+			holder.errorHolder.layout.setVisibility(View.GONE);
 			if (!active) {
 				holder.progressBar.setVisible(false, true);
 			}

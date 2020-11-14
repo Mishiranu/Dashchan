@@ -14,11 +14,6 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent" />
 
-	<include
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		layout="@layout/widget_error" />
-
 	<com.mishiranu.dashchan.widget.CircularProgressBar
 		android:id="@android:id/progress"
 		android:layout_width="wrap_content"

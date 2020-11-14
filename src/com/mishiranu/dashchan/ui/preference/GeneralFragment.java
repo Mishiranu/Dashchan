@@ -22,7 +22,6 @@ import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.CaptchaSolving;
 import com.mishiranu.dashchan.text.style.MonospaceSpan;
-import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.MultipleEditPreference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
@@ -34,7 +33,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
-public class GeneralFragment extends PreferenceFragment implements ActivityHandler, ChanMultiChoiceDialog.Callback {
+public class GeneralFragment extends PreferenceFragment implements FragmentHandler.Callback,
+		ChanMultiChoiceDialog.Callback {
 	private MultipleEditPreference<?> captchaSolvingPreference;
 	private ProgressDialog captchaSolvingCheckDialog;
 

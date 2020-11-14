@@ -26,6 +26,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.ScrollView;
@@ -71,7 +72,9 @@ import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.DialogStack;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.ExpandedFrameLayout;
 import com.mishiranu.dashchan.widget.ListPosition;
+import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.PostsLayoutManager;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
@@ -196,10 +199,30 @@ public class DialogUnit {
 
 		public View createView(DialogStack<DialogFactory> dialogStack) {
 			Context context = provider.uiManager.getContext();
-			View content = LayoutInflater.from(context).inflate(R.layout.dialog_posts, null);
-			RecyclerView recyclerView = content.findViewById(android.R.id.list);
-			View progress = content.findViewById(R.id.progress);
 			float density = ResourceUtils.obtainDensity(context);
+			FrameLayout content = new FrameLayout(context);
+			content.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT));
+			PaddedRecyclerView recyclerView = new PaddedRecyclerView(context);
+			content.addView(recyclerView, FrameLayout.LayoutParams.MATCH_PARENT,
+					FrameLayout.LayoutParams.WRAP_CONTENT);
+			if (!C.API_MARSHMALLOW) {
+				@SuppressWarnings("deprecation")
+				Runnable setAnimationCacheEnabled = () -> recyclerView.setAnimationCacheEnabled(false);
+				setAnimationCacheEnabled.run();
+			}
+			recyclerView.setMotionEventSplittingEnabled(false);
+			recyclerView.setClipToPadding(false);
+			recyclerView.setVerticalScrollBarEnabled(true);
+			FrameLayout progress = new FrameLayout(content.getContext());
+			content.addView(progress, ExpandedFrameLayout.LayoutParams.MATCH_PARENT,
+					ExpandedFrameLayout.LayoutParams.MATCH_PARENT);
+			progress.setPadding(0, (int) (60f * density), 0, (int) (60f * density));
+			progress.setVisibility(View.GONE);
+			ProgressBar progressBar = new ProgressBar(progress.getContext());
+			progress.addView(progressBar, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+			((FrameLayout.LayoutParams) progressBar.getLayoutParams()).gravity = Gravity.CENTER;
+			ThemeEngine.applyStyle(progressBar);
 			int dividerPadding = (int) (12f * density);
 			recyclerView.setLayoutManager(new PostsLayoutManager(recyclerView.getContext()));
 			provider.uiManager.view().bindThreadsPostRecyclerView(recyclerView);

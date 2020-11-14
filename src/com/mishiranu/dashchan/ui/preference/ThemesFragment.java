@@ -34,7 +34,6 @@ import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.content.service.DownloadService;
-import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.DialogMenu;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
@@ -59,7 +58,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ThemesFragment extends BaseListFragment implements ActivityHandler {
+public class ThemesFragment extends BaseListFragment {
 	private static final String EXTRA_AVAILABLE_THEMES = "availableThemes";
 
 	private List<JSONObject> availableJsonThemes;

@@ -27,7 +27,6 @@ import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.RelayBlockResolver;
-import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.CheckPreference;
 import com.mishiranu.dashchan.ui.preference.core.MultipleEditPreference;
@@ -43,7 +42,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ChanFragment extends PreferenceFragment implements ActivityHandler  {
+public class ChanFragment extends PreferenceFragment implements FragmentHandler.Callback {
 	private static final String EXTRA_CHAN_NAME = "chanName";
 
 	private Preference<List<String>> captchaPassPreference;

@@ -33,7 +33,6 @@ import com.mishiranu.dashchan.content.UpdaterActivity;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.CheckPreference;
 import com.mishiranu.dashchan.util.AndroidUtils;
@@ -51,7 +50,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
-public class UpdateFragment extends BaseListFragment implements ActivityHandler {
+public class UpdateFragment extends BaseListFragment {
 	private static final String VERSION_TITLE_RELEASE = "Release";
 
 	private static final String EXTRA_UPDATE_DATA_MAP = "updateDataMap";

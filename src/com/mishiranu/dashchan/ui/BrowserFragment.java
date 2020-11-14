@@ -29,7 +29,6 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 import chan.content.Chan;
 import chan.content.ChanLocator;
 import chan.util.StringUtils;
@@ -43,7 +42,7 @@ import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.UUID;
 
-public class BrowserFragment extends Fragment implements ActivityHandler, DownloadListener {
+public class BrowserFragment extends ContentFragment implements DownloadListener {
 	private static final String EXTRA_URI = "uri";
 
 	public BrowserFragment() {}

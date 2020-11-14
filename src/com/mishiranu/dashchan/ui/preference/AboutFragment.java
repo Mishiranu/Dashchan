@@ -15,14 +15,13 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.BackupManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.service.DownloadService;
-import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-public class AboutFragment extends PreferenceFragment implements ActivityHandler {
+public class AboutFragment extends PreferenceFragment implements FragmentHandler.Callback {
 	private static final String EXTRA_IN_STORAGE_REQUEST = "inStorageRequest";
 
 	private boolean inStorageRequest = false;

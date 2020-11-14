@@ -11,7 +11,6 @@ import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.database.ChanDatabase;
-import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.DialogMenu;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.ListViewUtils;
@@ -20,7 +19,7 @@ import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.Collection;
 
-public class CookiesFragment extends BaseListFragment implements ActivityHandler {
+public class CookiesFragment extends BaseListFragment implements FragmentHandler.Callback {
 	private static final String EXTRA_CHAN_NAME = "chanName";
 
 	public CookiesFragment() {}

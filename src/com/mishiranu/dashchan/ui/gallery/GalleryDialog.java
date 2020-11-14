@@ -16,11 +16,14 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ViewFactory;
 
 public class GalleryDialog extends Dialog {
+	public interface Callback {
+		boolean onBackPressed();
+	}
+
 	private final Fragment fragment;
 	private final MenuInflater menuInflater;
 
@@ -117,7 +120,7 @@ public class GalleryDialog extends Dialog {
 
 	@Override
 	public void onBackPressed() {
-		if (!(fragment instanceof ActivityHandler) || !((ActivityHandler) fragment).onBackPressed()) {
+		if (!(fragment instanceof Callback) || !((Callback) fragment).onBackPressed()) {
 			super.onBackPressed();
 		}
 	}

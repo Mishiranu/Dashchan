@@ -7,7 +7,6 @@ import android.text.Editable;
 import android.text.Layout;
 import android.text.TextWatcher;
 import android.text.style.BackgroundColorSpan;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,7 +27,6 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.storage.AutohideStorage;
-import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -46,7 +44,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-public class AutohideFragment extends BaseListFragment implements ActivityHandler {
+public class AutohideFragment extends BaseListFragment {
 	private static final String EXTRA_SEARCH_QUERY = "searchQuery";
 	private static final String EXTRA_SEARCH_FOCUSED = "searchFocused";
 
@@ -70,8 +68,7 @@ public class AutohideFragment extends BaseListFragment implements ActivityHandle
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		searchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(requireContext(),
-				R.style.Theme_Special_White) : requireActivity().getActionBar().getThemedContext());
+		searchView = getViewHolder().obtainSearchView();
 		searchView.setHint(getString(R.string.filter));
 		searchView.setOnChangeListener(query -> {
 			((Adapter) getRecyclerView().getAdapter()).setSearchQuery(query);

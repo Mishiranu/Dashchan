@@ -15,9 +15,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
-import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import chan.content.Chan;
 import chan.content.ChanMarkup;
@@ -33,6 +31,7 @@ import com.mishiranu.dashchan.content.async.HttpHolderTask;
 import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.text.HtmlParser;
+import com.mishiranu.dashchan.ui.ContentFragment;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -41,11 +40,12 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.ThemeEngine;
+import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TextFragment extends Fragment implements View.OnClickListener {
+public class TextFragment extends ContentFragment implements View.OnClickListener {
 	private static final String EXTRA_TYPE = "type";
 
 	private static final String EXTRA_ERROR_ITEM = "errorItem";
@@ -55,8 +55,7 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 
 	private View contentView;
 	private CommentTextView textView;
-	private View emptyView;
-	private TextView emptyText;
+	private ViewFactory.ErrorHolder errorHolder;
 	private View progressView;
 
 	private ErrorItem errorItem;
@@ -95,10 +94,9 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 		textView.setPadding(padding, padding, padding, padding);
 		ViewUtils.setTextSizeScaled(textView, 14);
 		frameLayout.addView(textView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-		inflater.inflate(R.layout.widget_error, view);
-		emptyView = view.findViewById(R.id.error);
-		emptyText = view.findViewById(R.id.error_text);
-		emptyView.setVisibility(View.GONE);
+		errorHolder = ViewFactory.createErrorLayout(view);
+		errorHolder.layout.setVisibility(View.GONE);
+		view.addView(errorHolder.layout);
 		ProgressBar progressBar = new ProgressBar(view.getContext());
 		ThemeEngine.applyStyle(progressBar);
 		view.addView(progressBar, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
@@ -114,8 +112,7 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 
 		contentView = null;
 		textView = null;
-		emptyView = null;
-		emptyText = null;
+		errorHolder = null;
 		progressView = null;
 	}
 
@@ -135,8 +132,8 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 				text = savedInstanceState != null ? savedInstanceState.getString(EXTRA_TEXT) : null;
 				if (errorItem != null) {
 					contentView.setVisibility(View.GONE);
-					emptyView.setVisibility(View.VISIBLE);
-					emptyText.setText(errorItem.toString());
+					errorHolder.layout.setVisibility(View.VISIBLE);
+					errorHolder.text.setText(errorItem.toString());
 				} else if (text != null) {
 					setText(text);
 				} else {
@@ -156,8 +153,8 @@ public class TextFragment extends Fragment implements View.OnClickListener {
 							setText(text);
 						} else {
 							errorItem = result.first != null ? result.first : new ErrorItem(ErrorItem.Type.UNKNOWN);
-							emptyView.setVisibility(View.VISIBLE);
-							emptyText.setText(errorItem.toString());
+							errorHolder.layout.setVisibility(View.VISIBLE);
+							errorHolder.text.setText(errorItem.toString());
 						}
 					});
 				}

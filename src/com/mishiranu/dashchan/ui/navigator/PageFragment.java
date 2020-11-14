@@ -1,40 +1,40 @@
 package com.mishiranu.dashchan.ui.navigator;
 
-import android.animation.Animator;
-import android.animation.AnimatorInflater;
-import android.app.ActionBar;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Pair;
 import android.view.ActionMode;
-import android.view.ContextThemeWrapper;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
-import com.mishiranu.dashchan.ui.ActivityHandler;
+import com.mishiranu.dashchan.ui.ContentFragment;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.navigator.page.ListPage;
 import com.mishiranu.dashchan.widget.CustomSearchView;
+import com.mishiranu.dashchan.widget.ExpandedFrameLayout;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.MenuExpandListener;
 import com.mishiranu.dashchan.widget.PullableRecyclerView;
+import com.mishiranu.dashchan.widget.ThemeEngine;
+import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.Collection;
 import java.util.UUID;
 
-public final class PageFragment extends Fragment implements ActivityHandler, ListPage.Callback {
+public final class PageFragment extends ContentFragment implements FragmentHandler.Callback, ListPage.Callback {
 	private static final String EXTRA_PAGE = "page";
 	private static final String EXTRA_RETAIN_ID = "retainId";
 
@@ -49,7 +49,6 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		UiManager getUiManager();
 		ListPage.Retainable getRetainableExtra(String retainId);
 		void storeRetainableExtra(String retainId, ListPage.Retainable extra);
-		ActionBar getActionBar();
 		void setPageTitle(String title, String subtitle);
 		void invalidateHomeUpState();
 		void handleRedirect(String chanName, String boardName, String threadNumber, PostNumber postNumber);
@@ -79,8 +78,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 	private ListPage listPage;
 	private View progressView;
-	private View errorView;
-	private TextView errorText;
+	private ViewFactory.ErrorHolder errorHolder;
 	private PullableRecyclerView recyclerView;
 	private CustomSearchView searchView;
 
@@ -124,27 +122,41 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.activity_common, container, false);
-	}
-
-	@Override
-	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
-
 		actionBarLockerPull = "pull-" + UUID.randomUUID();
 		actionBarLockerSearch = "search-" + UUID.randomUUID();
 
+		ExpandedFrameLayout layout = new ExpandedFrameLayout(requireContext());
+		recyclerView = new PullableRecyclerView(layout.getContext());
+		layout.addView(recyclerView, ExpandedFrameLayout.LayoutParams.MATCH_PARENT,
+				ExpandedFrameLayout.LayoutParams.MATCH_PARENT);
+		if (!C.API_MARSHMALLOW) {
+			@SuppressWarnings("deprecation")
+			Runnable setAnimationCacheEnabled = () -> recyclerView.setAnimationCacheEnabled(false);
+			setAnimationCacheEnabled.run();
+		}
+		recyclerView.setMotionEventSplittingEnabled(false);
+		recyclerView.setClipToPadding(false);
+		recyclerView.setVerticalScrollBarEnabled(true);
+		recyclerView.setFastScrollerEnabled(Preferences.isActiveScrollbar());
+		FrameLayout progress = new FrameLayout(layout.getContext());
+		layout.addView(progress, ExpandedFrameLayout.LayoutParams.MATCH_PARENT,
+				ExpandedFrameLayout.LayoutParams.MATCH_PARENT);
+		progress.setVisibility(View.GONE);
+		progressView = progress;
+		ProgressBar progressBar = new ProgressBar(progress.getContext());
+		progress.addView(progressBar, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+		((FrameLayout.LayoutParams) progressBar.getLayoutParams()).gravity = Gravity.CENTER;
+		ThemeEngine.applyStyle(progressBar);
+		errorHolder = ViewFactory.createErrorLayout(layout);
+		errorHolder.layout.setVisibility(View.GONE);
+		layout.addView(errorHolder.layout);
+
 		allowShowScale = true;
 		listPage = getPage().content.newPage();
-		progressView = view.findViewById(R.id.progress);
-		errorView = view.findViewById(R.id.error);
-		errorText = view.findViewById(R.id.error_text);
-		recyclerView = view.findViewById(android.R.id.list);
-		recyclerView.setSaveEnabled(false);
-		recyclerView.setFastScrollerEnabled(Preferences.isActiveScrollbar());
 		recyclerView.getWrapper().setOnPullListener(listPage);
 		recyclerView.getWrapper().setPullStateListener((wrapper, busy) -> ((FragmentHandler) requireActivity())
 				.setActionBarLocked(actionBarLockerPull, busy));
+		return layout;
 	}
 
 	@Override
@@ -160,8 +172,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 			listPage = null;
 		}
 		progressView = null;
-		errorView = null;
-		errorText = null;
+		errorHolder = null;
 		recyclerView = null;
 		searchView = null;
 	}
@@ -266,8 +277,7 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 
 	private CustomSearchView getSearchView(boolean required) {
 		if (searchView == null && required) {
-			searchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(requireContext(),
-					R.style.Theme_Special_White) : getCallback().getActionBar().getThemedContext());
+			searchView = getViewHolder().obtainSearchView();
 			searchView.setOnSubmitListener(query -> {
 				if (listPage.onSearchSubmit(query)) {
 					searchSubmitQuery = null;
@@ -473,14 +483,14 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 	public void switchList() {
 		initErrorItem = null;
 		progressView.setVisibility(View.GONE);
-		errorView.setVisibility(View.GONE);
+		errorHolder.layout.setVisibility(View.GONE);
 	}
 
 	@Override
 	public void switchProgress() {
 		initErrorItem = null;
 		progressView.setVisibility(View.VISIBLE);
-		errorView.setVisibility(View.GONE);
+		errorHolder.layout.setVisibility(View.GONE);
 	}
 
 	@Override
@@ -490,17 +500,15 @@ public final class PageFragment extends Fragment implements ActivityHandler, Lis
 		}
 		initErrorItem = errorItem;
 		progressView.setVisibility(View.GONE);
-		errorView.setVisibility(View.VISIBLE);
-		errorText.setText(errorItem.toString());
+		errorHolder.layout.setVisibility(View.VISIBLE);
+		errorHolder.text.setText(errorItem.toString());
 	}
 
 	@Override
 	public void showScaleAnimation() {
 		if (allowShowScale) {
 			allowShowScale = false;
-			Animator animator = AnimatorInflater.loadAnimator(requireContext(), R.animator.fragment_in);
-			animator.setTarget(recyclerView);
-			animator.start();
+			createAnimator(recyclerView, true).start();
 		}
 	}
 

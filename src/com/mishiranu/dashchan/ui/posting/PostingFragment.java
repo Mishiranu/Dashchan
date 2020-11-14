@@ -46,7 +46,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.view.ViewCompat;
 import androidx.core.widget.TextViewCompat;
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
@@ -69,8 +68,8 @@ import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.graphics.RoundedCornersDrawable;
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.media.JpegData;
-import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.CaptchaForm;
+import com.mishiranu.dashchan.ui.ContentFragment;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.posting.dialog.AttachmentOptionsDialog;
 import com.mishiranu.dashchan.ui.posting.dialog.AttachmentRatingDialog;
@@ -96,7 +95,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-public class PostingFragment extends Fragment implements ActivityHandler, CaptchaForm.Callback,
+public class PostingFragment extends ContentFragment implements FragmentHandler.Callback, CaptchaForm.Callback,
 		ReadCaptchaTask.Callback, PostingDialogCallback {
 	private static final String EXTRA_CHAN_NAME = "chanName";
 	private static final String EXTRA_BOARD_NAME = "boardName";

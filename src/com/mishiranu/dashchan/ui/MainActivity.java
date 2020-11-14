@@ -33,8 +33,8 @@ import android.widget.Toolbar;
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.view.GravityCompat;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import chan.content.Chan;
@@ -265,6 +265,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		expandedScreen.setDrawerOverToolbarEnabled(!wideMode);
 		uiManager = new UiManager(this, this, this);
 		uiManager.attach(this);
+		ContentFragment.prepare(this);
 		ViewGroup contentFragment = findViewById(R.id.content_fragment);
 		contentFragment.setOnHierarchyChangeListener(new ViewGroup.OnHierarchyChangeListener() {
 			@Override
@@ -302,7 +303,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		storageRequestState = savedInstanceState != null ? StorageRequestState
 				.valueOf(savedInstanceState.getString(EXTRA_STORAGE_REQUEST_STATE)) : StorageRequestState.NONE;
 
-		Fragment currentFragmentFromSaved = null;
+		ContentFragment currentFragmentFromSaved = null;
 		if (savedInstanceState == null) {
 			File file = getSavedPagesFile();
 			if (file != null && file.exists()) {
@@ -328,7 +329,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 				}
 			}
 			if (savedInstanceState != null) {
-				currentFragmentFromSaved = savedInstanceState
+				currentFragmentFromSaved = (ContentFragment) savedInstanceState
 						.<StackItem>getParcelable(EXTRA_CURRENT_FRAGMENT).create(null);
 				if (currentFragmentFromSaved == null) {
 					savedInstanceState = null;
@@ -366,7 +367,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 				updatePostFragmentConfiguration();
 			}
 		} else {
-			Fragment currentFragment = getCurrentFragment();
+			ContentFragment currentFragment = getCurrentFragment();
 			if (currentFragment instanceof PageFragment &&
 					Chan.get(((PageFragment) currentFragment).getPage().chanName).name == null) {
 				currentFragment = null;
@@ -441,14 +442,14 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		}
 	}
 
-	private Fragment getCurrentFragment() {
+	private ContentFragment getCurrentFragment() {
 		FragmentManager fragmentManager = getSupportFragmentManager();
 		try {
 			fragmentManager.executePendingTransactions();
 		} catch (IllegalStateException e) {
 			// Ignore exception
 		}
-		return fragmentManager.findFragmentById(R.id.content_fragment);
+		return (ContentFragment) fragmentManager.findFragmentById(R.id.content_fragment);
 	}
 
 	@Override
@@ -584,7 +585,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 
 	@Override
 	public void scrollToPost(String chanName, String boardName, String threadNumber, PostNumber postNumber) {
-		Fragment fragment = getCurrentFragment();
+		ContentFragment fragment = getCurrentFragment();
 		if (fragment instanceof PageFragment) {
 			Page page = ((PageFragment) fragment).getPage();
 			if (page.content == Page.Content.POSTS && page.chanName.equals(chanName) &&
@@ -612,7 +613,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 			String boardName = intent.getStringExtra(C.EXTRA_BOARD_NAME);
 			String threadNumber = intent.getStringExtra(C.EXTRA_THREAD_NUMBER);
 			PostingService.FailResult failResult = intent.getParcelableExtra(C.EXTRA_FAIL_RESULT);
-			Fragment currentFragment = getCurrentFragment();
+			ContentFragment currentFragment = getCurrentFragment();
 			boolean replace = true;
 			if (currentFragment instanceof PostingFragment &&
 					((PostingFragment) currentFragment).check(chanName, boardName, threadNumber)) {
@@ -714,7 +715,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	private int getPagesStackSize(String chanName) {
 		boolean mergeChans = Preferences.isMergeChans();
 		int size = 0;
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		if (currentFragment instanceof PageFragment && currentPageItem != null &&
 				(mergeChans || (((PageFragment) currentFragment).getPage().chanName.equals(chanName)))) {
 			size++;
@@ -731,7 +732,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		if (allowForeignChan && currentPageItem.allowReturn && !stackPageItems.isEmpty()) {
 			return stackPageItems.remove(stackPageItems.size() - 1);
 		}
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		String chanName = ((PageFragment) currentFragment).getPage().chanName;
 		boolean mergeChans = Preferences.isMergeChans();
 		for (int i = stackPageItems.size() - 1; i >= 0; i--) {
@@ -745,7 +746,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	}
 
 	private void clearStackAndCurrent() {
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		boolean mergeChans = Preferences.isMergeChans();
 		boolean closeOnBack = Preferences.isCloseOnBack();
 		String chanName = ((PageFragment) currentFragment).getPage().chanName;
@@ -811,7 +812,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 			navigatePage(content, chan.name, boardName, threadNumber, postNumber, threadTitle, searchQuery, pageFlags);
 		} else {
 			String currentChanName = null;
-			Fragment currentFragment = getCurrentFragment();
+			ContentFragment currentFragment = getCurrentFragment();
 			if (currentFragment instanceof PageFragment) {
 				currentChanName = ((PageFragment) currentFragment).getPage().chanName;
 			}
@@ -878,7 +879,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 
 	private void navigatePage(Page.Content content, String chanName, String boardName,
 			String threadNumber, PostNumber postNumber, String threadTitle, String searchQuery, int pageFlags) {
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		Page currentPage = currentFragment instanceof PageFragment
 				? ((PageFragment) currentFragment).getPage() : null;
 		if (currentPage != null && currentPage.is(content, chanName, boardName, threadNumber) && searchQuery == null) {
@@ -946,8 +947,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	}
 
 	@Override
-	public void pushFragment(Fragment fragment) {
-		Fragment currentFragment = getCurrentFragment();
+	public void pushFragment(ContentFragment fragment) {
+		ContentFragment currentFragment = getCurrentFragment();
 		if (!(currentFragment instanceof PageFragment)) {
 			StackItem stackItem = new StackItem(getSupportFragmentManager(), currentFragment, null);
 			fragments.add(stackItem);
@@ -955,12 +956,12 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		navigateFragment(fragment, null, true);
 	}
 
-	private void navigateFragment(Fragment fragment, PageItem pageItem, boolean closeOverlays) {
+	private void navigateFragment(ContentFragment fragment, PageItem pageItem, boolean closeOverlays) {
 		if (closeOverlays) {
 			closeOverlaysForNavigation();
 		}
 		FragmentManager fragmentManager = getSupportFragmentManager();
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		if (currentFragment instanceof PageFragment) {
 			// currentPageItem == null means page was deleted
 			if (currentPageItem != null) {
@@ -974,8 +975,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 			fragments.clear();
 		}
 
-		if (currentFragment instanceof ActivityHandler) {
-			((ActivityHandler) currentFragment).onTerminate();
+		if (currentFragment != null) {
+			currentFragment.onTerminate();
 		}
 		ClickableToast.cancel();
 		InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
@@ -989,7 +990,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		}
 		currentPageItem = pageItem;
 		fragmentManager.beginTransaction()
-				.setCustomAnimations(R.animator.fragment_in, R.animator.fragment_out)
+				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 				.replace(R.id.content_fragment, fragment)
 				.commit();
 		updatePostFragmentConfiguration();
@@ -1024,7 +1025,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	}
 
 	private void updatePostFragmentConfiguration() {
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		String chanName;
 		if (currentFragment instanceof PageFragment) {
 			chanName = ((PageFragment) currentFragment).getPage().chanName;
@@ -1077,8 +1078,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 
 	@Override
 	public void invalidateHomeUpState() {
-		Fragment currentFragment = getCurrentFragment();
-		if (currentFragment instanceof ActivityHandler && ((ActivityHandler) currentFragment).isSearchMode()) {
+		ContentFragment currentFragment = getCurrentFragment();
+		if (currentFragment != null && currentFragment.isSearchMode()) {
 			drawerToggle.setDrawerIndicatorMode(DrawerToggle.Mode.UP);
 		} else {
 			boolean displayUp;
@@ -1224,9 +1225,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 
 	@Override
 	public boolean onSearchRequested() {
-		Fragment currentFragment = getCurrentFragment();
-		return currentFragment instanceof ActivityHandler &&
-				((ActivityHandler) currentFragment).onSearchRequested();
+		ContentFragment currentFragment = getCurrentFragment();
+		return currentFragment.onSearchRequested();
 	}
 
 	@Override
@@ -1245,9 +1245,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		if (!wideMode && drawerLayout.isDrawerOpen(GravityCompat.START)) {
 			drawerLayout.closeDrawers();
 		} else {
-			Fragment currentFragment = getCurrentFragment();
-			if (!homeHandled && currentFragment instanceof ActivityHandler &&
-					((ActivityHandler) currentFragment).onBackPressed()) {
+			ContentFragment currentFragment = getCurrentFragment();
+			if (!homeHandled && currentFragment.onBackPressed()) {
 				return;
 			}
 			boolean handled = false;
@@ -1266,7 +1265,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 					handled = true;
 				}
 			} else if (!fragments.isEmpty()) {
-				Fragment fragment = fragments.remove(fragments.size() - 1).create(null);
+				ContentFragment fragment = (ContentFragment) fragments.remove(fragments.size() - 1).create(null);
 				navigateFragment(fragment, null, true);
 				handled = true;
 			} else if (!stackPageItems.isEmpty()) {
@@ -1348,11 +1347,10 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		if (drawerToggle.onOptionsItemSelected(item)) {
 			return true;
 		}
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		switch (item.getItemId()) {
 			case android.R.id.home: {
-				if (currentFragment instanceof ActivityHandler &&
-						((ActivityHandler) currentFragment).onHomePressed()) {
+				if (currentFragment.onHomePressed()) {
 					return true;
 				}
 				drawerLayout.closeDrawers();
@@ -1447,7 +1445,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 
 	@Override
 	public void onSelectChan(String chanName) {
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
 		if (page == null || !page.chanName.equals(chanName)) {
 			Chan chan = Chan.get(chanName);
@@ -1492,7 +1490,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 
 	@Override
 	public void onSelectBoard(String chanName, String boardName, boolean fromCache) {
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
 		Chan chan = Chan.get(chanName);
 		if (isSingleBoardMode(chan)) {
@@ -1508,7 +1506,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	@Override
 	public boolean onSelectThread(String chanName, String boardName, String threadNumber, PostNumber postNumber,
 			String threadTitle, boolean fromCache) {
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
 		Chan chan = Chan.get(chanName);
 		if (isSingleBoardMode(chan)) {
@@ -1540,7 +1538,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 
 	@Override
 	public void onClosePage(String chanName, String boardName, String threadNumber) {
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
 		if (page != null && page.isThreadsOrPosts(chanName, boardName, threadNumber)) {
 			SavedPageItem savedPageItem = prepareTargetPreviousPage(false);
@@ -1590,7 +1588,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 
 	@Override
 	public void onCloseAllPages() {
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
 		String chanName = page != null ? page.chanName : null;
 		if (chanName == null && !stackPageItems.isEmpty()) {
@@ -1646,7 +1644,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	@Override
 	public int onEnterNumber(int number) {
 		int result = 0;
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		if (currentFragment instanceof PageFragment) {
 			result = ((PageFragment) currentFragment).onDrawerNumberEntered(number);
 		}
@@ -1682,7 +1680,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		}
 		boolean success = false;
 		if (content != null) {
-			Fragment currentFragment = getCurrentFragment();
+			ContentFragment currentFragment = getCurrentFragment();
 			Page page = currentFragment instanceof PageFragment ? ((PageFragment) currentFragment).getPage() : null;
 			if (page == null || page.content != content) {
 				if (page == null && !stackPageItems.isEmpty()) {
@@ -1726,7 +1724,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 						savedPageItem.threadTitle, savedPageItem.createdRealtime));
 			}
 		}
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		if (currentFragment instanceof PageFragment) {
 			Page page = ((PageFragment) currentFragment).getPage();
 			if (page.isThreadsOrPosts()) {
@@ -1743,9 +1741,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	private void handleChansChangedDelayed() {
 		if (removedChanNames.isEmpty()) {
 			if (!changedChanNames.isEmpty()) {
-				Fragment currentFragment = getCurrentFragment();
-				if (currentFragment instanceof ActivityHandler) {
-					((ActivityHandler) currentFragment)
+				ContentFragment currentFragment = getCurrentFragment();
+				if (currentFragment instanceof FragmentHandler.Callback) {
+					((FragmentHandler.Callback) currentFragment)
 							.onChansChanged(Collections.unmodifiableSet(changedChanNames), Collections.emptySet());
 				}
 			}
@@ -1756,7 +1754,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 					iterator.remove();
 				}
 			}
-			Fragment currentFragment = getCurrentFragment();
+			ContentFragment currentFragment = getCurrentFragment();
 			if (currentFragment instanceof PageFragment &&
 					removedChanNames.contains(((PageFragment) currentFragment).getPage().chanName)) {
 				if (!stackPageItems.isEmpty()) {
@@ -1765,8 +1763,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 				} else {
 					navigateInitial(true);
 				}
-			} else if (currentFragment instanceof ActivityHandler) {
-				((ActivityHandler) currentFragment)
+			} else if (currentFragment instanceof FragmentHandler.Callback) {
+				((FragmentHandler.Callback) currentFragment)
 						.onChansChanged(Collections.unmodifiableSet(changedChanNames),
 								Collections.unmodifiableSet(removedChanNames));
 			}
@@ -1843,7 +1841,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	}
 
 	private final PostingService.GlobalCallback postingGlobalCallback = () -> {
-		Fragment currentFragment = getCurrentFragment();
+		ContentFragment currentFragment = getCurrentFragment();
 		if (currentFragment instanceof PageFragment) {
 			((PageFragment) currentFragment).handleNewPostDataListNow();
 		}
@@ -1954,9 +1952,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 
 	private void handleStorageRequestResult(boolean cancel) {
 		notifyDownloadServiceStorageRequestResult(cancel);
-		Fragment currentFragment = getCurrentFragment();
-		if (currentFragment instanceof ActivityHandler) {
-			((ActivityHandler) currentFragment).onStorageRequestResult();
+		ContentFragment currentFragment = getCurrentFragment();
+		if (currentFragment instanceof FragmentHandler.Callback) {
+			((FragmentHandler.Callback) currentFragment).onStorageRequestResult();
 		}
 	}
 

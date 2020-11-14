@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import androidx.fragment.app.Fragment;
 import chan.content.ChanLocator;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.DownloadService;
@@ -12,6 +11,11 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import java.util.Collection;
 
 public interface FragmentHandler {
+	interface Callback {
+		default void onChansChanged(Collection<String> changed, Collection<String> removed) {}
+		default void onStorageRequestResult() {}
+	}
+
 	void setTitleSubtitle(CharSequence title, CharSequence subtitle);
 	ViewGroup getToolbarView();
 	FrameLayout getToolbarExtra();
@@ -21,7 +25,7 @@ public interface FragmentHandler {
 		return ResourceUtils.getActionBarIcon(getToolbarContext(), attr);
 	}
 
-	void pushFragment(Fragment fragment);
+	void pushFragment(ContentFragment fragment);
 	void removeFragment();
 
 	DownloadService.Binder getDownloadBinder();

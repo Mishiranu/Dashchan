@@ -16,11 +16,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.ui.ContentFragment;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-public abstract class PreferenceFragment extends Fragment {
+public abstract class PreferenceFragment extends ContentFragment {
 	private final ArrayList<Preference<?>> preferences = new ArrayList<>();
 	private final HashSet<Preference<?>> persistent = new HashSet<>();
 	private final ArrayList<Dependency> dependencies = new ArrayList<>();

@@ -40,7 +40,6 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.graphics.GalleryBackgroundDrawable;
-import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
@@ -49,13 +48,14 @@ import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ThemeEngine;
+import com.mishiranu.dashchan.widget.ViewFactory;
 import com.mishiranu.dashchan.widget.WindowControlFrameLayout;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class GalleryOverlay extends DialogFragment implements ActivityHandler, GalleryInstance.Callback,
+public class GalleryOverlay extends DialogFragment implements GalleryDialog.Callback, GalleryInstance.Callback,
 		WindowControlFrameLayout.OnApplyWindowPaddingsListener {
 	public enum NavigatePostMode {DISABLED, MANUALLY, ENABLED}
 
@@ -256,10 +256,9 @@ public class GalleryOverlay extends DialogFragment implements ActivityHandler, G
 		}
 
 		if (instance.galleryItems.isEmpty()) {
-			View errorView = getLayoutInflater().inflate(R.layout.widget_error, rootView, false);
-			TextView textView = errorView.findViewById(R.id.error_text);
-			textView.setText(R.string.gallery_is_empty);
-			rootView.addView(errorView);
+			ViewFactory.ErrorHolder errorHolder = ViewFactory.createErrorLayout(rootView);
+			errorHolder.text.setText(R.string.gallery_is_empty);
+			rootView.addView(errorHolder.layout);
 		} else {
 			if (savedInstanceState != null && savedInstanceState.containsKey(EXTRA_GALLERY_MODE)) {
 				galleryMode = savedInstanceState.getBoolean(EXTRA_GALLERY_MODE);

@@ -8,13 +8,12 @@ import chan.content.Chan;
 import chan.content.ChanManager;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.ui.ActivityHandler;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import java.util.Collection;
 
-public class ChansFragment extends PreferenceFragment implements ActivityHandler {
+public class ChansFragment extends PreferenceFragment implements FragmentHandler.Callback {
 	@Override
 	protected SharedPreferences getPreferences() {
 		return Preferences.PREFERENCES;

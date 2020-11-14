@@ -8,12 +8,14 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toolbar;
 import androidx.core.widget.TextViewCompat;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -233,5 +235,38 @@ public class ViewFactory {
 			subtitle.setTextSize(TypedValue.COMPLEX_UNIT_PX, (int) (subtitle.getTextSize() * 0.85f + 0.5f));
 		}
 		return new ToolbarHolder(toolbar, layout, title, subtitle);
+	}
+
+	public static class ErrorHolder {
+		public final View layout;
+		public final TextView text;
+
+		public ErrorHolder(View layout, TextView text) {
+			this.layout = layout;
+			this.text = text;
+		}
+	}
+
+	public static ErrorHolder createErrorLayout(ViewGroup parent) {
+		LinearLayout layout = new LinearLayout(parent.getContext());
+		layout.setOrientation(LinearLayout.VERTICAL);
+		layout.setGravity(Gravity.CENTER);
+		ImageView image = new ImageView(layout.getContext());
+		image.setImageDrawable(ResourceUtils.getDrawable(image.getContext(), R.attr.iconButtonWarning, 0));
+		if (C.API_LOLLIPOP) {
+			image.setImageTintList(ResourceUtils.getColorStateList(image.getContext(),
+					android.R.attr.textColorSecondary));
+		}
+		layout.addView(image, LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		TextView text = new TextView(layout.getContext());
+		TextViewCompat.setTextAppearance(text, ResourceUtils.getResourceId(text.getContext(),
+				android.R.attr.textAppearanceMedium, 0));
+		text.setGravity(Gravity.CENTER);
+		float density = ResourceUtils.obtainDensity(parent);
+		text.setPadding((int) (16f * density), 0, (int) (16f * density), 0);
+		layout.addView(text, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+		layout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.MATCH_PARENT));
+		return new ErrorHolder(layout, text);
 	}
 }
