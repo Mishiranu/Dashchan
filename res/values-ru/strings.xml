@@ -35,8 +35,6 @@
 	<string name="attachments_are_too_large">Вложения слишком большие</string>
 	<string name="audio_playback">Воспроизведение аудио</string>
 	<string name="audio_player">Аудиоплеер</string>
-	<string name="auto_disable">Отключать автоматически</string>
-	<string name="auto_disable__summary">Отключать отслеживание для удалённых тредов</string>
 	<string name="autohide">Автоскрытие</string>
 	<string name="available__plural">Доступные</string>
 	<string name="backup_data">Резервное копирование данных</string>
@@ -208,6 +206,7 @@
 	<string name="image_is_corrupted">Изображение повреждено</string>
 	<string name="images">Изображения</string>
 	<string name="images_are_disabled">Картинки отключены</string>
+	<string name="important__plural">Важные</string>
 	<string name="in_thread_number__format">В треде %s</string>
 	<string name="incorrect_password">Неправильный пароль</string>
 	<string name="initial_position">Начальное положение</string>
@@ -244,6 +243,7 @@
 	<string name="max_lines_count">Максимальное число строк</string>
 	<string name="max_lines_count__summary">Сообщения будут обрезаны, если число строк превышает
 		заданное значение</string>
+	<string name="media">Медиа</string>
 	<string name="merge_pages">Объединить страницы</string>
 	<string name="merge_pages__summary">Отображать страницы для всех форумов</string>
 	<string name="message_data">Данные сообщения</string>
@@ -407,10 +407,14 @@
 	<string name="rename">Переименовать</string>
 	<string name="repeated_files_are_prohibited">Повторные файлы запрещены</string>
 	<string name="replace">Заменить</string>
+	<string name="replies">Ответы</string>
 	<string name="replies_count">Количество ответов</string>
 	<string name="replies_to_number__format">Ответы на %s</string>
 	<string name="replies_tree">Дерево ответов</string>
 	<string name="reply">Ответить</string>
+	<string name="reply_in_thread__format">Ответ в %s</string>
+	<string name="reply_notifications">Уведомления об ответах</string>
+	<string name="reply_notifications__format">Показывать уведомление при получении нового ответа</string>
 	<string name="report">Пожаловаться</string>
 	<string name="request_has_been_sent_successfully">Запрос успешно отправлен</string>
 	<string name="requires_decoding_libraries__sentence">Для работы видеоплеера необходимо установить
@@ -466,6 +470,7 @@
 	<string name="small_grid">Мелкая сетка</string>
 	<string name="some_posts_have_been_edited">Есть изменённые сообщения</string>
 	<string name="sorting">Сортировка</string>
+	<string name="sound">Звук</string>
 	<string name="specific_to_internal_services__sentence">Следующая опция является частной для некоторых сервисов,
 		таких как капчи и обновление приложения. Вы можете настроить HTTPS для форумов в соответствующих
 		категориях настроек.</string>
@@ -539,12 +544,13 @@
 	<string name="validation_completed">Проверка завершена</string>
 	<string name="verify_certificate">Проверять сертификат</string>
 	<string name="verify_certificate__summary">Соединение будет разорвано, если сертификат не достоверен</string>
+	<string name="vibration">Вибрация</string>
 	<string name="video_player">Видеоплеер</string>
 	<string name="view__verb">Просмотреть</string>
 	<string name="views">Просмотры</string>
 	<string name="warning">Предупреждение</string>
 	<string name="watch_initially">Отслеживать изначально</string>
-	<string name="watch_initially__summary">Включать отслеживание сразу при добавлении в избранное</string>
+	<string name="watch_initially__summary">Включать отслеживание при добавлении в избранное</string>
 	<string name="web_browser">Браузер</string>
 	<string name="wifi_only">Только через Wi-Fi</string>
 	<string name="wifi_or_3g_plus">Через Wi-Fi или 3G+</string>

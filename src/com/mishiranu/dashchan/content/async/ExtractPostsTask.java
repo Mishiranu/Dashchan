@@ -22,14 +22,14 @@ import java.util.Set;
 
 public class ExtractPostsTask extends ExecutorTask<Void, ExtractPostsTask.Result> {
 	public interface Callback {
-		void onExtractPostsComplete(Result result);
+		void onExtractPostsComplete(Result result, boolean cancelled);
 	}
 
 	public static class Result {
 		public final Set<PostNumber> newPosts;
 		public final Set<PostNumber> deletedPosts;
 		public final Set<PostNumber> editedPosts;
-		public final int replyCount;
+		public final Set<PostNumber> replyPosts;
 
 		public final PagesDatabase.Cache cache;
 		public final boolean cacheChanged;
@@ -43,13 +43,13 @@ public class ExtractPostsTask extends ExecutorTask<Void, ExtractPostsTask.Result
 		public final int uniquePosters;
 
 		public Result(Set<PostNumber> newPosts, Set<PostNumber> deletedPosts, Set<PostNumber> editedPosts,
-				int replyCount, PagesDatabase.Cache cache, boolean cacheChanged, Map<PostNumber, PostItem> postItems,
-				Collection<PostNumber> removedPosts, PostsDatabase.Flags flags, ThreadsDatabase.StateExtra stateExtra,
-				Uri archivedThreadUri, int uniquePosters) {
+				Set<PostNumber> replyPosts, PagesDatabase.Cache cache, boolean cacheChanged,
+				Map<PostNumber, PostItem> postItems, Collection<PostNumber> removedPosts, PostsDatabase.Flags flags,
+				ThreadsDatabase.StateExtra stateExtra, Uri archivedThreadUri, int uniquePosters) {
 			this.newPosts = newPosts;
 			this.deletedPosts = deletedPosts;
 			this.editedPosts = editedPosts;
-			this.replyCount = replyCount;
+			this.replyPosts = replyPosts;
 			this.cache = cache;
 			this.cacheChanged = cacheChanged;
 			this.postItems = postItems;
@@ -99,11 +99,11 @@ public class ExtractPostsTask extends ExecutorTask<Void, ExtractPostsTask.Result
 		boolean cacheChanged = false;
 		Map<PostNumber, PostItem> postItems = Collections.emptyMap();
 		Collection<PostNumber> removedPosts = Collections.emptyList();
-		if (extractStateExtra) {
+		if (!isCancelled() && extractStateExtra) {
 			stateExtra = CommonDatabase.getInstance().getThreads()
 					.getStateExtra(chan.name, boardName, threadNumber);
 		}
-		if (diff.cache.isChanged(cache)) {
+		if (!isCancelled() && diff.cache.isChanged(cache)) {
 			boolean temporary = chan.configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
 			meta = PagesDatabase.getInstance().getMeta(threadKey, temporary);
 			flags = CommonDatabase.getInstance().getPosts().getFlags(chan.name, boardName, threadNumber);
@@ -116,14 +116,21 @@ public class ExtractPostsTask extends ExecutorTask<Void, ExtractPostsTask.Result
 						boardName, threadNumber, originalPostNumber));
 			}
 		}
-		return new Result(diff.newPosts, diff.deletedPosts, diff.editedPosts, diff.replyCount,
+		return new Result(diff.newPosts, diff.deletedPosts, diff.editedPosts, diff.replyPosts,
 				diff.cache, cacheChanged, postItems, removedPosts, flags, stateExtra,
 				meta != null ? meta.archivedThreadUri : null, meta != null ? meta.uniquePosters : 0);
 	}
 
 	@Override
+	protected void onCancel(Result result) {
+		if (result != null) {
+			callback.onExtractPostsComplete(result, true);
+		}
+	}
+
+	@Override
 	protected void onComplete(Result result) {
-		callback.onExtractPostsComplete(result);
+		callback.onExtractPostsComplete(result, false);
 	}
 
 	@Override

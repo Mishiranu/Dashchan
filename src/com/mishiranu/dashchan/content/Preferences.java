@@ -1228,13 +1228,6 @@ public class Preferences {
 		return PREFERENCES.getBoolean(KEY_VIDEO_SEEK_ANY_FRAME, DEFAULT_VIDEO_SEEK_ANY_FRAME);
 	}
 
-	public static final String KEY_WATCHER_AUTO_DISABLE = "watcher_auto_disable";
-	public static final boolean DEFAULT_WATCHER_AUTO_DISABLE = true;
-
-	public static boolean isWatcherAutoDisable() {
-		return PREFERENCES.getBoolean(KEY_WATCHER_AUTO_DISABLE, DEFAULT_WATCHER_AUTO_DISABLE);
-	}
-
 	public static final String KEY_WATCHER_REFRESH_INTERVAL = "watcher_refresh_interval";
 	public static final int DISABLED_WATCHER_REFRESH_INTERVAL = 0;
 	public static final int MIN_WATCHER_REFRESH_INTERVAL = 15;
@@ -1259,6 +1252,64 @@ public class Preferences {
 			}
 			editor.commit();
 		}
+	}
+
+	public enum NotificationFeature {
+		ENABLED("enabled", R.string.enabled),
+		IMPORTANT("important", R.string.important__plural),
+		SOUND("sound", R.string.sound),
+		VIBRATION("vibration", R.string.vibration);
+
+		public final String value;
+		public final int titleResId;
+
+		NotificationFeature(String value, int titleResId) {
+			this.value = value;
+			this.titleResId = titleResId;
+		}
+
+		private static NotificationFeature find(String value) {
+			for (NotificationFeature notificationFeature : values()) {
+				if (notificationFeature.value.equals(value)) {
+					return notificationFeature;
+				}
+			}
+			return null;
+		}
+	}
+
+	public static final String KEY_WATCHER_NOTIFICATIONS = "watcher_notifications";
+	public static final Set<NotificationFeature> DEFAULT_WATCHER_NOTIFICATIONS = Collections
+			.unmodifiableSet(new HashSet<>(Arrays.asList(NotificationFeature.IMPORTANT,
+					NotificationFeature.SOUND, NotificationFeature.VIBRATION)));
+
+	public static Set<NotificationFeature> getWatcherNotifications() {
+		Set<String> strings = PREFERENCES.getStringSet(KEY_WATCHER_NOTIFICATIONS, null);
+		if (strings == null) {
+			return DEFAULT_WATCHER_NOTIFICATIONS;
+		} else {
+			HashSet<NotificationFeature> notificationFeatures = new HashSet<>(strings.size());
+			for (String value : strings) {
+				NotificationFeature notificationFeature = NotificationFeature.find(value);
+				if (notificationFeature != null) {
+					notificationFeatures.add(notificationFeature);
+				}
+			}
+			return notificationFeatures;
+		}
+	}
+
+	public static void setWatcherNotifications(Collection<NotificationFeature> notificationFeatures) {
+		Set<String> strings;
+		if (notificationFeatures == null || notificationFeatures.isEmpty()) {
+			strings = Collections.emptySet();
+		} else {
+			strings = new HashSet<>();
+			for (NotificationFeature notificationFeature : notificationFeatures) {
+				strings.add(notificationFeature.value);
+			}
+		}
+		PREFERENCES.edit().putStringSet(KEY_WATCHER_NOTIFICATIONS, strings).commit();
 	}
 
 	public static final String KEY_WATCHER_WATCH_INITIALLY = "watcher_watch_initially";

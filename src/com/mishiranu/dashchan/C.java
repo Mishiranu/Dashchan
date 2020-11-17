@@ -72,6 +72,7 @@ public class C {
 	public static final int NOTIFICATION_ID_DOWNLOADING = 2;
 	public static final int NOTIFICATION_ID_AUDIO_PLAYER = 3;
 	public static final int NOTIFICATION_ID_UPDATES = 4;
+	public static final int NOTIFICATION_ID_REPLIES = 5;
 
 	public static final String NOTIFICATION_CHANNEL_POSTING = "posting";
 	public static final String NOTIFICATION_CHANNEL_POSTING_COMPLETE = "postingComplete";
@@ -79,6 +80,7 @@ public class C {
 	public static final String NOTIFICATION_CHANNEL_DOWNLOADING_COMPLETE = "downloadingComplete";
 	public static final String NOTIFICATION_CHANNEL_AUDIO_PLAYER = "audioPlayer";
 	public static final String NOTIFICATION_CHANNEL_UPDATES = "updates";
+	public static final String NOTIFICATION_CHANNEL_REPLIES = "replies";
 
 	public static final String EXTRA_BOARD_NAME = "com.mishiranu.dashchan.extra.BOARD_NAME";
 	public static final String EXTRA_CHAN_NAME = "com.mishiranu.dashchan.extra.CHAN_NAME";

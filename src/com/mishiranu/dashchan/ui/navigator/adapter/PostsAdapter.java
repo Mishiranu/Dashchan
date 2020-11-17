@@ -198,17 +198,6 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 		return gallerySet;
 	}
 
-	public int getExistingPostsCount() {
-		for (int i = getItemCount() - 1; i >= 0; i--) {
-			PostItem postItem = getItem(i);
-			int ordinalIndex = postItem.getOrdinalIndex();
-			if (ordinalIndex >= 0) {
-				return ordinalIndex + 1;
-			}
-		}
-		return 0;
-	}
-
 	public UiManager.ConfigurationSet getConfigurationSet() {
 		return configurationSet;
 	}

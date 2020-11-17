@@ -35,8 +35,6 @@
     <string name="attachments_are_too_large">Gli allegati sono troppo grandi</string>
     <string name="audio_playback">Riproduzione audio</string>
     <string name="audio_player">Player audio</string>
-    <string name="auto_disable">Disabilita automaticamente</string>
-    <string name="auto_disable__summary">Disabilita watcher per i thread eliminati</string>
     <string name="autohide">Autohide</string>
     <string name="available__plural">Disponibili</string>
     <string name="backup_data">Backup dei dati</string>

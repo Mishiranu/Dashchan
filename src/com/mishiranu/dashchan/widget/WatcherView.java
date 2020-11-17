@@ -1,7 +1,6 @@
 package com.mishiranu.dashchan.widget;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Canvas;
@@ -9,7 +8,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.os.Build;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -39,7 +37,6 @@ public class WatcherView extends FrameLayout {
 	private boolean hasNew = false;
 	private int color;
 
-	@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 	public WatcherView(Context context, ColorSet colorSet) {
 		super(context);
 
@@ -51,8 +48,7 @@ public class WatcherView extends FrameLayout {
 		addView(progressBar, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
 				FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
 		this.colorSet = colorSet;
-		setWatcherState(WatcherService.State.DISABLED);
-		setPostsCountDifference(0, false, false);
+		update(WatcherService.Counter.INITIAL);
 	}
 
 	private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.LINEAR_TEXT_FLAG);
@@ -95,45 +91,10 @@ public class WatcherView extends FrameLayout {
 		canvas.restore();
 	}
 
-	public void setPostsCountDifference(int postsCountDifference, boolean hasNew, boolean error) {
-		String text;
-		if (postsCountDifference == WatcherService.POSTS_COUNT_DIFFERENCE_DELETED) {
-			text = "X";
-		} else {
-			if (Math.abs(postsCountDifference) >= 1000) {
-				text = (postsCountDifference / 1000) + "K+";
-			} else {
-				text = Integer.toString(postsCountDifference);
-			}
-			if (error) {
-				text += "?";
-			}
-		}
-		this.text = text;
-		this.hasNew = hasNew;
-		invalidate();
-	}
-
-	public void setWatcherState(WatcherService.State state) {
-		switch (state) {
-			case DISABLED:
-			case ENABLED:
-			case UNAVAILABLE: {
-				progressBar.setVisibility(View.GONE);
-				break;
-			}
-			case BUSY: {
-				progressBar.setVisibility(View.VISIBLE);
-				break;
-			}
-		}
-		switch (state) {
-			case DISABLED: {
-				color = colorSet.disabledColor;
-				break;
-			}
-			case ENABLED:
-			case BUSY: {
+	public void update(WatcherService.Counter counter) {
+		progressBar.setVisibility(counter.running ? View.VISIBLE : View.GONE);
+		switch (counter.state) {
+			case ENABLED: {
 				color = colorSet.enabledColor;
 				break;
 			}
@@ -141,7 +102,31 @@ public class WatcherView extends FrameLayout {
 				color = colorSet.unavailableColor;
 				break;
 			}
+			case DISABLED: {
+				color = colorSet.disabledColor;
+				break;
+			}
+			default: {
+				throw new IllegalStateException();
+			}
 		}
+		String text;
+		if (counter.newCount <= 0 && counter.deleted) {
+			text = "X";
+		} else {
+			if (Math.abs(counter.newCount) >= 1000) {
+				text = (counter.newCount / 1000) + "K+";
+			} else {
+				text = Integer.toString(counter.newCount);
+			}
+			if (counter.deleted) {
+				text += "X";
+			} else if (counter.error) {
+				text += "?";
+			}
+		}
+		this.text = text;
+		this.hasNew = counter.newCount > 0;
 		invalidate();
 	}
 }

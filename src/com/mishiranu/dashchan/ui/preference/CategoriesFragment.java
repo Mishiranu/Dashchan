@@ -54,9 +54,9 @@ public class CategoriesFragment extends PreferenceFragment {
 		addCategory(R.string.contents, R.drawable.ic_local_library)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new ContentsFragment()));
-		addCategory(R.string.favorites, R.drawable.ic_star)
+		addCategory(R.string.media, R.drawable.ic_save)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
-						.pushFragment(new FavoritesFragment()));
+						.pushFragment(new MediaFragment()));
 		addCategory(R.string.autohide, R.drawable.ic_custom_fork)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new AutohideFragment()));

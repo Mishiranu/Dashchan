@@ -22,6 +22,9 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
@@ -36,19 +39,20 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.HidePerformer;
 import com.mishiranu.dashchan.content.Preferences;
+import com.mishiranu.dashchan.content.WatcherNotifications;
+import com.mishiranu.dashchan.content.async.CallbackProxy;
 import com.mishiranu.dashchan.content.async.ExtractPostsTask;
-import com.mishiranu.dashchan.content.async.ReadPostsTask;
 import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.database.CommonDatabase;
 import com.mishiranu.dashchan.content.database.PagesDatabase;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
-import com.mishiranu.dashchan.content.model.PendingUserPost;
 import com.mishiranu.dashchan.content.model.Post;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.PostingService;
+import com.mishiranu.dashchan.content.service.WatcherService;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.ui.DrawerForm;
@@ -85,7 +89,7 @@ import java.util.Locale;
 import java.util.Set;
 
 public class PostsPage extends ListPage implements PostsAdapter.Callback, FavoritesStorage.Observer,
-		UiManager.Observer, ExtractPostsTask.Callback, ReadPostsTask.Callback, ActionMode.Callback {
+		UiManager.Observer, ExtractPostsTask.Callback, WatcherService.Session.Callback, ActionMode.Callback {
 	private static class RetainableExtra implements Retainable {
 		public static final ExtraFactory<RetainableExtra> FACTORY = RetainableExtra::new;
 
@@ -196,7 +200,69 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	}
 
 	public static class ExtractViewModel extends TaskViewModel.Proxy<ExtractPostsTask, ExtractPostsTask.Callback> {}
-	public static class ReadViewModel extends TaskViewModel.Proxy<ReadPostsTask, ReadPostsTask.Callback> {}
+
+	public static class ReadViewModel extends ViewModel {
+		private WatcherService.Session session;
+		private final MutableLiveData<Pair<CallbackProxy<WatcherService.Session.Callback>,
+				Boolean>> result = new MutableLiveData<>();
+
+		private boolean visibleRefresh;
+		public boolean visibleReadResult;
+
+		public void init(WatcherService.Client client, String chanName, String boardName, String threadNumber) {
+			if (session == null) {
+				WatcherService.Session.Callback callback;
+				callback = CallbackProxy.create(WatcherService.Session.Callback.class, result -> {
+					boolean visible = visibleRefresh;
+					visibleRefresh = false;
+					this.result.setValue(new Pair<>(result, visible));
+				});
+				session = client.newSession(chanName, boardName, threadNumber, callback);
+			}
+		}
+
+		public void refresh(boolean reload, boolean visible, int checkInterval) {
+			if (session != null && session.refresh(reload, checkInterval)) {
+				visibleRefresh = visible;
+			}
+		}
+
+		public boolean hasTaskOrValue() {
+			if (session != null && session.hasTask() && visibleRefresh) {
+				return true;
+			}
+			Pair<CallbackProxy<WatcherService.Session.Callback>, Boolean> result = this.result.getValue();
+			return result != null && result.second;
+		}
+
+		public void notifyExtracted() {
+			if (session != null) {
+				session.notifyExtracted();
+			}
+		}
+
+		public void notifyEraseStarted() {
+			if (session != null) {
+				session.notifyEraseStarted();
+			}
+		}
+
+		public void observe(LifecycleOwner owner, WatcherService.Session.Callback callback) {
+			result.observe(owner, result -> {
+				if (result != null) {
+					this.result.setValue(null);
+					visibleReadResult = result.second;
+					result.first.invoke(callback);
+				}
+			});
+		}
+
+		@Override
+		protected void onCleared() {
+			session.destroy();
+			session = null;
+		}
+	}
 
 	private SearchWorker searchWorker;
 
@@ -360,6 +426,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		InitRequest initRequest = getInitRequest();
 		ExtractViewModel extractViewModel = getViewModel(ExtractViewModel.class);
 		ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
+		readViewModel.init(uiManager.callback().getWatcherClient(), page.chanName, page.boardName, page.threadNumber);
 		if (initRequest.threadTitle != null && parcelableExtra.threadTitle == null) {
 			parcelableExtra.threadTitle = initRequest.threadTitle;
 		}
@@ -425,11 +492,11 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			retainableExtra.dialogsState.dropState();
 			retainableExtra.dialogsState = null;
 		}
+		queueNextRefresh(true);
 	}
 
 	@Override
 	protected void onResume() {
-		queueNextRefresh(true);
 		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 		if (retainableExtra.dialogsState != null) {
 			retainableExtra.dialogsState.dropState();
@@ -438,12 +505,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	}
 
 	@Override
-	protected void onPause() {
-		stopRefresh();
-	}
-
-	@Override
 	protected void onDestroy() {
+		stopRefresh();
 		if (selectionMode != null) {
 			selectionMode.finish();
 			selectionMode = null;
@@ -677,16 +740,15 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			}
 			case R.id.menu_star_text:
 			case R.id.menu_star_icon: {
+				ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 				FavoritesStorage.getInstance().add(page.chanName, page.boardName,
-						page.threadNumber, getParcelableExtra(ParcelableExtra.FACTORY).threadTitle,
-						adapter.getExistingPostsCount());
+						page.threadNumber, parcelableExtra.threadTitle);
 				updateOptionsMenu();
 				return true;
 			}
 			case R.id.menu_unstar_text:
 			case R.id.menu_unstar_icon: {
-				FavoritesStorage.getInstance().remove(page.chanName, page.boardName,
-						page.threadNumber);
+				FavoritesStorage.getInstance().remove(page.chanName, page.boardName, page.threadNumber);
 				updateOptionsMenu();
 				return true;
 			}
@@ -1285,6 +1347,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		}
 		if (retainableExtra.eraseExtract) {
 			cleanup = PagesDatabase.Cleanup.ERASE;
+			ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
+			readViewModel.notifyEraseStarted();
 		}
 		ExtractViewModel extractViewModel = getViewModel(ExtractViewModel.class);
 		ExtractPostsTask task = new ExtractPostsTask(extractViewModel.callback, retainableExtra.cache,
@@ -1293,11 +1357,17 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		extractViewModel.attach(task);
 	}
 
+	private int getAutoRefreshInterval() {
+		return Preferences.getAutoRefreshInterval() * 1000;
+	}
+
 	private final Runnable refreshRunnable = () -> {
-		if (!hasReadTask()) {
+		int interval = getAutoRefreshInterval();
+		if (interval > 0 && !hasReadTask()) {
 			RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 			if (!retainableExtra.eraseExtract) {
-				refreshPosts(false);
+				ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
+				readViewModel.refresh(false, false, interval);
 			}
 		}
 		queueNextRefresh(false);
@@ -1305,7 +1375,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 	private void queueNextRefresh(boolean instant) {
 		ConcurrentUtils.HANDLER.removeCallbacks(refreshRunnable);
-		int interval = Preferences.getAutoRefreshInterval() * 1000;
+		int interval = getAutoRefreshInterval();
 		if (interval > 0) {
 			if (instant) {
 				ConcurrentUtils.HANDLER.post(refreshRunnable);
@@ -1325,12 +1395,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	}
 
 	private void refreshPostsWithoutIndication(boolean reload) {
-		Page page = getPage();
 		ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
-		ReadPostsTask task = new ReadPostsTask(readViewModel.callback, getChan(), page.boardName, page.threadNumber,
-				reload, PostingService.getPendingUserPosts(page.chanName, page.boardName, page.threadNumber));
-		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
-		readViewModel.attach(task);
+		readViewModel.refresh(reload, true, 0);
 	}
 
 	private boolean hasExtractTask() {
@@ -1420,7 +1486,14 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	private final LastToast lastToast = new LastToast();
 
 	@Override
-	public void onExtractPostsComplete(ExtractPostsTask.Result result) {
+	public void onExtractPostsComplete(ExtractPostsTask.Result result, boolean cancelled) {
+		Page page = getPage();
+		WatcherNotifications.cancelReplies(getContext(),
+				page.chanName, page.boardName, page.threadNumber, result.replyPosts);
+		if (cancelled) {
+			return;
+		}
+
 		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		PostsAdapter adapter = getAdapter();
@@ -1435,7 +1508,6 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 		if (result != null) {
 			if (erase && result.cache.isEmpty()) {
-				Page page = getPage();
 				FavoritesStorage.getInstance().remove(page.chanName, page.boardName, page.threadNumber);
 				closePage();
 				return;
@@ -1483,7 +1555,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			int newCount = result.newPosts.size();
 			int deletedCount = result.deletedPosts.size();
 			boolean hasEdited = !result.editedPosts.isEmpty();
-			int replyCount = result.replyCount;
+			int replyCount = result.replyPosts.size();
 			boolean toastVisible = ClickableToast.isShowing(lastToast.id);
 			if (lastToast.update(toastVisible, newCount, deletedCount, hasEdited, replyCount)) {
 				updateAdapters = true;
@@ -1545,6 +1617,9 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				}
 				retainableExtra.errorItem = null;
 			}
+
+			ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
+			readViewModel.notifyExtracted();
 		}
 
 		if (updateAdapters) {
@@ -1612,8 +1687,6 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				notifyTitleChanged();
 			}
 		}
-		FavoritesStorage.getInstance().modifyPostsCount(page.chanName, page.boardName,
-				page.threadNumber, getAdapter().getExistingPostsCount());
 
 		if (parcelableExtra.selectedPosts != null) {
 			Set<PostNumber> selected = parcelableExtra.selectedPosts;
@@ -1632,16 +1705,16 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	}
 
 	@Override
-	public void onReadPostsSuccess(PagesDatabase.Cache.State cacheState,
-			Set<PendingUserPost> removedPendingUserPosts) {
-		Page page = getPage();
+	public void onReadPostsSuccess(PagesDatabase.Cache.State cacheState, ConsumeReplies consumeReplies) {
+		ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
 		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 		retainableExtra.cacheState = cacheState;
-		if (!removedPendingUserPosts.isEmpty()) {
-			PostingService.consumePendingUserPosts(page.chanName, page.boardName, page.threadNumber,
-					removedPendingUserPosts);
-		}
-		if (!hasExtractTask() && retainableExtra.shouldExtract()) {
+		if ((readViewModel.visibleReadResult || getAutoRefreshInterval() > 0) &&
+				!hasExtractTask() && retainableExtra.shouldExtract()) {
+			consumeReplies.consume();
+			if (!readViewModel.visibleReadResult) {
+				startProgressIfNecessary();
+			}
 			extractPostsWithoutIndication(PagesDatabase.Cleanup.NONE);
 		} else {
 			cancelProgressIfNecessary();

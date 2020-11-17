@@ -1664,7 +1664,7 @@ public class DialogUnit {
 							if (archiveThreadNumber != null) {
 								String chanName = state.archiveChanName;
 								FavoritesStorage.getInstance().add(chanName, archiveBoardName,
-										archiveThreadNumber, state.archiveThreadTitle, 0);
+										archiveThreadNumber, state.archiveThreadTitle);
 								UiManager uiManager = UiManager.extract(provider);
 								ClickableToast.show(context.getString(R.string.completed), null,
 										new ClickableToast.Button(R.string.open_thread, false,

@@ -37,8 +37,6 @@
 	<string name="attachments_are_too_large">Attachments are too large</string>
 	<string name="audio_playback">Audio playback</string>
 	<string name="audio_player">Audio player</string>
-	<string name="auto_disable">Auto disable</string>
-	<string name="auto_disable__summary">Disable watcher for deleted threads</string>
 	<string name="autohide">Autohide</string>
 	<string name="available__plural">Available</string>
 	<string name="backup_data">Backup data</string>
@@ -208,6 +206,7 @@
 	<string name="image_is_corrupted">Image is corrupted</string>
 	<string name="images">Images</string>
 	<string name="images_are_disabled">Images are disabled</string>
+	<string name="important__plural">Important</string>
 	<string name="in_thread_number__format">In thread %s</string>
 	<string name="incorrect_password">Incorrect password</string>
 	<string name="initial_position">Initial position</string>
@@ -243,6 +242,7 @@
 	<string name="match_found">Match found</string>
 	<string name="max_lines_count">Max lines count</string>
 	<string name="max_lines_count__summary">Cut long posts if the number of lines exceeds the specified value</string>
+	<string name="media">Media</string>
 	<string name="merge_pages">Merge pages</string>
 	<string name="merge_pages__summary">Display pages for all forums</string>
 	<string name="message_data">Message data</string>
@@ -389,10 +389,14 @@
 	<string name="rename">Rename</string>
 	<string name="repeated_files_are_prohibited">Repeated files are prohibited</string>
 	<string name="replace">Replace</string>
+	<string name="replies">Replies</string>
 	<string name="replies_count">Replies count</string>
 	<string name="replies_to_number__format">Replies to %s</string>
 	<string name="replies_tree">Replies tree</string>
 	<string name="reply">Reply</string>
+	<string name="reply_in_thread__format">Reply in %s</string>
+	<string name="reply_notifications">Reply notifications</string>
+	<string name="reply_notifications__format">Notify when a new reply has been received</string>
 	<string name="report">Report</string>
 	<string name="request_has_been_sent_successfully">The request has been sent successfully</string>
 	<string name="requires_decoding_libraries__sentence">Decoding libraries should be installed in order to enable
@@ -448,6 +452,7 @@
 	<string name="small_grid">Small grid</string>
 	<string name="some_posts_have_been_edited">Some posts have been edited</string>
 	<string name="sorting">Sorting</string>
+	<string name="sound">Sound</string>
 	<string name="specific_to_internal_services__sentence">The following option is specific to some internal services
 		such as captchas or client updating. HTTPS for forums can be managed at the respective settings page.</string>
 	<string name="spoiler">Spoiler</string>
@@ -521,12 +526,13 @@
 	<string name="validation_completed">Validation completed</string>
 	<string name="verify_certificate">Verify certificate</string>
 	<string name="verify_certificate__summary">Connection will be terminated if the certificate is not valid</string>
+	<string name="vibration">Vibration</string>
 	<string name="video_player">Video player</string>
 	<string name="view__verb">View</string>
 	<string name="views">Views</string>
 	<string name="warning">Warning</string>
 	<string name="watch_initially">Watch initially</string>
-	<string name="watch_initially__summary">Enable watcher immediately when thread is added to favorites</string>
+	<string name="watch_initially__summary">Enable watcher when thread is added to favorites</string>
 	<string name="web_browser">Web browser</string>
 	<string name="wifi_only">Wi-Fi only</string>
 	<string name="wifi_or_3g_plus">Wi-Fi or 3G+</string>

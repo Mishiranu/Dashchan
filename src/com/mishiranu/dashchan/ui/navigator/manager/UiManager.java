@@ -13,6 +13,7 @@ import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.DownloadService;
+import com.mishiranu.dashchan.content.service.WatcherService;
 import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
@@ -141,6 +142,7 @@ public class UiManager {
 	public interface Callback {
 		void onDialogStackOpen();
 		DownloadService.Binder getDownloadBinder();
+		WatcherService.Client getWatcherClient();
 	}
 
 	public interface LocalNavigator {

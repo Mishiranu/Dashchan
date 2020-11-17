@@ -125,7 +125,7 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 			});
 			if (!FavoritesStorage.getInstance().hasFavorite(chanName, boardName, threadNumber)) {
 				dialogMenu.add(R.string.add_to_favorites, () -> FavoritesStorage.getInstance()
-						.add(chanName, boardName, threadNumber, null, 0));
+						.add(chanName, boardName, threadNumber, null));
 			}
 			return dialogMenu.create();
 		});

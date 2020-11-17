@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
-public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
+public class ReadPostsTask extends HttpHolderTask<Void, ReadPostsTask.Result> {
 	private final Callback callback;
 	private final Chan chan;
 	private final String boardName;
@@ -41,15 +41,59 @@ public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 	private final boolean loadFullThread;
 	private final HashSet<PendingUserPost> pendingUserPosts;
 
-	private PagesDatabase.Cache.State cacheState;
-	private HashSet<PendingUserPost> removedPendingUserPosts;
-	private RedirectException.Target target;
-	private ErrorItem errorItem;
-
 	public interface Callback {
-		void onReadPostsSuccess(PagesDatabase.Cache.State cacheState, Set<PendingUserPost> removedPendingUserPosts);
+		void onPendingUserPostsConsumed(Set<PendingUserPost> pendingUserPosts);
+		void onReadPostsSuccess(PagesDatabase.Cache.State cacheState,
+				List<PagesDatabase.InsertResult.Reply> replies, Integer newCount);
 		void onReadPostsRedirect(RedirectException.Target target);
 		void onReadPostsFail(ErrorItem errorItem);
+	}
+
+	public interface Result {
+		class Success implements Result {
+			public final PagesDatabase.Cache.State cacheState;
+			public final Set<PendingUserPost> removedPendingUserPosts;
+			public final List<PagesDatabase.InsertResult.Reply> replies;
+			public final Integer newCount;
+
+			public Success(PagesDatabase.Cache.State cacheState, Set<PendingUserPost> removedPendingUserPosts,
+					List<PagesDatabase.InsertResult.Reply> replies, Integer newCount) {
+				this.cacheState = cacheState;
+				this.removedPendingUserPosts = removedPendingUserPosts;
+				this.replies = replies;
+				this.newCount = newCount;
+			}
+		}
+
+		class Redirect implements Result {
+			public final RedirectException.Target target;
+
+			public Redirect(RedirectException.Target target) {
+				this.target = target;
+			}
+		}
+
+		class Fail implements Result {
+			public final ErrorItem errorItem;
+
+			public Fail(ErrorItem errorItem) {
+				this.errorItem = errorItem;
+			}
+		}
+	}
+
+	private static class UpdateMeta {
+		public final boolean deleted;
+		public final boolean error;
+
+		private UpdateMeta(boolean deleted, boolean error) {
+			this.deleted = deleted;
+			this.error = error;
+		}
+
+		public boolean isChanged(PagesDatabase.Meta meta) {
+			return meta != null && (meta.deleted != deleted || meta.error != error);
+		}
 	}
 
 	public ReadPostsTask(Callback callback, Chan chan, String boardName, String threadNumber,
@@ -64,10 +108,11 @@ public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 	}
 
 	@Override
-	protected Boolean run(HttpHolder holder) {
+	protected Result run(HttpHolder holder) {
 		boolean temporary = chan.configuration.getOption(ChanConfiguration.OPTION_LOCAL_MODE);
 		PagesDatabase.ThreadKey threadKey = new PagesDatabase.ThreadKey(chan.name, boardName, threadNumber);
 		PagesDatabase.Meta meta = PagesDatabase.getInstance().getMeta(threadKey, temporary);
+		UpdateMeta updateMeta = null;
 		PostNumber originalPostNumber;
 		PostNumber lastExistingPostNumber;
 		boolean allowPartialThreadLoading;
@@ -95,8 +140,8 @@ public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 				if (target == null) {
 					throw HttpException.createNotFoundException();
 				}
-				this.target = target;
-				return true;
+				updateMeta = new UpdateMeta(true, false);
+				return new Result.Redirect(target);
 			} catch (RedirectException e) {
 				RedirectException.Target target = e.obtainTarget(chan.name);
 				if (target == null) {
@@ -105,14 +150,14 @@ public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 				if (!chan.name.equals(target.chanName) || target.threadNumber == null) {
 					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
 							"Only local thread redirects allowed");
-					errorItem = new ErrorItem(ErrorItem.Type.INVALID_DATA_FORMAT);
-					return false;
+					updateMeta = new UpdateMeta(false, true);
+					return new Result.Fail(new ErrorItem(ErrorItem.Type.INVALID_DATA_FORMAT));
 				} else if (CommonUtils.equals(boardName, target.boardName) &&
 						threadNumber.equals(target.threadNumber)) {
 					throw HttpException.createNotFoundException();
 				} else {
-					this.target = target;
-					return true;
+					updateMeta = new UpdateMeta(true, false);
+					return new Result.Redirect(target);
 				}
 			}
 			HttpValidator validator = result != null ? result.validator : null;
@@ -142,10 +187,12 @@ public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 			}
 			if (posts.isEmpty()) {
 				if (partial) {
-					return true;
+					updateMeta = new UpdateMeta(false, false);
+					return new Result.Success(PagesDatabase.getInstance().getCacheState(threadKey),
+							null, Collections.emptyList(), null);
 				} else {
-					errorItem = new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE);
-					return false;
+					updateMeta = new UpdateMeta(false, true);
+					return new Result.Fail(new ErrorItem(ErrorItem.Type.EMPTY_RESPONSE));
 				}
 			}
 
@@ -173,7 +220,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 				}
 			}
 
-			PagesDatabase.Cache.State cacheState;
+			PagesDatabase.InsertResult insertResult;
 			boolean newThread = meta == null;
 			try {
 				Uri archivedThreadUri = result.archivedThreadUri;
@@ -184,25 +231,25 @@ public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 				if (uniquePosters <= 0 && meta != null) {
 					uniquePosters = meta.uniquePosters;
 				}
-				meta = new PagesDatabase.Meta(validator, archivedThreadUri, uniquePosters);
-				cacheState = PagesDatabase.getInstance().insertNewPosts(threadKey,
+				meta = new PagesDatabase.Meta(validator, archivedThreadUri, uniquePosters, false, false);
+				insertResult = PagesDatabase.getInstance().insertNewPosts(threadKey,
 						posts, meta, temporary, newThread, partial);
 			} catch (IOException e) {
-				errorItem = new ErrorItem(ErrorItem.Type.NO_ACCESS_TO_MEMORY);
-				return false;
+				updateMeta = new UpdateMeta(false, true);
+				return new Result.Fail(new ErrorItem(ErrorItem.Type.NO_ACCESS_TO_MEMORY));
 			}
-
-			this.cacheState = cacheState;
-			this.removedPendingUserPosts = removedPendingUserPosts;
-			return true;
+			return new Result.Success(insertResult.cacheState, removedPendingUserPosts,
+					insertResult.replies, insertResult.newCount);
 		} catch (HttpException e) {
 			int responseCode = e.getResponseCode();
 			if (responseCode == HttpURLConnection.HTTP_NOT_MODIFIED) {
-				cacheState = PagesDatabase.getInstance().getCacheState(threadKey);
-				return true;
+				updateMeta = new UpdateMeta(false, false);
+				return new Result.Success(PagesDatabase.getInstance().getCacheState(threadKey),
+						null, Collections.emptyList(), null);
 			}
 			if (responseCode == HttpURLConnection.HTTP_NOT_FOUND ||
 					responseCode == HttpURLConnection.HTTP_GONE) {
+				PagesDatabase.getInstance().setMetaFlags(threadKey, true, false);
 				if (chan.configuration.getOption(ChanConfiguration.OPTION_READ_SINGLE_POST)) {
 					try {
 						// Check the post belongs to another thread
@@ -212,39 +259,59 @@ public class ReadPostsTask extends HttpHolderTask<Void, Boolean> {
 						if (post != null) {
 							String threadNumber = post.threadNumber;
 							if (!this.threadNumber.equals(threadNumber)) {
-								target = RedirectException.toThread(boardName, threadNumber, post.post.number)
-										.obtainTarget(chan.name);
-								return true;
+								RedirectException.Target target = RedirectException.toThread(boardName,
+										threadNumber, post.post.number).obtainTarget(chan.name);
+								updateMeta = new UpdateMeta(true, false);
+								return new Result.Redirect(target);
 							}
 						}
 					} catch (ExtensionException | HttpException | InvalidResponseException e2) {
-						// Ignore exception
+						e2.getErrorItemAndHandle();
 					}
 				}
-				errorItem = new ErrorItem(ErrorItem.Type.THREAD_NOT_EXISTS);
+				updateMeta = new UpdateMeta(true, false);
+				return new Result.Fail(new ErrorItem(ErrorItem.Type.THREAD_NOT_EXISTS));
 			} else {
-				errorItem = e.getErrorItemAndHandle();
+				updateMeta = new UpdateMeta(false, true);
+				return new Result.Fail(e.getErrorItemAndHandle());
 			}
-			return false;
 		} catch (ExtensionException | InvalidResponseException e) {
-			errorItem = e.getErrorItemAndHandle();
-			return false;
+			updateMeta = new UpdateMeta(false, true);
+			return new Result.Fail(e.getErrorItemAndHandle());
 		} finally {
+			if (updateMeta != null && updateMeta.isChanged(meta)) {
+				PagesDatabase.getInstance().setMetaFlags(threadKey, updateMeta.deleted, updateMeta.error);
+			}
 			chan.configuration.commit();
 		}
 	}
 
 	@Override
-	public void onComplete(Boolean success) {
-		if (success) {
-			if (target != null) {
-				callback.onReadPostsRedirect(target);
-			} else {
-				callback.onReadPostsSuccess(cacheState, removedPendingUserPosts != null
-						? removedPendingUserPosts : Collections.emptySet());
+	protected void onCancel(Result result) {
+		if (result instanceof Result.Success) {
+			Result.Success success = (Result.Success) result;
+			if (success.removedPendingUserPosts != null) {
+				callback.onPendingUserPostsConsumed(success.removedPendingUserPosts);
 			}
+		}
+	}
+
+	@Override
+	protected void onComplete(Result result) {
+		if (result instanceof Result.Success) {
+			Result.Success success = (Result.Success) result;
+			if (success.removedPendingUserPosts != null) {
+				callback.onPendingUserPostsConsumed(success.removedPendingUserPosts);
+			}
+			callback.onReadPostsSuccess(success.cacheState, success.replies, success.newCount);
+		} else if (result instanceof Result.Redirect) {
+			Result.Redirect redirect = (Result.Redirect) result;
+			callback.onReadPostsRedirect(redirect.target);
+		} else if (result instanceof Result.Fail) {
+			Result.Fail fail = (Result.Fail) result;
+			callback.onReadPostsFail(fail.errorItem);
 		} else {
-			callback.onReadPostsFail(errorItem);
+			throw new IllegalStateException();
 		}
 	}
 }

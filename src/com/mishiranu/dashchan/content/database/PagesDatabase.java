@@ -57,6 +57,11 @@ public class PagesDatabase {
 				String FLAGS = "flags";
 				String DATA = "data";
 			}
+
+			interface Flags {
+				int DELETED = 0x00000001;
+				int ERROR = 0x00000002;
+			}
 		}
 
 		interface Posts {
@@ -89,11 +94,16 @@ public class PagesDatabase {
 		public final HttpValidator validator;
 		public final Uri archivedThreadUri;
 		public final int uniquePosters;
+		public final boolean deleted;
+		public final boolean error;
 
-		public Meta(HttpValidator validator, Uri archivedThreadUri, int uniquePosters) {
+		public Meta(HttpValidator validator, Uri archivedThreadUri, int uniquePosters,
+				boolean deleted, boolean error) {
 			this.validator = validator;
 			this.archivedThreadUri = archivedThreadUri;
 			this.uniquePosters = uniquePosters;
+			this.deleted = deleted;
+			this.error = error;
 		}
 
 		public void serialize(JsonSerial.Writer writer) throws IOException {
@@ -113,7 +123,8 @@ public class PagesDatabase {
 			writer.endObject();
 		}
 
-		public static Meta deserialize(JsonSerial.Reader reader) throws IOException, ParseException {
+		public static Meta deserialize(JsonSerial.Reader reader,
+				boolean deleted, boolean error) throws IOException, ParseException {
 			HttpValidator validator = null;
 			Uri archivedThreadUri = null;
 			int uniquePosters = 0;
@@ -138,7 +149,7 @@ public class PagesDatabase {
 					}
 				}
 			}
-			return new Meta(validator, archivedThreadUri, uniquePosters);
+			return new Meta(validator, archivedThreadUri, uniquePosters, deleted, error);
 		}
 	}
 
@@ -151,6 +162,20 @@ public class PagesDatabase {
 			this.originalPostNumber = originalPostNumber;
 			this.lastExistingPostNumber = lastExistingPostNumber;
 			this.cyclical = cyclical;
+		}
+	}
+
+	public static class WatcherState {
+		public final int newCount;
+		public final boolean deleted;
+		public final boolean error;
+		public final long time;
+
+		public WatcherState(int newCount, boolean deleted, boolean error, long time) {
+			this.newCount = newCount;
+			this.deleted = deleted;
+			this.error = error;
+			this.time = time;
 		}
 	}
 
@@ -305,6 +330,30 @@ public class PagesDatabase {
 		}
 	}
 
+	public static class InsertResult {
+		public static class Reply {
+			public final PostNumber postNumber;
+			public final String comment;
+			public final long timestamp;
+
+			public Reply(PostNumber postNumber, String comment, long timestamp) {
+				this.postNumber = postNumber;
+				this.comment = comment;
+				this.timestamp = timestamp;
+			}
+		}
+
+		public final Cache.State cacheState;
+		public final List<Reply> replies;
+		public final int newCount;
+
+		public InsertResult(Cache.State cacheState, List<Reply> replies, int newCount) {
+			this.cacheState = cacheState;
+			this.replies = replies;
+			this.newCount = newCount;
+		}
+	}
+
 	public static class Diff {
 		public final Cache cache;
 		public final Collection<Post> changed;
@@ -313,18 +362,18 @@ public class PagesDatabase {
 		public final Set<PostNumber> newPosts;
 		public final Set<PostNumber> deletedPosts;
 		public final Set<PostNumber> editedPosts;
-		public final int replyCount;
+		public final Set<PostNumber> replyPosts;
 
 		public Diff(Cache cache, Collection<Post> changed, Collection<PostNumber> removed,
 				Set<PostNumber> newPosts, Set<PostNumber> deletedPosts,
-				Set<PostNumber> editedPosts, int replyCount) {
+				Set<PostNumber> editedPosts, Set<PostNumber> replyPosts) {
 			this.cache = cache;
 			this.changed = changed;
 			this.removed = removed;
 			this.newPosts = newPosts;
 			this.deletedPosts = deletedPosts;
 			this.editedPosts = editedPosts;
-			this.replyCount = replyCount;
+			this.replyPosts = replyPosts;
 		}
 	}
 
@@ -522,14 +571,17 @@ public class PagesDatabase {
 
 	public Meta getMeta(@NonNull ThreadKey threadKey, boolean temporary) {
 		Objects.requireNonNull(threadKey);
-		String[] projection = {Schema.Meta.Columns.DATA};
+		String[] projection = {Schema.Meta.Columns.FLAGS, Schema.Meta.Columns.DATA};
 		Expression.Filter filter = threadKey.filterMeta().build();
 		Meta meta = null;
 		try (Cursor cursor = database.query(Schema.Meta.TABLE_NAME,
 				projection, filter.value, filter.args, null, null, null)) {
 			if (cursor.moveToFirst()) {
-				try (JsonSerial.Reader reader = JsonSerial.reader(cursor.getBlob(0))) {
-					meta = Meta.deserialize(reader);
+				int flags = cursor.getInt(0);
+				boolean deleted = FlagUtils.get(flags, Schema.Meta.Flags.DELETED);
+				boolean error = FlagUtils.get(flags, Schema.Meta.Flags.ERROR);
+				try (JsonSerial.Reader reader = JsonSerial.reader(cursor.getBlob(1))) {
+					meta = Meta.deserialize(reader, deleted, error);
 				} catch (IOException | ParseException e) {
 					Log.persistent().stack(e);
 					return null;
@@ -548,6 +600,17 @@ public class PagesDatabase {
 		} else {
 			return null;
 		}
+	}
+
+	public void setMetaFlags(@NonNull ThreadKey threadKey, boolean deleted, boolean error) {
+		Objects.requireNonNull(threadKey);
+		Expression.Filter filter = threadKey.filterMeta().build();
+		int clearFlags = Schema.Meta.Flags.DELETED | Schema.Meta.Flags.ERROR;
+		int setFlags = (deleted ? Schema.Meta.Flags.DELETED : 0) | (error ? Schema.Meta.Flags.ERROR : 0);
+		database.execSQL("UPDATE " + Schema.Meta.TABLE_NAME + " " +
+				"SET " + Schema.Meta.Columns.FLAGS + " = " +
+				Schema.Meta.Columns.FLAGS + " & " + ~clearFlags + " | " + setFlags + " " +
+				"WHERE " + filter.value, filter.args);
 	}
 
 	public ThreadSummary getThreadSummary(@NonNull ThreadKey threadKey) {
@@ -599,6 +662,32 @@ public class PagesDatabase {
 		return postNumbers != null ? postNumbers : Collections.emptyList();
 	}
 
+	public WatcherState getWatcherState(@NonNull ThreadKey threadKey) {
+		Objects.requireNonNull(threadKey);
+		int newCount;
+		long time = 0;
+		int flags = Schema.Meta.Flags.DELETED;
+		Expression.Filter newPostsFilter = threadKey.filterPosts()
+				.raw(Schema.Posts.Columns.FLAGS + " & " + Schema.Posts.Flags.MARK_NEW)
+				.build();
+		try (Cursor cursor = database.rawQuery("SELECT COUNT(*) " +
+				"FROM " + Schema.Posts.TABLE_NAME + " " +
+				"WHERE " + newPostsFilter.value, newPostsFilter.args)) {
+			newCount = cursor.moveToFirst() ? cursor.getInt(0) : 0;
+		}
+		Expression.Filter metaFilter = threadKey.filterMeta().build();
+		String[] metaProjection = {Schema.Meta.Columns.TIME, Schema.Meta.Columns.FLAGS};
+		try (Cursor cursor = database.query(Schema.Meta.TABLE_NAME, metaProjection,
+				metaFilter.value, metaFilter.args, null, null, null)) {
+			if (cursor.moveToFirst()) {
+				time = cursor.getLong(0);
+				flags = cursor.getInt(1);
+			}
+		}
+		return new WatcherState(newCount, FlagUtils.get(flags, Schema.Meta.Flags.DELETED),
+				FlagUtils.get(flags, Schema.Meta.Flags.ERROR), time);
+	}
+
 	private final HashMap<ThreadKey, Cache.State> cacheStates = new HashMap<>();
 
 	public Cache.State getCacheState(ThreadKey threadKey) {
@@ -641,7 +730,7 @@ public class PagesDatabase {
 
 	private final Expression.KeyLock<ThreadKey> insertLocks = new Expression.KeyLock<>();
 
-	public Cache.State insertNewPosts(@NonNull ThreadKey threadKey, @NonNull List<Post> posts, @NonNull Meta meta,
+	public InsertResult insertNewPosts(@NonNull ThreadKey threadKey, @NonNull List<Post> posts, @NonNull Meta meta,
 			boolean temporary, boolean newThread, boolean partial) throws IOException {
 		Objects.requireNonNull(threadKey);
 		Objects.requireNonNull(posts);
@@ -667,11 +756,12 @@ public class PagesDatabase {
 				meta, temporary, newThread, partial, serializedMap, userPosts));
 	}
 
-	private Cache.State insertNewPostsLocked(ThreadKey threadKey,
+	private InsertResult insertNewPostsLocked(ThreadKey threadKey,
 			Meta meta, boolean temporary, boolean newThread, boolean partial,
 			HashMap<PostNumber, Serialized> serializedMap, Set<PostNumber> userPosts) throws IOException {
 		LongSparseArray<Void> deleted = null;
 		LongSparseArray<Void> restored = null;
+		int newCount = 0;
 		String[] projection = {"rowid", Schema.Posts.Columns.POST_NUMBER_MAJOR,
 				Schema.Posts.Columns.POST_NUMBER_MINOR, Schema.Posts.Columns.FLAGS, Schema.Posts.Columns.HASH};
 		Expression.Filter filter = threadKey.filterPosts().build();
@@ -686,6 +776,7 @@ public class PagesDatabase {
 				if (serialized != null) {
 					if (Arrays.equals(serialized.hash, hash)) {
 						serializedMap.remove(postNumber);
+						serialized = null;
 						if (FlagUtils.get(flags, Schema.Posts.Flags.DELETED)) {
 							if (restored == null) {
 								restored = new LongSparseArray<>();
@@ -704,9 +795,18 @@ public class PagesDatabase {
 					}
 					deleted.put(id, null);
 				}
+				if (serialized == null && FlagUtils.get(flags, Schema.Posts.Flags.MARK_NEW)) {
+					newCount++;
+				}
+			}
+		}
+		for (Serialized serialized : serializedMap.values()) {
+			if (FlagUtils.get(serialized.flags, Schema.Posts.Flags.MARK_NEW)) {
+				newCount++;
 			}
 		}
 
+		ArrayList<InsertResult.Reply> replies = new ArrayList<>();
 		database.beginTransaction();
 		try {
 			upsertMeta(threadKey, temporary ? 0 : System.currentTimeMillis(), meta);
@@ -743,6 +843,8 @@ public class PagesDatabase {
 								for (PostNumber reference : referencesTo) {
 									if (userPosts.contains(reference)) {
 										flags |= Schema.Posts.Flags.MARK_REPLY;
+										replies.add(new InsertResult.Reply(serialized.post.number,
+												serialized.post.comment, serialized.post.timestamp));
 										break;
 									}
 								}
@@ -766,7 +868,7 @@ public class PagesDatabase {
 		synchronized (cacheStates) {
 			cacheStates.put(threadKey, state);
 		}
-		return state;
+		return new InsertResult(state, replies, newCount);
 	}
 
 	private final Expression.KeyLock<ThreadKey> collectLocks = new Expression.KeyLock<>();
@@ -972,7 +1074,7 @@ public class PagesDatabase {
 				newPosts != null ? newPosts.keySet() : Collections.emptySet(),
 				deletedPosts != null ? deletedPosts.keySet() : Collections.emptySet(),
 				editedPosts != null ? editedPosts.keySet() : Collections.emptySet(),
-				replyPosts != null ? replyPosts.size() : 0);
+				replyPosts != null ? replyPosts.keySet() : Collections.emptySet());
 	}
 
 	@SuppressWarnings("unused")
@@ -1193,7 +1295,7 @@ public class PagesDatabase {
 				(legacyPosts.mHttpValidator.eTag, legacyPosts.mHttpValidator.lastModified) : null;
 		Uri archivedThreadUri = legacyPosts.mArchivedThreadUriString != null
 				? Uri.parse(legacyPosts.mArchivedThreadUriString) : null;
-		Meta meta = new Meta(validator, archivedThreadUri, legacyPosts.mUniquePosters);
+		Meta meta = new Meta(validator, archivedThreadUri, legacyPosts.mUniquePosters, false, false);
 		ArrayList<Post> posts = new ArrayList<>(legacyPosts.mPosts.length);
 		HashMap<PostNumber, Pair<PostItem.HideState, Boolean>> flags = new HashMap<>();
 		for (Legacy.Post legacyPost : legacyPosts.mPosts) {

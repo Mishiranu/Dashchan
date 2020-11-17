@@ -69,8 +69,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> implements EdgeEffectHandler.Shift,
-		DrawerLayout.DrawerListener, EditText.OnEditorActionListener, SortableHelper.Callback<DrawerForm.ViewHolder>,
-		WatcherService.Client.Callback {
+		DrawerLayout.DrawerListener, EditText.OnEditorActionListener, SortableHelper.Callback<DrawerForm.ViewHolder> {
 	private final Context context;
 	private final Callback callback;
 	private final FragmentManager fragmentManager;
@@ -403,7 +402,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		watcherSupportSet.clear();
 		for (Chan chan : availableChans) {
 			availableChansCount++;
-			if (chan.configuration.getOption(ChanConfiguration.OPTION_READ_POSTS_COUNT)) {
+			if (watcherServiceClient.isWatcherSupported(chan)) {
 				watcherSupportSet.add(chan.name);
 			}
 			chans.add(new ListItem(ListItem.Type.CHAN, 0, chan.name, null, null, chan.configuration.getTitle()));
@@ -510,7 +509,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 			} else if (!FavoritesStorage.getInstance().hasFavorite(chanName, boardName, threadNumber)) {
 				dialogMenu.add(R.string.add_to_favorites, () -> {
 					if (isThread) {
-						FavoritesStorage.getInstance().add(chanName, boardName, threadNumber, title, 0);
+						FavoritesStorage.getInstance().add(chanName, boardName, threadNumber, title);
 					} else {
 						FavoritesStorage.getInstance().add(chanName, boardName);
 					}
@@ -773,13 +772,6 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 				}
 				ListItem listItem = new ListItem(ListItem.Type.FAVORITE, 0, favoriteItem.chanName,
 						favoriteItem.boardName, favoriteItem.threadNumber, favoriteItem.title);
-				if (watcherSupportSet.contains(favoriteItem.chanName)) {
-					WatcherService.TemporalCountData temporalCountData = watcherServiceClient
-							.countNewPosts(favoriteItem);
-					listItem.watcherPostsCountDifference = temporalCountData.postsCountDifference;
-					listItem.watcherHasNewPosts = temporalCountData.hasNewPosts;
-					listItem.watcherIsError = temporalCountData.isError;
-				}
 				favorites.add(listItem);
 			}
 		}
@@ -829,10 +821,6 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		public final String boardName;
 		public final String threadNumber;
 		public final String title;
-
-		private int watcherPostsCountDifference = 0;
-		private boolean watcherHasNewPosts = false;
-		private boolean watcherIsError = false;
 
 		private static long nextItemId = 0;
 
@@ -917,10 +905,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 										(itListItem.chanName, itListItem.boardName, itListItem.threadNumber);
 								if (favoriteItem != null) {
 									hasEnabled |= favoriteItem.watcherEnabled;
-									WatcherService.TemporalCountData temporalCountData =
-											watcherServiceClient.countNewPosts(favoriteItem);
-									if (temporalCountData.postsCountDifference ==
-											WatcherService.POSTS_COUNT_DIFFERENCE_DELETED) {
+									if (getCounter(itListItem).deleted) {
 										deleteFavoriteItems.add(favoriteItem);
 									}
 								}
@@ -944,7 +929,11 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 						popupMenu.setOnMenuItemClickListener(item -> {
 							switch (item.getItemId()) {
 								case FAVORITES_MENU_REFRESH: {
-									watcherServiceClient.update();
+									if (mergeChans) {
+										watcherServiceClient.refreshAll(null);
+									} else if (chanName != null) {
+										watcherServiceClient.refreshAll(chanName);
+									}
 									return true;
 								}
 								case FAVORITES_MENU_CLEAR_DELETED: {
@@ -1351,10 +1340,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 						listItem.boardName, listItem.threadNumber, listItem.title));
 				if (listItem.type == ListItem.Type.FAVORITE && listItem.isThreadItem() &&
 						watcherSupportSet.contains(listItem.chanName)) {
-					WatcherService.WatcherItem watcherItem = watcherServiceClient.getItem(listItem.chanName,
-							listItem.boardName, listItem.threadNumber);
-					updateWatcherItem(holder, watcherItem != null ? watcherItem.getLastState()
-							: WatcherService.State.DISABLED);
+					holder.watcher.update(getCounter(listItem));
 				}
 				break;
 			}
@@ -1512,44 +1498,30 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		}
 	}
 
-	private void updateWatcherItem(ViewHolder holder, WatcherService.State state) {
-		ListItem listItem = getItem(holder.getAdapterPosition());
-		holder.watcher.setPostsCountDifference(listItem.watcherPostsCountDifference,
-				listItem.watcherHasNewPosts, listItem.watcherIsError);
-		// Null state means state not changed
-		if (state != null) {
-			holder.watcher.setWatcherState(state);
-		}
+	private WatcherService.Counter getCounter(ListItem listItem) {
+		return watcherServiceClient.getCounter(listItem.chanName, listItem.boardName, listItem.threadNumber);
 	}
 
 	private final View.OnClickListener watcherClickListener = v -> {
 		DrawerForm.ListItem listItem = getItemFromChild(v);
 		if (listItem != null) {
-			FavoritesStorage.getInstance().toggleWatcher(listItem.chanName, listItem.boardName, listItem.threadNumber);
+			FavoritesStorage.getInstance().setWatcherEnabled(listItem.chanName,
+					listItem.boardName, listItem.threadNumber, null);
 		}
 	};
 
-	@Override
-	public void onWatcherUpdate(WatcherService.WatcherItem watcherItem, WatcherService.State state) {
-		if ((mergeChans || watcherItem.chanName.equals(chanName))
-				&& watcherSupportSet.contains(watcherItem.chanName)) {
-			ListItem targetItem = null;
-			for (ListItem listItem : favorites) {
-				if (listItem.compare(watcherItem.chanName, watcherItem.boardName, watcherItem.threadNumber)) {
-					targetItem = listItem;
-					break;
-				}
-			}
-			if (targetItem != null) {
-				targetItem.watcherPostsCountDifference = watcherItem.getPostsCountDifference();
-				targetItem.watcherHasNewPosts = watcherItem.hasNewPosts();
-				targetItem.watcherIsError = watcherItem.isError();
-				int childCount = recyclerView.getChildCount();
-				for (int i = 0; i < childCount; i++) {
-					ViewHolder holder = (ViewHolder) recyclerView.getChildViewHolder(recyclerView.getChildAt(i));
-					int position = holder.getAdapterPosition();
-					if (position >= 0 && targetItem == getItem(position)) {
-						updateWatcherItem(holder, state);
+	public void onWatcherUpdate(String chanName, String boardName, String threadNumber,
+			WatcherService.Counter counter) {
+		if (mergeChans || chanName.equals(this.chanName)) {
+			int childCount = recyclerView.getChildCount();
+			for (int i = 0; i < childCount; i++) {
+				ViewHolder holder = (ViewHolder) recyclerView.getChildViewHolder(recyclerView.getChildAt(i));
+				int position = holder.getAdapterPosition();
+				if (position >= 0) {
+					ListItem listItem = getItem(position);
+					if (listItem.type == ListItem.Type.FAVORITE &&
+							listItem.compare(chanName, boardName, threadNumber)) {
+						holder.watcher.update(counter);
 						break;
 					}
 				}

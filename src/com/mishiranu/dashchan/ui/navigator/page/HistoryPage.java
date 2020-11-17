@@ -99,8 +99,7 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback, Ge
 			if (!FavoritesStorage.getInstance().hasFavorite(historyItem.chanName,
 					historyItem.boardName, historyItem.threadNumber)) {
 				dialogMenu.add(R.string.add_to_favorites, () -> FavoritesStorage.getInstance()
-						.add(historyItem.chanName, historyItem.boardName, historyItem.threadNumber,
-								historyItem.title, 0));
+						.add(historyItem.chanName, historyItem.boardName, historyItem.threadNumber, historyItem.title));
 			}
 			dialogMenu.add(R.string.remove_from_history, () -> CommonDatabase.getInstance().getHistory()
 					.remove(historyItem.chanName, historyItem.boardName, historyItem.threadNumber));

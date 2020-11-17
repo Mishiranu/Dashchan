@@ -35,6 +35,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.view.GravityCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import chan.content.Chan;
@@ -122,7 +123,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 
 	private UiManager uiManager;
 	private RetainViewModel retainViewModel;
-	private final WatcherService.Client watcherServiceClient = new WatcherService.Client(this);
+	private WatcherService.Client watcherServiceClient;
 	private final ExtensionsTrustLoop.State extensionsTrustLoopState = new ExtensionsTrustLoop.State();
 	private DownloadDialog downloadDialog;
 
@@ -173,7 +174,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		FavoritesStorage.getInstance().getObservable().register(this);
 		Preferences.PREFERENCES.registerOnSharedPreferenceChangeListener(preferencesListener);
 		ChanManager.getInstance().observable.register(chanManagerCallback);
-		watcherServiceClient.bind(this);
+		watcherServiceClient = WatcherService.getClient(this);
+		watcherServiceClient.setCallback(this);
 		drawerCommon = findViewById(R.id.drawer_common);
 		drawerWide = findViewById(R.id.drawer_wide);
 		ThemeEngine.Theme theme = ThemeEngine.getTheme(this);
@@ -1058,6 +1060,11 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	}
 
 	@Override
+	public WatcherService.Client getWatcherClient() {
+		return watcherServiceClient;
+	}
+
+	@Override
 	public UiManager getUiManager() {
 		return uiManager;
 	}
@@ -1151,14 +1158,15 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	@Override
 	protected void onStart() {
 		super.onStart();
+
 		handleChansChangedDelayed();
+		watcherServiceClient.notifyForeground();
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 
-		watcherServiceClient.start();
 		drawerForm.updateRestartViewVisibility();
 		drawerForm.updateItems(true, true);
 		updateWideConfiguration(false);
@@ -1175,12 +1183,6 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		if (downloadBinder != null) {
 			downloadBinder.notifyReadyToHandleRequests();
 		}
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-		watcherServiceClient.stop();
 	}
 
 	@Override
@@ -1205,7 +1207,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		}
 		unbindService(postingConnection);
 		unbindService(downloadConnection);
-		watcherServiceClient.unbind(this);
+		watcherServiceClient.setCallback(null);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
 		Preferences.PREFERENCES.unregisterOnSharedPreferenceChangeListener(preferencesListener);
 		ChanManager.getInstance().observable.unregister(chanManagerCallback);
@@ -1438,10 +1440,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		}
 	}
 
-	private final SharedPreferences.OnSharedPreferenceChangeListener preferencesListener = (p, key) -> {
-		drawerForm.updatePreferences();
-		watcherServiceClient.updatePreferences();
-	};
+	private final SharedPreferences.OnSharedPreferenceChangeListener preferencesListener
+			= (p, key) -> drawerForm.updatePreferences();
 
 	@Override
 	public void onSelectChan(String chanName) {
@@ -2032,8 +2032,14 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	}
 
 	@Override
-	public void onWatcherUpdate(WatcherService.WatcherItem watcherItem, WatcherService.State state) {
-		drawerForm.onWatcherUpdate(watcherItem, state);
+	public boolean isWatcherClientForeground() {
+		return getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.STARTED);
+	}
+
+	@Override
+	public void onWatcherUpdate(String chanName, String boardName, String threadNumber,
+			WatcherService.Counter counter) {
+		drawerForm.onWatcherUpdate(chanName, boardName, threadNumber, counter);
 	}
 
 	@Override

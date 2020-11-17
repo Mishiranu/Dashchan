@@ -182,6 +182,10 @@ public class StringUtils {
 				: size + (upperCase ? " KB" : " kB");
 	}
 
+	public static String formatFileSizeMegabytes(long size) {
+		return String.format(Locale.US, "%.2f", size / 1000f / 1000f) + " MB";
+	}
+
 	public static String stripTrailingZeros(String string) {
 		int length = string.length();
 		for (int i = length - 1; i >= 0; i--) {

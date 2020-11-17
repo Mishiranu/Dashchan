@@ -1,57 +1,43 @@
 package com.mishiranu.dashchan.ui.preference;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.InputType;
-import android.text.SpannableStringBuilder;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.TypefaceSpan;
 import android.util.Pair;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
-import chan.util.DataFile;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.database.PagesDatabase;
-import com.mishiranu.dashchan.media.VideoPlayer;
+import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.ui.DrawerForm;
 import com.mishiranu.dashchan.ui.FragmentHandler;
+import com.mishiranu.dashchan.ui.preference.core.CheckPreference;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Locale;
+import java.util.HashSet;
+import java.util.Set;
 
-public class ContentsFragment extends PreferenceFragment implements FragmentHandler.Callback {
-	private static final String EXTRA_IN_STORAGE_REQUEST = "inStorageRequest";
-
-	private Preference<?> downloadUriTreePreference;
+public class ContentsFragment extends PreferenceFragment {
+	private CheckPreference replyNotifications;
 	private Preference<?> clearCachePreference;
-
-	private boolean inStorageRequest;
 
 	@Override
 	protected SharedPreferences getPreferences() {
 		return Preferences.PREFERENCES;
-	}
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		inStorageRequest = savedInstanceState != null && savedInstanceState.getBoolean(EXTRA_IN_STORAGE_REQUEST);
 	}
 
 	@Override
@@ -68,98 +54,51 @@ public class ContentsFragment extends PreferenceFragment implements FragmentHand
 				Preferences.DEFAULT_CYCLICAL_REFRESH.value, R.string.cyclical_threads_refresh_mode,
 				enumResList(Preferences.CyclicalRefreshMode.values(), v -> v.titleResId));
 
-		addHeader(R.string.images);
-		addList(Preferences.KEY_LOAD_THUMBNAILS, enumList(Preferences.NetworkMode.values(), v -> v.value),
-				Preferences.DEFAULT_LOAD_THUMBNAILS.value, R.string.load_thumbnails,
-				enumResList(Preferences.NetworkMode.values(), v -> v.titleResId));
-		addList(Preferences.KEY_LOAD_NEAREST_IMAGE, enumList(Preferences.NetworkMode.values(), v -> v.value),
-				Preferences.DEFAULT_LOAD_NEAREST_IMAGE.value, R.string.load_nearest_image,
-				enumResList(Preferences.NetworkMode.values(), v -> v.titleResId));
+		addHeader(R.string.favorites);
+		addList(Preferences.KEY_FAVORITES_ORDER, enumList(Preferences.FavoritesOrder.values(), o -> o.value),
+				Preferences.DEFAULT_FAVORITES_ORDER.value, R.string.favorite_threads_order,
+				enumResList(Preferences.FavoritesOrder.values(), o -> o.titleResId))
+				.setOnAfterChangeListener(p -> FavoritesStorage.getInstance().sortIfNeeded());
+		addList(Preferences.KEY_FAVORITE_ON_REPLY, enumList(Preferences.FavoriteOnReplyMode.values(), o -> o.value),
+				Preferences.DEFAULT_FAVORITE_ON_REPLY.value, R.string.add_thread_on_reply,
+				enumResList(Preferences.FavoriteOnReplyMode.values(), o -> o.titleResId));
+		addCheck(true, Preferences.KEY_WATCHER_WATCH_INITIALLY, Preferences.DEFAULT_WATCHER_WATCH_INITIALLY,
+				R.string.watch_initially, R.string.watch_initially__summary);
 
-		addHeader(R.string.downloads);
-		addCheck(true, Preferences.KEY_DOWNLOAD_DETAIL_NAME, Preferences.DEFAULT_DOWNLOAD_DETAIL_NAME,
-				R.string.detailed_file_name, R.string.detailed_file_name__summary);
-		addCheck(true, Preferences.KEY_DOWNLOAD_ORIGINAL_NAME, Preferences.DEFAULT_DOWNLOAD_ORIGINAL_NAME,
-				R.string.original_file_name, R.string.original_file_name__summary);
-		if (C.USE_SAF) {
-			downloadUriTreePreference = addButton(getString(R.string.download_directory),
-					p -> DataFile.obtain(requireContext(), DataFile.Target.DOWNLOADS, null).getName());
-			downloadUriTreePreference.setOnClickListener(p -> {
-				if (((FragmentHandler) requireActivity()).requestStorage()) {
-					inStorageRequest = true;
-				}
-			});
-		} else {
-			addEdit(Preferences.KEY_DOWNLOAD_PATH, null, R.string.download_path, C.DEFAULT_DOWNLOAD_PATH,
-					InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
-		}
-		addList(Preferences.KEY_DOWNLOAD_SUBDIR, enumList(Preferences.DownloadSubdirMode.values(), v -> v.value),
-				Preferences.DEFAULT_DOWNLOAD_SUBDIR.value, R.string.show_download_configuration_dialog,
-				enumResList(Preferences.DownloadSubdirMode.values(), v -> v.titleResId));
-		addEdit(Preferences.KEY_SUBDIR_PATTERN, Preferences.DEFAULT_SUBDIR_PATTERN,
-				R.string.subdirectory_pattern, Preferences.DEFAULT_SUBDIR_PATTERN,
-				InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI)
-				.setDescription(makeSubdirDescription());
-		if (C.API_LOLLIPOP) {
-			addCheck(true, Preferences.KEY_NOTIFY_DOWNLOAD_COMPLETE, Preferences.DEFAULT_NOTIFY_DOWNLOAD_COMPLETE,
-					R.string.notify_when_download_is_completed, R.string.notify_when_download_is_completed__summary);
-		}
-
-		addHeader(R.string.video_player);
-		Pair<Boolean, String> playerLoadResult = VideoPlayer.loadLibraries(requireContext());
-		if (!playerLoadResult.first) {
-			if (playerLoadResult.second != null) {
-				SpannableStringBuilder builder = new SpannableStringBuilder(playerLoadResult.second);
-				if (builder.length() == 0) {
-					builder.append(getString(R.string.unknown_error));
-				}
-				builder.setSpan(new ForegroundColorSpan(ResourceUtils.getColor(requireContext(),
-						R.attr.colorTextError)), 0, builder.length(), SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
-				addButton(null, builder).setSelectable(false);
+		addHeader(R.string.favorites_watcher);
+		addSeek(Preferences.KEY_WATCHER_REFRESH_INTERVAL, Preferences.DEFAULT_WATCHER_REFRESH_INTERVAL,
+				R.string.refresh_favorites, R.string.every_number_sec__format,
+				new Pair<>(Preferences.DISABLED_WATCHER_REFRESH_INTERVAL, R.string.disabled),
+				Preferences.MIN_WATCHER_REFRESH_INTERVAL, Preferences.MAX_WATCHER_REFRESH_INTERVAL,
+				Preferences.STEP_WATCHER_REFRESH_INTERVAL);
+		addCheck(true, Preferences.KEY_WATCHER_WIFI_ONLY, Preferences.DEFAULT_WATCHER_WIFI_ONLY, R.string.wifi_only, 0);
+		replyNotifications = addCheck(false, "reply_notifications", false,
+				R.string.reply_notifications, R.string.reply_notifications__format);
+		replyNotifications.setOnClickListener(p -> {
+			if (C.API_OREO) {
+				Preferences.setWatcherNotifications(p.getValue() ? Collections.emptySet()
+						: Collections.singleton(Preferences.NotificationFeature.ENABLED));
+				invalidateReplyNotifications();
 			} else {
-				addButton(0, R.string.requires_decoding_libraries__sentence).setSelectable(false);
+				WatcherNotificationsDialog dialog = new WatcherNotificationsDialog();
+				dialog.show(getChildFragmentManager(), WatcherNotificationsDialog.class.getName());
 			}
-		}
-		addCheck(true, Preferences.KEY_USE_VIDEO_PLAYER, Preferences.DEFAULT_USE_VIDEO_PLAYER,
-				R.string.use_built_in_video_player, R.string.use_built_in_video_player__summary)
-				.setEnabled(playerLoadResult.first);
-		addList(Preferences.KEY_VIDEO_COMPLETION, enumList(Preferences.VideoCompletionMode.values(), o -> o.value),
-				Preferences.DEFAULT_VIDEO_COMPLETION.value, R.string.action_on_playback_completion,
-				enumResList(Preferences.VideoCompletionMode.values(), o -> o.titleResId))
-				.setEnabled(playerLoadResult.first);
-		addCheck(true, Preferences.KEY_VIDEO_PLAY_AFTER_SCROLL, Preferences.DEFAULT_VIDEO_PLAY_AFTER_SCROLL,
-				R.string.play_after_scroll, R.string.play_after_scroll__summary).setEnabled(playerLoadResult.first);
-		addCheck(true, Preferences.KEY_VIDEO_SEEK_ANY_FRAME, Preferences.DEFAULT_VIDEO_SEEK_ANY_FRAME,
-				R.string.seek_any_frame, R.string.seek_any_frame__summary).setEnabled(playerLoadResult.first);
-		if (playerLoadResult.first) {
-			addDependency(Preferences.KEY_VIDEO_COMPLETION, Preferences.KEY_USE_VIDEO_PLAYER, true);
-			addDependency(Preferences.KEY_VIDEO_PLAY_AFTER_SCROLL, Preferences.KEY_USE_VIDEO_PLAYER, true);
-			addDependency(Preferences.KEY_VIDEO_SEEK_ANY_FRAME, Preferences.KEY_USE_VIDEO_PLAYER, true);
-		}
+		});
+		invalidateReplyNotifications();
 
 		addHeader(R.string.additional);
-		addSeek(Preferences.KEY_CACHE_SIZE, Preferences.DEFAULT_CACHE_SIZE, getString(R.string.cache_size), "%d MB",
-				null, Preferences.MIN_CACHE_SIZE, Preferences.MAX_CACHE_SIZE, Preferences.STEP_CACHE_SIZE);
-		clearCachePreference = addButton(getString(R.string.clear_cache), p -> {
-			long cacheSize = CacheManager.getInstance().getCacheSize();
-			long pagesSize = PagesDatabase.getInstance().getSize();
-			return formatSize(cacheSize) + " + " + formatSize(pagesSize);
-		});
+		clearCachePreference = addButton(getString(R.string.clear_cache),
+				p -> StringUtils.formatFileSizeMegabytes(PagesDatabase.getInstance().getSize()));
 		clearCachePreference.setOnClickListener(p -> {
 			ClearCacheDialog dialog = new ClearCacheDialog();
 			dialog.show(getChildFragmentManager(), ClearCacheDialog.class.getName());
 		});
-
-		addDependency(Preferences.KEY_SUBDIR_PATTERN, Preferences.KEY_DOWNLOAD_SUBDIR, false,
-				Preferences.DownloadSubdirMode.DISABLED.value);
 		clearCachePreference.invalidate();
 	}
 
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
-
-		downloadUriTreePreference = null;
 		clearCachePreference = null;
 	}
 
@@ -169,62 +108,47 @@ public class ContentsFragment extends PreferenceFragment implements FragmentHand
 		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.contents), null);
 	}
 
-	@Override
-	public void onSaveInstanceState(@NonNull Bundle outState) {
-		super.onSaveInstanceState(outState);
-		outState.putBoolean(EXTRA_IN_STORAGE_REQUEST, inStorageRequest);
+	private void invalidateReplyNotifications() {
+		replyNotifications.setValue(Preferences.getWatcherNotifications()
+				.contains(Preferences.NotificationFeature.ENABLED));
 	}
 
-	@Override
-	public void onStorageRequestResult() {
-		if (inStorageRequest) {
-			inStorageRequest = false;
-			downloadUriTreePreference.invalidate();
-		}
-	}
-
-	private static String formatSize(long size) {
-		return String.format(Locale.US, "%.2f", size / 1000f / 1000f) + " MB";
-	}
-
-	private CharSequence makeSubdirDescription() {
-		String[] formats = {"\\c", "\\d", "\\b", "\\t", "\\e", "<\u2026>"};
-		int[] descriptions = {R.string.forum_code, R.string.forum_title, R.string.board_code, R.string.thread_number,
-				R.string.thread_title, R.string.optional_part};
-		SpannableStringBuilder builder = new SpannableStringBuilder();
-		for (int i = 0; i < formats.length; i++) {
-			if (builder.length() > 0) {
-				builder.append('\n');
-			}
-			StringUtils.appendSpan(builder, formats[i], new TypefaceSpan("sans-serif-medium"));
-			builder.append(" — ");
-			builder.append(getString(descriptions[i]));
-		}
-		return builder;
-	}
-
-	public static class ClearCacheDialog extends DialogFragment
-			implements DialogInterface.OnMultiChoiceClickListener, DialogInterface.OnClickListener {
+	public static class WatcherNotificationsDialog extends DialogFragment {
 		private static final String EXTRA_CHECKED_ITEMS = "checkedItems";
 
 		private boolean[] checkedItems;
 
 		@NonNull
 		@Override
-		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
-			checkedItems = savedInstanceState != null ? savedInstanceState.getBooleanArray(EXTRA_CHECKED_ITEMS) : null;
-			if (checkedItems == null) {
-				checkedItems = new boolean[] {true, true, true, false};
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
+			String[] items = new String[Preferences.NotificationFeature.values().length];
+			for (int i = 0; i < items.length; i++) {
+				items[i] = getString(Preferences.NotificationFeature.values()[i].titleResId);
 			}
-			String[] items = {getString(R.string.thumbnails), getString(R.string.cached_files),
-					getString(R.string.old_threads), getString(R.string.all_threads)};
-			AlertDialog dialog = new AlertDialog.Builder(requireContext())
-					.setTitle(getString(R.string.clear_cache))
-					.setMultiChoiceItems(items, checkedItems, this)
-					.setNegativeButton(android.R.string.cancel, null).setPositiveButton(android.R.string.ok, this)
+			if (savedInstanceState != null) {
+				checkedItems = savedInstanceState.getBooleanArray(EXTRA_CHECKED_ITEMS);
+			} else {
+				checkedItems = new boolean[Preferences.NotificationFeature.values().length];
+				Set<Preferences.NotificationFeature> notificationFeatures = Preferences.getWatcherNotifications();
+				for (int i = 0; i < checkedItems.length; i++) {
+					checkedItems[i] = notificationFeatures.contains(Preferences.NotificationFeature.values()[i]);
+				}
+			}
+			return new AlertDialog.Builder(requireContext())
+					.setTitle(R.string.reply_notifications)
+					.setMultiChoiceItems(items, checkedItems, (d, which, isChecked) -> checkedItems[which] = isChecked)
+					.setPositiveButton(android.R.string.ok, (d, which) -> {
+						HashSet<Preferences.NotificationFeature> notificationFeatures = new HashSet<>();
+						for (int i = 0; i < checkedItems.length; i++) {
+							if (checkedItems[i]) {
+								notificationFeatures.add(Preferences.NotificationFeature.values()[i]);
+							}
+						}
+						Preferences.setWatcherNotifications(notificationFeatures);
+						((ContentsFragment) getParentFragment()).invalidateReplyNotifications();
+					})
+					.setNegativeButton(android.R.string.cancel, null)
 					.create();
-			dialog.setOnShowListener(d -> dialog.getListView().getChildAt(2).setEnabled(!checkedItems[3]));
-			return dialog;
 		}
 
 		@Override
@@ -232,47 +156,45 @@ public class ContentsFragment extends PreferenceFragment implements FragmentHand
 			super.onSaveInstanceState(outState);
 			outState.putBooleanArray(EXTRA_CHECKED_ITEMS, checkedItems);
 		}
+	}
 
+	public static class ClearCacheDialog extends DialogFragment {
+		private static final String EXTRA_CHECKED_INDEX = "checkedIndex";
+
+		private int checkedIndex;
+
+		@NonNull
 		@Override
-		public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-			switch (which) {
-				case 2: {
-					if (checkedItems[3]) {
-						isChecked = !isChecked;
-						((AlertDialog) dialog).getListView().setItemChecked(which, isChecked);
-					}
-					break;
-				}
-				case 3: {
-					((AlertDialog) dialog).getListView().getChildAt(2).setEnabled(!isChecked);
-					break;
-				}
-			}
-			checkedItems[which] = isChecked;
+		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
+			checkedIndex = savedInstanceState != null ? savedInstanceState.getInt(EXTRA_CHECKED_INDEX) : 0;
+			String[] items = {getString(R.string.old_threads), getString(R.string.all_threads)};
+			return new AlertDialog.Builder(requireContext())
+					.setTitle(getString(R.string.clear_cache))
+					.setSingleChoiceItems(items, checkedIndex, (d, which) -> checkedIndex = which)
+					.setPositiveButton(android.R.string.ok, (d, w) -> {
+						ClearingDialog clearingDialog = new ClearingDialog(checkedIndex == 1);
+						clearingDialog.setTargetFragment(getParentFragment(), 0);
+						clearingDialog.show(getParentFragment().getParentFragmentManager(),
+								ClearingDialog.class.getName());
+					})
+					.setNegativeButton(android.R.string.cancel, null)
+					.create();
 		}
 
 		@Override
-		public void onClick(DialogInterface dialog, int which) {
-			ClearingDialog clearingDialog = new ClearingDialog(checkedItems[0], checkedItems[1],
-					checkedItems[2], checkedItems[3]);
-			clearingDialog.setTargetFragment(getParentFragment(), 0);
-			clearingDialog.show(getParentFragment().getParentFragmentManager(), ClearingDialog.class.getName());
+		public void onSaveInstanceState(@NonNull Bundle outState) {
+			super.onSaveInstanceState(outState);
+			outState.putInt(EXTRA_CHECKED_INDEX, checkedIndex);
 		}
 	}
 
 	public static class ClearingDialog extends DialogFragment {
-		private static final String EXTRA_THUMBNAILS = "thumbnails";
-		private static final String EXTRA_MEDIA = "media";
-		private static final String EXTRA_OLD_PAGES = "oldPages";
 		private static final String EXTRA_ALL_PAGES = "allPages";
 
 		public ClearingDialog() {}
 
-		public ClearingDialog(boolean thumbnails, boolean media, boolean oldPages, boolean allPages) {
+		public ClearingDialog(boolean allPages) {
 			Bundle args = new Bundle();
-			args.putBoolean(EXTRA_THUMBNAILS, thumbnails);
-			args.putBoolean(EXTRA_MEDIA, media);
-			args.putBoolean(EXTRA_OLD_PAGES, oldPages);
 			args.putBoolean(EXTRA_ALL_PAGES, allPages);
 			setArguments(args);
 		}
@@ -292,12 +214,9 @@ public class ContentsFragment extends PreferenceFragment implements FragmentHand
 			ClearCacheViewModel viewModel = new ViewModelProvider(this).get(ClearCacheViewModel.class);
 			if (!viewModel.hasTaskOrValue()) {
 				Bundle args = requireArguments();
-				boolean thumbnails = args.getBoolean(EXTRA_THUMBNAILS);
-				boolean media = args.getBoolean(EXTRA_MEDIA);
-				boolean oldPages = args.getBoolean(EXTRA_OLD_PAGES);
 				boolean allPages = args.getBoolean(EXTRA_ALL_PAGES);
 				Collection<PagesDatabase.ThreadKey> openThreads = Collections.emptyList();
-				if (oldPages && !allPages) {
+				if (!allPages) {
 					Collection<DrawerForm.Page> drawerPages =
 							((FragmentHandler) requireActivity()).obtainDrawerPages();
 					openThreads = new ArrayList<>(openThreads.size());
@@ -308,8 +227,7 @@ public class ContentsFragment extends PreferenceFragment implements FragmentHand
 						}
 					}
 				}
-				ClearCacheTask task = new ClearCacheTask(viewModel,
-						thumbnails, media, oldPages, allPages, openThreads);
+				ClearCacheTask task = new ClearCacheTask(viewModel, allPages, openThreads);
 				task.execute(ConcurrentUtils.SEPARATE_EXECUTOR);
 				viewModel.attach(task);
 			}
@@ -334,49 +252,22 @@ public class ContentsFragment extends PreferenceFragment implements FragmentHand
 
 	private static class ClearCacheTask extends ExecutorTask<Void, Object> {
 		private final ClearCacheViewModel viewModel;
-		private final boolean thumbnails;
-		private final boolean media;
-		private final boolean oldPages;
 		private final boolean allPages;
 		private final Collection<PagesDatabase.ThreadKey> openThreads;
 
-		public ClearCacheTask(ClearCacheViewModel viewModel,
-				boolean thumbnails, boolean media, boolean oldPages, boolean allPages,
+		public ClearCacheTask(ClearCacheViewModel viewModel, boolean allPages,
 				Collection<PagesDatabase.ThreadKey> openThreads) {
 			this.viewModel = viewModel;
-			this.thumbnails = thumbnails;
-			this.media = media;
-			this.oldPages = oldPages;
 			this.allPages = allPages;
 			this.openThreads = openThreads;
 		}
 
 		@Override
 		protected Void run() {
-			try {
-				if (thumbnails) {
-					CacheManager.getInstance().eraseThumbnailsCache();
-				}
-				if (isCancelled()) {
-					return null;
-				}
-				if (media) {
-					CacheManager.getInstance().eraseMediaCache();
-				}
-				if (isCancelled()) {
-					return null;
-				}
-				if (oldPages && !allPages) {
-					PagesDatabase.getInstance().erase(openThreads);
-				}
-				if (isCancelled()) {
-					return null;
-				}
-				if (allPages) {
-					PagesDatabase.getInstance().eraseAll();
-				}
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
+			if (allPages) {
+				PagesDatabase.getInstance().eraseAll();
+			} else {
+				PagesDatabase.getInstance().erase(openThreads);
 			}
 			return null;
 		}
