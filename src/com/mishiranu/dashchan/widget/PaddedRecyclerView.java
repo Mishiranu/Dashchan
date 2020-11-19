@@ -9,13 +9,16 @@ import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Xml;
 import android.view.MotionEvent;
+import android.view.ViewConfiguration;
 import androidx.annotation.NonNull;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 import org.xmlpull.v1.XmlPullParser;
 
 public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandler.Shift {
@@ -28,18 +31,21 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 
 	private final Drawable thumbDrawable;
 	private final Drawable trackDrawable;
+	private final int touchSlop;
 	private final int minTrackSize;
 
-	private boolean allowFastScrolling;
+	private boolean fastScrollerEnabled;
+	private boolean fastScrollerAllowed;
 	private boolean regularScrolling;
 	private boolean fastScrolling;
+
+	private boolean fastScrollingDown;
 	private Float fastScrollingStartOffset;
 	private float fastScrollingStartY;
 	private float fastScrollingCurrentY;
+
 	private long showFastScrollingStart;
 	private boolean showFastScrolling;
-	private boolean fastScrollerEnabled;
-	private boolean disallowFastScrollerIntercept;
 
 	private static AttributeSet createDefaultAttributeSet(Context context) {
 		try {
@@ -83,32 +89,35 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 			thumbDrawable.setTintList(new ColorStateList(states, colors));
 		}
 		trackDrawable = ResourceUtils.getDrawable(getContext(), android.R.attr.fastScrollTrackDrawable, 0);
+		touchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
 		minTrackSize = (int) (16f * density);
 
 		setRecycledViewPool(new ListViewUtils.UnlimitedRecycledViewPool());
 		addOnScrollListener(new OnScrollListener() {
 			@Override
 			public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-				updateFastScroller(allowFastScrolling, newState != RecyclerView.SCROLL_STATE_IDLE, fastScrolling);
+				boolean regularScrolling = newState != RecyclerView.SCROLL_STATE_IDLE;
+				updateFastScroller(false, fastScrollerEnabled, fastScrollerAllowed, regularScrolling, fastScrolling);
 			}
 		});
 		addOnItemTouchListener(new OnItemTouchListener() {
 			@Override
 			public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-				return handleTouchEvent(e, true);
+				return handleTouchEvent(e);
 			}
 
 			@Override
 			public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-				handleTouchEvent(e, false);
+				handleTouchEvent(e);
 			}
 
 			@Override
 			public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-				disallowFastScrollerIntercept = disallowIntercept;
-				if (disallowIntercept && fastScrolling) {
-					updateFastScroller(allowFastScrolling, regularScrolling, false);
-					invalidate();
+				if (disallowIntercept) {
+					fastScrollingDown = false;
+					if (fastScrolling) {
+						updateFastScroller(true, fastScrollerEnabled, fastScrollerAllowed, regularScrolling, false);
+					}
 				}
 			}
 		});
@@ -122,14 +131,20 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 
 	public void setFastScrollerEnabled(boolean fastScrollerEnabled) {
 		if (this.fastScrollerEnabled != fastScrollerEnabled) {
-			this.fastScrollerEnabled = fastScrollerEnabled;
-			requestLayout();
+			fastScrollingDown = false;
+			updateFastScroller(true, fastScrollerEnabled, fastScrollerAllowed, regularScrolling, false);
 		}
 	}
 
+	private boolean isFastScrollerAvailable() {
+		return fastScrollerEnabled && fastScrollerAllowed;
+	}
+
+	protected void onFastScrollingStarted() {}
+
 	@SuppressWarnings("unused") // Overrides hidden Android API protected method
 	protected void onDrawVerticalScrollBar(Canvas canvas, Drawable scrollBar, int l, int t, int r, int b) {
-		if (!allowFastScrolling) {
+		if (!isFastScrollerAvailable()) {
 			if (b - t == getHeight()) {
 				t += getEdgeEffectShift(EdgeEffectHandler.Side.TOP);
 				b -= getEdgeEffectShift(EdgeEffectHandler.Side.BOTTOM);
@@ -163,19 +178,35 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 		int range = computeVerticalScrollRange();
 		int extent = computeVerticalScrollExtent();
 		boolean allowFastScrolling = extent > 0 && range >= 2 * extent;
-		updateFastScroller(allowFastScrolling && fastScrollerEnabled, regularScrolling, fastScrolling);
+		updateFastScroller(false, fastScrollerEnabled, allowFastScrolling, regularScrolling, fastScrolling);
 		// OVER_SCROLL_IF_CONTENT_SCROLLS it not supported, see https://issuetracker.google.com/issues/37076456
 		setOverScrollMode(range > extent ? OVER_SCROLL_ALWAYS : OVER_SCROLL_NEVER);
 	}
 
+	@Override
+	public void onWindowFocusChanged(boolean hasWindowFocus) {
+		super.onWindowFocusChanged(hasWindowFocus);
+
+		if (!hasWindowFocus) {
+			fastScrollingDown = false;
+			if (fastScrolling) {
+				updateFastScroller(true, fastScrollerEnabled, fastScrollerAllowed, regularScrolling, false);
+			}
+		}
+	}
+
 	private final Runnable invalidateRunnable = this::invalidate;
 
-	private void updateFastScroller(boolean allowFastScrolling, boolean regularScrolling, boolean fastScrolling) {
-		boolean oldShow = this.allowFastScrolling && (this.regularScrolling || this.fastScrolling);
-		boolean newShow = allowFastScrolling && (regularScrolling || fastScrolling);
+	private void updateFastScroller(boolean immediately, boolean fastScrollerEnabled, boolean fastScrollerAllowed,
+			boolean regularScrolling, boolean fastScrolling) {
+		boolean oldShow = this.fastScrollerAllowed && this.fastScrollerEnabled &&
+				(this.regularScrolling || this.fastScrolling);
+		boolean newShow = fastScrollerAllowed && fastScrollerEnabled &&
+				(regularScrolling || fastScrolling);
+		this.fastScrollerEnabled = fastScrollerEnabled;
+		this.fastScrollerAllowed = fastScrollerAllowed;
 		this.regularScrolling = regularScrolling;
 		this.fastScrolling = fastScrolling;
-		this.allowFastScrolling = allowFastScrolling;
 		long time = SystemClock.elapsedRealtime();
 		long passed = time - showFastScrollingStart;
 		if (oldShow != newShow) {
@@ -187,21 +218,27 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 								FAST_SCROLLER_TRANSITION_OUT - passed) /
 								FAST_SCROLLER_TRANSITION_OUT * FAST_SCROLLER_TRANSITION_IN);
 			} else if (!newShow && passed < FAST_SCROLLER_TRANSITION_IN) {
-				start = time - (long) ((float) (FAST_SCROLLER_TRANSITION_IN - passed) /
-						FAST_SCROLLER_TRANSITION_IN * FAST_SCROLLER_TRANSITION_OUT) -
-						FAST_SCROLLER_TRANSITION_OUT_DELAY;
+				if (immediately) {
+					start = time - (long) ((float) (FAST_SCROLLER_TRANSITION_IN - passed) /
+							FAST_SCROLLER_TRANSITION_IN * FAST_SCROLLER_TRANSITION_OUT) -
+							FAST_SCROLLER_TRANSITION_IN - FAST_SCROLLER_TRANSITION_OUT_DELAY;
+				} else {
+					start = time - passed;
+					postDelayed(invalidateRunnable, FAST_SCROLLER_TRANSITION_IN - passed +
+							FAST_SCROLLER_TRANSITION_OUT_DELAY);
+				}
 			} else {
 				if (!newShow) {
 					postDelayed(invalidateRunnable, FAST_SCROLLER_TRANSITION_OUT_DELAY);
 				}
-				start = time;
+				start = newShow ? time : time - FAST_SCROLLER_TRANSITION_IN;
 			}
 			showFastScrollingStart = start;
 			showFastScrolling = newShow;
 			invalidate();
-		} else if (!allowFastScrolling && passed < FAST_SCROLLER_TRANSITION_OUT_DELAY) {
+		} else if (!isFastScrollerAvailable() && passed < FAST_SCROLLER_TRANSITION_OUT_DELAY) {
 			removeCallbacks(invalidateRunnable);
-			showFastScrollingStart = time - FAST_SCROLLER_TRANSITION_OUT_DELAY;
+			showFastScrollingStart = time - FAST_SCROLLER_TRANSITION_IN - FAST_SCROLLER_TRANSITION_OUT_DELAY;
 			invalidate();
 		}
 	}
@@ -247,48 +284,65 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 		}
 	}
 
-	private boolean handleTouchEvent(MotionEvent event, boolean intercept) {
-		if (intercept && disallowFastScrollerIntercept) {
-			return false;
-		}
+	private boolean handleTouchEvent(MotionEvent event) {
+		int action = event.getActionMasked();
 		int top = getEdgeEffectShift(EdgeEffectHandler.Side.TOP);
-		if (event.getAction() == MotionEvent.ACTION_DOWN) {
-			if (!allowFastScrolling) {
+		float currentY = event.getY() - top;
+		boolean fastScrollerAvailable = isFastScrollerAvailable();
+		if (action == MotionEvent.ACTION_DOWN) {
+			fastScrollingDown = false;
+			if (!fastScrollerAvailable) {
 				return false;
 			}
-			boolean rtl = C.API_JELLY_BEAN_MR1 && getLayoutDirection() == LAYOUT_DIRECTION_RTL;
+			boolean rtl = ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL;
 			int trackWidth = Math.max(minTrackSize, Math.max(thumbDrawable.getIntrinsicWidth(),
 					trackDrawable.getIntrinsicWidth()));
 			boolean atThumbVertical = rtl ? event.getX() <= trackWidth : event.getX() >= getWidth() - trackWidth;
 			if (atThumbVertical) {
-				requestDisallowInterceptTouchEvent(true);
 				int height = getHeight() - top - getEdgeEffectShift(EdgeEffectHandler.Side.BOTTOM);
 				float offset = getCurrentOffset();
 				int thumbHeight = thumbDrawable.getIntrinsicHeight();
 				int thumbY = (int) ((height - thumbHeight) * offset);
 				boolean atThumb = event.getY() >= top + thumbY && event.getY() <= top + thumbY + thumbHeight;
+				fastScrollingDown = true;
 				fastScrollingStartOffset = atThumb ? offset : null;
-				fastScrollingStartY = event.getY() - top;
-				fastScrollingCurrentY = event.getY() - top;
-				scroll(offset);
-				updateFastScroller(allowFastScrolling, regularScrolling, true);
-				invalidate();
+				fastScrollingStartY = currentY;
+				if (!ViewUtils.isGestureNavigationOverlap(this, rtl, !rtl)) {
+					fastScrollingCurrentY = currentY;
+					getParent().requestDisallowInterceptTouchEvent(true);
+					updateFastScroller(false, fastScrollerEnabled, fastScrollerAllowed, regularScrolling, true);
+					if (!atThumb) {
+						scroll(calculateOffset());
+					}
+					return true;
+				}
+			}
+		} else if (fastScrollingDown) {
+			boolean finish = action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL;
+			if (!fastScrolling && fastScrollerAvailable) {
+				boolean fastScrolling = false;
+				if (finish) {
+					fastScrolling = action != MotionEvent.ACTION_CANCEL;
+				} else if (Math.abs(currentY - fastScrollingStartY) > touchSlop) {
+					getParent().requestDisallowInterceptTouchEvent(true);
+					fastScrolling = true;
+				}
+				if (fastScrolling) {
+					updateFastScroller(false, fastScrollerEnabled, fastScrollerAllowed, regularScrolling, true);
+					onFastScrollingStarted();
+				}
+			}
+			if (fastScrolling) {
+				boolean cancel = !fastScrollerAvailable || finish;
+				if (fastScrollerAvailable) {
+					fastScrollingCurrentY = currentY;
+					scroll(calculateOffset());
+				}
+				if (cancel) {
+					updateFastScroller(false, fastScrollerEnabled, fastScrollerAllowed, regularScrolling, false);
+				}
 				return true;
 			}
-		} else if (fastScrolling) {
-			boolean cancel = !allowFastScrolling || event.getAction() == MotionEvent.ACTION_UP ||
-					event.getAction() == MotionEvent.ACTION_CANCEL;
-			if (allowFastScrolling) {
-				fastScrollingCurrentY = event.getY() - top;
-				scroll(calculateOffset());
-				updateFastScroller(allowFastScrolling, regularScrolling, fastScrolling);
-			}
-			if (cancel) {
-				requestDisallowInterceptTouchEvent(false);
-				updateFastScroller(allowFastScrolling, regularScrolling, false);
-				invalidate();
-			}
-			return true;
 		}
 		return false;
 	}
@@ -299,15 +353,22 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 	private void onDrawFastScroller(Canvas canvas) {
 		long time = SystemClock.elapsedRealtime();
 		long passed = time - showFastScrollingStart;
-		boolean shouldInvalidate = showFastScrolling && passed < FAST_SCROLLER_TRANSITION_IN ||
-				!showFastScrolling && passed >= FAST_SCROLLER_TRANSITION_OUT_DELAY &&
-						passed < FAST_SCROLLER_TRANSITION_OUT_DELAY + FAST_SCROLLER_TRANSITION_OUT;
-		float stateValue = showFastScrolling ? (float) passed / FAST_SCROLLER_TRANSITION_IN
-				: 1f - (float) (passed - FAST_SCROLLER_TRANSITION_OUT_DELAY) / FAST_SCROLLER_TRANSITION_OUT;
+		boolean shouldInvalidate;
+		float stateValue;
+		if (!showFastScrolling && passed >= FAST_SCROLLER_TRANSITION_IN) {
+			passed -= FAST_SCROLLER_TRANSITION_IN;
+			shouldInvalidate = passed >= FAST_SCROLLER_TRANSITION_OUT_DELAY &&
+					passed < FAST_SCROLLER_TRANSITION_OUT_DELAY + FAST_SCROLLER_TRANSITION_OUT;
+			stateValue = 1f - (float) (passed - FAST_SCROLLER_TRANSITION_OUT_DELAY)
+					/ FAST_SCROLLER_TRANSITION_OUT;
+		} else {
+			shouldInvalidate = true;
+			stateValue = (float) passed / FAST_SCROLLER_TRANSITION_IN;
+		}
 		stateValue = Math.max(0, Math.min(stateValue, 1));
 
 		if (stateValue > 0f) {
-			boolean rtl = C.API_JELLY_BEAN_MR1 && getLayoutDirection() == LAYOUT_DIRECTION_RTL;
+			boolean rtl = ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_RTL;
 			int maxWidth = Math.max(thumbDrawable.getIntrinsicWidth(), trackDrawable.getIntrinsicHeight());
 			int translateX = (int) (maxWidth * (1f - stateValue) + 0.5f);
 			int top = getEdgeEffectShift(EdgeEffectHandler.Side.TOP);

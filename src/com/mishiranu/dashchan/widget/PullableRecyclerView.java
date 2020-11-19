@@ -31,48 +31,42 @@ public class PullableRecyclerView extends PaddedRecyclerView implements Pullable
 	/* init */ {
 		int touchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
 		addOnItemTouchListener(new OnItemTouchListener() {
-			private boolean allowIntercept = false;
-			private boolean disallowIntercept = false;
-
-			private float downX;
+			private boolean intercepted = false;
 			private float downY;
 
 			@Override
 			public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-				float x = e.getX();
 				float y = e.getY();
-				if (e.getAction() == MotionEvent.ACTION_DOWN) {
-					allowIntercept = false;
-					downX = x;
+				if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {
+					intercepted = false;
 					downY = y;
 				}
-				if (!disallowIntercept && wrapper.onTouchEvent(e)) {
-					if (!allowIntercept) {
-						float movement = (float) Math.sqrt(Math.pow(downX - x, 2) + Math.pow(downY - y, 2));
-						if (movement > touchSlop) {
-							allowIntercept = true;
-						}
+				if (wrapper.onTouchEventOrNull(e)) {
+					if (!intercepted && Math.abs(downY - y) > touchSlop) {
+						intercepted = true;
 					}
-					return allowIntercept;
+					return intercepted;
 				}
 				return false;
 			}
 
 			@Override
 			public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-				if (!disallowIntercept) {
-					boolean result = wrapper.onTouchEvent(e);
-					if (!result) {
-						// Reset intercepted state
-						removeOnItemTouchListener(this);
-						addOnItemTouchListener(this);
-					}
+				boolean result = wrapper.onTouchEventOrNull(e);
+				if (intercepted && !result) {
+					intercepted = false;
+					// Reset intercepted state
+					removeOnItemTouchListener(this);
+					addOnItemTouchListener(this);
 				}
 			}
 
 			@Override
 			public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-				this.disallowIntercept = disallowIntercept;
+				if (disallowIntercept && intercepted) {
+					intercepted = false;
+					wrapper.onTouchEventOrNull(null);
+				}
 			}
 		});
 	}
@@ -110,6 +104,11 @@ public class PullableRecyclerView extends PaddedRecyclerView implements Pullable
 		} else {
 			return false;
 		}
+	}
+
+	@Override
+	protected void onFastScrollingStarted() {
+		wrapper.onTouchEventOrNull(null);
 	}
 
 	@Override

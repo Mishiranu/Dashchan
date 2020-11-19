@@ -43,11 +43,11 @@ public class PullableWrapper {
 	}
 
 	public interface PullCallback {
-		public void onListPulled(PullableWrapper wrapper, Side side);
+		void onListPulled(PullableWrapper wrapper, Side side);
 	}
 
 	public interface PullStateListener {
-		public void onPullStateChanged(PullableWrapper wrapper, boolean busy);
+		void onPullStateChanged(PullableWrapper wrapper, boolean busy);
 	}
 
 	private PullCallback pullCallback;
@@ -138,13 +138,13 @@ public class PullableWrapper {
 
 	private static final int BUSY_JUMP_TIME = 200;
 
-	public boolean onTouchEvent(MotionEvent ev) {
+	public boolean onTouchEventOrNull(MotionEvent ev) {
 		boolean pull = false;
-		int action = ev.getAction();
+		int action = ev != null ? ev.getAction() : MotionEvent.ACTION_CANCEL;
 		if (action == MotionEvent.ACTION_DOWN || !listView.isScrolledToTop() && !listView.isScrolledToBottom()) {
-			startY = ev.getY();
+			startY = ev != null ? ev.getY() : 0;
 		} else if (updateStartY) {
-			int hsize = ev.getHistorySize();
+			int hsize = ev != null ? ev.getHistorySize() : 0;
 			startY = hsize > 0 ? ev.getHistoricalY(hsize - 1) : ev.getY();
 		}
 		updateStartY = action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL;
@@ -156,8 +156,9 @@ public class PullableWrapper {
 					edgeEffectHandler.setPullable(EdgeEffectHandler.Side.BOTTOM, true);
 				}
 			} else {
-				float dy = ev.getY() - startY;
-				boolean resetTop = true, resetBottom = true;
+				float dy = ev != null ? ev.getY() - startY : 0;
+				boolean resetTop = true;
+				boolean resetBottom = true;
 				if (action == MotionEvent.ACTION_MOVE) {
 					// Call getIdlePullStrain to get previous transient value
 					if (dy > 0 && listView.isScrolledToTop() &&
@@ -262,18 +263,18 @@ public class PullableWrapper {
 	}
 
 	private interface PullView {
-		public enum State {IDLE, PULL, LOADING}
+		enum State {IDLE, PULL, LOADING}
 
-		public static final int MAX_STRAIN = 1000;
+		int MAX_STRAIN = 1000;
 
-		public void setColor(int color);
-		public void setState(State state, int padding);
-		public void setPullStrain(int pullStrain, int padding);
-		public int getPullStrain();
-		public int getAndResetIdlePullStrain();
-		public void draw(Canvas canvas, int padding);
-		public long calculateJumpStartTime();
-		public int calculateJumpValue(long jumpStartTime);
+		void setColor(int color);
+		void setState(State state, int padding);
+		void setPullStrain(int pullStrain, int padding);
+		int getPullStrain();
+		int getAndResetIdlePullStrain();
+		void draw(Canvas canvas, int padding);
+		long calculateJumpStartTime();
+		int calculateJumpValue(long jumpStartTime);
 	}
 
 	private static class JellyBeanView implements PullView {

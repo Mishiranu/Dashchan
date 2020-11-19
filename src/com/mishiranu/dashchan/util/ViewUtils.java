@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
+import android.graphics.Insets;
 import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -19,6 +20,7 @@ import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.ViewParent;
 import android.view.Window;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.EdgeEffect;
 import android.widget.ScrollView;
@@ -64,6 +66,36 @@ public class ViewUtils {
 		// Should always result "true" for tablets in landscape mode (+ in portrait mode on large screens).
 		// Sometimes it will result "true" for screens with low DPI configuration, which is intentional.
 		return configuration.screenWidthDp >= 720;
+	}
+
+	public static boolean isGestureNavigationOverlap(View view, boolean checkLeft, boolean checkRight) {
+		if (C.API_Q) {
+			WindowInsets windowInsets = view.getRootWindowInsets();
+			Insets insets;
+			if (C.API_R) {
+				insets = windowInsets.getInsets(WindowInsets.Type.systemGestures());
+			} else {
+				@SuppressWarnings("deprecation")
+				Insets insetsDeprecated = windowInsets.getSystemGestureInsets();
+				insets = insetsDeprecated;
+			}
+			if (checkLeft && insets.left > 0 || checkRight && insets.right > 0) {
+				int left = view.getLeft();
+				View parentView = (View) view.getParent();
+				while (true) {
+					left += parentView.getLeft();
+					ViewParent parent = parentView.getParent();
+					if (parent instanceof View) {
+						parentView = (View) parent;
+					} else {
+						break;
+					}
+				}
+				int right = parentView.getWidth() - left - view.getWidth();
+				return checkLeft && insets.left > left || checkRight && insets.right > right;
+			}
+		}
+		return false;
 	}
 
 	public static void setTextSizeScaled(TextView textView, int sizeSp) {
