@@ -8,7 +8,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.util.Pair;
@@ -25,14 +24,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class GraphicsUtils {
-	public static final Typeface TYPEFACE_MEDIUM = newTypeface("sans-serif-medium");
-	public static final Typeface TYPEFACE_LIGHT = newTypeface("sans-serif-light");
-
 	private static final Random RANDOM = new Random(System.currentTimeMillis());
-
-	private static Typeface newTypeface(String familyName) {
-		return Typeface.create(familyName, Typeface.NORMAL);
-	}
 
 	private static final float CONTRAST_GAIN = 2.5f;
 

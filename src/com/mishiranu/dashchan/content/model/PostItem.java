@@ -2,12 +2,9 @@ package com.mishiranu.dashchan.content.model;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Typeface;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.style.RelativeSizeSpan;
-import android.text.style.StyleSpan;
 import androidx.annotation.NonNull;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
@@ -19,6 +16,7 @@ import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.style.LinkSpan;
 import com.mishiranu.dashchan.text.style.LinkSuffixSpan;
+import com.mishiranu.dashchan.text.style.MediumSpan;
 import com.mishiranu.dashchan.text.style.NameColorSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
 import com.mishiranu.dashchan.util.PostDateFormatter;
@@ -460,25 +458,7 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 		if (comment == null) {
 			CharSequence comment = obtainComment(post.comment, chan.markup,
 					getThreadNumber(), getOriginalPostNumber(), this);
-			// Make empty lines take less space
-			SpannableStringBuilder builder = null;
-			int linebreaks = 0;
-			for (int i = 0; i < comment.length(); i++) {
-				char c = comment.charAt(i);
-				if (c == '\n') {
-					linebreaks++;
-				} else {
-					if (linebreaks > 1) {
-						if (builder == null) {
-							builder = new SpannableStringBuilder(comment);
-							comment = builder;
-						}
-						builder.setSpan(new RelativeSizeSpan(0.75f), i - linebreaks, i,
-								SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
-					}
-					linebreaks = 0;
-				}
-			}
+			comment = StringUtils.reduceEmptyLines(comment);
 			commentSpans = ColorScheme.getSpans(comment);
 			linkSpans = comment instanceof Spanned ? ((Spanned) comment)
 					.getSpans(0, comment.length(), LinkSpan.class) : null;
@@ -500,7 +480,7 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 				int start = comment.getSpanStart(linkSpan);
 				if (commentString.indexOf(reference, start) == start) {
 					int end = comment.getSpanEnd(linkSpan);
-					comment.setSpan(new StyleSpan(Typeface.BOLD), start, end, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
+					comment.setSpan(new MediumSpan(), start, end, SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE);
 				}
 			}
 		}

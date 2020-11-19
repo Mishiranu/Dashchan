@@ -44,7 +44,6 @@ import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.FlagUtils;
-import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ThemeEngine;
@@ -782,7 +781,7 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 		for (int i = 0; i < titles.length; i++) {
 			TextView textView1 = new TextView(context, null, android.R.attr.textAppearanceLarge);
 			textView1.setText(titles[i]);
-			textView1.setTypeface(GraphicsUtils.TYPEFACE_LIGHT);
+			textView1.setTypeface(ResourceUtils.TYPEFACE_LIGHT);
 			textView1.setPadding(paddingLeft, paddingTop, paddingRight, (int) (4f * density));
 			TextView textView2 = new TextView(context, null, android.R.attr.textAppearanceSmall);
 			textView2.setText(messages[i]);

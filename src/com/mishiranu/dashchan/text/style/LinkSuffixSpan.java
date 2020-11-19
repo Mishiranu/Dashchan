@@ -6,7 +6,7 @@ import android.text.style.ReplacementSpan;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.util.FlagUtils;
-import com.mishiranu.dashchan.util.GraphicsUtils;
+import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class LinkSuffixSpan extends ReplacementSpan implements ColorScheme.Span {
 	private int suffix;
@@ -62,7 +62,7 @@ public class LinkSuffixSpan extends ReplacementSpan implements ColorScheme.Span 
 		char after = end >= text.length() ? '\n' : text.charAt(end);
 		boolean addSpace = after > ' ' && after != '.' && after != ',' && after != '!' && after != '?' && after != ')'
 				&& after != ']' && after != ':' && after != ';';
-		paint.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+		paint.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
 		return (int) paint.measureText(" " + suffixText + (addSpace ? " " : ""));
 	}
 
@@ -71,7 +71,7 @@ public class LinkSuffixSpan extends ReplacementSpan implements ColorScheme.Span 
 			float x, int top, int y, int bottom, Paint paint) {
 		String suffixText = getSuffixText();
 		if (suffixText != null) {
-			paint.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+			paint.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
 			paint.setColor(foregroundColor);
 			canvas.drawText(" " + suffixText, x, y, paint);
 		}

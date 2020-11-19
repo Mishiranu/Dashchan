@@ -1,11 +1,9 @@
 package com.mishiranu.dashchan.content.async;
 
-import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.text.SpannableStringBuilder;
 import android.text.style.StrikethroughSpan;
-import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Base64;
 import chan.content.Chan;
@@ -20,7 +18,9 @@ import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.WakabaLikeHtmlBuilder;
 import com.mishiranu.dashchan.text.style.GainedColorSpan;
 import com.mishiranu.dashchan.text.style.HeadingSpan;
+import com.mishiranu.dashchan.text.style.ItalicSpan;
 import com.mishiranu.dashchan.text.style.LinkSpan;
+import com.mishiranu.dashchan.text.style.MediumSpan;
 import com.mishiranu.dashchan.text.style.MonospaceSpan;
 import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.QuoteSpan;
@@ -454,15 +454,10 @@ public class SendLocalArchiveTask extends ExecutorTask<Integer, SendLocalArchive
 			result[0] = ChanMarkup.TAG_QUOTE;
 		} else if (span instanceof ScriptSpan) {
 			result[0] = ((ScriptSpan) span).isSuperscript() ? ChanMarkup.TAG_SUPERSCRIPT : ChanMarkup.TAG_SUBSCRIPT;
-		} else if (span instanceof StyleSpan) {
-			int style = ((StyleSpan) span).getStyle();
-			if (style == Typeface.BOLD) {
-				result[0] = ChanMarkup.TAG_BOLD;
-			} else {
-				if (style == Typeface.ITALIC) {
-					result[0] = ChanMarkup.TAG_ITALIC;
-				}
-			}
+		} else if (span instanceof MediumSpan) {
+			result[0] = ChanMarkup.TAG_BOLD;
+		} else if (span instanceof ItalicSpan) {
+			result[0] = ChanMarkup.TAG_ITALIC;
 		} else if (span instanceof UnderlineSpan) {
 			result[0] = ChanMarkup.TAG_UNDERLINE;
 		} else if (span instanceof OverlineSpan) {

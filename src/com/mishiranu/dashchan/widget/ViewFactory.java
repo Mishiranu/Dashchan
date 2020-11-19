@@ -17,7 +17,6 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.FlagUtils;
-import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 
@@ -36,7 +35,7 @@ public class ViewFactory {
 			textView.setMinHeight((int) (48f * density));
 			textView.setGravity(Gravity.CENTER_VERTICAL);
 			textView.setTextColor(ThemeEngine.getTheme(textView.getContext()).accent);
-			textView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+			textView.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
 			ViewUtils.setTextSizeScaled(textView, 14);
 			textView.setPadding((int) (16f * density), (int) (16f * density), (int) (16f * density),
 					(int) (8f * density));

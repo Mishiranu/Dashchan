@@ -61,7 +61,6 @@ import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -1368,7 +1367,7 @@ public class DialogUnit {
 			if (C.API_LOLLIPOP) {
 				textView.setPadding((int) (26f * density), 0, 0, 0); // 26f = 24f + 2f
 				ViewUtils.setTextSizeScaled(textView, 14);
-				textView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+				textView.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
 			} else {
 				textView.setPadding((int) (10f * density), 0, 0, 0); // 20f = 8f + 2f
 				ViewUtils.setTextSizeScaled(textView, 16);

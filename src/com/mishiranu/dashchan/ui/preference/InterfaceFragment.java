@@ -1,16 +1,20 @@
 package com.mishiranu.dashchan.ui.preference;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
-import android.text.SpannableStringBuilder;
-import android.text.style.TypefaceSpan;
 import android.view.View;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
+import chan.content.ChanMarkup;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.ui.FragmentHandler;
+import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class InterfaceFragment extends PreferenceFragment {
@@ -65,17 +69,7 @@ public class InterfaceFragment extends PreferenceFragment {
 				R.string.advanced_search, R.string.advanced_search__summary)
 				.setOnAfterChangeListener(p -> {
 					if (p.getValue()) {
-						SpannableStringBuilder builder = new SpannableStringBuilder
-								(getText(R.string.advanced_search__sentence));
-						Object[] spans = builder.getSpans(0, builder.length(), Object.class);
-						for (Object span : spans) {
-							int start = builder.getSpanStart(span);
-							int end = builder.getSpanEnd(span);
-							int flags = builder.getSpanFlags(span);
-							builder.removeSpan(span);
-							builder.setSpan(new TypefaceSpan("sans-serif-medium"), start, end, flags);
-						}
-						MessageDialog.create(this, builder, false);
+						displayAdvancedSearchDialog(getChildFragmentManager());
 					}
 				});
 		addCheck(true, Preferences.KEY_DISPLAY_ICONS, Preferences.DEFAULT_DISPLAY_ICONS,
@@ -93,4 +87,19 @@ public class InterfaceFragment extends PreferenceFragment {
 		super.onActivityCreated(savedInstanceState);
 		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.user_interface), null);
 	}
+
+	private static void displayAdvancedSearchDialog(FragmentManager fragmentManager) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			Context context = provider.getContext();
+			String html = IOUtils.readRawResourceString(context.getResources(), R.raw.markup_advanced_search);
+			return new AlertDialog.Builder(context)
+					.setTitle(R.string.advanced_search)
+					.setMessage(BUILDER_ADVANCED_SEARCH.fromHtmlReduced(html))
+					.setPositiveButton(android.R.string.ok, null)
+					.create();
+		});
+	}
+
+	private static final ChanMarkup.MarkupBuilder BUILDER_ADVANCED_SEARCH = new ChanMarkup
+			.MarkupBuilder(markup -> markup.addTag("b", ChanMarkup.TAG_BOLD));
 }

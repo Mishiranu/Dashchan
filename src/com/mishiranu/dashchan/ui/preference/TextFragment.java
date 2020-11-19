@@ -30,7 +30,6 @@ import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.async.HttpHolderTask;
 import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.ui.ContentFragment;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
@@ -51,7 +50,22 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 	private static final String EXTRA_ERROR_ITEM = "errorItem";
 	private static final String EXTRA_TEXT = "text";
 
-	public enum Type {LICENSES, CHANGELOG}
+	public enum Type {
+		LICENSES(markup -> {
+			markup.addTag("h1", ChanMarkup.TAG_HEADING);
+			markup.addTag("pre", ChanMarkup.TAG_CODE);
+		}),
+		CHANGELOG(markup -> {
+			markup.addTag("h4", ChanMarkup.TAG_HEADING);
+			markup.addTag("em", ChanMarkup.TAG_ITALIC);
+		});
+
+		private final ChanMarkup.MarkupBuilder builder;
+
+		Type(ChanMarkup.MarkupBuilder.Constructor constructor) {
+			builder = new ChanMarkup.MarkupBuilder(constructor);
+		}
+	}
 
 	private View contentView;
 	private CommentTextView textView;
@@ -123,7 +137,7 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 		switch (Type.valueOf(requireArguments().getString(EXTRA_TYPE))) {
 			case LICENSES: {
 				((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.foss_licenses), null);
-				setText(IOUtils.readRawResourceString(getResources(), R.raw.licenses));
+				setText(IOUtils.readRawResourceString(getResources(), R.raw.markup_licenses));
 				break;
 			}
 			case CHANGELOG: {
@@ -177,7 +191,8 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 	}
 
 	private void setText(String text) {
-		CharSequence spanned = HtmlParser.spanify(text, MARKUP.getMarkup(), null, null, null);
+		Type type = Type.valueOf(requireArguments().getString(EXTRA_TYPE));
+		CharSequence spanned = type.builder.fromHtmlReduced(text);
 		ThemeEngine.getColorScheme(requireContext()).apply(spanned);
 		textView.setText(spanned);
 	}
@@ -194,18 +209,6 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 			lastClickTime = time;
 		}
 	}
-
-	private static final ChanMarkup MARKUP = new ChanMarkup(Chan.getFallback()) {{
-		addTag("h1", TAG_HEADING);
-		addTag("h2", TAG_HEADING);
-		addTag("h3", TAG_HEADING);
-		addTag("h4", TAG_HEADING);
-		addTag("h5", TAG_HEADING);
-		addTag("h6", TAG_HEADING);
-		addTag("strong", TAG_BOLD);
-		addTag("em", TAG_ITALIC);
-		addTag("pre", TAG_CODE);
-	}};
 
 	public static class ChangelogViewModel extends TaskViewModel<ReadChangelogTask, Pair<ErrorItem, String>> {}
 

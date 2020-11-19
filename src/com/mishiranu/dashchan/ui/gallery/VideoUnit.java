@@ -35,7 +35,6 @@ import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.AudioFocus;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -296,7 +295,7 @@ public class VideoUnit {
 			ViewUtils.setTextSizeScaled(timeTextView, 14);
 			timeTextView.setGravity(Gravity.CENTER_HORIZONTAL);
 			if (C.API_LOLLIPOP) {
-				timeTextView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+				timeTextView.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
 			}
 			if (oldTimeText != null) {
 				timeTextView.setText(oldTimeText);
@@ -306,7 +305,7 @@ public class VideoUnit {
 			ViewUtils.setTextSizeScaled(totalTimeTextView, 14);
 			totalTimeTextView.setGravity(Gravity.CENTER_HORIZONTAL);
 			if (C.API_LOLLIPOP) {
-				totalTimeTextView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+				totalTimeTextView.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
 			}
 
 			int oldSecondaryProgress = seekBar != null ? seekBar.getSecondaryProgress() : -1;

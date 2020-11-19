@@ -14,12 +14,6 @@
 	<string name="additional">Additional</string>
 	<string name="address">Address</string>
 	<string name="advanced_search">Advanced search</string>
-	<string name="advanced_search__sentence">Advanced search allows you to search by words or quoted phrases.\n
-		\nYou can use \"-\" character before words or phrases to exclude them.\n
-		\nYou can also use search flags to filter search results:\n
-		\n<b>:m</b> — your posts\n<b>:r</b> — replies to your posts\n<b>:a</b> — posts with attachments
-		\n<b>:d</b> — deleted posts\n<b>:e</b> — edited posts\n<b>:n</b> — new posts
-		\n<b>:op</b> — posts by original poster\n\nFlags can be excluded using \":-\" characters.</string>
 	<string name="advanced_search__summary">Search by words or quoted phrases</string>
 	<string name="all_attachments">All attachments</string>
 	<string name="all_attachments__summary">Display thumbnails for all attachments</string>
@@ -45,7 +39,6 @@
 	<string name="ban_id">Ban ID</string>
 	<string name="block">Block</string>
 	<string name="board">Board</string>
-	<string name="board_code">Board code</string>
 	<string name="board_doesnt_exist">The board doesn\'t exist</string>
 	<string name="boards">Boards</string>
 	<string name="build_version">Build version</string>
@@ -173,9 +166,7 @@
 	<string name="flags_are_enabled">Flags are enabled</string>
 	<string name="follow_the_link__sentence">Follow the link?</string>
 	<string name="forum">Forum</string>
-	<string name="forum_code">Forum code</string>
 	<string name="forum_only__format">%s only</string>
-	<string name="forum_title">Forum title</string>
 	<string name="forums">Forums</string>
 	<string name="foss_licenses">FOSS licenses</string>
 	<string name="foss_licenses__summary">License details for free and open source software</string>
@@ -247,6 +238,7 @@
 	<string name="merge_pages__summary">Display pages for all forums</string>
 	<string name="message_data">Message data</string>
 	<string name="minimize">Minimize</string>
+	<string name="more_info">More info</string>
 	<string name="more_themes">More themes</string>
 	<string name="multiple_forums">Multiple forums</string>
 	<string name="my_post">My post</string>
@@ -325,7 +317,6 @@
 	<string name="open_pages__noun">Open pages</string>
 	<string name="open_thread">Open thread</string>
 	<string name="open_thread__sentence">Open thread?</string>
-	<string name="optional_part">Optional part</string>
 	<string name="order_by_title">Order by title</string>
 	<string name="orientation">Orientation</string>
 	<string name="original_file_name">Original file name</string>
@@ -478,8 +469,6 @@
 	<string name="thread">Thread</string>
 	<string name="thread_doesnt_exist">The thread doesn\'t exist</string>
 	<string name="thread_is_closed">Thread is closed</string>
-	<string name="thread_number">Thread number</string>
-	<string name="thread_title">Thread title</string>
 	<string name="thread_will_be_deleted_from_cache__sentence">The thread will be deleted from cache.</string>
 	<string name="threads">Threads</string>
 	<string name="threads_created">Threads created</string>

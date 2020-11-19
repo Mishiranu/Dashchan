@@ -1476,7 +1476,7 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 		fileName.setEllipsize(TextUtils.TruncateAt.END);
 		if (C.API_LOLLIPOP) {
 			ViewUtils.setTextSizeScaled(fileName, 12);
-			fileName.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+			fileName.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
 		}
 		TextView fileSize = new TextView(controls.getContext());
 		textLayout.addView(fileSize, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);

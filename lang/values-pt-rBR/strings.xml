@@ -27,7 +27,6 @@
 	<string name="backups_not_found">Nenhum backup encontrado</string>
 	<string name="ban_id">Ban ID</string>
 	<string name="board">Board</string>
-	<string name="board_code">Código da board</string>
 	<string name="board_doesnt_exist">Essa board não existe</string>
 	<string name="boards">Boards</string>
 	<string name="build_version">Versão</string>
@@ -114,9 +113,7 @@
 	<string name="find_in_subjects">Encontre nos assuntos</string>
 	<string name="flags_are_enabled">Flags estão habilitados</string>
 	<string name="follow_the_link__sentence">Abrir o link?</string>
-	<string name="forum_code">Código da fórum</string>
 	<string name="forum_only__format">%s somente</string>
-	<string name="forum_title">Título da fórum</string>
 	<string name="gallery">Galeria</string>
 	<string name="gallery_is_empty">Galeria está vazia</string>
 	<string name="general">Geral</string>
@@ -230,7 +227,6 @@
 	<string name="open_pages__noun">Páginas abertas</string>
 	<string name="open_thread">Abrir fio</string>
 	<string name="open_thread__sentence">Abrir o fio?</string>
-	<string name="optional_part">Parte opcional</string>
 	<string name="original_file_name">Nome original</string>
 	<string name="original_file_name__summary">Baixe arquivos com nome original, se possível</string>
 	<string name="original_poster">OP</string>
@@ -341,7 +337,6 @@
 	<string name="thread">Fio</string>
 	<string name="thread_doesnt_exist">Esse fio não existe</string>
 	<string name="thread_is_closed">Fio fechado</string>
-	<string name="thread_title">Título do fio</string>
 	<string name="threads_list">Lista de fios</string>
 	<string name="thumbnail_scale">Escala da miniatura</string>
 	<string name="thumbnails">Miniaturas</string>

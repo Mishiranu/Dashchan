@@ -36,6 +36,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanManager;
+import chan.content.ChanMarkup;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
@@ -47,6 +48,7 @@ import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.graphics.ChanIconDrawable;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
+import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -281,9 +283,9 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		chanNameView = new TextView(context, null, android.R.attr.textAppearanceListItem);
 		ViewUtils.setTextSizeScaled(chanNameView, C.API_LOLLIPOP ? 14 : 16);
 		if (C.API_LOLLIPOP) {
-			chanNameView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+			chanNameView.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
 		} else {
-			chanNameView.setFilters(new InputFilter[]{new InputFilter.AllCaps()});
+			chanNameView.setFilters(new InputFilter[] {new InputFilter.AllCaps()});
 		}
 		selectorContainer.addView(chanNameView, new LinearLayout.LayoutParams(0,
 				LinearLayout.LayoutParams.WRAP_CONTENT, 1));
@@ -672,6 +674,40 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 				}
 			}
 		}
+		if (text.isEmpty()) {
+			SearchHelpFormat searchHelpFormat = null;
+			if (chanName != null) {
+				Chan chan = Chan.get(chanName);
+				if (chan.name != null && !chan.configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE)) {
+					searchHelpFormat = SearchHelpFormat.obtain(chan, false);
+				}
+			}
+			if (searchHelpFormat == null) {
+				for (Chan chan : ChanManager.getInstance().getAvailableChans()) {
+					if (!chan.configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE)) {
+						searchHelpFormat = SearchHelpFormat.obtain(chan, false);
+						if (searchHelpFormat != null) {
+							break;
+						}
+					}
+				}
+			}
+			if (searchHelpFormat == null) {
+				for (Chan chan : ChanManager.getInstance().getAvailableChans()) {
+					if (chan.configuration.getOption(ChanConfiguration.OPTION_SINGLE_BOARD_MODE)) {
+						searchHelpFormat = SearchHelpFormat.obtain(chan, true);
+						if (searchHelpFormat != null) {
+							break;
+						}
+					}
+				}
+			}
+			if (searchHelpFormat == null) {
+				searchHelpFormat = new SearchHelpFormat("mobi", "307707", "https://2ch.hk/mobi/res/307707.html");
+			}
+			showSearchHelp(fragmentManager, searchHelpFormat);
+			return;
+		}
 		ClickableToast.show(R.string.enter_valid_data);
 	}
 
@@ -680,6 +716,70 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		onSearchClick();
 		return true;
 	}
+
+	private static class SearchHelpFormat {
+		public final String boardName;
+		public final String threadNumber;
+		public final String threadUrl;
+
+		public SearchHelpFormat(String boardName, String threadNumber, String threadUrl) {
+			this.boardName = boardName;
+			this.threadNumber = threadNumber;
+			this.threadUrl = threadUrl;
+		}
+
+		public static SearchHelpFormat obtain(Chan chan, boolean allowEmptyBoardName) {
+			String boardName = Preferences.getDefaultBoardName(chan);
+			if (boardName == null) {
+				ArrayList<FavoritesStorage.FavoriteItem> favoriteItems = FavoritesStorage
+						.getInstance().getBoards(chan.name);
+				if (!favoriteItems.isEmpty()) {
+					boardName = favoriteItems.get(0).boardName;
+				}
+			}
+			if (boardName == null) {
+				if (allowEmptyBoardName) {
+					boardName = "b";
+				} else {
+					return null;
+				}
+			}
+			String threadNumber = null;
+			ArrayList<FavoritesStorage.FavoriteItem> favoriteItems = FavoritesStorage
+					.getInstance().getThreads(chan.name);
+			if (!favoriteItems.isEmpty()) {
+				threadNumber = favoriteItems.get(0).threadNumber;
+			}
+			if (threadNumber == null) {
+				return null;
+			}
+			Uri uri = chan.locator.safe(false).createThreadUri(boardName, threadNumber);
+			if (uri == null) {
+				return null;
+			}
+			return new SearchHelpFormat(boardName, threadNumber, uri.toString());
+		}
+	}
+
+	private static void showSearchHelp(FragmentManager fragmentManager, SearchHelpFormat searchHelpFormat) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			Context context = provider.getContext();
+			String html = IOUtils.readRawResourceString(context.getResources(), R.raw.markup_drawer_search)
+					.replace("__REPLACE_BOARD_NAME__", searchHelpFormat.boardName)
+					.replace("__REPLACE_THREAD_NUMBER__", searchHelpFormat.threadNumber)
+					.replace("__REPLACE_THREAD_URL__", searchHelpFormat.threadUrl);
+			return new AlertDialog.Builder(context)
+					.setTitle(R.string.code_number_address)
+					.setMessage(BUILDER_SEARCH_HELP.fromHtmlReduced(html))
+					.setPositiveButton(android.R.string.ok, null)
+					.create();
+		});
+	}
+
+	private static final ChanMarkup.MarkupBuilder BUILDER_SEARCH_HELP = new ChanMarkup.MarkupBuilder(markup -> {
+		markup.addTag("h1", ChanMarkup.TAG_BOLD);
+		markup.addTag("u", ChanMarkup.TAG_UNDERLINE);
+	});
 
 	public void updateItems(boolean pages, boolean favorites) {
 		if (pages && pagesListMode != Preferences.PagesListMode.HIDE_PAGES) {
@@ -1138,7 +1238,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 		textView.setEllipsize(TextUtils.TruncateAt.END);
 		textView.setSingleLine(true);
 		if (C.API_LOLLIPOP) {
-			textView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+			textView.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
 			int color = textView.getTextColors().getDefaultColor();
 			if (section) {
 				color &= 0x5effffff;

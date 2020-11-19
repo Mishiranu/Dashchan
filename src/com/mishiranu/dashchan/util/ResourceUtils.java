@@ -6,6 +6,7 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
@@ -17,6 +18,10 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 
 public class ResourceUtils {
+	public static final Typeface TYPEFACE_MEDIUM = C.API_LOLLIPOP
+			? Typeface.create("sans-serif-medium", Typeface.NORMAL) : Typeface.DEFAULT_BOLD;
+	public static final Typeface TYPEFACE_LIGHT = Typeface.create("sans-serif-light", Typeface.NORMAL);
+
 	public static float obtainDensity(View view) {
 		return obtainDensity(view.getResources());
 	}

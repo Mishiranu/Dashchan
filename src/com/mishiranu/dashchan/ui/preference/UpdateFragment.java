@@ -20,6 +20,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
@@ -34,6 +35,7 @@ import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.ui.FragmentHandler;
+import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.ui.preference.core.CheckPreference;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
@@ -439,7 +441,7 @@ public class UpdateFragment extends BaseListFragment {
 					}
 				}
 				if (!requests.isEmpty()) {
-					MessageDialog.create(this, getString(R.string.update_reminder__sentence), true);
+					displayUpdateReminderDialog(getChildFragmentManager());
 					UpdaterActivity.startUpdater(requests);
 				} else {
 					ClickableToast.show(R.string.no_available_updates);
@@ -452,6 +454,16 @@ public class UpdateFragment extends BaseListFragment {
 			}
 		}
 		return false;
+	}
+
+	private static void displayUpdateReminderDialog(FragmentManager fragmentManager) {
+		new InstanceDialog(fragmentManager, null, provider -> new AlertDialog
+				.Builder(provider.getContext())
+				.setMessage(R.string.update_reminder__sentence)
+				.setPositiveButton(android.R.string.ok, (d, w) -> ((FragmentHandler) provider
+						.getActivity()).removeFragment())
+				.setOnCancelListener(d -> ((FragmentHandler) provider.getActivity()).removeFragment())
+				.create());
 	}
 
 	private static void handleListItemValidity(ReadUpdateTask.UpdateDataMap updateDataMap,

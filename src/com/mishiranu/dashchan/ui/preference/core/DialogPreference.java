@@ -16,12 +16,8 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 
 public abstract class DialogPreference<T> extends Preference<T> {
-	public interface ButtonListener {
-		void onClick();
-	}
-
 	private CharSequence neutralButtonText;
-	private ButtonListener neutralButtonListener;
+	private Runnable neutralButtonListener;
 	private CharSequence description;
 
 	public DialogPreference(Context context, String key, T defaultValue,
@@ -34,7 +30,7 @@ public abstract class DialogPreference<T> extends Preference<T> {
 		if (neutralButtonText != null) {
 			dialog.setButton(AlertDialog.BUTTON_NEUTRAL, neutralButtonText, (AlertDialog.OnClickListener) null);
 			dialog.setOnShowListener(d -> dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
-					.setOnClickListener(v -> neutralButtonListener.onClick()));
+					.setOnClickListener(v -> neutralButtonListener.run()));
 		}
 		return dialog;
 	}
@@ -76,7 +72,7 @@ public abstract class DialogPreference<T> extends Preference<T> {
 	protected void stopDialog(AlertDialog dialog) {}
 	protected void saveState(AlertDialog dialog, Bundle outState) {}
 
-	public void setNeutralButton(CharSequence text, ButtonListener listener) {
+	public void setNeutralButton(CharSequence text, Runnable listener) {
 		neutralButtonText = text;
 		neutralButtonListener = listener;
 	}

@@ -45,7 +45,6 @@ import com.mishiranu.dashchan.text.style.LinkSuffixSpan;
 import com.mishiranu.dashchan.ui.gallery.GalleryOverlay;
 import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.AnimationUtils;
-import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.PostDateFormatter;
 import com.mishiranu.dashchan.util.ResourceUtils;
@@ -1218,7 +1217,7 @@ public class ViewUnit {
 			bottomBarExpand.setOnClickListener(this);
 			bottomBarOpenThread.setOnClickListener(uiManager.view().threadLinkBlockClickListener);
 
-			index.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+			index.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
 			int textScale = Preferences.getTextScale();
 			if (textScale != 100) {
 				ViewUtils.applyScaleSize(number, name, index, date, comment, attachmentInfo,

@@ -782,7 +782,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 				int arrowSize = (int) (40f * density + 0.5f);
 				Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 				paint.setColor(0xffffffff);
-				paint.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+				paint.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
 				paint.setTextSize((int) (14f * density + 0.5f));
 				paint.setStrokeWidth(2f * density);
 				paint.setStrokeCap(Paint.Cap.ROUND);

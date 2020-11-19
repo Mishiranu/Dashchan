@@ -1,10 +1,8 @@
 package chan.content;
 
-import android.graphics.Typeface;
 import android.net.Uri;
 import android.text.SpannableString;
 import android.text.style.StrikethroughSpan;
-import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Pair;
 import chan.annotation.Extendable;
@@ -15,8 +13,10 @@ import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.style.GainedColorSpan;
 import com.mishiranu.dashchan.text.style.HeadingSpan;
+import com.mishiranu.dashchan.text.style.ItalicSpan;
 import com.mishiranu.dashchan.text.style.LinkSpan;
 import com.mishiranu.dashchan.text.style.LinkSuffixSpan;
+import com.mishiranu.dashchan.text.style.MediumSpan;
 import com.mishiranu.dashchan.text.style.MonospaceSpan;
 import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.QuoteSpan;
@@ -37,11 +37,7 @@ public class ChanMarkup implements Chan.Linked {
 
 	@Public
 	public ChanMarkup() {
-		this((Chan.Provider) null);
-	}
-
-	public ChanMarkup(Chan chan) {
-		this(new Chan.Provider(chan));
+		this(null);
 	}
 
 	ChanMarkup(Chan.Provider chanProvider) {
@@ -524,6 +520,23 @@ public class ChanMarkup implements Chan.Linked {
 		}
 	}
 
+	public static final class MarkupBuilder {
+		public interface Constructor {
+			void configure(ChanMarkup markup);
+		}
+
+		private final ChanMarkup markup;
+
+		public MarkupBuilder(Constructor constructor) {
+			markup = new ChanMarkup(new Chan.Provider(Chan.getFallback()));
+			constructor.configure(markup);
+		}
+
+		public CharSequence fromHtmlReduced(String html) {
+			return StringUtils.reduceEmptyLines(HtmlParser.spanify(html, markup.getMarkup(), null, null, null));
+		}
+	}
+
 	public class ChanSpanProvider implements HtmlParser.SpanProvider<MarkupExtra> {
 		private ChanSpanProvider() {}
 
@@ -647,11 +660,11 @@ public class ChanMarkup implements Chan.Linked {
 					Object span = null;
 					switch (styledItem.tag) {
 						case TAG_BOLD: {
-							span = new StyleSpan(Typeface.BOLD);
+							span = new MediumSpan();
 							break;
 						}
 						case TAG_ITALIC: {
-							span = new StyleSpan(Typeface.ITALIC);
+							span = new ItalicSpan();
 							break;
 						}
 						case TAG_SUBSCRIPT: {

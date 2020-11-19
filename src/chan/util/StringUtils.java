@@ -4,6 +4,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.text.SpannableStringBuilder;
+import android.text.style.RelativeSizeSpan;
 import chan.annotation.Extendable;
 import chan.annotation.Public;
 import com.mishiranu.dashchan.C;
@@ -574,5 +575,27 @@ public class StringUtils {
 			}
 		}
 		return builder.toString();
+	}
+
+	public static CharSequence reduceEmptyLines(CharSequence text) {
+		SpannableStringBuilder builder = null;
+		int lineBreaks = 0;
+		for (int i = 0; i < text.length(); i++) {
+			char c = text.charAt(i);
+			if (c == '\n') {
+				lineBreaks++;
+			} else {
+				if (lineBreaks > 1) {
+					if (builder == null) {
+						builder = new SpannableStringBuilder(text);
+						text = builder;
+					}
+					builder.setSpan(new RelativeSizeSpan(0.75f), i - lineBreaks, i,
+							SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+				}
+				lineBreaks = 0;
+			}
+		}
+		return text;
 	}
 }

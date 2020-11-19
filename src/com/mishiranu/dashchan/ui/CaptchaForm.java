@@ -66,7 +66,7 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 			cancelView.setImageTintList(ResourceUtils.getColorStateList(cancelView.getContext(),
 					android.R.attr.textColorPrimary));
 			skipTextView.setAllCaps(true);
-			skipTextView.setTypeface(GraphicsUtils.TYPEFACE_MEDIUM);
+			skipTextView.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
 			ViewUtils.setTextSizeScaled(skipTextView, 12);
 		}
 		updateCaptchaHeight(false);

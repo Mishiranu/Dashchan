@@ -1,18 +1,20 @@
 package com.mishiranu.dashchan.ui.preference;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.TypefaceSpan;
 import android.util.Pair;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
+import chan.content.ChanMarkup;
 import chan.util.DataFile;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
@@ -23,9 +25,12 @@ import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.ui.FragmentHandler;
+import com.mishiranu.dashchan.ui.InstanceDialog;
+import com.mishiranu.dashchan.ui.preference.core.EditPreference;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
+import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 
@@ -80,10 +85,13 @@ public class MediaFragment extends PreferenceFragment implements FragmentHandler
 		addList(Preferences.KEY_DOWNLOAD_SUBDIR, enumList(Preferences.DownloadSubdirMode.values(), v -> v.value),
 				Preferences.DEFAULT_DOWNLOAD_SUBDIR.value, R.string.show_download_configuration_dialog,
 				enumResList(Preferences.DownloadSubdirMode.values(), v -> v.titleResId));
-		addEdit(Preferences.KEY_SUBDIR_PATTERN, Preferences.DEFAULT_SUBDIR_PATTERN,
-				R.string.subdirectory_pattern, Preferences.DEFAULT_SUBDIR_PATTERN,
-				InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI)
-				.setDescription(makeSubdirDescription());
+		EditPreference subdirectoryPreference = addEdit(Preferences.KEY_SUBDIR_PATTERN,
+				Preferences.DEFAULT_SUBDIR_PATTERN, R.string.subdirectory_pattern, Preferences.DEFAULT_SUBDIR_PATTERN,
+				InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+		String subdirectoryHtml = IOUtils.readRawResourceString(getResources(), R.raw.markup_subdirectory);
+		subdirectoryPreference.setDescription(BUILDER_SUBDIRECTORY.fromHtmlReduced(subdirectoryHtml));
+		subdirectoryPreference.setNeutralButton(getString(R.string.more_info),
+				() -> showSubdirectoryInfoDialog(getChildFragmentManager()));
 		if (C.API_LOLLIPOP) {
 			addCheck(true, Preferences.KEY_NOTIFY_DOWNLOAD_COMPLETE, Preferences.DEFAULT_NOTIFY_DOWNLOAD_COMPLETE,
 					R.string.notify_when_download_is_completed, R.string.notify_when_download_is_completed__summary);
@@ -164,21 +172,20 @@ public class MediaFragment extends PreferenceFragment implements FragmentHandler
 		}
 	}
 
-	private CharSequence makeSubdirDescription() {
-		String[] formats = {"\\c", "\\d", "\\b", "\\t", "\\e", "<\u2026>"};
-		int[] descriptions = {R.string.forum_code, R.string.forum_title, R.string.board_code, R.string.thread_number,
-				R.string.thread_title, R.string.optional_part};
-		SpannableStringBuilder builder = new SpannableStringBuilder();
-		for (int i = 0; i < formats.length; i++) {
-			if (builder.length() > 0) {
-				builder.append('\n');
-			}
-			StringUtils.appendSpan(builder, formats[i], new TypefaceSpan("sans-serif-medium"));
-			builder.append(" — ");
-			builder.append(getString(descriptions[i]));
-		}
-		return builder;
+	private static void showSubdirectoryInfoDialog(FragmentManager fragmentManager) {
+		new InstanceDialog(fragmentManager, null, provider -> {
+			Context context = provider.getContext();
+			String html = IOUtils.readRawResourceString(context.getResources(), R.raw.markup_subdirectory_info);
+			return new AlertDialog.Builder(context)
+					.setTitle(R.string.subdirectory_pattern)
+					.setMessage(BUILDER_SUBDIRECTORY.fromHtmlReduced(html))
+					.setPositiveButton(android.R.string.ok, null)
+					.create();
+		});
 	}
+
+	private static final ChanMarkup.MarkupBuilder BUILDER_SUBDIRECTORY = new ChanMarkup
+			.MarkupBuilder(markup -> markup.addTag("b", ChanMarkup.TAG_BOLD));
 
 	public static class ClearCacheDialog extends DialogFragment {
 		private static final String EXTRA_CHECKED_ITEMS = "checkedItems";
