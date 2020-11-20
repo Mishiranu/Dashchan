@@ -8,7 +8,6 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
@@ -22,7 +21,6 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.core.view.ViewCompat;
 import androidx.customview.widget.ViewDragHelper;
@@ -56,7 +54,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 		Context styledContext = new ContextThemeWrapper(context, ResourceUtils.getResourceId(context,
 				android.R.attr.dialogTheme, 0));
 		ThemeEngine.addWeakOnOverlayFocusListener(context, overlayFocusListener);
-		WindowControlFrameLayout contentView = new WindowControlFrameLayout(context);
+		InsetsLayout contentView = new InsetsLayout(context);
 		this.contentView = contentView;
 		rootView = new ContentView(context, DragLayout.Side.TOP, new DragLayout.Callback() {
 			private DialogView getLastVisibleDialog() {
@@ -80,12 +78,8 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 				clear();
 			}
 		});
-		contentView.addView(rootView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-		contentView.setOnApplyWindowPaddingsListener((view, rect, imeRect30) -> {
-			rect = new Rect(rect);
-			rect.bottom = Math.max(rect.bottom, imeRect30.bottom);
-			rootView.setPadding(rect.left, rect.top, rect.right, rect.bottom);
-		});
+		contentView.addView(rootView, InsetsLayout.LayoutParams.MATCH_PARENT, InsetsLayout.LayoutParams.MATCH_PARENT);
+		contentView.setOnApplyInsetsTarget(rootView);
 		rootView.setClipToPadding(false);
 		rootView.setClipChildren(false);
 		rootView.setOnClickListener(v -> {
@@ -632,7 +626,7 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 		public void draw(Canvas canvas) {
 			super.draw(canvas);
 			if (C.API_LOLLIPOP) {
-				ViewUtils.drawSystemInsetsOver(this, canvas);
+				ViewUtils.drawSystemInsetsOver(this, canvas, InsetsLayout.isTargetGesture29(this));
 			}
 		}
 	}

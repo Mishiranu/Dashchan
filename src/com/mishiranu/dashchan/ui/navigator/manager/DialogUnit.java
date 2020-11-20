@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.text.InputType;
@@ -72,13 +71,13 @@ import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.DialogStack;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.ExpandedFrameLayout;
+import com.mishiranu.dashchan.widget.InsetsLayout;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.PostsLayoutManager;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
 import com.mishiranu.dashchan.widget.ThemeEngine;
-import com.mishiranu.dashchan.widget.WindowControlFrameLayout;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1122,14 +1121,14 @@ public class DialogUnit {
 		});
 		View.OnClickListener closeListener = v -> dialog.cancel();
 		LayoutInflater inflater = LayoutInflater.from(styledContext);
-		WindowControlFrameLayout rootView = new WindowControlFrameLayout(styledContext);
+		InsetsLayout rootView = new InsetsLayout(styledContext);
 		rootView.setOnClickListener(closeListener);
 		ScrollView scrollView = new ScrollView(styledContext) {
 			@Override
 			public void draw(Canvas canvas) {
 				super.draw(canvas);
 				if (C.API_LOLLIPOP) {
-					ViewUtils.drawSystemInsetsOver(this, canvas);
+					ViewUtils.drawSystemInsetsOver(this, canvas, InsetsLayout.isTargetGesture29(this));
 				}
 			}
 		};
@@ -1138,13 +1137,9 @@ public class DialogUnit {
 		}
 		scrollView.setVerticalScrollBarEnabled(false);
 		scrollView.setClipToPadding(false);
-		rootView.setOnApplyWindowPaddingsListener((view, rect, imeRect30) -> {
-			rect = new Rect(rect);
-			rect.bottom = Math.max(rect.bottom, imeRect30.bottom);
-			scrollView.setPadding(rect.left, rect.top, rect.right, rect.bottom);
-		});
-		rootView.addView(scrollView, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
-				FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
+		rootView.setOnApplyInsetsTarget(scrollView);
+		rootView.addView(scrollView, new InsetsLayout.LayoutParams(InsetsLayout.LayoutParams.WRAP_CONTENT,
+				InsetsLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER));
 		LinearLayout container = new LinearLayout(styledContext);
 		container.setOrientation(LinearLayout.VERTICAL);
 		container.setMotionEventSplittingEnabled(false);

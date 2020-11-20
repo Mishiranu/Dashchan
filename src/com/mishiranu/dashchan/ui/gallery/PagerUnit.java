@@ -8,7 +8,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.Shape;
 import android.net.Uri;
@@ -35,6 +34,7 @@ import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
+import com.mishiranu.dashchan.widget.InsetsLayout;
 import com.mishiranu.dashchan.widget.PhotoView;
 import com.mishiranu.dashchan.widget.PhotoViewPager;
 import com.mishiranu.dashchan.widget.ViewFactory;
@@ -116,8 +116,8 @@ public class PagerUnit implements PagerInstance.Callback {
 		return viewPager.getCurrentIndex();
 	}
 
-	public void onApplyWindowPaddings(Rect rect) {
-		videoUnit.onApplyWindowPaddings(rect);
+	public void onApplyWindowInsets(InsetsLayout.Insets insets) {
+		videoUnit.onApplyWindowInsets(insets.left, insets.right, insets.bottom);
 	}
 
 	public void invalidateControlsVisibility() {

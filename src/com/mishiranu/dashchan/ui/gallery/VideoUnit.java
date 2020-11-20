@@ -130,9 +130,9 @@ public class VideoUnit {
 		}
 	}
 
-	public void onApplyWindowPaddings(Rect rect) {
+	public void onApplyWindowInsets(int left, int right, int bottom) {
 		if (C.API_LOLLIPOP) {
-			controlsView.setPadding(rect.left, 0, rect.right, rect.bottom);
+			controlsView.setPadding(left, 0, right, bottom);
 		}
 	}
 

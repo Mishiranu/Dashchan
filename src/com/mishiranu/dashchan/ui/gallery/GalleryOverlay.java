@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
-import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -46,16 +45,15 @@ import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
+import com.mishiranu.dashchan.widget.InsetsLayout;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import com.mishiranu.dashchan.widget.ViewFactory;
-import com.mishiranu.dashchan.widget.WindowControlFrameLayout;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class GalleryOverlay extends DialogFragment implements GalleryDialog.Callback, GalleryInstance.Callback,
-		WindowControlFrameLayout.OnApplyWindowPaddingsListener {
+public class GalleryOverlay extends DialogFragment implements GalleryDialog.Callback, GalleryInstance.Callback {
 	public enum NavigatePostMode {DISABLED, MANUALLY, ENABLED}
 
 	private static final String EXTRA_URI = "uri";
@@ -74,7 +72,7 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 	private List<GalleryItem> queuedGalleryItems;
 	private WeakReference<View> queuedFromView;
 
-	private WindowControlFrameLayout rootView;
+	private InsetsLayout rootView;
 	private GalleryInstance instance;
 	private PagerUnit pagerUnit;
 	private ListUnit listUnit;
@@ -151,7 +149,8 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 		super.onDestroyView();
 
 		if (showcaseDestroy != null) {
-			showcaseDestroy.destroy(false);
+			showcaseDestroy.run();
+			showcaseDestroy = null;
 		}
 	}
 
@@ -179,16 +178,30 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 		if (rootView == null) {
 			Context context = ThemeEngine.attach(new ContextThemeWrapper
 					(MainApplication.getInstance().getLocalizedContext(), R.style.Theme_Gallery));
-			rootView = new WindowControlFrameLayout(context) {
+			rootView = new InsetsLayout(context);
+			rootView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
 				@Override
-				protected void onAttachedToWindow() {
-					super.onAttachedToWindow();
+				public void onViewAttachedToWindow(View v) {
 					if (!galleryMode) {
 						displayShowcase();
 					}
 				}
-			};
-			rootView.setOnApplyWindowPaddingsListener(this);
+
+				@Override
+				public void onViewDetachedFromWindow(View v) {}
+			});
+			rootView.setOnApplyInsetsListener(apply -> {
+				InsetsLayout.Insets insets = apply.get();
+				if (listUnit != null) {
+					boolean invalidate = listUnit.onApplyWindowInsets(insets);
+					if (invalidate) {
+						postInvalidateSystemUIVisibility();
+					}
+				}
+				if (pagerUnit != null) {
+					pagerUnit.onApplyWindowInsets(insets);
+				}
+			});
 			rootView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 					ViewGroup.LayoutParams.MATCH_PARENT));
 			rootView.setBackground(new GalleryBackgroundDrawable(rootView, imageViewPosition, BACKGROUND_COLOR));
@@ -245,10 +258,10 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 			if (!instance.galleryItems.isEmpty()) {
 				listUnit = new ListUnit(instance);
 				pagerUnit = new PagerUnit(instance);
-				rootView.addView(listUnit.getRecyclerView(), FrameLayout.LayoutParams.MATCH_PARENT,
-						FrameLayout.LayoutParams.MATCH_PARENT);
-				rootView.addView(pagerUnit.getView(), FrameLayout.LayoutParams.MATCH_PARENT,
-						FrameLayout.LayoutParams.MATCH_PARENT);
+				rootView.addView(listUnit.getRecyclerView(), InsetsLayout.LayoutParams.MATCH_PARENT,
+						InsetsLayout.LayoutParams.MATCH_PARENT);
+				rootView.addView(pagerUnit.getView(), InsetsLayout.LayoutParams.MATCH_PARENT,
+						InsetsLayout.LayoutParams.MATCH_PARENT);
 				pagerUnit.addAndInitViews(rootView, imagePosition);
 			}
 			newImagePosition = imagePosition;
@@ -358,7 +371,8 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 	@Override
 	public boolean onBackPressed() {
 		if (showcaseDestroy != null) {
-			showcaseDestroy.destroy(true);
+			showcaseDestroy.run();
+			showcaseDestroy = null;
 			return true;
 		}
 		return returnToGallery();
@@ -729,26 +743,7 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 		modifySystemUiVisibility(flag, !FlagUtils.get(systemUiVisibilityFlags, flag));
 	}
 
-	@Override
-	public void onApplyWindowPaddings(WindowControlFrameLayout view, Rect rect, Rect imeRect30) {
-		rect = new Rect(rect);
-		rect.bottom = Math.max(rect.bottom, imeRect30.bottom);
-		if (listUnit != null) {
-			boolean invalidate = listUnit.onApplyWindowPaddings(rect);
-			if (invalidate) {
-				postInvalidateSystemUIVisibility();
-			}
-		}
-		if (pagerUnit != null) {
-			pagerUnit.onApplyWindowPaddings(rect);
-		}
-	}
-
-	private interface ShowcaseDestroy {
-		void destroy(boolean consume);
-	}
-
-	private ShowcaseDestroy showcaseDestroy;
+	private Runnable showcaseDestroy;
 
 	private void displayShowcase() {
 		if (showcaseDestroy != null || !Preferences.isShowcaseGalleryEnabled() ||
@@ -807,14 +802,11 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 		}
 		windowManager.addView(frameLayout, layoutParams);
 
-		showcaseDestroy = consume -> {
+		showcaseDestroy = () -> windowManager.removeView(frameLayout);
+		button.setOnClickListener(v -> {
+			Preferences.consumeShowcaseGallery();
+			showcaseDestroy.run();
 			showcaseDestroy = null;
-			if (consume) {
-				Preferences.consumeShowcaseGallery();
-			}
-			windowManager.removeView(frameLayout);
-		};
-
-		button.setOnClickListener(v -> showcaseDestroy.destroy(true));
+		});
 	}
 }

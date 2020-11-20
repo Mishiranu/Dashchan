@@ -321,7 +321,7 @@ public class ViewUtils {
 				View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
 	}
 
-	public static void drawSystemInsetsOver(View view, Canvas canvas) {
+	public static void drawSystemInsetsOver(View view, Canvas canvas, boolean gestureNavigation) {
 		Paint paint = (Paint) view.getTag(R.id.tag_insets_draw_data);
 		if (paint == null) {
 			paint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -339,7 +339,7 @@ public class ViewUtils {
 		int left = view.getPaddingLeft();
 		int top = view.getPaddingTop();
 		int right = view.getPaddingRight();
-		int bottom = view.getPaddingBottom();
+		int bottom = gestureNavigation ? 0 : view.getPaddingBottom();
 		int width = view.getWidth();
 		int height = view.getHeight();
 		// Draw system insets over dialogs

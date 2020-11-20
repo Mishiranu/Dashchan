@@ -43,6 +43,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.AttachmentView;
 import com.mishiranu.dashchan.widget.EdgeEffectHandler;
+import com.mishiranu.dashchan.widget.InsetsLayout;
 import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import java.util.ArrayList;
 import java.util.List;
@@ -149,11 +150,11 @@ public class ListUnit implements ActionMode.Callback {
 		}
 	}
 
-	public boolean onApplyWindowPaddings(Rect rect) {
+	public boolean onApplyWindowInsets(InsetsLayout.Insets insets) {
 		if (C.API_LOLLIPOP) {
-			int top = rect.top + (C.API_R ? getActionBarHeight() : 0);
-			ViewUtils.setNewMargin(recyclerView, rect.left, null, rect.right, null);
-			ViewUtils.setNewPadding(recyclerView, null, top, null, rect.bottom);
+			int top = insets.top + (C.API_R ? getActionBarHeight() : 0);
+			ViewUtils.setNewMargin(recyclerView, insets.left, null, insets.right, null);
+			ViewUtils.setNewPadding(recyclerView, null, top, null, insets.bottom);
 			return true;
 		}
 		return false;
