@@ -107,6 +107,7 @@
 	<string name="default_name_cant_be_hidden">Нельзя скрыть имя по умолчанию</string>
 	<string name="default_starting_board">Раздел по умолчанию</string>
 	<string name="delete">Удалить</string>
+	<string name="delete_on_exit">Удалять при выходе</string>
 	<string name="deleted_posts_will_be_deleted__sentence">Удалённые сообщение будут удалены навсегда.</string>
 	<string name="description">Описание</string>
 	<string name="detailed_file_name">Подробное имя файла</string>

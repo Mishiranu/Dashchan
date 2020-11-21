@@ -107,6 +107,7 @@
 	<string name="default_name_cant_be_hidden">Default name can\'t be hidden</string>
 	<string name="default_starting_board">Default starting board</string>
 	<string name="delete">Delete</string>
+	<string name="delete_on_exit">Delete on exit</string>
 	<string name="deleted_posts_will_be_deleted__sentence">Deleted posts will be permanently deleted.</string>
 	<string name="description">Description</string>
 	<string name="detailed_file_name">Detailed file name</string>

@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.xmlpull.v1.XmlPullParser;
@@ -70,6 +71,7 @@ public class ChanDatabase {
 			interface Flags {
 				int DELETED = 0x00000001;
 				int BLOCKED = 0x00000002;
+				int DELETE_ON_EXIT = 0x00000004;
 			}
 		}
 
@@ -191,12 +193,14 @@ public class ChanDatabase {
 		public String value;
 		public String title;
 		public boolean blocked;
+		public boolean deleteOnExit;
 
 		public CookieItem update(CookieCursor cursor) {
 			name = cursor.getString(cursor.nameIndex);
 			value = cursor.getString(cursor.valueIndex);
 			title = cursor.getString(cursor.titleIndex);
 			blocked = FlagUtils.get(cursor.getInt(cursor.flagsIndex), Schema.Cookies.Flags.BLOCKED);
+			deleteOnExit = FlagUtils.get(cursor.getInt(cursor.flagsIndex), Schema.Cookies.Flags.DELETE_ON_EXIT);
 			return this;
 		}
 
@@ -206,6 +210,7 @@ public class ChanDatabase {
 			cookieItem.value = value;
 			cookieItem.title = title;
 			cookieItem.blocked = blocked;
+			cookieItem.deleteOnExit = deleteOnExit;
 			return cookieItem;
 		}
 	}
@@ -285,7 +290,7 @@ public class ChanDatabase {
 									String title = jsonObject.optString("displayName");
 									boolean blocked = jsonObject.optBoolean("blocked");
 									setCookie(chanName, name, value, title);
-									setCookieBlocked(chanName, name, blocked);
+									setCookieState(chanName, name, blocked, null);
 								}
 							}
 						}
@@ -294,6 +299,7 @@ public class ChanDatabase {
 				}
 			}
 		}
+		deleteCookiesOnExit();
 	}
 
 	private static class Helper extends SQLiteOpenHelper {
@@ -661,20 +667,27 @@ public class ChanDatabase {
 		}
 	}
 
-	public void setCookieBlocked(@NonNull String chanName, @NonNull String name, boolean blocked) {
+	public void setCookieState(@NonNull String chanName, @NonNull String name, Boolean blocked, Boolean deleteOnExit) {
 		Objects.requireNonNull(chanName);
 		Objects.requireNonNull(name);
+		if (blocked == null && deleteOnExit == null) {
+			return;
+		}
 		Expression.Filter filter = Expression.filter()
 				.equals(Schema.Cookies.Columns.CHAN_NAME, chanName)
 				.equals(Schema.Cookies.Columns.NAME, name)
 				.build();
 		database.beginTransaction();
 		try {
+			int clearFlags = (blocked != null ? Schema.Cookies.Flags.BLOCKED : 0) |
+					(deleteOnExit != null ? Schema.Cookies.Flags.DELETE_ON_EXIT : 0);
+			int setFlags = (blocked != null && blocked ? Schema.Cookies.Flags.BLOCKED : 0) |
+					(deleteOnExit != null && deleteOnExit ? Schema.Cookies.Flags.DELETE_ON_EXIT : 0);
 			database.execSQL("UPDATE " + Schema.Cookies.TABLE_NAME + " " +
-					"SET " + Schema.Cookies.Columns.FLAGS + " = " + Schema.Cookies.Columns.FLAGS + " " +
-					(blocked ? "| " : "& ~") + Schema.Cookies.Flags.BLOCKED + " " +
+					"SET " + Schema.Cookies.Columns.FLAGS + " = " +
+					Schema.Cookies.Columns.FLAGS + " & " + ~clearFlags + " | " + setFlags + " " +
 					"WHERE " + filter.value, filter.args);
-			if (!blocked) {
+			if (setFlags == 0) {
 				boolean delete;
 				String[] projection = {Schema.Cookies.Columns.FLAGS};
 				try (Cursor cursor = database.query(Schema.Cookies.TABLE_NAME, projection,
@@ -689,6 +702,25 @@ public class ChanDatabase {
 		} finally {
 			database.endTransaction();
 		}
+	}
+
+	private void deleteCookiesOnExit() {
+		database.execSQL("UPDATE " + Schema.Cookies.TABLE_NAME + " " +
+				"SET " + Schema.Cookies.Columns.VALUE + " = '', " +
+				Schema.Cookies.Columns.FLAGS + " = " +
+				Schema.Cookies.Columns.FLAGS + " | " + Schema.Cookies.Flags.DELETED + " " +
+				"WHERE " + Schema.Cookies.Columns.FLAGS + " & " + Schema.Cookies.Flags.DELETE_ON_EXIT);
+	}
+
+	private final AtomicInteger requireCookiesReferenceCount = new AtomicInteger(0);
+
+	public Runnable requireCookies() {
+		requireCookiesReferenceCount.incrementAndGet();
+		return () -> {
+			if (requireCookiesReferenceCount.decrementAndGet() == 0) {
+				deleteCookiesOnExit();
+			}
+		};
 	}
 
 	public String getCookieChecked(@NonNull String chanName, @NonNull String name) {

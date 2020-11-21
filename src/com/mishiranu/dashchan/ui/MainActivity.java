@@ -50,6 +50,7 @@ import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadUpdateTask;
 import com.mishiranu.dashchan.content.async.TaskViewModel;
+import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
@@ -122,7 +123,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 	private PageItem currentPageItem;
 
 	private UiManager uiManager;
-	private RetainViewModel retainViewModel;
+	private InstanceViewModel instanceViewModel;
 	private WatcherService.Client watcherServiceClient;
 	private final ExtensionsTrustLoop.State extensionsTrustLoopState = new ExtensionsTrustLoop.State();
 	private DownloadDialog downloadDialog;
@@ -301,7 +302,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 					savedInstanceState.getBoolean(EXTRA_DRAWER_CHAN_SELECT_MODE));
 		}
 
-		retainViewModel = new ViewModelProvider(this).get(RetainViewModel.class);
+		instanceViewModel = new ViewModelProvider(this).get(InstanceViewModel.class);
 		storageRequestState = savedInstanceState != null ? StorageRequestState
 				.valueOf(savedInstanceState.getString(EXTRA_STORAGE_REQUEST_STATE)) : StorageRequestState.NONE;
 
@@ -1008,7 +1009,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 				retainIds.add(retainId);
 			}
 			Iterator<HashMap.Entry<String, ListPage.Retainable>> iterator =
-					retainViewModel.extras.entrySet().iterator();
+					instanceViewModel.extras.entrySet().iterator();
 			while (iterator.hasNext()) {
 				HashMap.Entry<String, ListPage.Retainable> entry = iterator.next();
 				if (!retainIds.contains(entry.getKey())) {
@@ -1071,15 +1072,15 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 
 	@Override
 	public ListPage.Retainable getRetainableExtra(String retainId) {
-		return retainViewModel.extras.get(retainId);
+		return instanceViewModel.extras.get(retainId);
 	}
 
 	@Override
 	public void storeRetainableExtra(String retainId, ListPage.Retainable extra) {
 		if (extra != null) {
-			retainViewModel.extras.put(retainId, extra);
+			instanceViewModel.extras.put(retainId, extra);
 		} else {
-			retainViewModel.extras.remove(retainId);
+			instanceViewModel.extras.remove(retainId);
 		}
 	}
 
@@ -2122,8 +2123,9 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		public void onDrawerStateChanged(int newState) {}
 	}
 
-	public static class RetainViewModel extends ViewModel {
+	public static class InstanceViewModel extends ViewModel {
 		private final HashMap<String, ListPage.Retainable> extras = new HashMap<>();
+		private final Runnable cookiesRequirement = ChanDatabase.getInstance().requireCookies();
 
 		@Override
 		protected void onCleared() {
@@ -2131,6 +2133,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 				retainable.clear();
 			}
 			extras.clear();
+			cookiesRequirement.run();
 		}
 	}
 }

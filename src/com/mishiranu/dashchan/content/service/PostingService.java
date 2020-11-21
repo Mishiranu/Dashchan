@@ -3,7 +3,6 @@ package com.mishiranu.dashchan.content.service;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -26,6 +25,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.SendPostTask;
+import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.content.database.CommonDatabase;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PendingUserPost;
@@ -48,7 +48,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class PostingService extends Service implements SendPostTask.Callback<PostingService.Key> {
+public class PostingService extends BaseService implements SendPostTask.Callback<PostingService.Key> {
 	private static final String ACTION_CANCEL = "cancel";
 
 	private final HashMap<Key, ArrayList<Callback>> callbacks = new HashMap<>();
@@ -170,6 +170,7 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
 		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getPackageName() + ":PostingWakeLock");
 		wakeLock.setReferenceCounted(false);
+		addOnDestroyListener(ChanDatabase.getInstance().requireCookies());
 		notificationsWorker = new Thread(notificationsRunnable, "PostingServiceNotificationThread");
 		notificationsWorker.start();
 	}
@@ -219,7 +220,6 @@ public class PostingService extends Service implements SendPostTask.Callback<Pos
 				TaskState taskState = notificationData.taskState;
 				NotificationCompat.Builder builder = taskState.builder;
 				if (notificationData.type == NotificationData.Type.CREATE) {
-					builder.setOngoing(true);
 					builder.setSmallIcon(android.R.drawable.stat_sys_upload);
 					PendingIntent cancelIntent = PendingIntent.getBroadcast(this, 0, new Intent(this, Receiver.class)
 							.setAction(ACTION_CANCEL), PendingIntent.FLAG_UPDATE_CURRENT);

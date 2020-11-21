@@ -3,7 +3,6 @@ package com.mishiranu.dashchan.content.service;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -17,6 +16,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.async.ReadFileTask;
+import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.ui.MainActivity;
 import com.mishiranu.dashchan.util.AndroidUtils;
@@ -27,7 +27,7 @@ import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.io.File;
 
-public class AudioPlayerService extends Service implements MediaPlayer.OnCompletionListener,
+public class AudioPlayerService extends BaseService implements MediaPlayer.OnCompletionListener,
 		MediaPlayer.OnErrorListener, ReadFileTask.FileCallback {
 	private static final String ACTION_START = "start";
 	private static final String ACTION_CANCEL = "cancel";
@@ -102,6 +102,7 @@ public class AudioPlayerService extends Service implements MediaPlayer.OnComplet
 		PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
 		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, getPackageName() + ":AudioPlayerWakeLock");
 		wakeLock.setReferenceCounted(false);
+		addOnDestroyListener(ChanDatabase.getInstance().requireCookies());
 	}
 
 	private void notifyToggle() {

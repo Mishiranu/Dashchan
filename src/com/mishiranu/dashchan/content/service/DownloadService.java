@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -18,6 +17,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.service.notification.StatusBarNotification;
 import android.util.DisplayMetrics;
 import android.util.Pair;
 import androidx.core.app.NotificationCompat;
@@ -33,6 +33,7 @@ import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.async.ReadFileTask;
+import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.ui.MainActivity;
@@ -65,7 +66,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class DownloadService extends Service implements ReadFileTask.Callback {
+public class DownloadService extends BaseService implements ReadFileTask.Callback {
 	private static final Executor SINGLE_THREAD_EXECUTOR = Executors.newSingleThreadExecutor();
 
 	private static final String ACTION_CANCEL = "cancel";
@@ -135,6 +136,7 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
 				getPackageName() + ":DownloadServiceWakeLock");
 		wakeLock.setReferenceCounted(false);
+		addOnDestroyListener(ChanDatabase.getInstance().requireCookies());
 	}
 
 	@Override
@@ -1023,12 +1025,32 @@ public class DownloadService extends Service implements ReadFileTask.Callback {
 		} else {
 			builder.setTicker(headsUp ? contentTitle : null);
 		}
-		builder.setOngoing(foreground);
-		builder.setAutoCancel(false);
-		if (foreground) {
-			startStopForeground(true, builder.build());
-		} else {
-			startStopForeground(false, null);
+		startStopForeground(foreground, foreground ? builder.build() : null);
+		if (!foreground) {
+			if (C.API_NOUGAT) {
+				// Await notification removed so it could be dismissed by user
+				for (int i = 0; i < 10; i++) {
+					StatusBarNotification[] notifications = notificationManager.getActiveNotifications();
+					if (notifications == null) {
+						break;
+					}
+					boolean found = false;
+					for (StatusBarNotification notification : notifications) {
+						if (notification.getId() == C.NOTIFICATION_ID_DOWNLOADING) {
+							found = true;
+							break;
+						}
+					}
+					if (!found) {
+						break;
+					}
+					try {
+						Thread.sleep(50);
+					} catch (InterruptedException e) {
+						return;
+					}
+				}
+			}
 			notificationManager.notify(C.NOTIFICATION_ID_DOWNLOADING, builder.build());
 		}
 	}

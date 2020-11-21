@@ -1,6 +1,5 @@
 package com.mishiranu.dashchan.content.service;
 
-import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.SystemClock;
@@ -18,6 +17,7 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.WatcherNotifications;
 import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.async.ReadPostsTask;
+import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.content.database.PagesDatabase;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PendingUserPost;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-public class WatcherService extends Service {
+public class WatcherService extends BaseService {
 	public static class Counter {
 		public enum State {ENABLED, UNAVAILABLE, DISABLED}
 
@@ -693,6 +693,7 @@ public class WatcherService extends Service {
 
 		WatcherNotifications.configure(this);
 		updateNotificationColor();
+		addOnDestroyListener(ChanDatabase.getInstance().requireCookies());
 		Preferences.PREFERENCES.registerOnSharedPreferenceChangeListener(preferencesListener);
 		FavoritesStorage.getInstance().getObservable().register(favoritesObserver);
 		for (FavoritesStorage.FavoriteItem favoriteItem : FavoritesStorage.getInstance().getThreads(null)) {
