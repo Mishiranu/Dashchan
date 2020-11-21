@@ -3,10 +3,8 @@ package com.mishiranu.dashchan.content.async;
 import android.os.SystemClock;
 import chan.http.HttpRequest;
 import chan.http.MultipartEntity;
-import com.mishiranu.dashchan.util.IOUtils;
 
-public class TimedProgressHandler implements IOUtils.CopyProgressListener, HttpRequest.OutputListener,
-		MultipartEntity.OpenableOutputListener {
+public class TimedProgressHandler implements HttpRequest.OutputListener, MultipartEntity.OpenableOutputListener {
 	private final long[] lastProgressUpdate = new long[3];
 	private long progressMax = -1;
 
@@ -19,8 +17,7 @@ public class TimedProgressHandler implements IOUtils.CopyProgressListener, HttpR
 		return false;
 	}
 
-	@Override
-	public void onProgressUpdate(long count) {
+	public void updateProgress(long count) {
 		if (checkNeedToUpdate(0, count, progressMax)) {
 			onProgressChange(count, progressMax);
 		}

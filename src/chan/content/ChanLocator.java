@@ -513,9 +513,9 @@ public class ChanLocator implements Chan.Linked {
 		return builder.build();
 	}
 
-	public final Uri setScheme(Uri uri) {
+	public final Uri setSchemeIfEmpty(Uri uri, String fallback) {
 		if (uri != null && StringUtils.isEmpty(uri.getScheme())) {
-			return uri.buildUpon().scheme(getPreferredScheme()).build();
+			return uri.buildUpon().scheme(fallback != null ? fallback : getPreferredScheme()).build();
 		}
 		return uri;
 	}

@@ -75,14 +75,14 @@ public class ExtensionsTrustLoop {
 					SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
 			message.append("SHA-256 fingerprint:\n").append(fingerprints);
 			AlertDialog dialog = new AlertDialog.Builder(context)
-					.setTitle(extensionItem.extensionName).setMessage(message)
+					.setTitle(extensionItem.title).setMessage(message)
 					.setCancelable(false)
 					.setPositiveButton(android.R.string.ok, (d, w) -> {
-						ChanManager.getInstance().changeUntrustedExtensionState(extensionItem.extensionName, true);
+						ChanManager.getInstance().changeUntrustedExtensionState(extensionItem.name, true);
 						handleUntrustedExtensions(context, state);
 					})
 					.setNegativeButton(android.R.string.cancel, (d, w) -> {
-						ChanManager.getInstance().changeUntrustedExtensionState(extensionItem.extensionName, false);
+						ChanManager.getInstance().changeUntrustedExtensionState(extensionItem.name, false);
 						handleUntrustedExtensions(context, state);
 					})
 					.setNeutralButton(R.string.details, (d, w) -> {

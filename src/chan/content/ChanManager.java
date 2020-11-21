@@ -66,6 +66,7 @@ public class ChanManager {
 
 	private static final String FEATURE_CHAN_EXTENSION = "chan.extension";
 	private static final String META_CHAN_EXTENSION_NAME = "chan.extension.name";
+	private static final String META_CHAN_EXTENSION_TITLE = "chan.extension.title";
 	private static final String META_CHAN_EXTENSION_VERSION = "chan.extension.version";
 	private static final String META_CHAN_EXTENSION_ICON = "chan.extension.icon";
 	private static final String META_CHAN_EXTENSION_SOURCE = "chan.extension.source";
@@ -76,6 +77,7 @@ public class ChanManager {
 
 	private static final String FEATURE_LIB_EXTENSION = "lib.extension";
 	private static final String META_LIB_EXTENSION_NAME = "lib.extension.name";
+	private static final String META_LIB_EXTENSION_TITLE = "lib.extension.title";
 	private static final String META_LIB_EXTENSION_SOURCE = "lib.extension.source";
 
 	@SuppressWarnings("deprecation")
@@ -137,14 +139,15 @@ public class ChanManager {
 		public enum TrustState {UNTRUSTED, TRUSTED, DISCARDED}
 
 		public final Type type;
-		public final String extensionName;
+		public final String name;
+		public final String title;
 		public final TrustState trustState;
 		public final String packageName;
 		public final String versionName;
 		public final long versionCode;
 		private final ApplicationInfo applicationInfo;
 		public final Fingerprints fingerprints;
-		public final int version;
+		public final int apiVersion;
 		public final boolean supported;
 		public final int iconResId;
 		public final Uri updateUri;
@@ -158,19 +161,20 @@ public class ChanManager {
 			return applicationInfo.nativeLibraryDir;
 		}
 
-		private ExtensionItem(Type type, String extensionName, TrustState trustState,
+		private ExtensionItem(Type type, String name, String title, TrustState trustState,
 				String packageName, String versionName, long versionCode, ApplicationInfo applicationInfo,
-				Fingerprints fingerprints, int version, boolean supported, int iconResId, Uri updateUri,
+				Fingerprints fingerprints, int apiVersion, boolean supported, int iconResId, Uri updateUri,
 				String classConfiguration, String classPerformer, String classLocator, String classMarkup) {
 			this.type = type;
-			this.extensionName = extensionName;
+			this.name = name;
+			this.title = title;
 			this.trustState = trustState;
 			this.packageName = packageName;
 			this.versionName = versionName;
 			this.versionCode = versionCode;
 			this.applicationInfo = applicationInfo;
 			this.fingerprints = fingerprints;
-			this.version = version;
+			this.apiVersion = apiVersion;
 			this.supported = supported;
 			this.iconResId = iconResId;
 			this.updateUri = updateUri;
@@ -181,19 +185,21 @@ public class ChanManager {
 			this.classMarkup = classMarkup;
 		}
 
-		public ExtensionItem(String chanName, String packageName,
+		public ExtensionItem(String name, String title, String packageName,
 				String versionName, long versionCode, ApplicationInfo applicationInfo,
-				Fingerprints fingerprints, int version, boolean supported, int iconResId, Uri updateUri,
+				Fingerprints fingerprints, int apiVersion, boolean supported, int iconResId, Uri updateUri,
 				String classConfiguration, String classPerformer, String classLocator, String classMarkup) {
-			this(Type.CHAN, chanName, TrustState.UNTRUSTED, packageName, versionName, versionCode, applicationInfo,
-					fingerprints, version, supported, iconResId, updateUri,
+			this(Type.CHAN, name, title, TrustState.UNTRUSTED,
+					packageName, versionName, versionCode, applicationInfo,
+					fingerprints, apiVersion, supported, iconResId, updateUri,
 					classConfiguration, classPerformer, classLocator, classMarkup);
 		}
 
-		public ExtensionItem(String libName, String packageName,
+		public ExtensionItem(String name, String title, String packageName,
 				String versionName, long versionCode, ApplicationInfo applicationInfo,
 				Fingerprints fingerprints, Uri updateUri) {
-			this(Type.LIBRARY, libName, TrustState.UNTRUSTED, packageName, versionName, versionCode, applicationInfo,
+			this(Type.LIBRARY, name, title, TrustState.UNTRUSTED,
+					packageName, versionName, versionCode, applicationInfo,
 					fingerprints, 0, true, 0, updateUri, null, null, null, null);
 		}
 
@@ -202,9 +208,9 @@ public class ChanManager {
 				throw new IllegalStateException();
 			}
 			TrustState trustState = trusted ? TrustState.TRUSTED : TrustState.DISCARDED;
-			return new ExtensionItem(type, extensionName, trustState,
+			return new ExtensionItem(type, name, title, trustState,
 					packageName, versionName, versionCode, applicationInfo,
-					fingerprints, version, supported, iconResId, updateUri,
+					fingerprints, apiVersion, supported, iconResId, updateUri,
 					classConfiguration, classPerformer, classLocator, classMarkup);
 		}
 	}
@@ -236,7 +242,7 @@ public class ChanManager {
 	private static Map<String, Extension> extensionsMap(List<Extension> extensions) {
 		LinkedHashMap<String, Extension> map = new LinkedHashMap<>();
 		for (Extension extension : extensions) {
-			map.put(extension.item.extensionName, extension);
+			map.put(extension.item.name, extension);
 		}
 		return Collections.unmodifiableMap(map);
 	}
@@ -275,7 +281,7 @@ public class ChanManager {
 							applicationFingerprints, usedExtensionNames, Collections.emptyMap());
 					if (extension != null) {
 						extensions.add(extension);
-						usedExtensionNames.add(extension.item.extensionName);
+						usedExtensionNames.add(extension.item.name);
 					}
 				}
 			}
@@ -320,7 +326,7 @@ public class ChanManager {
 							applicationFingerprints, Collections.emptySet(), extensions);
 					if (newExtension != null) {
 						boolean newTrusted = newExtension.item.trustState == ExtensionItem.TrustState.TRUSTED;
-						Extension oldExtension = extensions.get(newExtension.item.extensionName);
+						Extension oldExtension = extensions.get(newExtension.item.name);
 						if (oldExtension == null) {
 							updateExtensions(newExtension, null, true);
 							for (Callback callback : observable) {
@@ -356,7 +362,7 @@ public class ChanManager {
 					if (packageName.equals(extension.item.packageName)) {
 						if (extension.item.type == ExtensionItem.Type.CHAN) {
 							if (!intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)) {
-								updateExtensions(null, extension.item.extensionName,
+								updateExtensions(null, extension.item.name,
 										extension.item.trustState == ExtensionItem.TrustState.TRUSTED);
 								if (extension.chan != null) {
 									for (Callback callback : observable) {
@@ -384,7 +390,7 @@ public class ChanManager {
 		}
 		LinkedHashMap<String, Extension> extensions = new LinkedHashMap<>(this.extensions);
 		if (newExtension != null) {
-			extensions.put(newExtension.item.extensionName, newExtension);
+			extensions.put(newExtension.item.name, newExtension);
 		}
 		if (deleteExtensionName != null) {
 			extensions.remove(deleteExtensionName);
@@ -393,7 +399,7 @@ public class ChanManager {
 		for (String chanName : orderedChanNames) {
 			Extension extension = extensions.get(chanName);
 			if (extension != null) {
-				ordered.put(extension.item.extensionName, extension);
+				ordered.put(extension.item.name, extension);
 			}
 		}
 		extensions.keySet().removeAll(orderedChanNames);
@@ -415,7 +421,7 @@ public class ChanManager {
 								archiveChanNames = new ArrayList<>();
 								archiveMap.put(chanName, archiveChanNames);
 							}
-							archiveChanNames.add(extension.item.extensionName);
+							archiveChanNames.add(extension.item.name);
 						}
 					}
 				}
@@ -472,30 +478,35 @@ public class ChanManager {
 		}
 		long versionCode = PackageInfoCompat.getLongVersionCode(packageInfo);
 		Bundle data = applicationInfo.metaData;
-		String extensionName = data.getString(chanExtension ? META_CHAN_EXTENSION_NAME
+		String name = data.getString(chanExtension ? META_CHAN_EXTENSION_NAME
 				: libExtension ? META_LIB_EXTENSION_NAME : null);
-		if (extensionName == null || !VALID_EXTENSION_NAME.matcher(extensionName).matches() ||
-				(chanExtension ? RESERVED_CHAN_NAMES : RESERVED_EXTENSION_NAMES).contains(extensionName)) {
-			Log.persistent().write("Invalid extension name: " + extensionName);
+		if (name == null || !VALID_EXTENSION_NAME.matcher(name).matches() ||
+				(chanExtension ? RESERVED_CHAN_NAMES : RESERVED_EXTENSION_NAMES).contains(name)) {
+			Log.persistent().write("Invalid extension name: " + name);
 			return null;
 		}
 		boolean nameConflict;
-		if (usedExtensionNames.contains(extensionName)) {
+		if (usedExtensionNames.contains(name)) {
 			nameConflict = true;
 		} else {
-			Extension extension = extensions.get(extensionName);
+			Extension extension = extensions.get(name);
 			nameConflict = extension != null && !extension.item.packageName.equals(packageInfo.packageName);
 		}
 		if (nameConflict) {
-			Log.persistent().write("Extension name conflict: " + extensionName + " already exists");
+			Log.persistent().write("Extension name conflict: " + name + " already exists");
 			return null;
+		}
+		String title = data.getString(chanExtension ? META_CHAN_EXTENSION_TITLE
+				: libExtension ? META_LIB_EXTENSION_TITLE : null);
+		if (title == null) {
+			title = name;
 		}
 		Fingerprints fingerprints = extractFingerprints(packageInfo);
 		ExtensionItem extensionItem;
 		if (chanExtension) {
 			int invalidVersion = Integer.MIN_VALUE;
-			int version = data.getInt(META_CHAN_EXTENSION_VERSION, invalidVersion);
-			if (version == invalidVersion) {
+			int apiVersion = data.getInt(META_CHAN_EXTENSION_VERSION, invalidVersion);
+			if (apiVersion == invalidVersion) {
 				Log.persistent().write("Invalid extension version");
 				return null;
 			}
@@ -515,17 +526,16 @@ public class ChanManager {
 			classPerformer = extendClassName(classPerformer, packageInfo.packageName);
 			classLocator = extendClassName(classLocator, packageInfo.packageName);
 			classMarkup = extendClassName(classMarkup, packageInfo.packageName);
-			boolean supported = version >= MIN_VERSION && version <= MAX_VERSION;
-			extensionItem = new ExtensionItem(extensionName, packageInfo.packageName,
+			boolean supported = apiVersion >= MIN_VERSION && apiVersion <= MAX_VERSION;
+			extensionItem = new ExtensionItem(name, title, packageInfo.packageName,
 					packageInfo.versionName, versionCode, applicationInfo,
-					fingerprints, version, supported, iconResId, updateUri,
+					fingerprints, apiVersion, supported, iconResId, updateUri,
 					classConfiguration, classPerformer, classLocator, classMarkup);
 		} else if (libExtension) {
 			String source = data.getString(META_LIB_EXTENSION_SOURCE);
 			Uri updateUri = source != null ? Uri.parse(source) : null;
-			extensionItem = new ExtensionItem(extensionName, packageInfo.packageName,
-					packageInfo.versionName, versionCode, applicationInfo,
-					fingerprints, updateUri);
+			extensionItem = new ExtensionItem(name, title, packageInfo.packageName,
+					packageInfo.versionName, versionCode, applicationInfo, fingerprints, updateUri);
 		} else {
 			throw new RuntimeException();
 		}
@@ -544,7 +554,7 @@ public class ChanManager {
 
 	private static Chan loadChan(ExtensionItem chanItem, PackageManager packageManager) {
 		if (chanItem.supported) {
-			String chanName = chanItem.extensionName;
+			String chanName = chanItem.name;
 			try {
 				String nativeLibraryDir = chanItem.applicationInfo.nativeLibraryDir;
 				if (nativeLibraryDir != null && !new File(nativeLibraryDir).exists()) {
@@ -574,8 +584,8 @@ public class ChanManager {
 		return null;
 	}
 
-	private void loadLibrary(ExtensionItem libItem) {
-		switch (libItem.extensionName) {
+	private void loadLibrary(ExtensionItem libraryItem) {
+		switch (libraryItem.name) {
 			case EXTENSION_NAME_LIB_WEBM: {
 				if (Preferences.isUseVideoPlayer()) {
 					VideoPlayer.loadLibraries(MainApplication.getInstance());
@@ -730,8 +740,8 @@ public class ChanManager {
 		return null;
 	}
 
-	public ExtensionItem getLibExtension(String libName) {
-		Extension extension = extensions.get(libName);
+	public ExtensionItem getLibraryExtension(String libraryName) {
+		Extension extension = extensions.get(libraryName);
 		return extension != null && extension.item.type == ExtensionItem.Type.LIBRARY ? extension.item : null;
 	}
 
@@ -784,7 +794,7 @@ public class ChanManager {
 		if (host != null) {
 			for (Extension extension : extensions.values()) {
 				if (extension.chan != null && extension.chan.locator.isChanHost(host)) {
-					return extension.item.extensionName;
+					return extension.item.name;
 				}
 			}
 		}

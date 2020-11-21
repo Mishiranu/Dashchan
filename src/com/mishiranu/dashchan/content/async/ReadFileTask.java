@@ -13,7 +13,6 @@ import chan.http.HttpResponse;
 import chan.util.DataFile;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,6 +20,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 	private static final int CONNECT_TIMEOUT = 15000;
@@ -52,6 +54,7 @@ public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 	private final DataFile toFile;
 	private final File cachedMediaFile;
 	private final boolean overwrite;
+	private final byte[] checkSha256;
 
 	private ErrorItem errorItem;
 
@@ -67,21 +70,21 @@ public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 	public static ReadFileTask createCachedMediaFile(Context context, FileCallback callback, Chan chan,
 			Uri fromUri, File cachedMediaFile) {
 		DataFile toFile = DataFile.obtain(context, DataFile.Target.CACHE, cachedMediaFile.getName());
-		return new ReadFileTask(callback, chan, fromUri, toFile, null, true);
+		return new ReadFileTask(callback, chan, fromUri, toFile, null, true, null);
 	}
 
 	public static ReadFileTask createShared(Callback callback, Chan chan,
-			Uri fromUri, DataFile toFile, boolean overwrite) {
+			Uri fromUri, DataFile toFile, boolean overwrite, byte[] checkSha256) {
 		File cachedMediaFile = CacheManager.getInstance().getMediaFile(fromUri, true);
 		if (cachedMediaFile == null || !cachedMediaFile.exists() ||
 				CacheManager.getInstance().cancelCachedMediaBusy(cachedMediaFile)) {
 			cachedMediaFile = null;
 		}
-		return new ReadFileTask(callback, chan, fromUri, toFile, cachedMediaFile, overwrite);
+		return new ReadFileTask(callback, chan, fromUri, toFile, cachedMediaFile, overwrite, checkSha256);
 	}
 
 	private ReadFileTask(Callback callback, Chan chan, Uri fromUri, DataFile toFile,
-			File cachedMediaFile, boolean overwrite) {
+			File cachedMediaFile, boolean overwrite, byte[] checkSha256) {
 		super(chan);
 		this.callback = callback;
 		this.chan = chan;
@@ -89,6 +92,7 @@ public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 		this.toFile = toFile;
 		this.cachedMediaFile = cachedMediaFile;
 		this.overwrite = overwrite;
+		this.checkSha256 = checkSha256;
 	}
 
 	@Override
@@ -96,11 +100,34 @@ public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 		callback.onStartDownloading();
 	}
 
+	private static void copyStream(InputStream input, OutputStream output,
+			TimedProgressHandler progressHandler, MessageDigest digest) throws IOException {
+		byte[] data = new byte[8192];
+		int count;
+		long read = 0;
+		while ((count = input.read(data)) != -1) {
+			output.write(data, 0, count);
+			read += count;
+			progressHandler.updateProgress(read);
+			if (digest != null) {
+				digest.update(data, 0, count);
+			}
+		}
+	}
+
 	@Override
 	protected Boolean run(HttpHolder holder) {
 		boolean success = false;
 		try {
 			loadingStarted = true;
+			MessageDigest digest = null;
+			if (checkSha256 != null) {
+				try {
+					digest = MessageDigest.getInstance("SHA-256");
+				} catch (NoSuchAlgorithmException e) {
+					throw new RuntimeException(e);
+				}
+			}
 			// noinspection StatementWithEmptyBody
 			if (!overwrite && toFile.exists()) {
 				// Do nothing
@@ -108,7 +135,7 @@ public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 				progressHandler.setInputProgressMax(cachedMediaFile.length());
 				try (FileInputStream input = new FileInputStream(cachedMediaFile);
 						OutputStream output = toFile.openOutputStream()) {
-					IOUtils.copyStream(input, output, progressHandler);
+					copyStream(input, output, progressHandler, digest);
 				} catch (IOException e) {
 					ErrorItem.Type type = getErrorTypeFromExceptionAndHandle(e);
 					errorItem = new ErrorItem(type != null ? type : ErrorItem.Type.UNKNOWN);
@@ -136,7 +163,7 @@ public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 				progressHandler.setInputProgressMax(response.getLength());
 				try (InputStream input = response.open();
 						OutputStream output = toFile.openOutputStream()) {
-					IOUtils.copyStream(input, output, progressHandler);
+					copyStream(input, output, progressHandler, digest);
 				} catch (IOException e) {
 					ErrorItem.Type errorType = getErrorTypeFromExceptionAndHandle(e);
 					if (errorType != null) {
@@ -147,6 +174,13 @@ public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 					}
 				} finally {
 					response.cleanupAndDisconnect();
+				}
+			}
+			if (digest != null) {
+				byte[] sha256 = digest.digest();
+				if (!Arrays.equals(sha256, checkSha256)) {
+					errorItem = new ErrorItem(ErrorItem.Type.INVALID_RESPONSE);
+					return false;
 				}
 			}
 			success = true;

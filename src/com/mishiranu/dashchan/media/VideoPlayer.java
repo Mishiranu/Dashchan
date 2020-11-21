@@ -40,7 +40,7 @@ public class VideoPlayer {
 				return new Pair<>(true, null);
 			}
 			ChanManager.ExtensionItem extensionItem = ChanManager.getInstance()
-					.getLibExtension(ChanManager.EXTENSION_NAME_LIB_WEBM);
+					.getLibraryExtension(ChanManager.EXTENSION_NAME_LIB_WEBM);
 			if (extensionItem != null) {
 				String dir = extensionItem.getNativeLibraryDir();
 				if (dir != null) {

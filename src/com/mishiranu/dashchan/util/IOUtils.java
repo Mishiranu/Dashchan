@@ -67,26 +67,11 @@ public class IOUtils {
 		return readExactly(input, buffer, offset, count) == count;
 	}
 
-	public interface CopyProgressListener {
-		void onProgressUpdate(long count);
-	}
-
 	public static void copyStream(InputStream from, OutputStream to) throws IOException {
 		byte[] data = new byte[8192];
 		int count;
 		while ((count = from.read(data)) != -1) {
 			to.write(data, 0, count);
-		}
-	}
-
-	public static void copyStream(InputStream from, OutputStream to, CopyProgressListener listener) throws IOException {
-		byte[] data = new byte[8192];
-		int count;
-		long read = 0;
-		while ((count = from.read(data)) != -1) {
-			to.write(data, 0, count);
-			read += count;
-			listener.onProgressUpdate(read);
 		}
 	}
 

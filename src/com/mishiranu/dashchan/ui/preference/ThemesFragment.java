@@ -413,7 +413,7 @@ public class ThemesFragment extends BaseListFragment {
 		@Override
 		protected Pair<ErrorItem, List<JSONObject>> run(HttpHolder holder) {
 			try {
-				Uri uri = Chan.getFallback().locator.setScheme(Uri.parse(BuildConfig.URI_THEMES));
+				Uri uri = Chan.getFallback().locator.setSchemeIfEmpty(Uri.parse(BuildConfig.URI_THEMES), null);
 				int redirects = 0;
 				while (redirects++ < 5) {
 					JSONObject jsonObject = new JSONObject(new HttpRequest(uri, holder).perform().readString());
@@ -422,7 +422,7 @@ public class ThemesFragment extends BaseListFragment {
 					}
 					String redirect = CommonUtils.optJsonString(jsonObject, "redirect");
 					if (redirect != null) {
-						uri = ReadUpdateTask.normalizeUri(Uri.parse(redirect), uri);
+						uri = ReadUpdateTask.normalizeRelativeUri(uri, redirect);
 						continue;
 					}
 					JSONArray jsonArray = jsonObject.getJSONArray("themes");

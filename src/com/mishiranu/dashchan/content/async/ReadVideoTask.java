@@ -128,7 +128,7 @@ public class ReadVideoTask extends HttpHolderTask<long[], Boolean> {
 					file.write(buffer, 0, count);
 					read += count;
 					if (start <= 0) {
-						progressHandler.onProgressUpdate(read);
+						progressHandler.updateProgress(read);
 					} else {
 						notifyProgress(new long[] {read});
 					}
