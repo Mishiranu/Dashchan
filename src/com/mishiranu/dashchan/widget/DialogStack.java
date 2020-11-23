@@ -415,6 +415,11 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 				}
 
 				@Override
+				public int clampViewPositionHorizontal(@NonNull View child, int left, int dx) {
+					return child.getLeft();
+				}
+
+				@Override
 				public int clampViewPositionVertical(@NonNull View child, int top, int dy) {
 					int layoutTop = getChildInitialTop(child);
 					boolean scrolled = intercepted || callback.isScrolled();

@@ -1445,8 +1445,7 @@ public class DialogUnit {
 						.create();
 			});
 		} else if (canArchiveLocal) {
-			Chan archiveChan = canArchiveLocal ? null : Chan.get(archiveChanNames.get(0));
-			performSendArchiveThreadInternal(context, fragmentManager, state, archiveChan.name, posts);
+			performSendArchiveThreadInternal(context, fragmentManager, state, null, posts);
 		}
 	}
 

@@ -121,17 +121,17 @@ public class SummaryLayout implements CommentTextView.PrepareToCopyListener, Vie
 				SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
 		addTestLines(builder, "Line", titleFirst, titleSecond);
 		int target = 2 * singleHeight + padding;
+		float lastTextSize = 0f;
 		while (true) {
 			textView.setText(builder);
 			textView.measure(unspecifiedSpec, unspecifiedSpec);
 			int height = textView.getMeasuredHeight();
-			if (height == target) {
+			float newTextSize = paddingSpan.textSize + (target - height) / 2f;
+			if (newTextSize <= 0 || newTextSize == lastTextSize) {
 				break;
 			}
-			paddingSpan.textSize = paddingSpan.textSize + (target - height) / 2f;
-			if (paddingSpan.textSize <= 0) {
-				break;
-			}
+			lastTextSize = paddingSpan.textSize;
+			paddingSpan.textSize = newTextSize;
 		}
 		return paddingSpan.textSize;
 	}

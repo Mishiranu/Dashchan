@@ -291,7 +291,7 @@ public class ClickableToast implements LifecycleObserver {
 	private String showInternal(CharSequence message, String updateId, Button button) {
 		boolean update = updateId != null && updateId.equals(showing);
 		if (update) {
-			container.removeCallbacks(cancelRunnable);
+			ConcurrentUtils.HANDLER.removeCallbacks(cancelRunnable);
 		} else {
 			cancelInternal();
 		}
@@ -307,12 +307,12 @@ public class ClickableToast implements LifecycleObserver {
 		updateLayout();
 		if (update) {
 			applyLayout();
-			container.postDelayed(cancelRunnable, TIMEOUT);
+			ConcurrentUtils.HANDLER.postDelayed(cancelRunnable, TIMEOUT);
 			return updateId;
 		} else if (addContainerToWindowManager()) {
 			String id = UUID.randomUUID().toString();
 			showing = id;
-			container.postDelayed(cancelRunnable, TIMEOUT);
+			ConcurrentUtils.HANDLER.postDelayed(cancelRunnable, TIMEOUT);
 			return id;
 		} else {
 			return null;
@@ -421,10 +421,10 @@ public class ClickableToast implements LifecycleObserver {
 	}
 
 	private void cancelInternal() {
+		ConcurrentUtils.HANDLER.removeCallbacks(cancelRunnable);
 		if (showing == null) {
 			return;
 		}
-		container.removeCallbacks(cancelRunnable);
 		showing = null;
 		clickable = false;
 		realClickable = false;
@@ -442,10 +442,6 @@ public class ClickableToast implements LifecycleObserver {
 	}
 
 	private final Runnable cancelRunnable = this::cancelInternal;
-
-	private void postCancelInternal() {
-		container.post(cancelRunnable);
-	}
 
 	private class PartialClickDrawable extends BaseDrawable implements View.OnTouchListener, Drawable.Callback {
 		private final Drawable drawable;
@@ -497,10 +493,11 @@ public class ClickableToast implements LifecycleObserver {
 						if (event.getAction() == MotionEvent.ACTION_UP) {
 							float x = event.getX(), y = event.getY();
 							if (x >= button.getLeft() && x <= view.getWidth() && y >= 0 && y <= view.getHeight()) {
+								ConcurrentUtils.HANDLER.removeCallbacks(cancelRunnable);
+								ConcurrentUtils.HANDLER.post(cancelRunnable);
 								if (onClickListener != null) {
 									onClickListener.run();
 								}
-								postCancelInternal();
 							}
 						}
 					}
