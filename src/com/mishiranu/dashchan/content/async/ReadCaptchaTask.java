@@ -13,6 +13,7 @@ import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.content.net.CaptchaSolving;
 import com.mishiranu.dashchan.content.net.RecaptchaReader;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import java.util.List;
@@ -30,6 +31,7 @@ public class ReadCaptchaTask extends ExecutorTask<Void, Pair<ErrorItem, ReadCapt
 	private final String captchaType;
 	private final List<String> captchaPass;
 	private final boolean mayShowLoadButton;
+	private final boolean allowSolveAutomatically;
 	private final String requirement;
 	private final Chan chan;
 	private final String boardName;
@@ -64,7 +66,7 @@ public class ReadCaptchaTask extends ExecutorTask<Void, Pair<ErrorItem, ReadCapt
 		}
 	}
 
-	public enum CaptchaState {CAPTCHA, SKIP, PASS, NEED_LOAD, MAY_LOAD}
+	public enum CaptchaState {CAPTCHA, SKIP, PASS, NEED_LOAD, MAY_LOAD, MAY_LOAD_SOLVING}
 
 	public static class RemoteResult {
 		public final ChanPerformer.ReadCaptchaResult result;
@@ -106,7 +108,7 @@ public class ReadCaptchaTask extends ExecutorTask<Void, Pair<ErrorItem, ReadCapt
 
 	public ReadCaptchaTask(Callback callback, CaptchaReader captchaReader,
 			String captchaType, String requirement, List<String> captchaPass, boolean mayShowLoadButton,
-			Chan chan, String boardName, String threadNumber) {
+			boolean allowSolveAutomatically, Chan chan, String boardName, String threadNumber) {
 		chanHolder = new HttpHolder(chan);
 		if (captchaReader == null) {
 			captchaReader = new ChanCaptchaReader(chan);
@@ -116,6 +118,7 @@ public class ReadCaptchaTask extends ExecutorTask<Void, Pair<ErrorItem, ReadCapt
 		this.captchaType = captchaType;
 		this.captchaPass = captchaPass;
 		this.mayShowLoadButton = mayShowLoadButton;
+		this.allowSolveAutomatically = allowSolveAutomatically;
 		this.requirement = requirement;
 		this.chan = chan;
 		this.boardName = boardName;
@@ -220,21 +223,21 @@ public class ReadCaptchaTask extends ExecutorTask<Void, Pair<ErrorItem, ReadCapt
 			ForegroundCaptcha foregroundCaptcha = checkForegroundCaptcha(loadedCaptchaType != null
 					? loadedCaptchaType : this.captchaType);
 			if (foregroundCaptcha != null) {
-				if (mayShowLoadButton) {
-					captchaState = CaptchaState.MAY_LOAD;
-				} else {
-					try (HttpHolder.Use ignore = fallbackHolder.use()) {
+				try (HttpHolder.Use ignore = fallbackHolder.use()) {
+					captchaState = CaptchaSolving.getInstance().checkActive(fallbackHolder)
+							? CaptchaState.MAY_LOAD_SOLVING : CaptchaState.MAY_LOAD;
+					if (!mayShowLoadButton) {
 						String response = readForegroundCaptcha(fallbackHolder, captchaData, foregroundCaptcha,
-								result.challengeExtra, result.allowSolveAutomatically);
+								result.challengeExtra, allowSolveAutomatically && result.allowSolveAutomatically);
 						captchaData.put(RECAPTCHA_SKIP_RESPONSE, response);
 						captchaState = CaptchaState.SKIP;
-					} catch (RecaptchaReader.CancelException e) {
-						captchaState = CaptchaState.MAY_LOAD;
-					} catch (HttpException e) {
-						return new Pair<>(e.getErrorItemAndHandle(), null);
-					} catch (InterruptedException e) {
-						return isCancelled() ? null : new Pair<>(new ErrorItem(ErrorItem.Type.UNKNOWN), null);
 					}
+				} catch (RecaptchaReader.CancelException e) {
+					// Ignore
+				} catch (HttpException e) {
+					return new Pair<>(e.getErrorItemAndHandle(), null);
+				} catch (InterruptedException e) {
+					return isCancelled() ? null : new Pair<>(new ErrorItem(ErrorItem.Type.UNKNOWN), null);
 				}
 			} else if (result.result.image != null) {
 				image = result.result.image;

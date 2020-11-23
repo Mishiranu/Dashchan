@@ -1051,7 +1051,8 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 			captchaData = captchaData.copy();
 			captchaData.put(ChanPerformer.CaptchaData.INPUT, captchaForm.getInput());
 		}
-		boolean captchaNeedLoad = captchaState == ReadCaptchaTask.CaptchaState.MAY_LOAD;
+		boolean captchaNeedLoad = captchaState == ReadCaptchaTask.CaptchaState.MAY_LOAD ||
+				captchaState == ReadCaptchaTask.CaptchaState.MAY_LOAD_SOLVING;
 		ChanPerformer.SendPostData data = new ChanPerformer.SendPostData(getBoardName(), getThreadNumber(),
 				subject, comment, name, email, password, attachments, optionSage, optionSpoiler, optionOriginalPoster,
 				userIcon, captchaType, captchaData, captchaNeedLoad, 15000, 45000);
@@ -1173,6 +1174,8 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 	}
 
 	private void refreshCaptcha(boolean forceCaptcha, boolean mayShowLoadButton, boolean restart) {
+		boolean allowSolveAutomatically = !forceCaptcha ||
+				captchaState != ReadCaptchaTask.CaptchaState.MAY_LOAD_SOLVING;
 		captchaState = null;
 		loadedCaptchaType = null;
 		captchaLoadTime = 0L;
@@ -1183,7 +1186,7 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 			Chan chan = Chan.get(getChanName());
 			List<String> captchaPass = forceCaptcha ? null : Preferences.getCaptchaPass(chan);
 			ReadCaptchaTask task = new ReadCaptchaTask(viewModel.callback, null, captchaType, null, captchaPass,
-					mayShowLoadButton, chan, getBoardName(), getThreadNumber());
+					mayShowLoadButton, allowSolveAutomatically, chan, getBoardName(), getThreadNumber());
 			task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 			viewModel.attach(task);
 		}

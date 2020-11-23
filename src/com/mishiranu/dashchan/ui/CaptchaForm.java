@@ -155,9 +155,11 @@ public class CaptchaForm implements View.OnClickListener, View.OnLongClickListen
 				break;
 			}
 			case NEED_LOAD:
-			case MAY_LOAD: {
+			case MAY_LOAD:
+			case MAY_LOAD_SOLVING: {
 				skipTextView.setText(R.string.load_captcha);
-				cancelView.setVisibility(View.GONE);
+				cancelView.setVisibility(captchaState == ReadCaptchaTask.CaptchaState.MAY_LOAD_SOLVING
+						? View.VISIBLE : View.GONE);
 				switchToCaptchaView(CaptchaViewType.SKIP, null, false);
 				break;
 			}

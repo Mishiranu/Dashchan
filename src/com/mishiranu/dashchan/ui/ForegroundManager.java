@@ -312,6 +312,8 @@ public class ForegroundManager implements Handler.Callback {
 				boolean forceCaptcha, boolean mayShowLoadButton, boolean restart) {
 			pendingData.captchaData = null;
 			pendingData.loadedCaptchaType = null;
+			boolean allowSolveAutomatically = !forceCaptcha ||
+					captchaState != ReadCaptchaTask.CaptchaState.MAY_LOAD_SOLVING;
 			captchaState = null;
 			image = null;
 			large = false;
@@ -325,7 +327,8 @@ public class ForegroundManager implements Handler.Callback {
 				List<String> captchaPass = forceCaptcha || chan.name == null ? null : Preferences.getCaptchaPass(chan);
 				ReadCaptchaTask task = new ReadCaptchaTask(viewModel.callback, pendingData.captchaReader,
 						args.getString(EXTRA_CAPTCHA_TYPE), args.getString(EXTRA_REQUIREMENT), captchaPass,
-						mayShowLoadButton, chan, args.getString(EXTRA_BOARD_NAME), args.getString(EXTRA_THREAD_NUMBER));
+						mayShowLoadButton, allowSolveAutomatically, chan,
+						args.getString(EXTRA_BOARD_NAME), args.getString(EXTRA_THREAD_NUMBER));
 				task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 				viewModel.attach(task);
 			}
@@ -379,7 +382,8 @@ public class ForegroundManager implements Handler.Callback {
 			if (positiveButton != null) {
 				positiveButton.setEnabled(captchaState != null &&
 						captchaState != ReadCaptchaTask.CaptchaState.NEED_LOAD &&
-						captchaState != ReadCaptchaTask.CaptchaState.MAY_LOAD);
+						captchaState != ReadCaptchaTask.CaptchaState.MAY_LOAD &&
+						captchaState != ReadCaptchaTask.CaptchaState.MAY_LOAD_SOLVING);
 			}
 		}
 
