@@ -437,6 +437,9 @@ public class ListUnit implements ActionMode.Callback {
 				attachmentInfo.setBackgroundColor(0xaa111111);
 				attachmentInfo.setGravity(Gravity.CENTER);
 				attachmentInfo.setSingleLine(true);
+				if (C.API_LOLLIPOP) {
+					attachmentInfo.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
+				}
 				ListViewUtils.bind(this, itemView.findViewById(R.id.attachment_click), true, null, callback);
 				if (C.API_LOLLIPOP) {
 					selectorBorderDrawable = null;

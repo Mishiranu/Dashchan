@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.mishiranu.dashchan.widget.PostLinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:orientation="horizontal"
@@ -68,20 +67,13 @@
 			android:paddingRight="6dp"
 			android:background="?android:attr/selectableItemBackground">
 
-			<TextView
+			<com.mishiranu.dashchan.widget.ThreadDescriptionView
 				android:id="@+id/thread_description"
 				android:layout_width="0dp"
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
 				android:paddingTop="8dp"
-				android:paddingBottom="8dp"
-				style="@style/Widget.HeaderText"
-				android:textSize="11sp"
-				android:fontFamily="sans-serif-medium"
-				android:textAllCaps="true"
-				android:ellipsize="end"
-				android:singleLine="true"
-				tools:ignore="SmallSp" />
+				android:paddingBottom="8dp" />
 
 		</LinearLayout>
 

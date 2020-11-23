@@ -28,7 +28,6 @@ import android.widget.TextView;
 import androidx.core.view.ViewCompat;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.Preferences;
 import java.lang.reflect.Field;
 
 public class ViewUtils {
@@ -104,8 +103,7 @@ public class ViewUtils {
 		textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, sizePx);
 	}
 
-	public static void applyScaleSize(View... views) {
-		float scale = Preferences.getTextScale() / 100f;
+	public static void applyScaleSize(float scale, View... views) {
 		for (View view : views) {
 			if (view != null) {
 				if (view instanceof TextView) {
@@ -126,8 +124,7 @@ public class ViewUtils {
 		}
 	}
 
-	public static void applyScaleMarginLR(View... views) {
-		float scale = Preferences.getTextScale() / 100f;
+	public static void applyScaleMarginLR(float scale, View... views) {
 		for (View view : views) {
 			if (view != null) {
 				ViewGroup.LayoutParams params = view.getLayoutParams();

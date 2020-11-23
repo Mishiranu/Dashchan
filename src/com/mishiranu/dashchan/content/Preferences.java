@@ -1048,10 +1048,14 @@ public class Preferences {
 	}
 
 	public static final String KEY_TEXT_SCALE = "text_scale";
+	public static final int MIN_TEXT_SCALE = 75;
+	public static final int MAX_TEXT_SCALE = 150;
+	public static final int STEP_TEXT_SCALE = 5;
 	public static final int DEFAULT_TEXT_SCALE = 100;
 
-	public static int getTextScale() {
-		return PREFERENCES.getInt(KEY_TEXT_SCALE, DEFAULT_TEXT_SCALE);
+	public static float getTextScale() {
+		return Math.max(MIN_TEXT_SCALE, Math.min(PREFERENCES.getInt(KEY_TEXT_SCALE,
+				DEFAULT_TEXT_SCALE), MAX_TEXT_SCALE)) / 100f;
 	}
 
 	public static final String KEY_THEME = "theme";
@@ -1109,10 +1113,14 @@ public class Preferences {
 	}
 
 	public static final String KEY_THUMBNAILS_SCALE = "thumbnails_scale";
+	public static final int MIN_THUMBNAILS_SCALE = 100;
+	public static final int MAX_THUMBNAILS_SCALE = 200;
+	public static final int STEP_THUMBNAILS_SCALE = 10;
 	public static final int DEFAULT_THUMBNAILS_SCALE = 100;
 
-	public static int getThumbnailsScale() {
-		return PREFERENCES.getInt(KEY_THUMBNAILS_SCALE, DEFAULT_THUMBNAILS_SCALE);
+	public static float getThumbnailsScale() {
+		return Math.max(MIN_THUMBNAILS_SCALE, Math.min(PREFERENCES.getInt(KEY_THUMBNAILS_SCALE,
+				DEFAULT_THUMBNAILS_SCALE), MAX_THUMBNAILS_SCALE)) / 100f;
 	}
 
 	public static final String KEY_TRUSTED_EXSTENSIONS = "trusted_extensions";

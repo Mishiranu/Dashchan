@@ -17,7 +17,6 @@ import android.text.SpannableStringBuilder;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.TypefaceSpan;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -55,6 +54,7 @@ import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.LinebreakLayout;
 import com.mishiranu.dashchan.widget.PostLinearLayout;
 import com.mishiranu.dashchan.widget.ThemeEngine;
+import com.mishiranu.dashchan.widget.ThreadDescriptionView;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,12 +67,7 @@ public class ViewUnit {
 	private final UiManager uiManager;
 	private final PostDateFormatter postDateFormatter;
 	private final List<CommentTextView.ExtraButton> extraButtons;
-
-	private final int thumbnailWidth;
-	private final int multipleAttachmentInfoWidth;
-
-	private final int commentMaxLines;
-	private final int commentAdditionalHeight;
+	private final Lazy<PostViewHolder.Dimensions> postDimensions = new Lazy<>();
 
 	private static final float ALPHA_HIDDEN_POST = 0.2f;
 	private static final float ALPHA_DELETED_POST = 0.5f;
@@ -121,32 +116,6 @@ public class ViewUnit {
 					}
 					return false;
 				}));
-
-		Configuration configuration = context.getResources().getConfiguration();
-		float density = ResourceUtils.obtainDensity(context);
-		// Define header height, image width and max comment field height
-		View view = LayoutInflater.from(context).inflate(R.layout.list_item_post, null);
-		View head = view.findViewById(R.id.head);
-		TextView comment = view.findViewById(R.id.comment);
-		View bottomBar = view.findViewById(R.id.bottom_bar);
-		ViewUtils.applyScaleSize(head.findViewById(R.id.subject), head.findViewById(R.id.number),
-				head.findViewById(R.id.name), head.findViewById(R.id.index), head.findViewById(R.id.date),
-				head.findViewById(R.id.attachment_info), comment, bottomBar.findViewById(R.id.bottom_bar_replies),
-				bottomBar.findViewById(R.id.bottom_bar_expand), bottomBar.findViewById(R.id.bottom_bar_open_thread));
-		int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec((int) (320 * density + 0.5f), View.MeasureSpec.AT_MOST);
-		int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
-		view.measure(widthMeasureSpec, heightMeasureSpec);
-		commentMaxLines = Preferences.getPostMaxLines();
-		commentAdditionalHeight = bottomBar.getMeasuredHeight();
-		thumbnailWidth = head.getMeasuredHeight();
-		int additionalAttachmentInfoWidthDp = 64; // approximately equal to thumbnail width + right padding
-		int minAttachmentInfoWidthDp = additionalAttachmentInfoWidthDp + 68;
-		int maxAttachmentInfoWidthDp = additionalAttachmentInfoWidthDp + 84;
-		int attachmentInfoWidthDp = configuration.smallestScreenWidthDp * minAttachmentInfoWidthDp / 320;
-		attachmentInfoWidthDp = Math.max(Math.min(attachmentInfoWidthDp, maxAttachmentInfoWidthDp),
-				minAttachmentInfoWidthDp);
-		attachmentInfoWidthDp -= additionalAttachmentInfoWidthDp;
-		multipleAttachmentInfoWidth = (int) (attachmentInfoWidthDp * density + 0.5f);
 	}
 
 	private static Uri extractUri(String text) {
@@ -221,7 +190,7 @@ public class ViewUnit {
 				return new ThreadViewHolder(parent, uiManager, ThreadViewType.CELL);
 			}
 			case POST: {
-				return new PostViewHolder(parent, uiManager, thumbnailWidth);
+				return new PostViewHolder(parent, uiManager, postDimensions);
 			}
 			case POST_HIDDEN: {
 				return new HiddenViewHolder(parent, false, false);
@@ -264,7 +233,8 @@ public class ViewUnit {
 		}
 		holder.comment.setText(comment);
 		holder.comment.setVisibility(holder.comment.getText().length() > 0 ? View.VISIBLE : View.GONE);
-		holder.description.setText(postItem.formatThreadCardDescription(context, false));
+		holder.description.clear();
+		postItem.formatThreadCardDescription(context.getResources(), false, holder.description::append);
 
 		List<AttachmentItem> attachmentItems = postItem.getAttachmentItems();
 		if (attachmentItems != null) {
@@ -322,7 +292,8 @@ public class ViewUnit {
 		}
 		holder.comment.setText(comment);
 		holder.comment.setVisibility(StringUtils.isEmpty(comment) ? View.GONE : View.VISIBLE);
-		holder.description.setText(postItem.formatThreadCardDescription(context, true));
+		holder.description.clear();
+		postItem.formatThreadCardDescription(context.getResources(), true, holder.description::append);
 
 		if (attachmentItems != null && !hidden) {
 			AttachmentItem attachmentItem = attachmentItems.get(0);
@@ -464,10 +435,15 @@ public class ViewUnit {
 			holder.bottomBarExpand.setVisibility(View.GONE);
 			holder.bottomBarOpenThread.setVisibility(demandSet.showOpenThreadButton ? View.VISIBLE : View.GONE);
 		}
-		if (configurationSet.mayCollapse && commentMaxLines > 0 &&
-				!configurationSet.postStateProvider.isExpanded(postNumber)) {
-			holder.comment.setLinesLimit(commentMaxLines, commentAdditionalHeight);
-		} else {
+		boolean resetLimit = true;
+		if (configurationSet.mayCollapse && !configurationSet.postStateProvider.isExpanded(postNumber)) {
+			int maxLines = Preferences.getPostMaxLines();
+			if (maxLines > 0) {
+				resetLimit = false;
+				holder.comment.setLinesLimit(maxLines, holder.dimensions.commentAdditionalHeight);
+			}
+		}
+		if (resetLimit) {
 			holder.comment.setLinesLimit(0, 0);
 		}
 		holder.bottomBarExpand.setVisibility(View.GONE);
@@ -551,8 +527,8 @@ public class ViewUnit {
 				int holders = attachmentHolders.size();
 				if (holders < size) {
 					int postBackgroundColor = getPostBackgroundColor(uiManager.getContext(), configurationSet);
-					int thumbnailsScale = Preferences.getThumbnailsScale();
-					int textScale = Preferences.getTextScale();
+					float thumbnailsScale = Preferences.getThumbnailsScale();
+					float textScale = Preferences.getTextScale();
 					for (int i = holders; i < size; i++) {
 						View view = LayoutInflater.from(context).inflate(R.layout.list_item_post_attachment, null);
 						AttachmentHolder attachmentHolder = new AttachmentHolder();
@@ -563,17 +539,18 @@ public class ViewUnit {
 						attachmentHolder.thumbnail.applyRoundedCorners(postBackgroundColor);
 						attachmentHolder.thumbnail.setOnClickListener(attachmentHolder.thumbnailClickListener);
 						attachmentHolder.thumbnail.setOnLongClickListener(attachmentHolder.thumbnailLongClickListener);
-						attachmentHolder.attachmentInfo.getLayoutParams().width = multipleAttachmentInfoWidth;
+						attachmentHolder.attachmentInfo.getLayoutParams().width =
+								holder.dimensions.multipleAttachmentInfoWidth;
 						ViewGroup.LayoutParams thumbnailLayoutParams = attachmentHolder.thumbnail.getLayoutParams();
-						if (thumbnailsScale != 100) {
-							thumbnailLayoutParams.width = thumbnailWidth * thumbnailsScale / 100;
+						if (thumbnailsScale != 1f) {
+							thumbnailLayoutParams.width = (int) (holder.dimensions.thumbnailWidth * thumbnailsScale);
 							thumbnailLayoutParams.height = thumbnailLayoutParams.width;
 						} else {
-							thumbnailLayoutParams.width = thumbnailWidth;
-							thumbnailLayoutParams.height = thumbnailWidth;
+							thumbnailLayoutParams.width = holder.dimensions.thumbnailWidth;
+							thumbnailLayoutParams.height = holder.dimensions.thumbnailWidth;
 						}
-						if (textScale != 100) {
-							ViewUtils.applyScaleSize(attachmentHolder.attachmentInfo);
+						if (textScale != 1f) {
+							ViewUtils.applyScaleSize(textScale, attachmentHolder.attachmentInfo);
 						}
 						attachmentHolders.add(attachmentHolder);
 						holder.attachments.addView(view);
@@ -608,7 +585,7 @@ public class ViewUnit {
 				holder.thumbnailLongClickListener.update(attachmentItem);
 				holder.thumbnail.setSfwMode(Preferences.isSfwMode());
 				holder.thumbnail.setVisibility(View.VISIBLE);
-				holder.attachmentInfo.setText(postItem.getAttachmentsDescription(context,
+				holder.attachmentInfo.setText(postItem.getAttachmentsDescription(context.getResources(),
 						AttachmentItem.FormatMode.LONG));
 				holder.attachmentInfo.setVisibility(View.VISIBLE);
 				holder.attachments.setVisibility(View.GONE);
@@ -642,10 +619,13 @@ public class ViewUnit {
 				int anchorIndex = holder.head.indexOfChild(anchorView) + 1;
 				float density = ResourceUtils.obtainDensity(context);
 				int size = (int) (12f * density);
+				float textScale = Preferences.getTextScale();
 				for (int i = 0; i < add; i++) {
 					ImageView imageView = new ImageView(context);
 					holder.head.addView(imageView, anchorIndex + i, new ViewGroup.LayoutParams(size, size));
-					ViewUtils.applyScaleSize(imageView);
+					if (textScale != 1f) {
+						ViewUtils.applyScaleSize(textScale, imageView);
+					}
 					holder.badgeImages.add(imageView);
 				}
 			}
@@ -979,6 +959,21 @@ public class ViewUnit {
 		}
 	}
 
+	private static class Lazy<T> {
+		public interface Provider<T> {
+			T createLazy();
+		}
+
+		private T data;
+
+		public T get(Provider<T> provider) {
+			if (data == null) {
+				data = provider.createLazy();
+			}
+			return data;
+		}
+	}
+
 	private static class BasePostViewHolder extends RecyclerView.ViewHolder
 			implements UiManager.Holder, ListViewUtils.ClickCallback<Void, BasePostViewHolder> {
 		private WeakReference<PostItem> postItem;
@@ -1017,7 +1012,7 @@ public class ViewUnit {
 		public final AttachmentView thumbnail;
 		public final TextView subject;
 		public final TextView comment;
-		public final TextView description;
+		public final ThreadDescriptionView description;
 		public final ImageView[] stateImages;
 		public final View threadContent;
 		public final View showOriginalPost;
@@ -1055,24 +1050,31 @@ public class ViewUnit {
 			thumbnailClickListener = uiManager.interaction().createThumbnailClickListener();
 			thumbnailLongClickListener = uiManager.interaction().createThumbnailLongClickListener();
 
+			float density = ResourceUtils.obtainDensity(itemView);
+			float textScale = Preferences.getTextScale();
+			int descriptionSpacingDp = 8;
 			thumbnail.setDrawTouching(true);
+			description.setTextColor(ThemeEngine.getTheme(description.getContext()).meta);
+			description.setTextSizeSp(11f * textScale);
+			description.setSpacing((int) (descriptionSpacingDp * density));
 			if (threadViewType == ThreadViewType.CELL) {
 				thumbnail.setFitSquare(true);
-				ViewUtils.applyScaleSize(comment, subject, description);
+				ViewUtils.applyScaleSize(textScale, comment, subject);
 				stateImages = null;
+				description.setToEnd(true);
 			} else {
 				stateImages = new ImageView[PostState.THREAD_ITEM_STATES.size()];
 				fillStateImages(showOriginalPost, threadViewType == ThreadViewType.CARD ? 1 : 0,
 						stateImages, PostState.THREAD_ITEM_STATES, 0.5f,
-						threadViewType == ThreadViewType.CARD ? 8 : 0,
-						threadViewType == ThreadViewType.CARD ? 0 : 8);
+						threadViewType == ThreadViewType.CARD ? descriptionSpacingDp : 0,
+						threadViewType == ThreadViewType.CARD ? 0 : descriptionSpacingDp);
 				ViewGroup.MarginLayoutParams thumbnailLayoutParams =
 						(ViewGroup.MarginLayoutParams) thumbnail.getLayoutParams();
-				ViewUtils.applyScaleSize(comment, subject, description);
-				ViewUtils.applyScaleSize(stateImages);
-				if (ResourceUtils.isTablet(itemView.getResources().getConfiguration())) {
-					float density = ResourceUtils.obtainDensity(itemView);
-					description.setGravity(Gravity.START);
+				ViewUtils.applyScaleSize(textScale, comment, subject);
+				ViewUtils.applyScaleSize(textScale, stateImages);
+				if (ResourceUtils.isTablet(itemView.getResources().getConfiguration()) &&
+						threadViewType == ThreadViewType.CARD) {
+					description.setToEnd(false);
 					int thumbnailSize = (int) (72f * density);
 					thumbnailLayoutParams.width = thumbnailSize;
 					thumbnailLayoutParams.height = thumbnailSize;
@@ -1082,12 +1084,14 @@ public class ViewUnit {
 							description.getPaddingRight(), description.getPaddingBottom());
 					comment.setMaxLines(8);
 				} else {
-					description.setGravity(threadViewType == ThreadViewType.LIST ? Gravity.START : Gravity.END);
+					description.setToEnd(threadViewType != ThreadViewType.LIST);
 					comment.setMaxLines(6);
 				}
-				int thumbnailsScale = Preferences.getThumbnailsScale();
-				thumbnailLayoutParams.width = thumbnailLayoutParams.width * thumbnailsScale / 100;
-				thumbnailLayoutParams.height = thumbnailLayoutParams.height * thumbnailsScale / 100;
+				float thumbnailsScale = Preferences.getThumbnailsScale();
+				if (thumbnailsScale != 1f) {
+					thumbnailLayoutParams.width = (int) (thumbnailLayoutParams.width * thumbnailsScale);
+					thumbnailLayoutParams.height = (int) (thumbnailLayoutParams.height * thumbnailsScale);
+				}
 			}
 		}
 
@@ -1145,8 +1149,22 @@ public class ViewUnit {
 		}
 	}
 
-	private static class PostViewHolder extends BasePostViewHolder implements CommentTextView.RecyclerKeeper.Holder,
+	private static class PostViewHolder extends BasePostViewHolder implements
+			Lazy.Provider<PostViewHolder.Dimensions>, CommentTextView.RecyclerKeeper.Holder,
 			View.OnAttachStateChangeListener, CommentTextView.LimitListener, View.OnClickListener {
+		public static class Dimensions {
+			public final int thumbnailWidth;
+			public final int multipleAttachmentInfoWidth;
+			public final int commentAdditionalHeight;
+
+			public Dimensions(int thumbnailWidth, int multipleAttachmentInfoWidth, int commentAdditionalHeight) {
+				this.thumbnailWidth = thumbnailWidth;
+				this.multipleAttachmentInfoWidth = multipleAttachmentInfoWidth;
+				this.commentAdditionalHeight = commentAdditionalHeight;
+			}
+		}
+
+		public final Dimensions dimensions;
 		public final PostLinearLayout layout;
 		public final LinebreakLayout head;
 		public final TextView number;
@@ -1178,7 +1196,7 @@ public class ViewUnit {
 		public NewPostAnimation newPostAnimation;
 		public long lastCommentClick;
 
-		public PostViewHolder(ViewGroup parent, UiManager uiManager, int thumbnailWidth) {
+		public PostViewHolder(ViewGroup parent, UiManager uiManager, Lazy<Dimensions> dimensions) {
 			super(LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_post, parent, false));
 
 			layout = (PostLinearLayout) itemView;
@@ -1218,23 +1236,51 @@ public class ViewUnit {
 			bottomBarOpenThread.setOnClickListener(uiManager.view().threadLinkBlockClickListener);
 
 			index.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
-			int textScale = Preferences.getTextScale();
-			if (textScale != 100) {
-				ViewUtils.applyScaleSize(number, name, index, date, comment, attachmentInfo,
+			if (C.API_LOLLIPOP) {
+				bottomBarReplies.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
+				bottomBarExpand.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
+				bottomBarOpenThread.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
+			}
+			float textScale = Preferences.getTextScale();
+			if (textScale != 1f) {
+				ViewUtils.applyScaleSize(textScale, number, name, index, date, comment, attachmentInfo,
 						bottomBarReplies, bottomBarExpand, bottomBarOpenThread);
-				ViewUtils.applyScaleSize(stateImages);
-				head.setHorizontalSpacing(head.getHorizontalSpacing() * textScale / 100);
+				ViewUtils.applyScaleSize(textScale, stateImages);
+				head.setHorizontalSpacing((int) (head.getHorizontalSpacing() * textScale));
 			}
 
+			this.dimensions = dimensions.get(this);
 			thumbnail.setDrawTouching(true);
 			ViewGroup.LayoutParams thumbnailLayoutParams = thumbnail.getLayoutParams();
-			int thumbnailsScale = Preferences.getThumbnailsScale();
-			if (thumbnailsScale != 100) {
-				thumbnailLayoutParams.width = thumbnailWidth * thumbnailsScale / 100;
+			float thumbnailsScale = Preferences.getThumbnailsScale();
+			if (thumbnailsScale != 1f) {
+				thumbnailLayoutParams.width = (int) (this.dimensions.thumbnailWidth * thumbnailsScale);
 				thumbnailLayoutParams.height = thumbnailLayoutParams.width;
 			} else {
-				thumbnailLayoutParams.width = thumbnailWidth;
+				thumbnailLayoutParams.width = this.dimensions.thumbnailWidth;
 			}
+		}
+
+		@Override
+		public Dimensions createLazy() {
+			float density = ResourceUtils.obtainDensity(itemView);
+			Configuration configuration = itemView.getResources().getConfiguration();
+			int widthMeasureSpec = View.MeasureSpec.makeMeasureSpec
+					((int) (320 * density + 0.5f), View.MeasureSpec.AT_MOST);
+			int heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED);
+			itemView.measure(widthMeasureSpec, heightMeasureSpec);
+			int commentAdditionalHeight = bottomBar.getMeasuredHeight();
+			int thumbnailWidth = head.getMeasuredHeight();
+			// Approximately equals to thumbnail width + right padding
+			int additionalAttachmentInfoWidthDp = 64;
+			int minAttachmentInfoWidthDp = additionalAttachmentInfoWidthDp + 68;
+			int maxAttachmentInfoWidthDp = additionalAttachmentInfoWidthDp + 84;
+			int attachmentInfoWidthDp = configuration.smallestScreenWidthDp * minAttachmentInfoWidthDp / 320;
+			attachmentInfoWidthDp = Math.max(Math.min(attachmentInfoWidthDp, maxAttachmentInfoWidthDp),
+					minAttachmentInfoWidthDp);
+			attachmentInfoWidthDp -= additionalAttachmentInfoWidthDp;
+			int multipleAttachmentInfoWidth = (int) (attachmentInfoWidthDp * density + 0.5f);
+			return new Dimensions(thumbnailWidth, multipleAttachmentInfoWidth, commentAdditionalHeight);
 		}
 
 		public void installBackground() {
@@ -1396,8 +1442,11 @@ public class ViewUnit {
 			number = itemView.findViewById(R.id.number);
 			comment = itemView.findViewById(R.id.comment);
 			itemView.findViewById(R.id.head).setAlpha(ALPHA_HIDDEN_POST);
-			ViewUtils.applyScaleSize(index, number, comment);
-			ViewUtils.applyScaleMarginLR(index, number, comment);
+
+			float textScale = Preferences.getTextScale();
+			ViewUtils.applyScaleSize(textScale, index, number, comment);
+			ViewUtils.applyScaleMarginLR(textScale, index, number, comment);
+			index.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
 			if (thread) {
 				index.setVisibility(View.GONE);
 				number.setVisibility(View.GONE);

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.mishiranu.dashchan.widget.PostLinearLayout
 	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:orientation="vertical"
@@ -61,7 +60,7 @@
 		android:layout_marginRight="10dp"
 		android:background="?android:attr/listDivider" />
 
-	<TextView
+	<com.mishiranu.dashchan.widget.ThreadDescriptionView
 		android:id="@+id/thread_description"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
@@ -69,14 +68,6 @@
 		android:paddingBottom="8dp"
 		android:paddingLeft="10dp"
 		android:paddingRight="10dp"
-		android:gravity="end"
-		style="@style/Widget.HeaderText"
-		android:background="?android:attr/selectableItemBackground"
-		android:textSize="11sp"
-		android:fontFamily="sans-serif-medium"
-		android:textAllCaps="true"
-		android:singleLine="true"
-		android:ellipsize="end"
-		tools:ignore="SmallSp" />
+		android:background="?android:attr/selectableItemBackground" />
 
 </com.mishiranu.dashchan.widget.PostLinearLayout>

@@ -1,6 +1,5 @@
 package com.mishiranu.dashchan.content.model;
 
-import android.content.Context;
 import android.content.res.Resources;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -543,7 +542,7 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 		return attachmentItems;
 	}
 
-	public String getAttachmentsDescription(Context context, AttachmentItem.FormatMode formatMode) {
+	public String getAttachmentsDescription(Resources resources, AttachmentItem.FormatMode formatMode) {
 		int count = attachmentItems.size();
 		if (count == 1) {
 			AttachmentItem attachmentItem = attachmentItems.get(0);
@@ -557,8 +556,7 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 			if (size > 0) {
 				builder.append(StringUtils.formatFileSize(size, true)).append(' ');
 			}
-			builder.append(context.getResources().getQuantityString(R.plurals
-					.number_files__format, count, count));
+			builder.append(resources.getQuantityString(R.plurals.number_files__format, count, count));
 			return builder.toString();
 		}
 	}
@@ -617,44 +615,27 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 		return Collections.emptyList();
 	}
 
-	static final String CARD_DESCRIPTION_DIVIDER = "   ";
-
-	static String makeNbsp(String s) {
-		if (s != null) {
-			s = s.replace(' ', '\u00a0');
-		}
-		return s;
+	public interface DescriptionBuilder {
+		void append(String value);
 	}
 
-	public String formatThreadCardDescription(Context context, boolean repliesOnly) {
-		StringBuilder builder = new StringBuilder();
+	public void formatThreadCardDescription(Resources resources, boolean repliesOnly, DescriptionBuilder builder) {
 		int originalPostFiles = post.attachments.size();
 		int replies = threadData.base.postsCount - 1;
 		int files = threadData.base.filesCount - originalPostFiles;
 		int postsWithFiles = threadData.base.postsWithFilesCount - (originalPostFiles > 0 ? 1 : 0);
 		boolean hasInformation = false;
-		Resources resources = context.getResources();
 		if (replies >= 0) {
 			hasInformation = true;
-			builder.append(makeNbsp(resources.getQuantityString(R.plurals.number_replies__format,
-					replies, replies)));
+			builder.append(resources.getQuantityString(R.plurals.number_replies__format, replies, replies));
 		}
 		if (!repliesOnly) {
 			if (postsWithFiles >= 0) {
-				if (hasInformation) {
-					builder.append(CARD_DESCRIPTION_DIVIDER);
-				} else {
-					hasInformation = true;
-				}
-				builder.append(makeNbsp(resources.getString(R.string.number_with_files__format, postsWithFiles)));
+				hasInformation = true;
+				builder.append(resources.getString(R.string.number_with_files__format, postsWithFiles));
 			} else if (files >= 0) {
-				if (hasInformation) {
-					builder.append(CARD_DESCRIPTION_DIVIDER);
-				} else {
-					hasInformation = true;
-				}
-				builder.append(makeNbsp(resources.getQuantityString(R.plurals.number_files__format,
-						files, files)));
+				hasInformation = true;
+				builder.append(resources.getQuantityString(R.plurals.number_files__format, files, files));
 			}
 			if (hasAttachments()) {
 				int size = 0;
@@ -662,19 +643,14 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 					size += attachmentItem.getSize();
 				}
 				if (size > 0) {
-					if (hasInformation) {
-						builder.append(CARD_DESCRIPTION_DIVIDER);
-					} else {
-						hasInformation = true;
-					}
-					builder.append(StringUtils.formatFileSize(size, true).replace(' ', '\u00a0'));
+					hasInformation = true;
+					builder.append(StringUtils.formatFileSize(size, true));
 				}
 			}
 		}
 		if (!hasInformation) {
-			builder.append(makeNbsp(resources.getString(R.string.no_information)));
+			builder.append(resources.getString(R.string.no_information));
 		}
-		return builder.toString();
 	}
 
 	public long getTimestamp() {

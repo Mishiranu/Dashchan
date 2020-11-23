@@ -394,6 +394,9 @@ public class AutohideFragment extends BaseListFragment {
 			valueEdit.addTextChangedListener(valueListener);
 			testStringEdit.addTextChangedListener(testStringListener);
 			chanNameSelector.setOnClickListener(v -> new ChanMultiChoiceDialog(selectedChanNames).show(this));
+			if (C.API_LOLLIPOP) {
+				chanNameSelector.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
+			}
 			if (!ChanManager.getInstance().hasMultipleAvailableChans()) {
 				chanNameSelector.setVisibility(View.GONE);
 			}

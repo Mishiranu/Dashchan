@@ -20,7 +20,6 @@
 		android:layout_gravity="bottom"
 		android:textColor="#ffffffff"
 		android:textSize="11sp"
-		android:fontFamily="sans-serif-medium"
 		android:paddingLeft="8dp"
 		android:paddingRight="8dp"
 		android:paddingTop="6dp"

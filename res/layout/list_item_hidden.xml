@@ -16,8 +16,7 @@
 		android:layout_marginRight="4dp"
 		android:textColor="?attr/colorTextPost"
 		android:tag="theme.textColor=post"
-		android:textSize="12sp"
-		android:textStyle="bold" />
+		android:textSize="12sp" />
 
 	<TextView
 		android:id="@+id/number"

@@ -29,9 +29,13 @@ public class InterfaceFragment extends PreferenceFragment {
 
 		String scaleFormat = ResourceUtils.getColonString(getResources(), R.string.scale, "%d%%");
 		addSeek(Preferences.KEY_TEXT_SCALE, Preferences.DEFAULT_TEXT_SCALE,
-				getString(R.string.text_scale), scaleFormat, null, 75, 200, 5);
+				getString(R.string.text_scale), scaleFormat, null,
+				Preferences.MIN_TEXT_SCALE, Preferences.MAX_TEXT_SCALE, Preferences.STEP_TEXT_SCALE)
+				.setOnAfterChangeListener(p -> requireActivity().recreate());
 		addSeek(Preferences.KEY_THUMBNAILS_SCALE, Preferences.DEFAULT_THUMBNAILS_SCALE,
-				getString(R.string.thumbnail_scale), scaleFormat, null, 100, 200, 10);
+				getString(R.string.thumbnail_scale), scaleFormat, null,
+				Preferences.MIN_THUMBNAILS_SCALE, Preferences.MAX_THUMBNAILS_SCALE, Preferences.STEP_THUMBNAILS_SCALE)
+				.setOnAfterChangeListener(p -> requireActivity().recreate());
 		addCheck(true, Preferences.KEY_CUT_THUMBNAILS, Preferences.DEFAULT_CUT_THUMBNAILS,
 				R.string.crop_thumbnails, R.string.crop_thumbnails__summary);
 		addCheck(true, Preferences.KEY_ACTIVE_SCROLLBAR, Preferences.DEFAULT_ACTIVE_SCROLLBAR,
@@ -58,8 +62,7 @@ public class InterfaceFragment extends PreferenceFragment {
 
 		addHeader(R.string.posts_list);
 		addEdit(Preferences.KEY_POST_MAX_LINES, Preferences.DEFAULT_POST_MAX_LINES,
-				R.string.max_lines_count, R.string.max_lines_count__summary, null, InputType.TYPE_CLASS_NUMBER)
-				.setOnAfterChangeListener(p -> requireActivity().recreate());
+				R.string.max_lines_count, R.string.max_lines_count__summary, null, InputType.TYPE_CLASS_NUMBER);
 		addCheck(true, Preferences.KEY_ALL_ATTACHMENTS, Preferences.DEFAULT_ALL_ATTACHMENTS,
 				R.string.all_attachments, R.string.all_attachments__summary);
 		addList(Preferences.KEY_HIGHLIGHT_UNREAD, enumList(Preferences.HighlightUnreadMode.values(), o -> o.value),

@@ -1189,6 +1189,9 @@ public class DialogUnit {
 			AttachmentView attachmentView = view.findViewById(R.id.thumbnail);
 			TextView textView = view.findViewById(R.id.attachment_info);
 			textView.setBackgroundColor(0xcc222222);
+			if (C.API_LOLLIPOP) {
+				textView.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
+			}
 			attachmentItem.configureAndLoad(attachmentView, chan, false, true);
 			textView.setText(attachmentItem.getDescription(AttachmentItem.FormatMode.TWO_LINES));
 			View clickView = view.findViewById(R.id.attachment_click);

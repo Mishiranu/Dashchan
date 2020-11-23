@@ -211,8 +211,9 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 			PostItem current = getItem(position);
 			PostItem next = position + 1 < getItemCount() ? getItem(position + 1) : null;
 			float density = ResourceUtils.obtainDensity(context);
+			float scale = Preferences.getThumbnailsScale();
 			int padding = (int) (LIST_PADDING * density);
-			int imagePadding = (int) ((10 + 64 + 10) * density);
+			int imagePadding = (int) ((10 + 64 * scale + 10) * density);
 			boolean currentImage = current.hasAttachments() &&
 					!configurationSet.postStateProvider.isHiddenResolve(current);
 			boolean nextImage = next != null && next.hasAttachments() &&

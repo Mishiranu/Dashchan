@@ -6,6 +6,9 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.InsetDrawable;
@@ -16,11 +19,30 @@ import android.view.View;
 import androidx.fragment.app.Fragment;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import java.util.Arrays;
 
 public class ResourceUtils {
-	public static final Typeface TYPEFACE_MEDIUM = C.API_LOLLIPOP
-			? Typeface.create("sans-serif-medium", Typeface.NORMAL) : Typeface.DEFAULT_BOLD;
+	public static final Typeface TYPEFACE_MEDIUM;
 	public static final Typeface TYPEFACE_LIGHT = Typeface.create("sans-serif-light", Typeface.NORMAL);
+
+	static {
+		int size = 20;
+		Typeface regularTypeface = Typeface.DEFAULT;
+		Typeface mediumTypeface = Typeface.create("sans-serif-medium", Typeface.NORMAL);
+		Bitmap regularBitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+		Bitmap mediumBitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+		Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		paint.setTextSize(size);
+		paint.setTypeface(regularTypeface);
+		new Canvas(regularBitmap).drawText("A", 0, size, paint);
+		paint.setTypeface(mediumTypeface);
+		new Canvas(mediumBitmap).drawText("A", 0, size, paint);
+		int[] regularPixels = new int[size * size];
+		int[] mediumPixels = new int[size * size];
+		regularBitmap.getPixels(regularPixels, 0, size, 0, 0, size, size);
+		mediumBitmap.getPixels(mediumPixels, 0, size, 0, 0, size, size);
+		TYPEFACE_MEDIUM = Arrays.equals(regularPixels, mediumPixels) ? Typeface.DEFAULT_BOLD : mediumTypeface;
+	}
 
 	public static float obtainDensity(View view) {
 		return obtainDensity(view.getResources());

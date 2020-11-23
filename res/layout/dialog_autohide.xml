@@ -25,8 +25,7 @@
 			android:layout_marginRight="@dimen/dialog_padding_text_half"
 			android:layout_marginBottom="8dp"
 			android:paddingLeft="@dimen/dialog_padding_text_half"
-			android:paddingRight="@dimen/dialog_padding_text_half"
-			android:fontFamily="sans-serif-medium" />
+			android:paddingRight="@dimen/dialog_padding_text_half" />
 
 		<LinearLayout
 			android:layout_width="match_parent"
