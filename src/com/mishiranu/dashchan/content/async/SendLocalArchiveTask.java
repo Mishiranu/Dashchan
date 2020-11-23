@@ -305,8 +305,10 @@ public class SendLocalArchiveTask extends ExecutorTask<Integer, SendLocalArchive
 			results.add(createDownload(result.archiveName + "/" + DIRECTORY_THUMBNAILS, result.thumbnailsToDownload));
 			results.add(createDownload(result.archiveName + "/" + DIRECTORY_FILES, result.filesToDownload));
 			downloadResult = binder -> {
-				for (DownloadResult innerDownloadResult : results) {
-					innerDownloadResult.run(binder);
+				try (DownloadService.Accumulate ignored = binder.accumulate()) {
+					for (DownloadResult innerDownloadResult : results) {
+						innerDownloadResult.run(binder);
+					}
 				}
 			};
 		}

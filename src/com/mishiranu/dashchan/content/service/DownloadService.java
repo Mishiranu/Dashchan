@@ -47,6 +47,7 @@ import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -659,16 +660,38 @@ public class DownloadService extends BaseService implements ReadFileTask.Callbac
 			}
 		}
 
+		private Boolean accumulateState;
+
+		public Accumulate accumulate() {
+			if (accumulateState != null) {
+				throw new IllegalStateException();
+			}
+			accumulateState = false;
+			return () -> {
+				if (accumulateState) {
+					handleRequests();
+				}
+			};
+		}
+
+		private void handleRequestsOrAccumulate() {
+			if (accumulateState != null) {
+				accumulateState = true;
+			} else {
+				handleRequests();
+			}
+		}
+
 		public void downloadDirect(DataFile.Target target, String path, boolean overwrite,
 				List<DownloadItem> downloadItems) {
 			directRequests.add(new DirectRequest(target, path, overwrite, downloadItems, null, false));
-			handleRequests();
+			handleRequestsOrAccumulate();
 		}
 
 		public void downloadDirect(DataFile.Target target, String path, String name, InputStream input) {
 			directRequests.add(new DirectRequest(target, path, true,
 					Collections.singletonList(new DownloadItem(null, null, name, null)), input, false));
-			handleRequests();
+			handleRequestsOrAccumulate();
 		}
 
 		public void downloadStorage(Uri uri, String fileName, String originalName,
@@ -699,14 +722,14 @@ public class DownloadService extends BaseService implements ReadFileTask.Callbac
 			boolean allowOriginalName = modifyingAllowed && hasOriginalNames;
 			primaryRequest = new UriRequest(Preferences.getDownloadSubdirMode().isEnabled(multiple), requestItems,
 					allowDetailName, allowOriginalName, chanName, boardName, threadNumber, threadTitle);
-			handleRequests();
+			handleRequestsOrAccumulate();
 		}
 
 		public void downloadStorage(InputStream input, String chanName, String boardName, String threadNumber,
 				String threadTitle, String fileName, boolean allowDialog, boolean allowWrite) {
 			primaryRequest = new StreamRequest(Preferences.getDownloadSubdirMode().isEnabled(false) && allowDialog,
 					allowWrite, input, fileName, chanName, boardName, threadNumber, threadTitle);
-			handleRequests();
+			handleRequestsOrAccumulate();
 		}
 	}
 
@@ -1238,6 +1261,11 @@ public class DownloadService extends BaseService implements ReadFileTask.Callbac
 			}
 		}
 		return fileName;
+	}
+
+	public interface Accumulate extends Closeable {
+		@Override
+		void close();
 	}
 
 	public interface Request {
