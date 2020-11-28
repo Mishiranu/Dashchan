@@ -1,0 +1,6 @@
+* Allow to download multiple files from gallery
+* [cfg] Favorite threads order
+* Automatic WebP converter
+* [ext] Display hashtags on 2ch.hk
+* Allow to share image file
+* Display posting progress

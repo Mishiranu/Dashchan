@@ -1,0 +1,7 @@
+* Allow to view poster's email
+* Allow to remove entries from history
+* Allow to remove file name on posting
+* [ext] Allow to mark images as spoilers
+* [ext] Allow to delete own posts
+* Backup settings and data
+* Allow to hide posts

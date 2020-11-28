@@ -1,0 +1,6 @@
+* Allow to navigate to post from gallery
+* Display video thumbnail in gallery
+* Allow to load thumbnail from context menu
+* [cfg] Expanded screen
+* Allow to close replies tree using long "back" press
+* History navigation

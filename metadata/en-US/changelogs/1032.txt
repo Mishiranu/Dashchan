@@ -1,0 +1,6 @@
+* Allow to display search results in a separate window
+* Allow to "share" via web-browser
+* [cfg] Automatically disable favorites watcher for deleted threads
+* [cfg] Initial position of navigation drawer
+* Advanced preferences
+* Bump limit icon

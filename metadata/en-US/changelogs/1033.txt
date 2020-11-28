@@ -1,0 +1,5 @@
+* Allow to share files and links via application
+* [cfg] Advanced search
+* Allow to clear deleted favorite threads
+* Allow to block cookies
+* [cfg] Allow to disable history

@@ -1,0 +1,9 @@
+* Support for multiple forums via extensions
+* [ext] Allow to change image rating
+* Warn about file overwriting
+* Allow to reorder forums list
+* [ext] Allow to open an original thread from archive
+* Statistics of visited threads, sent replies, and created threads
+* "Tomorrow" theme
+* [cfg] Save file in original name
+* Filter in history and user boards

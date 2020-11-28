@@ -1,0 +1,13 @@
+* Save scroll position in threads
+* Partial video playback
+* Brotli HTTP compression support
+* Allow to autohide by file name
+* [cfg] Display threads list as list or small grid
+* AV1 video support
+* Allow to erase threads from cache
+* [cfg] Clear old posts in cyclical threads automatically
+* Captcha solving services support
+* Gestures on replies tree screen
+* Refresh favorite threads in foreground
+* [cfg] Reply notifications in favorite threads
+* [cfg] Delete cookies on exit

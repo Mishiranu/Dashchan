@@ -1,0 +1,4 @@
+* "Display options" menu
+* Allow to search in thread
+* Allow to clear image metadata
+* "Material" style on Android 5+

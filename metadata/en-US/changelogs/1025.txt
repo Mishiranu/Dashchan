@@ -1,0 +1,4 @@
+* Allow to order threads list in catalog
+* Thread-specific hide rules
+* Allow to close all pages at once
+* [cfg] Display all attachments in posts

@@ -1,0 +1,8 @@
+* Strikethrough links to hidden posts
+* [cfg] Allow to seek video to any frame
+* "Normie" theme
+* [cfg] Allow to adjust cache size
+* Allow to test autohide rules
+* Allow to add/delete user post mark
+* Move video playback to gallery
+* Allow to view changelog

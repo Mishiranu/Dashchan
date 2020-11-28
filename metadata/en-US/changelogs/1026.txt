@@ -1,0 +1,2 @@
+* [cfg] Display threads list as grid
+* Allow to filter threads list

@@ -1,0 +1,5 @@
+* Gestures to refresh threads and posts
+* Navigation drawer with boards, open pages, and favorites
+* Autohide using regular expressions
+* CloudFlare support (HTTP 503)
+* Display replies in a single list

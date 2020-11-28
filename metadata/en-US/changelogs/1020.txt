@@ -1,0 +1,3 @@
+* Allow to attaching multiple files at once on Android 4.4+
+* Allow to copy poster's email
+* Allow to hide text in spoilers

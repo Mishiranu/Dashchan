@@ -40,6 +40,8 @@ import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import com.mishiranu.dashchan.widget.ViewFactory;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -208,6 +210,19 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 		} else {
 			lastClickTime = time;
 		}
+	}
+
+	private static final SimpleDateFormat DATE_FORMAT_CHANGELOG = new SimpleDateFormat("dd.MM.yyyy", Locale.US);
+
+	public static String formatChangelogDate(DateFormat dateFormat, String dateString) {
+		long date;
+		try {
+			date = DATE_FORMAT_CHANGELOG.parse(dateString).getTime();
+		} catch (java.text.ParseException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return dateFormat.format(date);
 	}
 
 	public static class ChangelogViewModel extends TaskViewModel<ReadChangelogTask, Pair<ErrorItem, String>> {}

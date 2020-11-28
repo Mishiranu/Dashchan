@@ -1,0 +1,502 @@
+{
+	"versions": [
+		{
+			"code": 1000,
+			"name": "1.0.0",
+			"date": "23.07.2014",
+			"changelog": true
+		},
+		{
+			"code": 1001,
+			"name": "1.1.0",
+			"date": "02.08.2014",
+			"changelog": true
+		},
+		{
+			"code": 1003,
+			"name": "1.2.0",
+			"date": "10.08.2014",
+			"changelog": true
+		},
+		{
+			"code": 1004,
+			"name": "1.3.0",
+			"date": "04.09.2014",
+			"changelog": true
+		},
+		{
+			"code": 1007,
+			"name": "1.3.1",
+			"date": "06.09.2014",
+			"changelog": true
+		},
+		{
+			"code": 1008,
+			"name": "1.4.0",
+			"date": "27.09.2014",
+			"changelog": true
+		},
+		{
+			"code": 1010,
+			"name": "1.4.1",
+			"date": "12.10.2014",
+			"changelog": true
+		},
+		{
+			"code": 1012,
+			"name": "1.5.0",
+			"date": "09.11.2014",
+			"changelog": true
+		},
+		{
+			"code": 1013,
+			"name": "1.6.0",
+			"date": "01.12.2014",
+			"changelog": true
+		},
+		{
+			"code": 1014,
+			"name": "1.7.0",
+			"date": "23.12.2014",
+			"changelog": true
+		},
+		{
+			"code": 1015,
+			"name": "1.7.1",
+			"date": "31.12.2014",
+			"changelog": true
+		},
+		{
+			"code": 1016,
+			"name": "1.8.0",
+			"date": "29.01.2015",
+			"changelog": true
+		},
+		{
+			"code": 1017,
+			"name": "1.9.0",
+			"date": "01.03.2015",
+			"changelog": true
+		},
+		{
+			"code": 1017,
+			"name": "1.9.1",
+			"date": "02.03.2015",
+			"changelog": true
+		},
+		{
+			"code": 1017,
+			"name": "1.9.2",
+			"date": "03.03.2015",
+			"changelog": true
+		},
+		{
+			"code": 1017,
+			"name": "1.9.3",
+			"date": "09.03.2015",
+			"changelog": true
+		},
+		{
+			"code": 1018,
+			"name": "1.10.0",
+			"date": "04.04.2015",
+			"changelog": true
+		},
+		{
+			"code": 1018,
+			"name": "1.10.1",
+			"date": "04.04.2015",
+			"changelog": true
+		},
+		{
+			"code": 1018,
+			"name": "1.10.2",
+			"date": "05.04.2015",
+			"changelog": true
+		},
+		{
+			"code": 1018,
+			"name": "1.10.3",
+			"date": "07.04.2015",
+			"changelog": true
+		},
+		{
+			"code": 1018,
+			"name": "1.10.4",
+			"date": "09.04.2015",
+			"changelog": true
+		},
+		{
+			"code": 1019,
+			"name": "1.11.0",
+			"date": "19.04.2015",
+			"changelog": true
+		},
+		{
+			"code": 1019,
+			"name": "1.11.1",
+			"date": "19.04.2015",
+			"changelog": true
+		},
+		{
+			"code": 1019,
+			"name": "1.11.2",
+			"date": "24.04.2015",
+			"changelog": true
+		},
+		{
+			"code": 1019,
+			"name": "1.11.3",
+			"date": "01.05.2015",
+			"changelog": true
+		},
+		{
+			"code": 1020,
+			"name": "1.12.0",
+			"date": "10.05.2015",
+			"changelog": true
+		},
+		{
+			"code": 1020,
+			"name": "1.12.1",
+			"date": "11.05.2015",
+			"changelog": true
+		},
+		{
+			"code": 1020,
+			"name": "1.12.2",
+			"date": "16.05.2015",
+			"changelog": true
+		},
+		{
+			"code": 1020,
+			"name": "1.12.3",
+			"date": "16.05.2015",
+			"changelog": true
+		},
+		{
+			"code": 1020,
+			"name": "1.12.4",
+			"date": "29.05.2015",
+			"changelog": true
+		},
+		{
+			"code": 1020,
+			"name": "1.12.5",
+			"date": "08.06.2015",
+			"changelog": true
+		},
+		{
+			"code": 1020,
+			"name": "1.12.6",
+			"date": "22.06.2015",
+			"changelog": true
+		},
+		{
+			"code": 1023,
+			"name": "2.0.0",
+			"date": "02.07.2015",
+			"changelog": true
+		},
+		{
+			"code": 1023,
+			"name": "2.0.1",
+			"date": "03.07.2015",
+			"changelog": true
+		},
+		{
+			"code": 1023,
+			"name": "2.0.2",
+			"date": "05.07.2015",
+			"changelog": true
+		},
+		{
+			"code": 1023,
+			"name": "2.0.3",
+			"date": "08.07.2015",
+			"changelog": true
+		},
+		{
+			"code": 1023,
+			"name": "2.0.4",
+			"date": "13.07.2015",
+			"changelog": true
+		},
+		{
+			"code": 1023,
+			"name": "2.0.5",
+			"date": "15.07.2015",
+			"changelog": true
+		},
+		{
+			"code": 1024,
+			"name": "2.1.0",
+			"date": "31.07.2015",
+			"changelog": true
+		},
+		{
+			"code": 1024,
+			"name": "2.1.1",
+			"date": "31.07.2015",
+			"changelog": true
+		},
+		{
+			"code": 1024,
+			"name": "2.1.2",
+			"date": "02.08.2015",
+			"changelog": true
+		},
+		{
+			"code": 1024,
+			"name": "2.1.3",
+			"date": "02.08.2015",
+			"changelog": true
+		},
+		{
+			"code": 1025,
+			"name": "2.2.0",
+			"date": "03.09.2015",
+			"changelog": true
+		},
+		{
+			"code": 1025,
+			"name": "2.2.1",
+			"date": "13.09.2015",
+			"changelog": true
+		},
+		{
+			"code": 1025,
+			"name": "2.2.2",
+			"date": "20.09.2015",
+			"changelog": true
+		},
+		{
+			"code": 1026,
+			"name": "2.3.0",
+			"date": "04.10.2015",
+			"changelog": true
+		},
+		{
+			"code": 1026,
+			"name": "2.3.1",
+			"date": "11.10.2015",
+			"changelog": true
+		},
+		{
+			"code": 1026,
+			"name": "2.3.2",
+			"date": "23.10.2015",
+			"changelog": true
+		},
+		{
+			"code": 1027,
+			"name": "2.4.0",
+			"date": "12.11.2015",
+			"changelog": true
+		},
+		{
+			"code": 1027,
+			"name": "2.4.1",
+			"date": "23.11.2015",
+			"changelog": true
+		},
+		{
+			"code": 1027,
+			"name": "2.4.2",
+			"date": "12.12.2015",
+			"changelog": true
+		},
+		{
+			"code": 1027,
+			"name": "2.4.3",
+			"date": "18.12.2015",
+			"changelog": true
+		},
+		{
+			"code": 1027,
+			"name": "2.4.4",
+			"date": "31.12.2015",
+			"changelog": true
+		},
+		{
+			"code": 1028,
+			"name": "2.5.0",
+			"date": "25.01.2016",
+			"changelog": true
+		},
+		{
+			"code": 1028,
+			"name": "2.5.1",
+			"date": "01.02.2016",
+			"changelog": true
+		},
+		{
+			"code": 1028,
+			"name": "2.5.2",
+			"date": "09.02.2016",
+			"changelog": true
+		},
+		{
+			"code": 1028,
+			"name": "2.5.3",
+			"date": "14.02.2016",
+			"changelog": true
+		},
+		{
+			"code": 1028,
+			"name": "2.5.4",
+			"date": "01.03.2016",
+			"changelog": true
+		},
+		{
+			"code": 1028,
+			"name": "2.5.5",
+			"date": "12.03.2016",
+			"changelog": true
+		},
+		{
+			"code": 1028,
+			"name": "2.5.6",
+			"date": "22.03.2016",
+			"changelog": true
+		},
+		{
+			"code": 1028,
+			"name": "2.5.7",
+			"date": "01.04.2016",
+			"changelog": true
+		},
+		{
+			"code": 1029,
+			"name": "2.6.0",
+			"date": "18.04.2016",
+			"changelog": true
+		},
+		{
+			"code": 1030,
+			"name": "2.7.0",
+			"date": "27.05.2016",
+			"changelog": true
+		},
+		{
+			"code": 1030,
+			"name": "2.7.1",
+			"date": "04.06.2016",
+			"changelog": true
+		},
+		{
+			"code": 1030,
+			"name": "2.7.2",
+			"date": "23.06.2016",
+			"changelog": true
+		},
+		{
+			"code": 1030,
+			"name": "2.7.3",
+			"date": "26.06.2016",
+			"changelog": true
+		},
+		{
+			"code": 1031,
+			"name": "2.8.0",
+			"date": "12.07.2016",
+			"changelog": true
+		},
+		{
+			"code": 1031,
+			"name": "2.8.1",
+			"date": "03.08.2016",
+			"changelog": true
+		},
+		{
+			"code": 1031,
+			"name": "2.8.2",
+			"date": "04.08.2016",
+			"changelog": true
+		},
+		{
+			"code": 1031,
+			"name": "2.8.3",
+			"date": "26.08.2016",
+			"changelog": true
+		},
+		{
+			"code": 1032,
+			"name": "2.9.0",
+			"date": "26.10.2016",
+			"changelog": true
+		},
+		{
+			"code": 1033,
+			"name": "2.10.0",
+			"date": "23.04.2017",
+			"changelog": true
+		},
+		{
+			"code": 1033,
+			"name": "2.10.1",
+			"date": "24.04.2017",
+			"changelog": true
+		},
+		{
+			"code": 1033,
+			"name": "2.10.2",
+			"date": "08.08.2017",
+			"changelog": true
+		},
+		{
+			"code": 1033,
+			"name": "2.10.3",
+			"date": "08.08.2017",
+			"changelog": true
+		},
+		{
+			"code": 1033,
+			"name": "2.10.4",
+			"date": "03.11.2018",
+			"changelog": true
+		},
+		{
+			"code": 1034,
+			"name": "3.0.0",
+			"date": "17.09.2020",
+			"changelog": true
+		},
+		{
+			"code": 1035,
+			"name": "3.0.1",
+			"date": "18.09.2020",
+			"changelog": false
+		},
+		{
+			"code": 1036,
+			"name": "3.0.2",
+			"date": "20.09.2020",
+			"changelog": false
+		},
+		{
+			"code": 1037,
+			"name": "3.0.3",
+			"date": "26.09.2020",
+			"changelog": false
+		},
+		{
+			"code": 1038,
+			"name": "3.0.4",
+			"date": "30.09.2020",
+			"changelog": false
+		},
+		{
+			"code": 1039,
+			"name": "3.1.0",
+			"date": "22.11.2020",
+			"changelog": true
+		},
+		{
+			"code": 1040,
+			"name": "3.1.1",
+			"date": "24.11.2020",
+			"changelog": false
+		}
+	]
+}

@@ -1,0 +1,8 @@
+* [ext] Display archived threads on board
+* [cfg] Allow to close pages using "back" button
+* Allow to group search results
+* [ext] Display number of unique posters in threads
+* Allow to mark own posts and highlight replies to them
+* [cfg] Load a catalog of threads by default
+* [cfg] Subdirectory pattern in download configuration dialog
+* Allow to hide replies tree

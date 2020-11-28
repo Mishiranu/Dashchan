@@ -1,0 +1,12 @@
+* [ext] Captcha pass support
+* [cfg] Load thumbnails over Wi-Fi only
+* Allow to clear cache partially
+* Improved CloudFlare support (HTTP 403)
+* Highlight unread messages
+* [cfg] Huge captcha
+* Allow to change application language
+* Fast scroll to new messages
+* [ext] External archiving using arhivach.org
+* Improved post selection
+* Checking for application updates
+* [ext] Search for threads and posts

@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
@@ -56,7 +57,10 @@ public class AboutFragment extends PreferenceFragment implements FragmentHandler
 		addButton(R.string.foss_licenses, R.string.foss_licenses__summary)
 				.setOnClickListener(p -> ((FragmentHandler) requireActivity())
 						.pushFragment(new TextFragment(TextFragment.Type.LICENSES)));
-		addButton(getString(R.string.build_version), BuildConfig.VERSION_NAME);
+		String versionDate = TextFragment.formatChangelogDate
+				(DateFormat.getDateFormat(requireContext()), BuildConfig.VERSION_DATE);
+		addButton(getString(R.string.build_version), BuildConfig.VERSION_NAME +
+				(versionDate != null ? " " + versionDate : ""));
 	}
 
 	@Override

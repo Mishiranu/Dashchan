@@ -1,0 +1,3 @@
+* Allow to make a threadshot
+* [ext] Display bump limit divider in posts list
+* [cfg] Scroll thread when scrolling gallery

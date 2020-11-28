@@ -1,0 +1,4 @@
+* Allow to reorder favorite threads (two-fingered long tap)
+* Allow to minimize posting window
+* Allow to reply from thread preview
+* [cfg] Load nearest image in gallery

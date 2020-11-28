@@ -1,0 +1,8 @@
+* [ext] Allow to report posts
+* Display last posts in threads list
+* [cfg] Automatically enable watcher when thread is added to favorites
+* [cfg] Automatically add thread to favorites on reply
+* "Burichan" theme
+* [cfg] Allow to choose subdirectory to download files
+* [ext] Load posts from other threads on link click
+* Allow to copy comment markup

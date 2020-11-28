@@ -1,0 +1,7 @@
+* [ext] Allow to attach multiple files
+* Display thumbnails for attached images
+* Use compact layout for posts without name and attachments
+* [cfg] Font size
+* [cfg] Paged board navigation
+* Context menu in posts list
+* [cfg] Allow to hide open pages or display them below favorites

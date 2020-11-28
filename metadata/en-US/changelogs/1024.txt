@@ -1,0 +1,5 @@
+* [cfg] Display pages from all forums
+* [ext] Allow to report multiple posts
+* Allow to archive in HTML format
+* [cfg] HTTP proxy
+* Allow to clear deleted posts

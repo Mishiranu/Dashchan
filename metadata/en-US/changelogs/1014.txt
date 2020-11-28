@@ -1,0 +1,4 @@
+* Allow to rename favorite threads
+* [ext] Favorite threads watcher
+* [cfg] Thumbnail size
+* reCAPTCHA support

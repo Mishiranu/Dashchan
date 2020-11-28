@@ -1,0 +1,4 @@
+* Allow to share file link
+* [cfg] Load YouTube video titles
+* Allow to hide text in spoilers
+* Image gallery in thread

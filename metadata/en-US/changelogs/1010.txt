@@ -1,0 +1,5 @@
+* Allow to quote selected text
+* Allow to disable certificate verification
+* "Neutron" theme
+* [ext] Display user boards
+* [ext] Display popular threads

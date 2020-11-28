@@ -1,0 +1,6 @@
+* Allow to close gallery using gestures
+* [ext] Display number of remaining characters in comment
+* [cfg] Built-in WebM player
+* [ext] Display ban reason and list of rejected words
+* [cfg] Check for updates on startup
+* [cfg] SFW mode

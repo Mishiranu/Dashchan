@@ -1,0 +1,13 @@
+* Theme engine
+* Use Storage Access Framework to download files
+* Display more information about JPEG images from Exif
+* [cfg] Add thread to favorites only replying without sage
+* Allow to install any known extension from "Updates" screen
+* Display statistics in a table
+* Compatibility preferences
+* New application icon
+* hCaptcha support
+* Invisible reCAPTCHA 2 support
+* StormWall support
+* WebView proxy support
+* Drop SoundCloud and YouTube support
