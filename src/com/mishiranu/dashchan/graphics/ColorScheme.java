@@ -49,7 +49,7 @@ public class ColorScheme {
 	public final float colorGainFactor;
 
 	public interface Span {
-		public void applyColorScheme(ColorScheme colorScheme);
+		void applyColorScheme(ColorScheme colorScheme);
 	}
 
 	public static Span[] getSpans(CharSequence text) {

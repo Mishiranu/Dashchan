@@ -47,6 +47,8 @@ android {
 				'Mishiranu/Dashchan/master/update/data.json"'
 		buildConfigField 'String', 'URI_THEMES', '"//raw.githubusercontent.com/' +
 				'Mishiranu/Dashchan/master/update/themes.json"'
+		buildConfigField 'String', 'URI_VERSIONS', '"//raw.githubusercontent.com/' +
+				'Mishiranu/Dashchan/master/metadata/versions.json"'
 	}
 
 	sourceSets.main {

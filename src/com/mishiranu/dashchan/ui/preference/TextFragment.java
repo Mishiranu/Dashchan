@@ -1,12 +1,13 @@
 package com.mishiranu.dashchan.ui.preference;
 
-import android.content.Context;
-import android.content.res.Configuration;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.Rect;
-import android.net.Uri;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.util.Pair;
+import android.text.SpannableStringBuilder;
+import android.text.style.ReplacementSpan;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,24 +18,18 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
-import chan.content.Chan;
 import chan.content.ChanMarkup;
-import chan.http.HttpException;
-import chan.http.HttpHolder;
-import chan.http.HttpRequest;
-import chan.text.GroupParser;
-import chan.text.ParseException;
-import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.LocaleManager;
-import com.mishiranu.dashchan.content.async.HttpHolderTask;
+import com.mishiranu.dashchan.content.async.ReadChangelogTask;
 import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.graphics.ColorScheme;
+import com.mishiranu.dashchan.text.style.HeadingSpan;
 import com.mishiranu.dashchan.ui.ContentFragment;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.CommentTextView;
@@ -42,30 +37,27 @@ import com.mishiranu.dashchan.widget.ThemeEngine;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class TextFragment extends ContentFragment implements View.OnClickListener {
 	private static final String EXTRA_TYPE = "type";
 
+	private static final String EXTRA_CHANGELOG_ENTRIES = "changelogEntries";
 	private static final String EXTRA_ERROR_ITEM = "errorItem";
-	private static final String EXTRA_TEXT = "text";
 
 	public enum Type {
 		LICENSES(markup -> {
 			markup.addTag("h1", ChanMarkup.TAG_HEADING);
 			markup.addTag("pre", ChanMarkup.TAG_CODE);
 		}),
-		CHANGELOG(markup -> {
-			markup.addTag("h4", ChanMarkup.TAG_HEADING);
-			markup.addTag("em", ChanMarkup.TAG_ITALIC);
-		});
+		CHANGELOG(null);
 
 		private final ChanMarkup.MarkupBuilder builder;
 
 		Type(ChanMarkup.MarkupBuilder.Constructor constructor) {
-			builder = new ChanMarkup.MarkupBuilder(constructor);
+			builder = constructor != null ? new ChanMarkup.MarkupBuilder(constructor) : null;
 		}
 	}
 
@@ -74,8 +66,8 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 	private ViewFactory.ErrorHolder errorHolder;
 	private View progressView;
 
+	private List<ReadChangelogTask.Entry> changelogEntries;
 	private ErrorItem errorItem;
-	private String text;
 
 	public TextFragment() {}
 
@@ -144,31 +136,34 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 			}
 			case CHANGELOG: {
 				((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.changelog), null);
+				changelogEntries = savedInstanceState != null ? savedInstanceState
+						.getParcelableArrayList(EXTRA_CHANGELOG_ENTRIES) : null;
 				errorItem = savedInstanceState != null ? savedInstanceState.getParcelable(EXTRA_ERROR_ITEM) : null;
-				text = savedInstanceState != null ? savedInstanceState.getString(EXTRA_TEXT) : null;
 				if (errorItem != null) {
 					contentView.setVisibility(View.GONE);
 					errorHolder.layout.setVisibility(View.VISIBLE);
 					errorHolder.text.setText(errorItem.toString());
-				} else if (text != null) {
-					setText(text);
+				} else if (changelogEntries != null) {
+					setText(formatChangelogEntries(changelogEntries));
 				} else {
 					contentView.setVisibility(View.GONE);
 					progressView.setVisibility(View.VISIBLE);
 					ChangelogViewModel viewModel = new ViewModelProvider(this).get(ChangelogViewModel.class);
 					if (!viewModel.hasTaskOrValue()) {
-						ReadChangelogTask task = new ReadChangelogTask(requireContext(), viewModel);
+						ReadChangelogTask task = new ReadChangelogTask(viewModel.callback,
+								LocaleManager.getInstance().getLocales(getResources().getConfiguration()));
 						task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 						viewModel.attach(task);
 					}
-					viewModel.observe(getViewLifecycleOwner(), result -> {
+					viewModel.observe(getViewLifecycleOwner(), (entries, errorItem) -> {
+						changelogEntries = entries;
+						this.errorItem = errorItem;
 						progressView.setVisibility(View.GONE);
-						if (result.second != null) {
-							text = result.second;
+						if (entries != null) {
 							contentView.setVisibility(View.VISIBLE);
-							setText(text);
+							setText(formatChangelogEntries(entries));
 						} else {
-							errorItem = result.first != null ? result.first : new ErrorItem(ErrorItem.Type.UNKNOWN);
+							errorItem = errorItem != null ? errorItem : new ErrorItem(ErrorItem.Type.UNKNOWN);
 							errorHolder.layout.setVisibility(View.VISIBLE);
 							errorHolder.text.setText(errorItem.toString());
 						}
@@ -186,17 +181,73 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 		switch (Type.valueOf(requireArguments().getString(EXTRA_TYPE))) {
 			case CHANGELOG: {
 				outState.putParcelable(EXTRA_ERROR_ITEM, errorItem);
-				outState.putString(EXTRA_TEXT, text);
+				outState.putParcelableArrayList(EXTRA_CHANGELOG_ENTRIES, new ArrayList<>(changelogEntries));
 				break;
 			}
 		}
 	}
 
-	private void setText(String text) {
+	private CharSequence formatChangelogEntries(List<ReadChangelogTask.Entry> changelogEntries) {
+		DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(requireContext());
+		SpannableStringBuilder builder = new SpannableStringBuilder();
+		for (ReadChangelogTask.Entry entry : changelogEntries) {
+			if (builder.length() > 0) {
+				builder.append("\n\n");
+			}
+			String header;
+			ReadChangelogTask.Entry.Version start = entry.versions.get(0);
+			if (entry.versions.size() >= 2) {
+				ReadChangelogTask.Entry.Version end = entry.versions.get(entry.versions.size() - 1);
+				header = start.name + " " + formatChangelogDate(dateFormat, start.date) + " — " +
+						end.name + " " + formatChangelogDate(dateFormat, end.date);
+			} else {
+				header = start.name + " " + formatChangelogDate(dateFormat, start.date);
+			}
+			builder.append(header);
+			builder.setSpan(new HeadingSpan(), builder.length() - header.length(), builder.length(),
+					SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+			builder.append("\n\n");
+			boolean newLine = false;
+			for (String line : entry.text.split("\n")) {
+				if (!line.isEmpty()) {
+					if (!newLine) {
+						newLine = true;
+					} else {
+						builder.append('\n');
+					}
+					boolean bullet = false;
+					if (line.startsWith("*")) {
+						line = line.substring(1).trim();
+						bullet = true;
+					}
+					if (bullet) {
+						builder.append("\u2022 ");
+					}
+					if (line.startsWith("[")) {
+						int end = line.indexOf(']');
+						if (end >= 0) {
+							String prefix = line.substring(0, end + 1);
+							line = line.substring(end + 1).trim();
+							builder.append(prefix);
+							builder.setSpan(new PrefixSpan(), builder.length() - prefix.length(), builder.length(),
+									SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+							builder.append(' ');
+						}
+					}
+					builder.append(line);
+				}
+			}
+		}
+		return builder;
+	}
+
+	private void setText(CharSequence text) {
 		Type type = Type.valueOf(requireArguments().getString(EXTRA_TYPE));
-		CharSequence spanned = type.builder.fromHtmlReduced(text);
-		ThemeEngine.getColorScheme(requireContext()).apply(spanned);
-		textView.setText(spanned);
+		if (type.builder != null) {
+			text = type.builder.fromHtmlReduced(text.toString());
+		}
+		ThemeEngine.getColorScheme(requireContext()).apply(text);
+		textView.setText(text);
 	}
 
 	private long lastClickTime;
@@ -225,118 +276,70 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 		return dateFormat.format(date);
 	}
 
-	public static class ChangelogViewModel extends TaskViewModel<ReadChangelogTask, Pair<ErrorItem, String>> {}
+	public static class ChangelogViewModel extends TaskViewModel.Proxy<ReadChangelogTask, ReadChangelogTask.Callback> {}
 
-	private static class ReadChangelogTask extends HttpHolderTask<Void, Pair<ErrorItem, String>> {
-		private static final Pattern PATTERN_TITLE = Pattern.compile("<h1.*?>Changelog (.*)</h1>");
+	private static class PrefixSpan extends ReplacementSpan implements ColorScheme.Span {
+		private final Paint.FontMetricsInt fontMetrics = new Paint.FontMetricsInt();
+		private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		private final RectF rect = new RectF();
 
-		private final ChangelogViewModel viewModel;
-		private final Configuration configuration;
+		private int background;
+		private int foreground;
 
-		public ReadChangelogTask(Context context, ChangelogViewModel viewModel) {
-			super(Chan.getFallback());
-			this.viewModel = viewModel;
-			configuration = context.getResources().getConfiguration();
+		private static void updateTextSize(Paint paint) {
+			paint.setTextSize((int) (11f / 14f * paint.getTextSize() + 0.5f));
+			paint.setTypeface(ResourceUtils.TYPEFACE_MEDIUM);
 		}
 
-		private static String downloadChangelog(HttpHolder holder, String suffix) throws HttpException {
-			Uri uri = Chan.getFallback().locator.buildPathWithHost("github.com",
-					"Mishiranu", "Dashchan", "wiki", "Changelog-" + suffix);
-			String response = new HttpRequest(uri, holder).setSuccessOnly(false).perform().readString();
-			Matcher matcher = PATTERN_TITLE.matcher(StringUtils.emptyIfNull(response));
-			if (matcher.find()) {
-				String titleSuffix = matcher.group(1);
-				if (titleSuffix.replace(' ', '-').toLowerCase(Locale.US).equals(suffix.toLowerCase(Locale.US))) {
-					return response;
-				}
+		@Override
+		public void applyColorScheme(ColorScheme colorScheme) {
+			background = colorScheme.linkColor;
+			foreground = colorScheme.windowBackgroundColor;
+		}
+
+		private static CharSequence getText(CharSequence text, int start, int end) {
+			StringBuilder builder = new StringBuilder();
+			for (int i = start + 1; i < end - 1; i++) {
+				builder.append(Character.toUpperCase(text.charAt(i)));
 			}
-			return null;
+			return builder;
 		}
 
 		@Override
-		public Pair<ErrorItem, String> run(HttpHolder holder) {
-			try {
-				String result = null;
-				for (Locale locale : LocaleManager.getInstance().getLocales(configuration)) {
-					String language = locale.getLanguage();
-					String country = locale.getCountry();
-					if (!StringUtils.isEmpty(country)) {
-						result = downloadChangelog(holder, language.toUpperCase(Locale.US) +
-								"-" + country.toUpperCase(Locale.US));
-						if (result != null) {
-							break;
-						}
-					}
-					result = downloadChangelog(holder, language.toUpperCase(Locale.US));
-					if (result != null) {
-						break;
-					}
-				}
-				if (result == null) {
-					result = downloadChangelog(holder, Locale.US.getLanguage().toUpperCase(Locale.US));
-				}
-				if (result != null) {
-					result = ChangelogGroupCallback.parse(result);
-				}
-				if (result == null) {
-					return new Pair<>(new ErrorItem(ErrorItem.Type.UNKNOWN), null);
-				} else {
-					return new Pair<>(null, result);
-				}
-			} catch (HttpException e) {
-				return new Pair<>(e.getErrorItemAndHandle(), null);
-			}
+		public int getSize(@NonNull Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
+			Paint workPaint = this.paint;
+			workPaint.set(paint);
+			updateTextSize(workPaint);
+			CharSequence drawText = getText(text, start, end);
+			return (int) (workPaint.measureText(drawText, 0, drawText.length()) +
+					2 * workPaint.measureText(" ", 0, 1) + 0.5f);
 		}
 
 		@Override
-		protected void onComplete(Pair<ErrorItem, String> result) {
-			viewModel.handleResult(result);
-		}
-	}
-
-	private static class ChangelogGroupCallback implements GroupParser.Callback {
-		private String result;
-
-		public static String parse(String source) {
-			ChangelogGroupCallback callback = new ChangelogGroupCallback();
-			try {
-				GroupParser.parse(source, callback);
-			} catch (ParseException e) {
-				if (StringUtils.isEmpty(callback.result)) {
-					Log.persistent().stack(e);
-				}
-			}
-			return callback.result;
-		}
-
-		@Override
-		public boolean onStartElement(GroupParser parser, String tagName, GroupParser.Attributes attributes) {
-			return "div".equals(tagName) && "markdown-body".equals(attributes.get("class"));
-		}
-
-		@Deprecated
-		@Override
-		public boolean onStartElement(GroupParser parser, String tagName, String attrs) {
-			throw new IllegalStateException();
-		}
-
-		@Override
-		public void onEndElement(GroupParser parser, String tagName) {}
-
-		@Override
-		public void onText(GroupParser parser, CharSequence text) {}
-
-		@Deprecated
-		@Override
-		public void onText(GroupParser parser, String source, int start, int end) {
-			throw new IllegalStateException();
-		}
-
-		@Override
-		public void onGroupComplete(GroupParser parser, String text) throws ParseException {
-			result = text;
-			// Cancel parsing
-			throw new ParseException();
+		public void draw(@NonNull Canvas canvas, CharSequence text, int start, int end,
+				float x, int top, int y, int bottom, @NonNull Paint paint) {
+			Paint.FontMetricsInt fontMetrics = this.fontMetrics;
+			paint.getFontMetricsInt(fontMetrics);
+			Paint workPaint = this.paint;
+			int fullSize = getSize(paint, text, start, end, fontMetrics);
+			workPaint.setColor(background);
+			float radius = workPaint.getTextSize() / 11f;
+			float padding = fontMetrics.descent / 3f;
+			int baseline = bottom - fontMetrics.bottom;
+			rect.set(x, baseline + fontMetrics.ascent + padding, x + fullSize,
+					baseline + fontMetrics.descent - padding);
+			canvas.drawRoundRect(rect, radius, radius, workPaint);
+			workPaint.setColor(foreground);
+			CharSequence drawText = getText(text, start, end);
+			int textSize = (int) (workPaint.measureText(drawText, 0, drawText.length()) + 0.5f);
+			float dx = (fullSize - textSize) / 2f;
+			float topDy = fontMetrics.ascent;
+			float bottomDy = fontMetrics.descent;
+			workPaint.getFontMetricsInt(fontMetrics);
+			topDy -= fontMetrics.ascent;
+			bottomDy -= fontMetrics.descent;
+			float dy = (topDy + bottomDy) / 2f;
+			canvas.drawText(drawText, 0, drawText.length(), x + dx, baseline + dy, workPaint);
 		}
 	}
 }
