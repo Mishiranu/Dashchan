@@ -13,7 +13,7 @@ public class EdgeEffectHandler {
 	public enum Side {TOP, BOTTOM}
 
 	public interface Shift {
-		public int getEdgeEffectShift(Side side);
+		int getEdgeEffectShift(Side side);
 	}
 
 	private static class ControlledEdgeEffect extends EdgeEffect {

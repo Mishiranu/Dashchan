@@ -3,6 +3,7 @@ package com.mishiranu.dashchan.widget;
 import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
+import android.view.DisplayCutout;
 import android.view.View;
 import android.view.WindowInsets;
 import android.widget.FrameLayout;
@@ -130,6 +131,23 @@ public class InsetsLayout extends FrameLayout {
 		}
 	}
 
+	private static Insets getWindowWithCutout(Insets window, WindowInsets insets) {
+		if (C.API_PIE) {
+			DisplayCutout cutout = insets.getDisplayCutout();
+			if (cutout != null) {
+				int left = cutout.getSafeInsetLeft();
+				int top = cutout.getSafeInsetTop();
+				int right = cutout.getSafeInsetRight();
+				int bottom = cutout.getSafeInsetBottom();
+				if (left > window.left || top > window.top || right > window.right || bottom > window.bottom) {
+					return new Insets(Math.max(left, window.left), Math.max(top, window.top),
+							Math.max(right, window.right), Math.max(bottom, window.bottom));
+				}
+			}
+		}
+		return window;
+	}
+
 	@Override
 	public WindowInsets onApplyWindowInsets(WindowInsets insets) {
 		try {
@@ -141,7 +159,8 @@ public class InsetsLayout extends FrameLayout {
 				Insets gesture29;
 				Insets ime30;
 				if (C.API_R) {
-					Insets realWindow = new Insets(insets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars()));
+					Insets realWindow = new Insets(insets.getInsetsIgnoringVisibility
+							(WindowInsets.Type.displayCutout() | WindowInsets.Type.systemBars()));
 					gesture29 = new Insets(insets.getInsets(WindowInsets.Type.systemGestures()));
 					ime30 = new Insets(insets.getInsets(WindowInsets.Type.ime()));
 					if (ime30.bottom > realWindow.bottom) {
@@ -153,7 +172,7 @@ public class InsetsLayout extends FrameLayout {
 				} else if (C.API_Q) {
 					@SuppressWarnings("deprecation")
 					Insets windowDeprecated = new Insets(insets.getSystemWindowInsets());
-					window = windowDeprecated;
+					window = getWindowWithCutout(windowDeprecated, insets);
 					@SuppressWarnings("deprecation")
 					Insets gesture29Deprecated = new Insets(insets.getSystemGestureInsets());
 					gesture29 = gesture29Deprecated;
@@ -167,7 +186,7 @@ public class InsetsLayout extends FrameLayout {
 					int right = insets.getSystemWindowInsetRight();
 					@SuppressWarnings("deprecation")
 					int bottom = insets.getSystemWindowInsetBottom();
-					window = new Insets(left, top, right, bottom);
+					window = getWindowWithCutout(new Insets(left, top, right, bottom), insets);
 					gesture29 = Insets.DEFAULT;
 					ime30 = Insets.DEFAULT;
 				}

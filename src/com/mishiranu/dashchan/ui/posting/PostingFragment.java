@@ -86,6 +86,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DropdownView;
+import com.mishiranu.dashchan.widget.ExpandedLayout;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import com.mishiranu.dashchan.widget.ViewFactory;
@@ -199,7 +200,7 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		FrameLayout rootView = new FrameLayout(container.getContext());
+		ExpandedLayout rootView = new ExpandedLayout(container.getContext(), true);
 		rootView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT));
 		inflater.inflate(R.layout.activity_posting, rootView);
@@ -1717,7 +1718,7 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 				} else {
 					padding = 0;
 				}
-				getView().setPadding(0, padding, 0, 0);
+				((ExpandedLayout) getView()).setExtraTop(padding);
 			}
 		}
 	}

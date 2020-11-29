@@ -67,6 +67,14 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 	private final int lastItemLimit;
 	private final int minItemsCount;
 
+	public interface Layout {
+		default RecyclerView getRecyclerView() {
+			return null;
+		}
+
+		void setVerticalInsets(int top, int bottom, boolean useGesture29);
+	}
+
 	public static class PreThemeInit {
 		private final Activity activity;
 		private final boolean expandingEnabled;
@@ -160,7 +168,7 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 			int actionBarHeight = obtainActionBarHeight(activity);
 			insetsLayout.setOnApplyInsetsListener(applyData -> {
 				InsetsLayout.Insets windowInsets;
-				if (applyData.window.top > actionBarHeight) {
+				if (!C.API_LOLLIPOP && applyData.window.top > actionBarHeight) {
 					// Fix for KitKat, assume action bar height > status bar height
 					int top = applyData.window.top - actionBarHeight;
 					windowInsets = new InsetsLayout.Insets(applyData.window.left, top,
@@ -488,14 +496,12 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 
 	public void addContentView(View view) {
 		RecyclerView recyclerView = null;
-		if (view instanceof ExpandedFrameLayout) {
-			recyclerView = ((ExpandedFrameLayout) view).getRecyclerView();
+		if (view instanceof Layout) {
+			recyclerView = ((Layout) view).getRecyclerView();
 		}
 		contentViews.put(view, recyclerView);
-		if (expandingEnabled) {
-			if (recyclerView != null) {
-				recyclerScrollTracker.attach(recyclerView);
-			}
+		if (recyclerView != null && expandingEnabled) {
+			recyclerScrollTracker.attach(recyclerView);
 		}
 		updatePaddings();
 		setShowActionBar(true, true);
@@ -529,6 +535,7 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 			int leftNavigationBarHeight = windowInsets.left;
 			int rightNavigationBarHeight = windowInsets.right;
 			int bottomNavigationBarHeight = windowInsets.bottom;
+			boolean useGesture29 = this.useGesture29;
 			int bottomImeHeight = imeBottom30;
 			if (rootView != null) {
 				ViewUtils.setNewMargin(rootView, leftNavigationBarHeight, 0,
@@ -537,23 +544,10 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 			if (drawerInterlayer != null) {
 				ViewUtils.setNewPadding(drawerInterlayer, null, statusBarHeight, null, bottomNavigationBarHeight);
 			}
-			for (LinkedHashMap.Entry<View, RecyclerView> entry : contentViews.entrySet()) {
-				View view = entry.getKey();
-				RecyclerView recyclerView = entry.getValue();
-				if (recyclerView != null) {
-					ViewUtils.setNewPadding(recyclerView, null, statusBarHeight + actionBarHeight,
-							null, bottomNavigationBarHeight);
-				}
-				if (view instanceof ExpandedFrameLayout) {
-					ExpandedFrameLayout layout = (ExpandedFrameLayout) view;
-					int childCount = layout.getChildCount();
-					for (int i = 0; i < childCount; i++) {
-						View child = layout.getChildAt(i);
-						if (child != recyclerView) {
-							ViewUtils.setNewPadding(child, null, statusBarHeight + actionBarHeight,
-									null, bottomNavigationBarHeight);
-						}
-					}
+			for (View view : contentViews.keySet()) {
+				if (view instanceof Layout) {
+					((Layout) view).setVerticalInsets(statusBarHeight + actionBarHeight,
+							bottomNavigationBarHeight, useGesture29);
 				} else {
 					ViewUtils.setNewMargin(view, null, statusBarHeight + actionBarHeight,
 							null, bottomNavigationBarHeight);

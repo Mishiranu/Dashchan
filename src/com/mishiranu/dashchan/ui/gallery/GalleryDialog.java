@@ -52,6 +52,13 @@ public class GalleryDialog extends Dialog {
 				overlay.setOnApplyWindowInsetsListener((v, insets) -> {
 					Insets systemInsets = insets.getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
 					ViewUtils.setNewMargin(container, systemInsets.left, systemInsets.top, systemInsets.right, null);
+					View actionBar = getActionBarView();
+					if (actionBar != null) {
+						Insets cutoutInsets = insets.getInsetsIgnoringVisibility(WindowInsets.Type.displayCutout());
+						ViewUtils.setNewPadding(actionBar, Math.max(0, cutoutInsets.left - systemInsets.left),
+								Math.max(0, cutoutInsets.top - systemInsets.top),
+								Math.max(0, cutoutInsets.right - systemInsets.right), null);
+					}
 					return insets;
 				});
 			}

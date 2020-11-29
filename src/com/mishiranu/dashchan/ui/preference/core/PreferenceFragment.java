@@ -25,6 +25,7 @@ import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.ExpandedLayout;
 import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.SimpleViewHolder;
 import com.mishiranu.dashchan.widget.ViewFactory;
@@ -97,6 +98,8 @@ public abstract class PreferenceFragment extends ContentFragment {
 		recyclerView = new PaddedRecyclerView(container.getContext());
 		recyclerView.setId(android.R.id.list);
 		recyclerView.setMotionEventSplittingEnabled(false);
+		recyclerView.setClipToPadding(false);
+		recyclerView.setVerticalScrollBarEnabled(true);
 		recyclerView.setLayoutManager(new LinearLayoutManager(container.getContext()));
 		recyclerView.setAdapter(new Adapter());
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), (c, position) -> {
@@ -113,9 +116,10 @@ public abstract class PreferenceFragment extends ContentFragment {
 			float density = ResourceUtils.obtainDensity(recyclerView);
 			ViewUtils.setNewPadding(recyclerView, (int) (16f * density), null, (int) (16f * density), null);
 		}
-		recyclerView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.MATCH_PARENT));
-		return recyclerView;
+		ExpandedLayout layout = new ExpandedLayout(container.getContext(), true);
+		layout.addView(recyclerView, ExpandedLayout.LayoutParams.MATCH_PARENT,
+				ExpandedLayout.LayoutParams.MATCH_PARENT);
+		return layout;
 	}
 
 	@Override

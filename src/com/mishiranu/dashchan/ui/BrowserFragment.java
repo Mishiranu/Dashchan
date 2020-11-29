@@ -39,6 +39,7 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.WebViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
+import com.mishiranu.dashchan.widget.ExpandedLayout;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.UUID;
 
@@ -60,15 +61,13 @@ public class BrowserFragment extends ContentFragment implements DownloadListener
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		webView = new WebView(requireContext());
-		progressView = new ProgressView(requireContext());
+		ExpandedLayout layout = new ExpandedLayout(container.getContext(), true);
+		webView = new WebView(layout.getContext());
+		layout.addView(webView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+		progressView = new ProgressView(layout.getContext());
 		float density = ResourceUtils.obtainDensity(this);
-		FrameLayout frameLayout = new FrameLayout(requireContext());
-		frameLayout.addView(webView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-		frameLayout.addView(progressView, FrameLayout.LayoutParams.MATCH_PARENT, (int) (3f * density + 0.5f));
-		frameLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.MATCH_PARENT));
-		return frameLayout;
+		layout.addView(progressView, FrameLayout.LayoutParams.MATCH_PARENT, (int) (3f * density + 0.5f));
+		return layout;
 	}
 
 	@SuppressLint("SetJavaScriptEnabled")

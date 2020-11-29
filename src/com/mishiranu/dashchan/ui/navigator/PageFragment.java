@@ -25,7 +25,7 @@ import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.ui.navigator.page.ListPage;
 import com.mishiranu.dashchan.widget.CustomSearchView;
-import com.mishiranu.dashchan.widget.ExpandedFrameLayout;
+import com.mishiranu.dashchan.widget.ExpandedLayout;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.MenuExpandListener;
 import com.mishiranu.dashchan.widget.PullableRecyclerView;
@@ -125,10 +125,11 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 		actionBarLockerPull = "pull-" + UUID.randomUUID();
 		actionBarLockerSearch = "search-" + UUID.randomUUID();
 
-		ExpandedFrameLayout layout = new ExpandedFrameLayout(requireContext());
+		ExpandedLayout layout = new ExpandedLayout(container.getContext(), false);
 		recyclerView = new PullableRecyclerView(layout.getContext());
-		layout.addView(recyclerView, ExpandedFrameLayout.LayoutParams.MATCH_PARENT,
-				ExpandedFrameLayout.LayoutParams.MATCH_PARENT);
+		layout.addView(recyclerView, ExpandedLayout.LayoutParams.MATCH_PARENT,
+				ExpandedLayout.LayoutParams.MATCH_PARENT);
+		layout.setRecyclerView(recyclerView);
 		if (!C.API_MARSHMALLOW) {
 			@SuppressWarnings("deprecation")
 			Runnable setAnimationCacheEnabled = () -> recyclerView.setAnimationCacheEnabled(false);
@@ -139,8 +140,7 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 		recyclerView.setVerticalScrollBarEnabled(true);
 		recyclerView.setFastScrollerEnabled(Preferences.isActiveScrollbar());
 		FrameLayout progress = new FrameLayout(layout.getContext());
-		layout.addView(progress, ExpandedFrameLayout.LayoutParams.MATCH_PARENT,
-				ExpandedFrameLayout.LayoutParams.MATCH_PARENT);
+		layout.addView(progress, ExpandedLayout.LayoutParams.MATCH_PARENT, ExpandedLayout.LayoutParams.MATCH_PARENT);
 		progress.setVisibility(View.GONE);
 		progressView = progress;
 		ProgressBar progressBar = new ProgressBar(progress.getContext());

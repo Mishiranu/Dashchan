@@ -70,7 +70,6 @@ import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.CommentTextView;
 import com.mishiranu.dashchan.widget.DialogStack;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
-import com.mishiranu.dashchan.widget.ExpandedFrameLayout;
 import com.mishiranu.dashchan.widget.InsetsLayout;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PaddedRecyclerView;
@@ -213,8 +212,7 @@ public class DialogUnit {
 			recyclerView.setClipToPadding(false);
 			recyclerView.setVerticalScrollBarEnabled(true);
 			FrameLayout progress = new FrameLayout(content.getContext());
-			content.addView(progress, ExpandedFrameLayout.LayoutParams.MATCH_PARENT,
-					ExpandedFrameLayout.LayoutParams.MATCH_PARENT);
+			content.addView(progress, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
 			progress.setPadding(0, (int) (60f * density), 0, (int) (60f * density));
 			progress.setVisibility(View.GONE);
 			ProgressBar progressBar = new ProgressBar(progress.getContext());

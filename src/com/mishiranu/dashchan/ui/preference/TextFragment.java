@@ -33,6 +33,7 @@ import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.CommentTextView;
+import com.mishiranu.dashchan.widget.ExpandedLayout;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.text.DateFormat;
@@ -80,10 +81,10 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		float density = ResourceUtils.obtainDensity(this);
-		FrameLayout view = new FrameLayout(requireContext());
-		view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+		ExpandedLayout layout = new ExpandedLayout(container.getContext(), true);
+		layout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT));
-		ScrollView scrollView = new ScrollView(view.getContext()) {
+		ScrollView scrollView = new ScrollView(layout.getContext()) {
 			@Override
 			public boolean requestChildRectangleOnScreen(View child, Rect rectangle, boolean immediate) {
 				// Don't scroll on select
@@ -91,8 +92,9 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 			}
 		};
 		scrollView.setId(android.R.id.list);
+		scrollView.setClipToPadding(false);
 		ThemeEngine.applyStyle(scrollView);
-		view.addView(scrollView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+		layout.addView(scrollView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
 		contentView = scrollView;
 		FrameLayout frameLayout = new FrameLayout(scrollView.getContext());
 		frameLayout.setOnClickListener(this);
@@ -102,16 +104,18 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 		textView.setPadding(padding, padding, padding, padding);
 		ViewUtils.setTextSizeScaled(textView, 14);
 		frameLayout.addView(textView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-		errorHolder = ViewFactory.createErrorLayout(view);
+		errorHolder = ViewFactory.createErrorLayout(layout);
 		errorHolder.layout.setVisibility(View.GONE);
-		view.addView(errorHolder.layout);
-		ProgressBar progressBar = new ProgressBar(view.getContext());
-		ThemeEngine.applyStyle(progressBar);
-		view.addView(progressBar, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+		layout.addView(errorHolder.layout);
+		FrameLayout progress = new FrameLayout(layout.getContext());
+		layout.addView(progress, ExpandedLayout.LayoutParams.MATCH_PARENT, ExpandedLayout.LayoutParams.MATCH_PARENT);
+		progress.setVisibility(View.GONE);
+		progressView = progress;
+		ProgressBar progressBar = new ProgressBar(progress.getContext());
+		progress.addView(progressBar, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
 		((FrameLayout.LayoutParams) progressBar.getLayoutParams()).gravity = Gravity.CENTER;
-		progressBar.setVisibility(View.GONE);
-		progressView = progressBar;
-		return view;
+		ThemeEngine.applyStyle(progressBar);
+		return layout;
 	}
 
 	@Override
