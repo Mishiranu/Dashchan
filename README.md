@@ -1,16 +1,31 @@
 # Dashchan
 
-Imageboards client for Android.
+Android client for imageboards.
+
+## Features
+
+* Supports multiple forums using extensions
+* Threads watcher and reply notifications
+* Automatic filter using regular expressions
+* Image gallery and video player
+* Archiving in HTML format
+* Configurable themes
+* Fullscreen layout
 
 Read the [project wiki](https://github.com/Mishiranu/Dashchan/wiki) for further information.
 
-## Updating Guide
+## Screenshots
 
-Go to Preferences → About → Check for updates. After fetching update data you can view a number of updates in the title
-bar. Usually you just need to click on the download button and wait until download ends.
-
-It is better to install extension packages and then install the application package. You will need torestart the application
-after installing or updating extensions only.
+<p>
+<img src="metadata/en-US/images/phoneScreenshots/1.png" width="20%" />
+<img src="metadata/en-US/images/phoneScreenshots/2.png" width="20%" />
+<img src="metadata/en-US/images/phoneScreenshots/3.png" width="20%" />
+<img src="metadata/en-US/images/phoneScreenshots/4.png" width="20%" />
+<img src="metadata/en-US/images/phoneScreenshots/5.png" width="20%" />
+<img src="metadata/en-US/images/phoneScreenshots/6.png" width="20%" />
+<img src="metadata/en-US/images/phoneScreenshots/7.png" width="20%" />
+<img src="metadata/en-US/images/phoneScreenshots/8.png" width="20%" />
+</p>
 
 ## Building Guide
 
@@ -33,10 +48,10 @@ key.password=%KEY_PASSWORD%
 
 ### Building extenions
 
-The source code of extensions is available in the
+The source code of extensions is available in
 [Dashchan Extensions](https://github.com/Mishiranu/Dashchan-Extensions) repository.
 
-The source code of the video player extension is available in the
+The source code of the video player libraries extension is available in
 [Dashchan Webm](https://github.com/Mishiranu/Dashchan-Webm) repository.
 
 ## License

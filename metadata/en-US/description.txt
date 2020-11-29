@@ -1,0 +1,7 @@
+* Supports multiple forums using extensions
+* Threads watcher and reply notifications
+* Automatic filter using regular expressions
+* Image gallery and video player
+* Archiving in HTML format
+* Configurable themes
+* Fullscreen layout
