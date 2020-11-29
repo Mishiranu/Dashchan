@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import chan.content.ChanManager;
 import chan.util.DataFile;
 import chan.util.StringUtils;
+import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.ui.StateActivity;
 import java.io.File;
@@ -68,6 +69,9 @@ public class UpdaterActivity extends StateActivity {
 		}
 	}
 
+	// Hidden error code in PackageManager
+	private static final int INSTALL_FAILED_INVALID_APK = -2;
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
@@ -75,6 +79,11 @@ public class UpdaterActivity extends StateActivity {
 		if (requestCode == 0) {
 			if (resultCode == RESULT_OK) {
 				index++;
+				performInstallation();
+			} else if (C.API_Q && resultCode == RESULT_FIRST_USER && data != null &&
+					data.getIntExtra("android.intent.extra.INSTALL_RESULT", 0) == INSTALL_FAILED_INVALID_APK) {
+				// Retry on failure. Workaround for Android 10+ bug in FLAG_GRANT_READ_URI_PERMISSION behavior:
+				// sometimes the flag doesn't take effect and package installer is unable to access the package file.
 				performInstallation();
 			} else {
 				finish();

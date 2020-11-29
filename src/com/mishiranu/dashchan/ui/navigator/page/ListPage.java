@@ -25,7 +25,7 @@ import com.mishiranu.dashchan.ui.navigator.Page;
 import com.mishiranu.dashchan.ui.navigator.manager.UiManager;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ListPosition;
-import com.mishiranu.dashchan.widget.PullableRecyclerView;
+import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import java.lang.ref.WeakReference;
 import java.util.Objects;
@@ -78,7 +78,7 @@ public abstract class ListPage implements LifecycleOwner, PullableWrapper.PullCa
 	private Callback callback;
 	private Fragment fragment;
 	private LifecycleRegistry lifecycle;
-	private PullableRecyclerView recyclerView;
+	private PaddedRecyclerView recyclerView;
 	private ListPosition listPosition;
 	private UiManager uiManager;
 	private Retainable retainableExtra;
@@ -86,7 +86,7 @@ public abstract class ListPage implements LifecycleOwner, PullableWrapper.PullCa
 	private InitRequest initRequest;
 	private InitSearch initSearch;
 
-	public final void init(Page page, Callback callback, Fragment fragment, PullableRecyclerView recyclerView,
+	public final void init(Page page, Callback callback, Fragment fragment, PaddedRecyclerView recyclerView,
 			ListPosition listPosition, UiManager uiManager, Retainable retainableExtra, Parcelable parcelableExtra,
 			InitRequest initRequest, InitSearch initSearch) {
 		if (lifecycle == null) {
@@ -154,7 +154,7 @@ public abstract class ListPage implements LifecycleOwner, PullableWrapper.PullCa
 		return Chan.get(page.chanName);
 	}
 
-	protected final PullableRecyclerView getRecyclerView() {
+	protected final PaddedRecyclerView getRecyclerView() {
 		return recyclerView;
 	}
 

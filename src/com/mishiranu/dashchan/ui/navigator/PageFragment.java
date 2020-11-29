@@ -28,7 +28,7 @@ import com.mishiranu.dashchan.widget.CustomSearchView;
 import com.mishiranu.dashchan.widget.ExpandedLayout;
 import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.MenuExpandListener;
-import com.mishiranu.dashchan.widget.PullableRecyclerView;
+import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.Collection;
@@ -79,7 +79,7 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 	private ListPage listPage;
 	private View progressView;
 	private ViewFactory.ErrorHolder errorHolder;
-	private PullableRecyclerView recyclerView;
+	private PaddedRecyclerView recyclerView;
 	private CustomSearchView searchView;
 
 	private String actionBarLockerPull;
@@ -126,7 +126,7 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 		actionBarLockerSearch = "search-" + UUID.randomUUID();
 
 		ExpandedLayout layout = new ExpandedLayout(container.getContext(), false);
-		recyclerView = new PullableRecyclerView(layout.getContext());
+		recyclerView = new PaddedRecyclerView(layout.getContext());
 		layout.addView(recyclerView, ExpandedLayout.LayoutParams.MATCH_PARENT,
 				ExpandedLayout.LayoutParams.MATCH_PARENT);
 		layout.setRecyclerView(recyclerView);
@@ -153,8 +153,8 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 
 		allowShowScale = true;
 		listPage = getPage().content.newPage();
-		recyclerView.getWrapper().setOnPullListener(listPage);
-		recyclerView.getWrapper().setPullStateListener((wrapper, busy) -> ((FragmentHandler) requireActivity())
+		recyclerView.getPullable().setOnPullListener(listPage);
+		recyclerView.getPullable().setPullStateListener((wrapper, busy) -> ((FragmentHandler) requireActivity())
 				.setActionBarLocked(actionBarLockerPull, busy));
 		return layout;
 	}

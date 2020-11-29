@@ -24,7 +24,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.HeaderItemDecoration;
-import com.mishiranu.dashchan.widget.PullableRecyclerView;
+import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -87,7 +87,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 
 	@Override
 	protected void onCreate() {
-		PullableRecyclerView recyclerView = getRecyclerView();
+		PaddedRecyclerView recyclerView = getRecyclerView();
 		recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
 		Page page = getPage();
 		UiManager uiManager = getUiManager();
@@ -101,7 +101,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 				(c, position) -> adapter.configureDivider(c, position).horizontal(dividerPadding, dividerPadding)));
 		recyclerView.addItemDecoration(new HeaderItemDecoration(adapter::configureItemHeader,
 				(c, position) -> adapter.getItemHeader(position)));
-		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
+		recyclerView.getPullable().setPullSides(PullableWrapper.Side.BOTH);
 		uiManager.observable().register(this);
 
 		InitRequest initRequest = getInitRequest();
@@ -128,12 +128,12 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 			}
 			if (readViewModel.hasTaskOrValue()) {
 				if (adapter.getItemCount() == 0) {
-					getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+					recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTH);
 					switchProgress();
 				} else {
 					ReadSearchTask task = readViewModel.getTask();
 					boolean bottom = task != null && task.getPageNumber() > 0;
-					recyclerView.getWrapper().startBusyState(bottom
+					recyclerView.getPullable().startBusyState(bottom
 							? PullableWrapper.Side.BOTTOM : PullableWrapper.Side.TOP);
 				}
 			} else if (load) {
@@ -278,19 +278,20 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 				getChan(), page.boardName, page.searchQuery, pageNumber);
 		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 		readViewModel.attach(task);
+		PaddedRecyclerView recyclerView = getRecyclerView();
 		if (showPull) {
-			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
+			recyclerView.getPullable().startBusyState(PullableWrapper.Side.TOP);
 			switchList();
 		} else {
-			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+			recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTH);
 			switchProgress();
 		}
 	}
 
 	@Override
 	public void onReadSearchSuccess(List<PostItem> postItems, int pageNumber) {
-		PullableRecyclerView recyclerView = getRecyclerView();
-		recyclerView.getWrapper().cancelBusyState();
+		PaddedRecyclerView recyclerView = getRecyclerView();
+		recyclerView.getPullable().cancelBusyState();
 		SearchAdapter adapter = getAdapter();
 		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 		if (pageNumber == 0 && (postItems == null || postItems.isEmpty())) {
@@ -346,7 +347,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 
 	@Override
 	public void onReadSearchFail(ErrorItem errorItem) {
-		getRecyclerView().getWrapper().cancelBusyState();
+		getRecyclerView().getPullable().cancelBusyState();
 		if (getAdapter().getItemCount() == 0) {
 			switchError(errorItem);
 		} else {

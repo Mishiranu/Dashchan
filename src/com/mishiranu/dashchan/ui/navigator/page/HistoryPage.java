@@ -23,8 +23,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.HeaderItemDecoration;
-import com.mishiranu.dashchan.widget.PullableRecyclerView;
-import com.mishiranu.dashchan.widget.PullableWrapper;
+import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 
 public class HistoryPage extends ListPage implements HistoryAdapter.Callback, GetHistoryTask.Callback {
 	private String chanName;
@@ -39,7 +38,7 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback, Ge
 
 	@Override
 	protected void onCreate() {
-		PullableRecyclerView recyclerView = getRecyclerView();
+		PaddedRecyclerView recyclerView = getRecyclerView();
 		recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
 		if (!C.API_LOLLIPOP) {
 			float density = ResourceUtils.obtainDensity(recyclerView);
@@ -54,7 +53,6 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback, Ge
 				adapter::configureDivider));
 		recyclerView.addItemDecoration(new HeaderItemDecoration(adapter::getItemHeader));
 		recyclerView.setItemAnimator(null);
-		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.NONE);
 		switchProgress();
 		updateHistory();
 	}

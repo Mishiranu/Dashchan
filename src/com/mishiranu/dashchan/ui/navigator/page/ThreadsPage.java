@@ -46,7 +46,7 @@ import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
-import com.mishiranu.dashchan.widget.PullableRecyclerView;
+import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import com.mishiranu.dashchan.widget.SummaryLayout;
 import java.util.ArrayList;
@@ -138,7 +138,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	@Override
 	protected void onCreate() {
 		Context context = getContext();
-		PullableRecyclerView recyclerView = getRecyclerView();
+		PaddedRecyclerView recyclerView = getRecyclerView();
 		GridLayoutManager layoutManager = new GridLayoutManager(recyclerView.getContext(), 1);
 		recyclerView.setLayoutManager(layoutManager);
 		Page page = getPage();
@@ -160,7 +160,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			}
 		});
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), adapter::configureDivider));
-		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
+		recyclerView.getPullable().setPullSides(PullableWrapper.Side.BOTH);
 		uiManager.observable().register(this);
 		layoutManager.setSpanCount(adapter.setThreadsView(Preferences.getThreadsView()));
 		adapter.applyFilter(getInitSearch().currentQuery);
@@ -185,12 +185,12 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			}
 			if (readViewModel.hasTaskOrValue()) {
 				if (getAdapter().isRealEmpty()) {
-					getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+					recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTH);
 					switchProgress();
 				} else {
 					ReadThreadsTask task = readViewModel.getTask();
 					boolean bottom = task != null && task.getPageNumber() > retainableExtra.startPageNumber;
-					recyclerView.getWrapper().startBusyState(bottom
+					recyclerView.getPullable().startBusyState(bottom
 							? PullableWrapper.Side.BOTTOM : PullableWrapper.Side.TOP);
 				}
 			} else if (load) {
@@ -634,9 +634,10 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		Page page = getPage();
 		Chan chan = getChan();
 		ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
+		PaddedRecyclerView recyclerView = getRecyclerView();
 		if (pageNumber < PAGE_NUMBER_CATALOG || pageNumber >=
 				Math.max(chan.configuration.getPagesCount(page.boardName), 1)) {
-			getRecyclerView().getWrapper().cancelBusyState();
+			recyclerView.getPullable().cancelBusyState();
 			ClickableToast.show(getString(R.string.number_page_doesnt_exist__format, pageNumber));
 			readViewModel.attach(null);
 			return false;
@@ -649,10 +650,10 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 			readViewModel.attach(task);
 			if (showPull) {
-				getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
+				recyclerView.getPullable().startBusyState(PullableWrapper.Side.TOP);
 				switchList();
 			} else {
-				getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+				recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTH);
 				switchProgress();
 			}
 			return true;
@@ -663,8 +664,8 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	public void onReadThreadsSuccess(List<PostItem> postItems, int pageNumber,
 			int boardSpeed, boolean append, boolean checkModified, HttpValidator validator,
 			PostItem.HideState.Map<String> hiddenThreads) {
-		PullableRecyclerView recyclerView = getRecyclerView();
-		recyclerView.getWrapper().cancelBusyState();
+		PaddedRecyclerView recyclerView = getRecyclerView();
+		recyclerView.getPullable().cancelBusyState();
 		switchList();
 		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 		if (postItems != null && postItems.isEmpty()) {
@@ -742,7 +743,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 
 	@Override
 	public void onReadThreadsRedirect(RedirectException.Target target) {
-		getRecyclerView().getWrapper().cancelBusyState();
+		getRecyclerView().getPullable().cancelBusyState();
 		if (!CommonUtils.equals(target.chanName, getPage().chanName)) {
 			if (getAdapter().isRealEmpty()) {
 				switchError(R.string.board_doesnt_exist);
@@ -755,7 +756,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 
 	@Override
 	public void onReadThreadsFail(ErrorItem errorItem, int pageNumber) {
-		getRecyclerView().getWrapper().cancelBusyState();
+		getRecyclerView().getPullable().cancelBusyState();
 		String message = errorItem.type == ErrorItem.Type.BOARD_NOT_EXISTS && pageNumber >= 1
 				? getString(R.string.number_page_doesnt_exist__format, pageNumber) : errorItem.toString();
 		if (getAdapter().isRealEmpty()) {

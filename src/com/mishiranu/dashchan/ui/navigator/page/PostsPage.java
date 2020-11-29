@@ -74,8 +74,8 @@ import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.ListPosition;
+import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.PostsLayoutManager;
-import com.mishiranu.dashchan.widget.PullableRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import com.mishiranu.dashchan.widget.SummaryLayout;
 import java.io.IOException;
@@ -336,7 +336,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 	@Override
 	protected void onCreate() {
 		Context context = getContext();
-		PullableRecyclerView recyclerView = getRecyclerView();
+		PaddedRecyclerView recyclerView = getRecyclerView();
 		recyclerView.setLayoutManager(new PostsLayoutManager(recyclerView.getContext()));
 		Page page = getPage();
 		UiManager uiManager = getUiManager();
@@ -360,7 +360,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				(c, position) -> adapter.configureDivider(c, position).horizontal(dividerPadding, dividerPadding)));
 		recyclerView.addItemDecoration(adapter.createPostItemDecoration(context, dividerPadding));
-		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
+		recyclerView.getPullable().setPullSides(PullableWrapper.Side.BOTH);
 		recyclerView.addOnScrollListener(scrollListener);
 		uiManager.observable().register(this);
 		FavoritesStorage.getInstance().getObservable().register(this);
@@ -479,10 +479,10 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			}
 			if (progress) {
 				if (adapter.getItemCount() == 0) {
-					getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+					recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTH);
 					switchProgress();
 				} else {
-					getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTTOM);
+					recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTTOM);
 				}
 			}
 		}
@@ -687,7 +687,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			}
 			case R.id.menu_gallery: {
 				int imageIndex = -1;
-				RecyclerView recyclerView = getRecyclerView();
+				PaddedRecyclerView recyclerView = getRecyclerView();
 				View child = recyclerView.getChildAt(0);
 				GalleryItem.Set gallerySet = adapter.getGallerySet();
 				if (child != null) {
@@ -1170,11 +1170,12 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		if (parcelableExtra.scrollToPostNumber != null) {
 			int position = getAdapter().positionOfPostNumber(parcelableExtra.scrollToPostNumber);
 			if (position >= 0) {
+				PaddedRecyclerView recyclerView = getRecyclerView();
 				if (instantly) {
-					((LinearLayoutManager) getRecyclerView().getLayoutManager())
+					((LinearLayoutManager) recyclerView.getLayoutManager())
 							.scrollToPositionWithOffset(position, 0);
 				} else {
-					ListViewUtils.smoothScrollToPosition(getRecyclerView(), position);
+					ListViewUtils.smoothScrollToPosition(recyclerView, position);
 				}
 				parcelableExtra.scrollToPostNumber = null;
 				return true;
@@ -1411,11 +1412,12 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 	private void startProgressIfNecessary() {
 		if (!hasExtractTask() && !hasReadTask()) {
+			PaddedRecyclerView recyclerView = getRecyclerView();
 			if (getAdapter().getItemCount() == 0) {
-				getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+				recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTH);
 				switchProgress();
 			} else {
-				getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTTOM);
+				recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTTOM);
 				switchList();
 			}
 		}
@@ -1423,7 +1425,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 	private void cancelProgressIfNecessary() {
 		if (!hasExtractTask() && !hasReadTask()) {
-			getRecyclerView().getWrapper().cancelBusyState();
+			PaddedRecyclerView recyclerView = getRecyclerView();
+			recyclerView.getPullable().cancelBusyState();
 			switchList();
 			RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 			ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
@@ -1433,7 +1436,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				showOrSwitchError(errorItem);
 			}
 			if (parcelableExtra.scrollToPostNumber != null) {
-				scrollToPostFromExtra(getRecyclerView().getChildCount() == 0);
+				scrollToPostFromExtra(recyclerView.getChildCount() == 0);
 				// Forget about the request on fail
 				parcelableExtra.scrollToPostNumber = null;
 			}
@@ -1496,6 +1499,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 
 		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
+		PaddedRecyclerView recyclerView = getRecyclerView();
 		PostsAdapter adapter = getAdapter();
 		boolean updateAdapters = false;
 		ListPosition listPositionFromState = null;
@@ -1530,10 +1534,10 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			}
 			if (!result.postItems.isEmpty() || !result.removedPosts.isEmpty()) {
 				if (adapter.getItemCount() > 0) {
-					ListPosition listPosition = ListPosition.obtain(getRecyclerView(),
+					ListPosition listPosition = ListPosition.obtain(recyclerView,
 							position -> !adapter.getItem(position).isDeleted());
 					if (listPosition == null) {
-						listPosition = ListPosition.obtain(getRecyclerView(), null);
+						listPosition = ListPosition.obtain(recyclerView, null);
 					}
 					keepPositionPair = transformListPositionToPair(listPosition);
 				}
@@ -1627,7 +1631,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			notifyAllAdaptersChanged();
 			ListPosition listPosition = transformPairToListPosition(keepPositionPair);
 			if (listPosition != null) {
-				listPosition.apply(getRecyclerView());
+				listPosition.apply(recyclerView);
 			}
 		}
 		if (result != null) {
@@ -1637,9 +1641,9 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				}
 			} else {
 				if (wasEmpty && !result.postItems.isEmpty()) {
-					getRecyclerView().getWrapper().cancelBusyState();
+					recyclerView.getPullable().cancelBusyState();
 					switchList();
-					getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTTOM);
+					recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTTOM);
 					showScaleAnimation();
 				}
 				if (retainableExtra.shouldExtract()) {
@@ -1746,12 +1750,12 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 		if (position < 0) {
 			return;
 		}
+		PaddedRecyclerView recyclerView = getRecyclerView();
 		switch (message) {
 			case POST_INVALIDATE_ALL_VIEWS: {
 				if (postNotifyDataSetChanged == null) {
 					postNotifyDataSetChanged = getAdapter()::notifyDataSetChanged;
 				}
-				RecyclerView recyclerView = getRecyclerView();
 				recyclerView.removeCallbacks(postNotifyDataSetChanged);
 				recyclerView.post(postNotifyDataSetChanged);
 				break;
@@ -1803,12 +1807,11 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					setPostHideState(postItem, PostItem.HideState.UNDEFINED);
 					notifyAllAdaptersChanged();
 				}
-				adapter.preloadPosts(((LinearLayoutManager) getRecyclerView().getLayoutManager())
+				adapter.preloadPosts(((LinearLayoutManager) recyclerView.getLayoutManager())
 						.findFirstVisibleItemPosition());
 				break;
 			}
 			case PERFORM_GO_TO_POST: {
-				PullableRecyclerView recyclerView = getRecyclerView();
 				// Avoid concurrent modification
 				recyclerView.post(() -> getUiManager().dialog()
 						.closeDialogs(getAdapter().getConfigurationSet().stackInstance));

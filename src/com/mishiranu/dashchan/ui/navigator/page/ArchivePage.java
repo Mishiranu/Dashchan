@@ -26,7 +26,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
-import com.mishiranu.dashchan.widget.PullableRecyclerView;
+import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import java.util.List;
 
@@ -48,7 +48,7 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 
 	@Override
 	protected void onCreate() {
-		PullableRecyclerView recyclerView = getRecyclerView();
+		PaddedRecyclerView recyclerView = getRecyclerView();
 		recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
 		if (!C.API_LOLLIPOP) {
 			float density = ResourceUtils.obtainDensity(recyclerView);
@@ -58,7 +58,7 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 		recyclerView.setAdapter(adapter);
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				adapter::configureDivider));
-		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.BOTH);
+		recyclerView.getPullable().setPullSides(PullableWrapper.Side.BOTH);
 		adapter.applyFilter(getInitSearch().currentQuery);
 
 		InitRequest initRequest = getInitRequest();
@@ -75,12 +75,12 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 			}
 			if (readViewModel.hasTaskOrValue()) {
 				if (adapter.isRealEmpty()) {
-					getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+					recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTH);
 					switchProgress();
 				} else {
 					ReadThreadSummariesTask task = readViewModel.getTask();
 					boolean bottom = task != null && task.getPageNumber() > 0;
-					recyclerView.getWrapper().startBusyState(bottom
+					recyclerView.getPullable().startBusyState(bottom
 							? PullableWrapper.Side.BOTTOM : PullableWrapper.Side.TOP);
 				}
 			} else if (load) {
@@ -176,19 +176,20 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 				getChan(), page.boardName, pageNumber, ChanPerformer.ReadThreadSummariesData.TYPE_ARCHIVED_THREADS);
 		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 		readViewModel.attach(task);
+		PaddedRecyclerView recyclerView = getRecyclerView();
 		if (showPull) {
-			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
+			recyclerView.getPullable().startBusyState(PullableWrapper.Side.TOP);
 			switchList();
 		} else {
-			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+			recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTH);
 			switchProgress();
 		}
 	}
 
 	@Override
 	public void onReadThreadSummariesSuccess(List<ThreadSummary> threadSummaries, int pageNumber) {
-		PullableRecyclerView recyclerView = getRecyclerView();
-		recyclerView.getWrapper().cancelBusyState();
+		PaddedRecyclerView recyclerView = getRecyclerView();
+		recyclerView.getPullable().cancelBusyState();
 		ArchiveAdapter adapter = getAdapter();
 		if (pageNumber == 0 && threadSummaries == null) {
 			if (adapter.isRealEmpty()) {
@@ -234,7 +235,7 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 
 	@Override
 	public void onReadThreadSummariesFail(ErrorItem errorItem) {
-		getRecyclerView().getWrapper().cancelBusyState();
+		getRecyclerView().getPullable().cancelBusyState();
 		if (getAdapter().isRealEmpty()) {
 			switchError(errorItem);
 		} else {

@@ -25,7 +25,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
-import com.mishiranu.dashchan.widget.PullableRecyclerView;
+import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import java.util.Collections;
 import java.util.List;
@@ -74,7 +74,7 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 
 	@Override
 	protected void onCreate() {
-		PullableRecyclerView recyclerView = getRecyclerView();
+		PaddedRecyclerView recyclerView = getRecyclerView();
 		recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
 		if (!C.API_LOLLIPOP) {
 			float density = ResourceUtils.obtainDensity(recyclerView);
@@ -86,7 +86,7 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(),
 				(c, position) -> c.need(true)));
 		recyclerView.setItemAnimator(null);
-		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
+		recyclerView.getPullable().setPullSides(PullableWrapper.Side.TOP);
 
 		InitRequest initRequest = getInitRequest();
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
@@ -101,10 +101,10 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 			}
 			if (readViewModel.hasTaskOrValue()) {
 				if (parcelableExtra.boardNames.isEmpty()) {
-					getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+					recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTH);
 					switchProgress();
 				} else {
-					recyclerView.getWrapper().startBusyState(PullableWrapper.Side.TOP);
+					recyclerView.getPullable().startBusyState(PullableWrapper.Side.TOP);
 				}
 			} else if (load) {
 				refreshBoards(false);
@@ -209,11 +209,12 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 		ReadUserBoardsTask task = new ReadUserBoardsTask(readViewModel.callback, getChan());
 		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 		readViewModel.attach(task);
+		PaddedRecyclerView recyclerView = getRecyclerView();
 		if (showPull) {
-			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
+			recyclerView.getPullable().startBusyState(PullableWrapper.Side.TOP);
 			switchList();
 		} else {
-			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+			recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTH);
 			switchProgress();
 		}
 	}
@@ -227,17 +228,18 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 
 	@Override
 	public void onReadUserBoardsSuccess(List<String> boardNames) {
-		getRecyclerView().getWrapper().cancelBusyState();
+		PaddedRecyclerView recyclerView = getRecyclerView();
+		recyclerView.getPullable().cancelBusyState();
 		switchList();
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		parcelableExtra.boardNames = boardNames;
 		updateBoards();
-		getRecyclerView().scrollToPosition(0);
+		recyclerView.scrollToPosition(0);
 	}
 
 	@Override
 	public void onReadUserBoardsFail(ErrorItem errorItem) {
-		getRecyclerView().getWrapper().cancelBusyState();
+		getRecyclerView().getPullable().cancelBusyState();
 		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		if (parcelableExtra.boardNames.isEmpty()) {
 			switchError(errorItem);

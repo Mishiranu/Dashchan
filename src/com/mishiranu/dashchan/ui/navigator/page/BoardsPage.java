@@ -26,7 +26,7 @@ import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.HeaderItemDecoration;
-import com.mishiranu.dashchan.widget.PullableRecyclerView;
+import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
 public class BoardsPage extends ListPage implements BoardsAdapter.Callback,
@@ -49,7 +49,7 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback,
 
 	@Override
 	protected void onCreate() {
-		PullableRecyclerView recyclerView = getRecyclerView();
+		PaddedRecyclerView recyclerView = getRecyclerView();
 		recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
 		if (!C.API_LOLLIPOP) {
 			float density = ResourceUtils.obtainDensity(recyclerView);
@@ -64,12 +64,12 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback,
 		recyclerView.setItemAnimator(null);
 
 		InitRequest initRequest = getInitRequest();
-		recyclerView.getWrapper().setPullSides(PullableWrapper.Side.TOP);
+		recyclerView.getPullable().setPullSides(PullableWrapper.Side.TOP);
  		ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
 		if (initRequest.errorItem != null) {
 			switchError(initRequest.errorItem);
 		} else {
-			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+			recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTH);
 			switchProgress();
 			updateBoards();
 		}
@@ -177,11 +177,12 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback,
 		ReadBoardsTask task = new ReadBoardsTask(readViewModel.callback, getChan());
 		task.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 		readViewModel.attach(task);
+		PaddedRecyclerView recyclerView = getRecyclerView();
 		if (showPull) {
-			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
+			recyclerView.getPullable().startBusyState(PullableWrapper.Side.TOP);
 			switchList();
 		} else {
-			getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.BOTH);
+			recyclerView.getPullable().startBusyState(PullableWrapper.Side.BOTH);
 			switchProgress();
 		}
 	}
@@ -210,21 +211,22 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback,
 			getAdapter().setCursor(cursor);
 			restoreListPosition();
 			if (readViewModel.hasTaskOrValue()) {
-				getRecyclerView().getWrapper().startBusyState(PullableWrapper.Side.TOP);
+				getRecyclerView().getPullable().startBusyState(PullableWrapper.Side.TOP);
 			}
 		}
 	}
 
 	@Override
 	public void onReadBoardsSuccess() {
-		getRecyclerView().getWrapper().cancelBusyState();
+		PaddedRecyclerView recyclerView = getRecyclerView();
+		recyclerView.getPullable().cancelBusyState();
 		updateBoards();
-		getRecyclerView().scrollToPosition(0);
+		recyclerView.scrollToPosition(0);
 	}
 
 	@Override
 	public void onReadBoardsFail(ErrorItem errorItem) {
-		getRecyclerView().getWrapper().cancelBusyState();
+		getRecyclerView().getPullable().cancelBusyState();
 		if (getAdapter().isRealEmpty()) {
 			switchError(errorItem);
 		} else {

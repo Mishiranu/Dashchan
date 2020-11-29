@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.widget.Scroller;
 import androidx.annotation.NonNull;
+import androidx.core.view.ViewCompat;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
@@ -96,12 +97,12 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 
 			@Override
 			public boolean onSingleTapConfirmed(MotionEvent e) {
-				return PhotoView.this.onSingleTapConfirmed(e);
+				return ViewCompat.isAttachedToWindow(PhotoView.this) && PhotoView.this.onSingleTapConfirmed(e);
 			}
 
 			@Override
 			public void onLongPress(MotionEvent e) {
-				if (!isDragging && !isParentDragging) {
+				if (!isDragging && !isParentDragging && ViewCompat.isAttachedToWindow(PhotoView.this)) {
 					PhotoView.this.onLongPress(e);
 				}
 			}
@@ -417,7 +418,7 @@ public class PhotoView extends View implements ScaleGestureDetector.OnScaleGestu
 	}
 
 	public void dispatchSimpleClick(boolean longClick, float x, float y) {
-		if (listener != null && !hasImage()) {
+		if (listener != null && !hasImage() && ViewCompat.isAttachedToWindow(this)) {
 			if (longClick) {
 				listener.onLongClick(this, x, y);
 			} else {

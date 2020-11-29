@@ -1049,7 +1049,7 @@ public class Preferences {
 
 	public static final String KEY_TEXT_SCALE = "text_scale";
 	public static final int MIN_TEXT_SCALE = 75;
-	public static final int MAX_TEXT_SCALE = 150;
+	public static final int MAX_TEXT_SCALE = 200;
 	public static final int STEP_TEXT_SCALE = 5;
 	public static final int DEFAULT_TEXT_SCALE = 100;
 

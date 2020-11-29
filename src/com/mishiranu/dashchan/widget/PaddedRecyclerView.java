@@ -3,12 +3,14 @@ package com.mishiranu.dashchan.widget;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.Xml;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.ViewConfiguration;
 import androidx.annotation.NonNull;
 import androidx.core.view.ViewCompat;
@@ -21,13 +23,14 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import org.xmlpull.v1.XmlPullParser;
 
-public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandler.Shift {
+public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandler.Shift, PullableWrapper.Wrapped {
 	private static final long FAST_SCROLLER_TRANSITION_IN = 100;
 	private static final long FAST_SCROLLER_TRANSITION_OUT = 200;
 	private static final long FAST_SCROLLER_TRANSITION_OUT_DELAY = 1000;
 
 	private final EdgeEffectHandler edgeEffectHandler = EdgeEffectHandler.bind(this, this);
 	private EdgeEffectHandler.Shift shift;
+	private PullableWrapper pullableWrapper;
 
 	private final Drawable thumbDrawable;
 	private final Drawable trackDrawable;
@@ -139,8 +142,6 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 	private boolean isFastScrollerAvailable() {
 		return fastScrollerEnabled && fastScrollerAllowed;
 	}
-
-	protected void onFastScrollingStarted() {}
 
 	@SuppressWarnings("unused") // Overrides hidden Android API protected method
 	protected void onDrawVerticalScrollBar(Canvas canvas, Drawable scrollBar, int l, int t, int r, int b) {
@@ -329,7 +330,9 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 				}
 				if (fastScrolling) {
 					updateFastScroller(false, fastScrollerEnabled, fastScrollerAllowed, regularScrolling, true);
-					onFastScrollingStarted();
+					if (pullableWrapper != null) {
+						pullableWrapper.onTouchEventOrNull(null);
+					}
 				}
 			}
 			if (fastScrolling) {
@@ -404,6 +407,98 @@ public class PaddedRecyclerView extends RecyclerView implements EdgeEffectHandle
 
 		if (shouldInvalidate) {
 			invalidate();
+		}
+	}
+
+	public PullableWrapper getPullable() {
+		if (pullableWrapper == null) {
+			PullableWrapper wrapper = new PullableWrapper(this);
+			this.pullableWrapper = wrapper;
+			addOnItemTouchListener(new OnItemTouchListener() {
+				private boolean intercepted = false;
+				private float downY;
+
+				@Override
+				public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+					float y = e.getY();
+					if (e.getActionMasked() == MotionEvent.ACTION_DOWN) {
+						intercepted = false;
+						downY = y;
+					}
+					if (wrapper.onTouchEventOrNull(e)) {
+						if (!intercepted && Math.abs(downY - y) > touchSlop) {
+							intercepted = true;
+						}
+						return intercepted;
+					}
+					return false;
+				}
+
+				@Override
+				public void onTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+					boolean result = wrapper.onTouchEventOrNull(e);
+					if (intercepted && !result) {
+						intercepted = false;
+						// Reset intercepted state
+						removeOnItemTouchListener(this);
+						addOnItemTouchListener(this);
+					}
+				}
+
+				@Override
+				public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
+					if (disallowIntercept && intercepted) {
+						intercepted = false;
+						wrapper.onTouchEventOrNull(null);
+					}
+				}
+			});
+		}
+		return pullableWrapper;
+	}
+
+	@Override
+	public void draw(Canvas canvas) {
+		if (pullableWrapper != null) {
+			pullableWrapper.drawBefore(canvas);
+			try {
+				super.draw(canvas);
+			} finally {
+				pullableWrapper.drawAfter(canvas);
+			}
+		} else {
+			super.draw(canvas);
+		}
+	}
+
+	private final Rect bounds = new Rect();
+
+	@Override
+	public boolean isScrolledToTop() {
+		Rect bounds = this.bounds;
+		View view = getChildCount() > 0 ? getChildAt(0) : null;
+		if (view == null) {
+			return true;
+		} else if (getChildLayoutPosition(view) == 0) {
+			getDecoratedBoundsWithMargins(view, bounds);
+			return bounds.top >= getPaddingTop();
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean isScrolledToBottom() {
+		Rect bounds = this.bounds;
+		int childCount = getChildCount();
+		View view = childCount > 0 ? getChildAt(childCount - 1) : null;
+		if (view == null) {
+			return true;
+		} else if (getChildLayoutPosition(view) == getLayoutManager().getItemCount() - 1) {
+			getDecoratedBoundsWithMargins(view, bounds);
+			return bounds.bottom <= getHeight() - getPaddingBottom();
+		} else {
+			return false;
 		}
 	}
 }

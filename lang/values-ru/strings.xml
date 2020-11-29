@@ -494,7 +494,7 @@
 	<string name="threads_list">Список тредов</string>
 	<string name="threads_view">Вид тредов</string>
 	<string name="threads_will_be_deleted__sentence">Будут удалены следующие треды.</string>
-	<string name="thumbnail_scale">Масштаб превью</string>
+	<string name="thumbnail_scale">Масштаб миниатюр</string>
 	<string name="thumbnails">Миниатюры</string>
 	<string name="today">Сегодня</string>
 	<string name="too_few_meaningful_words">Слишком мало значащих слов</string>
