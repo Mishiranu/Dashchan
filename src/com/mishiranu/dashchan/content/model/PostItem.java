@@ -26,7 +26,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, Comparable<PostItem> {
+public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, Comparable<PostItem>,
+		Preferences.CatalogSort.Comparable {
 	public enum HideState {
 		UNDEFINED(false),
 		HIDDEN(true),
@@ -596,6 +597,7 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 		return threadData.gallerySet;
 	}
 
+	@Override
 	public int getThreadPostsCount() {
 		return threadData.base.postsCount;
 	}
@@ -653,6 +655,7 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 		}
 	}
 
+	@Override
 	public long getTimestamp() {
 		return post.timestamp;
 	}

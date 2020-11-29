@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -339,6 +340,50 @@ public class Preferences {
 			}
 			PREFERENCES.edit().putString(KEY_CAPTCHA_SOLVING_CHANS, jsonArray.toString()).commit();
 		}
+	}
+
+	public enum CatalogSort {
+		UNSORTED("unsorted", R.id.menu_unsorted, R.string.unsorted, null),
+		CREATED("created", R.id.menu_date_created, R.string.date_created,
+				(lhs, rhs) -> Long.compare(rhs.getTimestamp(), lhs.getTimestamp())),
+		REPLIES("replies", R.id.menu_replies, R.string.replies_count,
+				(lhs, rhs) -> Integer.compare(rhs.getThreadPostsCount(), lhs.getThreadPostsCount()));
+
+		private static final EnumValueProvider<CatalogSort> VALUE_PROVIDER = o -> o.value;
+
+		public interface Comparable {
+			long getTimestamp();
+			int getThreadPostsCount();
+		}
+
+		private final String value;
+		public final int menuItemId;
+		public final int titleResId;
+		public final Comparator<Comparable> comparator;
+
+		CatalogSort(String value, int menuItemId, int titleResId, Comparator<Comparable> comparator) {
+			this.value = value;
+			this.menuItemId = menuItemId;
+			this.titleResId = titleResId;
+			this.comparator = comparator;
+		}
+	}
+
+	public static final String KEY_CATALOG_SORT = "catalog_sort";
+	public static final CatalogSort DEFAULT_CATALOG_SORT = CatalogSort.UNSORTED;
+
+	public static CatalogSort getCatalogSort() {
+		return getEnumValue(KEY_CATALOG_SORT, CatalogSort.values(), DEFAULT_CATALOG_SORT, CatalogSort.VALUE_PROVIDER);
+	}
+
+	public static void setCatalogSort(CatalogSort catalogSort) {
+		SharedPreferences.Editor editor = PREFERENCES.edit();
+		if (catalogSort != null) {
+			editor.putString(KEY_CATALOG_SORT, catalogSort.value);
+		} else {
+			editor.remove(KEY_CATALOG_SORT);
+		}
+		editor.commit();
 	}
 
 	public static final String KEY_CHANS_ORDER = "chans_order";

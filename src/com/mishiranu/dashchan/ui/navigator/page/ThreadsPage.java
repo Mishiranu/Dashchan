@@ -4,8 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Rect;
 import android.net.Uri;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -76,36 +74,6 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		}
 	}
 
-	private static class ParcelableExtra implements Parcelable {
-		public static final ExtraFactory<ParcelableExtra> FACTORY = ParcelableExtra::new;
-
-		public ThreadsAdapter.CatalogSort catalogSort = ThreadsAdapter.CatalogSort.UNSORTED;
-
-		@Override
-		public int describeContents() {
-			return 0;
-		}
-
-		@Override
-		public void writeToParcel(Parcel dest, int flags) {
-			dest.writeString(catalogSort.name());
-		}
-
-		public static final Creator<ParcelableExtra> CREATOR = new Creator<ParcelableExtra>() {
-			@Override
-			public ParcelableExtra createFromParcel(Parcel source) {
-				ParcelableExtra parcelableExtra = new ParcelableExtra();
-				parcelableExtra.catalogSort = ThreadsAdapter.CatalogSort.valueOf(source.readString());
-				return parcelableExtra;
-			}
-
-			@Override
-			public ParcelableExtra[] newArray(int size) {
-				return new ParcelableExtra[size];
-			}
-		};
-	}
-
 	public static class ReadViewModel extends TaskViewModel.Proxy<ReadThreadsTask, ReadThreadsTask.Callback> {}
 
 	private HidePerformer hidePerformer;
@@ -145,11 +113,10 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		Chan chan = getChan();
 		hidePerformer = new HidePerformer(context);
 		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
-		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		UiManager uiManager = getUiManager();
 		uiManager.view().bindThreadsPostRecyclerView(recyclerView);
 		ThreadsAdapter adapter = new ThreadsAdapter(context, this, page.chanName, uiManager,
-				postStateProvider, getFragmentManager(), parcelableExtra.catalogSort);
+				postStateProvider, getFragmentManager());
 		recyclerView.setAdapter(adapter);
 		recyclerView.addItemDecoration(new RecyclerView.ItemDecoration() {
 			@Override
@@ -163,6 +130,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		recyclerView.getPullable().setPullSides(PullableWrapper.Side.BOTH);
 		uiManager.observable().register(this);
 		layoutManager.setSpanCount(adapter.setThreadsView(Preferences.getThreadsView()));
+		adapter.setCatalogSort(Preferences.getCatalogSort());
 		adapter.applyFilter(getInitSearch().currentQuery);
 		FavoritesStorage.getInstance().getObservable().register(this);
 
@@ -339,7 +307,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		menu.add(0, R.id.menu_catalog, 0, R.string.catalog);
 		menu.add(0, R.id.menu_pages, 0, R.string.pages);
 		SubMenu sorting = menu.addSubMenu(0, R.id.menu_sorting, 0, R.string.sorting);
-		for (ThreadsAdapter.CatalogSort catalogSort : ThreadsAdapter.CatalogSort.values()) {
+		for (Preferences.CatalogSort catalogSort : Preferences.CatalogSort.values()) {
 			sorting.add(R.id.menu_sorting, catalogSort.menuItemId, 0, catalogSort.titleResId);
 		}
 		sorting.setGroupCheckable(R.id.menu_sorting, true, true);
@@ -367,7 +335,6 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	public void onPrepareOptionsMenu(Menu menu) {
 		Page page = getPage();
 		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
-		ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
 		Chan chan = getChan();
 		ChanConfiguration.Board board = chan.configuration.safe().obtainBoard(page.boardName);
 		boolean search = board.allowSearch;
@@ -380,7 +347,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 		menu.findItem(R.id.menu_catalog).setVisible(catalog && !isCatalogOpen);
 		menu.findItem(R.id.menu_pages).setVisible(catalog && isCatalogOpen);
 		menu.findItem(R.id.menu_sorting).setVisible(catalog && isCatalogOpen);
-		menu.findItem(parcelableExtra.catalogSort.menuItemId).setChecked(true);
+		menu.findItem(Preferences.getCatalogSort().menuItemId).setChecked(true);
 		menu.findItem(R.id.menu_archive).setVisible(board.allowArchive);
 		menu.findItem(R.id.menu_new_thread).setVisible(board.allowPosting);
 		menu.findItem(Preferences.getThreadsView().menuItemId).setChecked(true);
@@ -439,10 +406,9 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 				return true;
 			}
 		}
-		for (ThreadsAdapter.CatalogSort catalogSort : ThreadsAdapter.CatalogSort.values()) {
+		for (Preferences.CatalogSort catalogSort : Preferences.CatalogSort.values()) {
 			if (item.getItemId() == catalogSort.menuItemId) {
-				ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
-				parcelableExtra.catalogSort = catalogSort;
+				Preferences.setCatalogSort(catalogSort);
 				getAdapter().setCatalogSort(catalogSort);
 				return true;
 			}

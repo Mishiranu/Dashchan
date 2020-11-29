@@ -9,7 +9,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
 import chan.util.StringUtils;
-import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.AttachmentItem;
 import com.mishiranu.dashchan.content.model.GalleryItem;
@@ -29,24 +28,6 @@ import java.util.Locale;
 
 public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements GalleryItem.Provider {
 	public interface Callback extends ListViewUtils.SimpleCallback<PostItem> {}
-
-	public enum CatalogSort {
-		UNSORTED(R.id.menu_unsorted, R.string.unsorted, null),
-		DATE_CREATED(R.id.menu_date_created, R.string.date_created,
-				(lhs, rhs) -> Long.compare(rhs.getTimestamp(), lhs.getTimestamp())),
-		REPLIES(R.id.menu_replies, R.string.replies_count,
-				(lhs, rhs) -> Integer.compare(rhs.getThreadPostsCount(), lhs.getThreadPostsCount()));
-
-		public final int menuItemId;
-		public final int titleResId;
-		private final Comparator<PostItem> comparator;
-
-		CatalogSort(int menuItemId, int titleResId, Comparator<PostItem> comparator) {
-			this.menuItemId = menuItemId;
-			this.titleResId = titleResId;
-			this.comparator = comparator;
-		}
-	}
 
 	private static final int LIST_PADDING = 12;
 	private static final int CARD_MIN_WIDTH_LARGE_DP = 120;
@@ -77,18 +58,17 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	private final UiManager.ConfigurationSet configurationSet;
 
 	private String filterText;
-	private CatalogSort catalogSort;
+	private Preferences.CatalogSort catalogSort = Preferences.CatalogSort.UNSORTED;
 	private boolean cardsMode;
 	private GridMode gridMode;
 
 	public ThreadsAdapter(Context context, Callback callback, String chanName, UiManager uiManager,
-			UiManager.PostStateProvider postStateProvider, FragmentManager fragmentManager, CatalogSort catalogSort) {
+			UiManager.PostStateProvider postStateProvider, FragmentManager fragmentManager) {
 		this.context = context;
 		this.uiManager = uiManager;
 		configurationSet = new UiManager.ConfigurationSet(chanName, null, null, postStateProvider,
 				this, fragmentManager, uiManager.dialog().createStackInstance(), null, callback,
 				false, false, false, false, false, null);
-		this.catalogSort = catalogSort;
 	}
 
 	@NonNull
@@ -264,7 +244,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 		}
 	}
 
-	public void setCatalogSort(CatalogSort catalogSort) {
+	public void setCatalogSort(Preferences.CatalogSort catalogSort) {
 		if (this.catalogSort != catalogSort) {
 			this.catalogSort = catalogSort;
 			if (catalog) {
@@ -276,7 +256,8 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
 	private void applyCurrentSortingAndFilter(boolean sorting, boolean filter) {
 		if (sorting) {
-			Comparator<PostItem> comparator = catalogSort != null ? catalogSort.comparator : null;
+			Comparator<Preferences.CatalogSort.Comparable> comparator =
+					catalogSort != null ? catalogSort.comparator : null;
 			if (catalog && comparator != null) {
 				if (catalogSortedPostItems == null) {
 					catalogSortedPostItems = new ArrayList<>(postItems);
