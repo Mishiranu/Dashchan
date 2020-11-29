@@ -497,6 +497,12 @@
 			"name": "3.1.1",
 			"date": "24.11.2020",
 			"changelog": false
+		},
+		{
+			"code": 1041,
+			"name": "3.1.2",
+			"date": "29.11.2020",
+			"changelog": false
 		}
 	]
 }
