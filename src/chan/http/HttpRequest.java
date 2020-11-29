@@ -70,8 +70,7 @@ public final class HttpRequest {
 
 		// TODO CHAN
 		// Remove this method and simplify default redirect handlers after updating
-		// alterchan arhivach bunbunmaru candydollchan chaosach cirno dvach haibane kurisach nowere onechanca owlchan
-		// synch tiretirech yakujimoe
+		// alterchan candydollchan chaosach haibane kurisach onechanca owlchan synch tiretirech
 		// Added: 18.10.20 01:50
 		@Public
 		Action onRedirectReached(int responseCode, Uri requestedUri, Uri redirectedUri, HttpHolder holder)
@@ -157,9 +156,9 @@ public final class HttpRequest {
 
 	// TODO CHAN
 	// Remove this constructor after updating
-	// allchan alphachan anonfm archiverbt arhivach chuckdfwk desustorage diochan exach fiftyfive fourchan fourplebs
-	// kropyvach kurisach nulltirech owlchan ponyach ponychan princessluna randomarchive sevenchan shanachan sharechan
-	// synch tiretirech tumbach uboachan wizardchan
+	// allchan alphachan anonfm archiverbt chuckdfwk desustorage diochan exach fiftyfive fourplebs kropyvach kurisach
+	// nulltirech owlchan ponyach ponychan princessluna randomarchive sevenchan shanachan sharechan synch tiretirech
+	// tumbach uboachan wizardchan
 	// Added: 26.09.20 20:10
 	public HttpRequest(Uri uri, HttpHolder holder, Preset preset) {
 		if (holder == null && preset != null) {
@@ -183,8 +182,8 @@ public final class HttpRequest {
 
 	// TODO CHAN
 	// Remove this constructor after updating
-	// alphachan alterchan brchan chaosach dobrochan exach fiftyfive fourchan fourplebs haibane kropyvach lainchan
-	// nulltirech onechanca synch twentyseven uboachan wizardchan
+	// alphachan alterchan brchan chaosach exach fiftyfive fourplebs haibane kropyvach lainchan nulltirech onechanca
+	// synch twentyseven uboachan wizardchan
 	// Added: 18.10.20 18:58
 	@Public
 	public HttpRequest(Uri uri, HttpHolder holder) {
@@ -373,8 +372,8 @@ public final class HttpRequest {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// alterchan bunbunmaru candydollchan chiochan chuckdfwk cirno diochan dobrochan kurisach nowere nulltirech owlchan
-	// ponyach ponychan sevenchan shanachan sharechan taima valkyria yakujimoe
+	// alterchan candydollchan chiochan chuckdfwk diochan kurisach nulltirech owlchan ponyach ponychan sevenchan
+	// shanachan sharechan taima valkyria
 	// Added: 18.10.20 18:58
 	@Deprecated
 	@Public
@@ -385,11 +384,10 @@ public final class HttpRequest {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// allchan alphachan alterchan anonfm archiverbt arhivach brchan bunbunmaru candydollchan chaosach chiochan
-	// chuckdfwk cirno dangeru desustorage diochan dobrochan dvach endchan exach fiftyfive fourchan fourplebs haibane
-	// horochan kropyvach kurisach lainchan lolifox nowere nulldvachin nulltirech onechanca owlchan ponyach ponychan
-	// princessluna randomarchive sevenchan shanachan sharechan synch taima tiretirech tumbach twentyseven uboachan
-	// valkyria wizardchan yakujimoe
+	// allchan alphachan alterchan anonfm archiverbt brchan candydollchan chaosach chiochan chuckdfwk dangeru
+	// desustorage diochan endchan exach fiftyfive fourplebs haibane horochan kropyvach kurisach lainchan lolifox
+	// nulldvachin nulltirech onechanca owlchan ponyach ponychan princessluna randomarchive sevenchan shanachan
+	// sharechan synch taima tiretirech tumbach twentyseven uboachan valkyria wizardchan
 	// Added: 18.10.20 18:58
 	@Deprecated
 	@Public

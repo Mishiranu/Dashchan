@@ -630,7 +630,7 @@ public class ChanPerformer implements Chan.Linked {
 		@Public public final Uri uri;
 		// TODO CHAN
 		// Remove this field after updating
-		// arhivach fourchan fourplebs
+		// fourplebs
 		// Added: 18.10.20 19:08
 		public final HttpHolder holder;
 		@Public public final HttpRequest.Preset direct;

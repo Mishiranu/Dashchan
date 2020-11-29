@@ -89,8 +89,8 @@ public final class HttpHolder {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// alterchan bunbunmaru candydollchan chiochan chuckdfwk cirno diochan dobrochan kurisach nowere nulltirech owlchan
-	// ponyach ponychan sevenchan shanachan sharechan taima valkyria yakujimoe
+	// alterchan candydollchan chiochan chuckdfwk diochan kurisach nulltirech owlchan ponyach ponychan sevenchan
+	// shanachan sharechan taima valkyria
 	// Added: 18.10.20 19:08
 	@Deprecated
 	@Public
@@ -103,8 +103,8 @@ public final class HttpHolder {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// alterchan bunbunmaru candydollchan chiochan chuckdfwk cirno diochan dobrochan kurisach nowere nulltirech owlchan
-	// ponyach ponychan sevenchan shanachan sharechan taima valkyria yakujimoe
+	// alterchan candydollchan chiochan chuckdfwk diochan kurisach nulltirech owlchan ponyach ponychan sevenchan
+	// shanachan sharechan taima valkyria
 	// Added: 18.10.20 19:08
 	@Deprecated
 	@Public
@@ -118,8 +118,8 @@ public final class HttpHolder {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// archiverbt arhivach chiochan chuckdfwk desustorage exach fiftyfive fourplebs horochan nulltirech onechanca
-	// ponychan tiretirech
+	// archiverbt chiochan chuckdfwk desustorage exach fiftyfive fourplebs horochan nulltirech onechanca ponychan
+	// tiretirech
 	// Added: 18.10.20 19:08
 	@Deprecated
 	@Public
@@ -132,9 +132,9 @@ public final class HttpHolder {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// alphachan alterchan anonfm archiverbt arhivach bunbunmaru candydollchan chiochan chuckdfwk cirno desustorage
-	// diochan dobrochan exach fiftyfive fourplebs horochan kurisach nowere nulltirech onechanca owlchan ponyach
-	// ponychan sevenchan shanachan sharechan taima tiretirech valkyria yakujimoe
+	// alphachan alterchan anonfm archiverbt candydollchan chiochan chuckdfwk desustorage diochan exach fiftyfive
+	// fourplebs horochan kurisach nulltirech onechanca owlchan ponyach ponychan sevenchan shanachan sharechan taima
+	// tiretirech valkyria
 	// Added: 18.10.20 19:08
 	@Deprecated
 	@Public
@@ -145,8 +145,8 @@ public final class HttpHolder {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// alphachan alterchan anonfm bunbunmaru candydollchan chiochan chuckdfwk cirno diochan dobrochan exach kurisach
-	// nowere onechanca owlchan ponyach ponychan sharechan yakujimoe
+	// alphachan alterchan anonfm candydollchan chiochan chuckdfwk diochan exach kurisach onechanca owlchan ponyach
+	// ponychan sharechan
 	// Added: 18.10.20 19:08
 	@Deprecated
 	@Public
@@ -157,7 +157,7 @@ public final class HttpHolder {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// alterchan anonfm fourchan wizardchan
+	// alterchan anonfm wizardchan
 	// Added: 18.10.20 19:08
 	@Deprecated
 	@Public
@@ -168,8 +168,7 @@ public final class HttpHolder {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// alphachan alterchan arhivach chaosach chiochan chuckdfwk dobrochan dvach endchan exach haibane kurisach lolifox
-	// onechanca ponyach
+	// alphachan alterchan chaosach chiochan chuckdfwk endchan exach haibane kurisach lolifox onechanca ponyach
 	// Added: 18.10.20 19:08
 	@Deprecated
 	@Public
@@ -180,7 +179,7 @@ public final class HttpHolder {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// fiftyfive fourchan
+	// fiftyfive
 	// Added: 18.10.20 19:08
 	@Deprecated
 	@Public

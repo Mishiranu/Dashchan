@@ -50,7 +50,7 @@ public class StringUtils {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// archiverbt arhivach bunbunmaru cirno dangeru desustorage erlach fourchan nowere nulldvachin yakujimoe
+	// archiverbt dangeru desustorage nulldvachin
 	// Added: 05.10.20 18:45
 	@SuppressWarnings({"StringEquality", "EqualsReplaceableByObjectsCall"})
 	@Deprecated

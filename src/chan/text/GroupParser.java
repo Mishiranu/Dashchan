@@ -33,8 +33,7 @@ public final class GroupParser {
 
 		// TODO CHAN
 		// Remove this method after updating
-		// anonfm archiverbt arhivach bunbunmaru chuckdfwk cirno desustorage diochan fourchan local nowere owlchan
-		// ponychan princessluna shanachan sharechan yakujimoe
+		// anonfm archiverbt chuckdfwk desustorage diochan owlchan ponychan princessluna shanachan sharechan
 		// Added: 23.10.20 10:20
 		@Deprecated
 		@Extendable
@@ -48,8 +47,7 @@ public final class GroupParser {
 
 		// TODO CHAN
 		// Remove this method after updating
-		// anonfm archiverbt arhivach bunbunmaru chuckdfwk cirno desustorage diochan fourchan local nowere owlchan
-		// ponychan princessluna shanachan sharechan yakujimoe
+		// anonfm archiverbt chuckdfwk desustorage diochan owlchan ponychan princessluna shanachan sharechan
 		// Added: 23.10.20 10:20
 		@Deprecated
 		@Extendable
@@ -449,8 +447,7 @@ public final class GroupParser {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// anonfm archiverbt arhivach bunbunmaru chuckdfwk cirno desustorage diochan fourchan local nowere owlchan ponychan
-	// princessluna shanachan sharechan yakujimoe
+	// anonfm archiverbt chuckdfwk desustorage diochan owlchan ponychan princessluna shanachan sharechan
 	// Added: 23.10.20 10:20
 	@Deprecated
 	@Public

@@ -275,16 +275,6 @@ public final class HttpResponse {
 		throw new HttpException(ErrorItem.Type.EMPTY_RESPONSE, false, false);
 	}
 
-	// TODO CHAN
-	// Remove this method after updating
-	// erlach
-	// Added: 18.10.20 18:54
-	@Public
-	@Deprecated
-	public byte[] getBytes() throws HttpException {
-		return readBytes();
-	}
-
 	private void obtainString() throws HttpException {
 		if (string == null && bytes != null) {
 			try {
@@ -304,11 +294,10 @@ public final class HttpResponse {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// allchan alphachan alterchan anonfm archiverbt arhivach brchan bunbunmaru candydollchan chaosach chiochan
-	// chuckdfwk cirno dangeru desustorage diochan dobrochan dvach endchan exach fiftyfive fourchan fourplebs haibane
-	// kropyvach kurisach lainchan lolifox nowere nulltirech onechanca owlchan ponyach ponychan princessluna
-	// randomarchive sevenchan shanachan sharechan synch taima tiretirech tumbach twentyseven uboachan valkyria
-	// wizardchan yakujimoe
+	// allchan alphachan alterchan anonfm archiverbt brchan candydollchan chaosach chiochan chuckdfwk dangeru
+	// desustorage diochan endchan exach fiftyfive fourplebs haibane kropyvach kurisach lainchan lolifox nulltirech
+	// onechanca owlchan ponyach ponychan princessluna randomarchive sevenchan shanachan sharechan synch taima
+	// tiretirech tumbach twentyseven uboachan valkyria wizardchan
 	// Added: 18.10.20 18:54
 	@Public
 	@Deprecated
@@ -324,8 +313,8 @@ public final class HttpResponse {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// allchan alphachan alterchan anonfm arhivach bunbunmaru chaosach chiochan chuckdfwk cirno dobrochan dvach endchan
-	// fourplebs haibane kurisach nowere nulldvachin onechanca tiretirech tumbach yakujimoe
+	// allchan alphachan alterchan anonfm chaosach chiochan chuckdfwk endchan fourplebs haibane kurisach nulldvachin
+	// onechanca tiretirech tumbach
 	// Added: 18.10.20 18:54
 	@Public
 	public Bitmap getBitmap() throws HttpException {
@@ -334,9 +323,8 @@ public final class HttpResponse {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// allchan anonfm arhivach brchan dangeru dobrochan dvach endchan fiftyfive fourchan horochan kropyvach kurisach
-	// lainchan lolifox nulldvachin nulltirech onechanca princessluna synch taima tiretirech tumbach twentyseven
-	// uboachan wizardchan
+	// allchan anonfm brchan dangeru endchan fiftyfive horochan kropyvach kurisach lainchan lolifox nulldvachin
+	// nulltirech onechanca princessluna synch taima tiretirech tumbach twentyseven uboachan wizardchan
 	// Added: 18.10.20 18:54
 	@Deprecated
 	@Public
@@ -354,8 +342,8 @@ public final class HttpResponse {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// anonfm brchan dangeru dvach endchan fiftyfive fourchan kropyvach lainchan lolifox nulltirech onechanca
-	// princessluna synch taima twentyseven uboachan wizardchan
+	// anonfm brchan dangeru endchan fiftyfive kropyvach lainchan lolifox nulltirech onechanca princessluna synch taima
+	// twentyseven uboachan wizardchan
 	// Added: 18.10.20 18:54
 	@Deprecated
 	@Public

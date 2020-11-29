@@ -9,9 +9,9 @@ import java.util.HashMap;
 
 // TODO CHAN
 // Remove this class and ChanManger.CompatPathClassLoader after updating
-// alphachan alterchan brchan candydollchan chaosach chiochan dangeru dobrochan erlach exach fiftyfive fourplebs haibane
-// kropyvach lainchan local lolifox nulltirech onechanca ponyach randomarchive sevenchan synch taima tiretirech
-// twentyseven uboachan valkyria wizardchan
+// alphachan alterchan brchan candydollchan chaosach chiochan dangeru exach fiftyfive fourplebs haibane kropyvach
+// lainchan lolifox nulltirech onechanca ponyach randomarchive sevenchan synch taima tiretirech twentyseven uboachan
+// valkyria wizardchan
 // Added: 24.09.20 08:23
 @SuppressWarnings("ALL")
 @Public

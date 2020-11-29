@@ -79,15 +79,6 @@ public final class WebSocket {
 			this.webSocket = webSocket;
 		}
 
-		// TODO CHAN
-		// Remove this method after updating
-		// erlach
-		// Added: 18.10.20 19:17
-		@Public
-		public HttpResponse getResponse() {
-			return new HttpResponse(getData());
-		}
-
 		@Public
 		public byte[] getData() {
 			return frame.data;
