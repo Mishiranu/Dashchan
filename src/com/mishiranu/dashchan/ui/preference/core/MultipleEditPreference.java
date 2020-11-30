@@ -200,10 +200,7 @@ public class MultipleEditPreference<T> extends DialogPreference<T> {
 
 		public EditTextViewHolder(Context context, CharSequence hint, int inputType, String value) {
 			editText = new SafePasteEditText(context);
-			editText.setHint(hint);
-			editText.setInputType(inputType);
-			editText.setText(value);
-			editText.setSelection(editText.getText().length());
+			EditPreference.configureEdit(editText, hint, inputType, value);
 		}
 
 		@Override

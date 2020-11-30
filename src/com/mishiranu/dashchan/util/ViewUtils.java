@@ -12,8 +12,11 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +26,7 @@ import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.EdgeEffect;
+import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.core.view.ViewCompat;
@@ -302,6 +306,30 @@ public class ViewUtils {
 		} else {
 			setNewMargin(view, start, top, end, bottom);
 		}
+	}
+
+	public static void applyMonospaceTypeface(EditText editText) {
+		Typeface initialTypeface = editText.getTypeface();
+		Typeface monospaceTypeface = Typeface.MONOSPACE;
+		boolean[] empty = {true};
+		TextWatcher textWatcher = new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				boolean newEmpty = s.length() == 0;
+				if (newEmpty != empty[0]) {
+					empty[0] = newEmpty;
+					editText.setTypeface(newEmpty ? initialTypeface : monospaceTypeface);
+				}
+			}
+		};
+		textWatcher.afterTextChanged(editText.getText());
+		editText.addTextChangedListener(textWatcher);
 	}
 
 	public static void setWindowLayoutFullscreen(Window window) {

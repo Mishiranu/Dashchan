@@ -613,6 +613,14 @@ public class ThemeEngine {
 					if (view instanceof EditText) {
 						if (C.API_LOLLIPOP_MR1) {
 							view.setBackgroundTintList(themeContext.getEditTextColors());
+						} else {
+							// Fix weird EditText padding on Android 5.0
+							float density = ResourceUtils.obtainDensity(view);
+							if ((int) (view.getPaddingTop() / density) == 4 &&
+									(int) (view.getPaddingBottom() / density) == 13) {
+								view.setPadding(view.getPaddingLeft(), (int) (11f * density + 0.5f),
+										view.getPaddingRight(), (int) (10f * density + 0.5f));
+							}
 						}
 					} else if (view instanceof CheckedTextView) {
 						// Mostly used by alert dialogs to display lists
@@ -650,10 +658,6 @@ public class ThemeEngine {
 					}
 				} else if (view instanceof ScrollView) {
 					ViewUtils.setEdgeEffectColor((ScrollView) view, theme.accent);
-				} else if (view instanceof DropdownView) {
-					if (C.API_LOLLIPOP_MR1) {
-						view.setBackgroundTintList(themeContext.getEditTextColors());
-					}
 				}
 			}
 			handleTag(theme, view);

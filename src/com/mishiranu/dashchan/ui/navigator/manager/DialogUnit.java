@@ -1512,7 +1512,11 @@ public class DialogUnit {
 				editText.setSelection(defaultText.length());
 			}
 			if (state.operation == SendMultifunctionalTask.Operation.DELETE) {
-				editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+				editText.setHint(R.string.password);
+				editText.setInputType(InputType.TYPE_CLASS_TEXT);
+				ViewUtils.applyMonospaceTypeface(editText);
+			} else if (state.operation == SendMultifunctionalTask.Operation.REPORT) {
+				editText.setHint(R.string.reason);
 			}
 		} else {
 			editText = null;

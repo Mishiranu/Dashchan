@@ -276,6 +276,7 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 		}
 		nameView.addTextChangedListener(new NameEditWatcher(postingConfiguration.allowName &&
 				!postingConfiguration.allowTripcode, nameView, tripcodeWarning, () -> resizeComment(true)));
+		ViewUtils.applyMonospaceTypeface(passwordView);
 		if (!C.API_LOLLIPOP) {
 			ViewUtils.setNewMargin(iconView, (int) (4f * density), 0, (int) (4f * density), 0);
 		}
