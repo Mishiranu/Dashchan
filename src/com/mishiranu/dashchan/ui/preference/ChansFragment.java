@@ -1,6 +1,5 @@
 package com.mishiranu.dashchan.ui.preference;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import androidx.annotation.NonNull;
@@ -11,6 +10,7 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.util.SharedPreferences;
 import java.util.Collection;
 
 public class ChansFragment extends PreferenceFragment implements FragmentHandler.Callback {

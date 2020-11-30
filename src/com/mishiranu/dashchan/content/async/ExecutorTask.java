@@ -68,29 +68,38 @@ public abstract class ExecutorTask<Progress, Result> {
 	private final AtomicBoolean cancelled = new AtomicBoolean(false);
 	private final AtomicBoolean started = new AtomicBoolean(false);
 
-	private final Callable<Result> worker = () -> {
-		started.set(true);
-		Result result = null;
-		boolean success = false;
-		try {
-			result = run();
-			success = true;
-		} catch (InterruptedException e) {
-			if (cancelled.get()) {
-				throw e;
-			} else {
-				throw new IllegalStateException(e);
-			}
-		} finally {
-			if (!success) {
-				cancelled.set(true);
-			}
-			postResult(result);
-		}
-		return result;
-	};
+	private static final class Worker<Result> implements Callable<Result> {
+		private final ExecutorTask<?, Result> task;
 
-	private final FutureTask<Result> task = new FutureTask<Result>(worker) {
+		public Worker(ExecutorTask<?, Result> task) {
+			this.task = task;
+		}
+
+		@Override
+		public Result call() throws Exception {
+			task.started.set(true);
+			Result result = null;
+			boolean success = false;
+			try {
+				result = task.run();
+				success = true;
+			} catch (InterruptedException e) {
+				if (task.cancelled.get()) {
+					throw e;
+				} else {
+					throw new IllegalStateException(e);
+				}
+			} finally {
+				if (!success) {
+					task.cancelled.set(true);
+				}
+				task.postResult(result);
+			}
+			return result;
+		}
+	}
+
+	private final FutureTask<Result> task = new FutureTask<Result>(new Worker<>(this)) {
 		@SuppressWarnings("StatementWithEmptyBody")
 		@Override
 		protected void done() {

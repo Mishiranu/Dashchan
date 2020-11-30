@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.ui.preference.core;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Pair;
@@ -12,6 +11,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.FlagUtils;
+import com.mishiranu.dashchan.util.SharedPreferences;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
 
@@ -33,7 +33,7 @@ public class EditPreference extends DialogPreference<String> {
 
 	@Override
 	protected void persist(SharedPreferences preferences) {
-		preferences.edit().putString(key, getValue()).commit();
+		preferences.edit().put(key, getValue()).close();
 	}
 
 	@Override

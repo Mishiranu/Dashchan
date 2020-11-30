@@ -3,7 +3,6 @@ package com.mishiranu.dashchan.ui.preference;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.SpannableStringBuilder;
@@ -32,6 +31,7 @@ import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.SharedPreferences;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 
 public class MediaFragment extends PreferenceFragment implements FragmentHandler.Callback {

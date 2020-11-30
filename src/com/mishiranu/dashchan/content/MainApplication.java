@@ -100,6 +100,10 @@ public class MainApplication extends Application {
 		}
 	}
 
+	public File getSharedPrefsDir() {
+		return new File(getCacheDir().getParentFile(), "shared_prefs");
+	}
+
 	private File getWebViewCacheDir() {
 		return new File(super.getCacheDir(), "webview");
 	}

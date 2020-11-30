@@ -1,7 +1,6 @@
 package com.mishiranu.dashchan.content.service;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.SystemClock;
 import androidx.activity.ComponentActivity;
 import androidx.annotation.NonNull;
@@ -23,6 +22,7 @@ import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PendingUserPost;
 import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
+import com.mishiranu.dashchan.util.SharedPreferences;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -694,7 +694,7 @@ public class WatcherService extends BaseService {
 		WatcherNotifications.configure(this);
 		updateNotificationColor();
 		addOnDestroyListener(ChanDatabase.getInstance().requireCookies());
-		Preferences.PREFERENCES.registerOnSharedPreferenceChangeListener(preferencesListener);
+		Preferences.PREFERENCES.register(preferencesListener);
 		FavoritesStorage.getInstance().getObservable().register(favoritesObserver);
 		for (FavoritesStorage.FavoriteItem favoriteItem : FavoritesStorage.getInstance().getThreads(null)) {
 			ThreadKey threadKey = new ThreadKey(favoriteItem.chanName,
@@ -721,7 +721,7 @@ public class WatcherService extends BaseService {
 			resolveItemsTask.cancel();
 			resolveItemsTask = null;
 		}
-		Preferences.PREFERENCES.unregisterOnSharedPreferenceChangeListener(preferencesListener);
+		Preferences.PREFERENCES.unregister(preferencesListener);
 		FavoritesStorage.getInstance().getObservable().unregister(favoritesObserver);
 		ConcurrentUtils.HANDLER.removeCallbacks(refreshAllRunnable);
 	}
@@ -1056,7 +1056,7 @@ public class WatcherService extends BaseService {
 		}
 	}
 
-	private final SharedPreferences.OnSharedPreferenceChangeListener preferencesListener = (p, key) -> {
+	private final SharedPreferences.Listener preferencesListener = key -> {
 		if (Preferences.KEY_WATCHER_REFRESH_INTERVAL.equals(key)) {
 			ConcurrentUtils.HANDLER.removeCallbacks(refreshAllRunnable);
 			startNext();

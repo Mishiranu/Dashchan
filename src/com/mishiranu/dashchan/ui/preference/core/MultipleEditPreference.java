@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.ui.preference.core;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Pair;
@@ -13,6 +12,7 @@ import android.widget.LinearLayout;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
+import com.mishiranu.dashchan.util.SharedPreferences;
 import com.mishiranu.dashchan.widget.DropdownView;
 import com.mishiranu.dashchan.widget.SafePasteEditText;
 import java.util.ArrayList;
@@ -48,7 +48,7 @@ public class MultipleEditPreference<T> extends DialogPreference<T> {
 
 	@Override
 	protected void persist(SharedPreferences preferences) {
-		preferences.edit().putString(key, valueCodec.toString(getValue())).commit();
+		preferences.edit().put(key, valueCodec.toString(getValue())).close();
 	}
 
 	public static <T> String formatValues(ValueCodec<T> valueCodec, String format, T value) {

@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.ui.preference;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
@@ -16,6 +15,7 @@ import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.SharedPreferences;
 
 public class InterfaceFragment extends PreferenceFragment {
 	@Override

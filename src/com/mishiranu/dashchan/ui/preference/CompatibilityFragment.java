@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.ui.preference;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -14,6 +13,7 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.CheckPreference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.util.SharedPreferences;
 import com.mishiranu.dashchan.widget.ClickableToast;
 
 public class CompatibilityFragment extends PreferenceFragment {

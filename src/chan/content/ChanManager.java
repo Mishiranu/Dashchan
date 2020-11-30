@@ -289,6 +289,12 @@ public class ChanManager {
 			this.extensions = extensionsMap(extensions);
 			updateExtensions(null, null, true);
 			registerReceiver();
+
+			Preferences.PREFERENCES.register(key -> {
+				if (Preferences.KEY_CHANS_ORDER.equals(key)) {
+					updateExtensions(null, null, true);
+				}
+			});
 		} else {
 			this.applicationFingerprints = new Fingerprints(Collections.emptySet());
 			this.extensions = Collections.emptyMap();
@@ -783,11 +789,6 @@ public class ChanManager {
 			}
 		}
 		return null;
-	}
-
-	public void setChansOrder(List<String> chanNames) {
-		Preferences.setChansOrder(chanNames);
-		updateExtensions(null, null, true);
 	}
 
 	String getChanNameByHost(String host) {

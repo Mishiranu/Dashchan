@@ -1,10 +1,10 @@
 package com.mishiranu.dashchan.ui.preference.core;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import com.mishiranu.dashchan.util.SharedPreferences;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 
 public class CheckPreference extends Preference<Boolean> {
@@ -20,7 +20,7 @@ public class CheckPreference extends Preference<Boolean> {
 
 	@Override
 	protected void persist(SharedPreferences preferences) {
-		preferences.edit().putBoolean(key, getValue()).commit();
+		preferences.edit().put(key, getValue()).close();
 	}
 
 	@Override

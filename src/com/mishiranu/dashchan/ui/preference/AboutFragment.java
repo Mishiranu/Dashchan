@@ -2,7 +2,6 @@ package com.mishiranu.dashchan.ui.preference;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.view.View;
@@ -18,6 +17,7 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.util.SharedPreferences;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

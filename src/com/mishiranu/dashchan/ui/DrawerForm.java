@@ -1650,7 +1650,7 @@ public class DrawerForm extends RecyclerView.Adapter<DrawerForm.ViewHolder> impl
 				for (DrawerForm.ListItem listItem : chans) {
 					chanNames.add(listItem.chanName);
 				}
-				ChanManager.getInstance().setChansOrder(chanNames);
+				Preferences.setChansOrder(chanNames);
 				// Regroup favorite threads
 				if (mergeChans) {
 					updateItems(false, true);

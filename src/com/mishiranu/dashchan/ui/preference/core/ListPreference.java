@@ -2,10 +2,10 @@ package com.mishiranu.dashchan.ui.preference.core;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import chan.util.CommonUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
+import com.mishiranu.dashchan.util.SharedPreferences;
 import java.util.List;
 
 public class ListPreference extends DialogPreference<String> {
@@ -41,7 +41,7 @@ public class ListPreference extends DialogPreference<String> {
 
 	@Override
 	protected void persist(SharedPreferences preferences) {
-		preferences.edit().putString(key, getValue()).commit();
+		preferences.edit().put(key, getValue()).close();
 	}
 
 	@Override

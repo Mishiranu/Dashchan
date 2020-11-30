@@ -13,6 +13,7 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ConcurrentUtils {
 	public static final Handler HANDLER = new Handler(Looper.getMainLooper());
@@ -74,23 +75,38 @@ public class ConcurrentUtils {
 		}
 	}
 
-	private static class ComponentThreadFactory implements ThreadFactory {
-		private final String componentName;
-		private final String componentPart;
+	private static class PriorityThread implements Runnable {
+		private final Runnable runnable;
+		private final int priority;
 
-		public ComponentThreadFactory(String componentName, String componentPart) {
-			this.componentName = componentName;
-			this.componentPart = componentPart;
+		private PriorityThread(Runnable runnable, int priority) {
+			this.runnable = runnable;
+			this.priority = priority;
+		}
+
+		@Override
+		public void run() {
+			Process.setThreadPriority(priority);
+			runnable.run();
+		}
+	}
+
+	private static class ComponentThreadFactory implements ThreadFactory {
+		private final String name;
+		private final String part;
+		private final AtomicInteger number;
+
+		public ComponentThreadFactory(String name, String part) {
+			this.name = name;
+			this.part = part;
+			number = part != null ? null : new AtomicInteger();
 		}
 
 		@Override
 		public Thread newThread(@NonNull Runnable r) {
-			Thread thread = new Thread(() -> {
-				Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-				r.run();
-			});
-			if (componentName != null) {
-				thread.setName(componentName + (componentPart != null ? " #" + componentPart : ""));
+			Thread thread = new Thread(new PriorityThread(r, Process.THREAD_PRIORITY_BACKGROUND));
+			if (name != null) {
+				thread.setName(name + " #" + (part != null ? part : number.incrementAndGet()));
 			}
 			return thread;
 		}

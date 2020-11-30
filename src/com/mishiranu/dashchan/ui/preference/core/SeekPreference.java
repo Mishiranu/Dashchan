@@ -2,11 +2,11 @@ package com.mishiranu.dashchan.ui.preference.core;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Pair;
 import com.mishiranu.dashchan.ui.SeekBarForm;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
+import com.mishiranu.dashchan.util.SharedPreferences;
 
 public class SeekPreference extends DialogPreference<Integer> {
 	private static final String STATE_SWITCH_VALUE = "switchValue";
@@ -33,7 +33,7 @@ public class SeekPreference extends DialogPreference<Integer> {
 
 	@Override
 	protected void persist(SharedPreferences preferences) {
-		preferences.edit().putInt(key, getValue()).commit();
+		preferences.edit().put(key, getValue()).close();
 	}
 
 	@Override

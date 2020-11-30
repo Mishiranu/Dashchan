@@ -236,8 +236,7 @@ public class ChanDatabase {
 		this.supportsCte = supportsCte;
 
 		// Migrate old cookies
-		File[] sharedPrefs = new File(MainApplication.getInstance()
-				.getCacheDir().getParentFile(), "shared_prefs").listFiles();
+		File[] sharedPrefs = MainApplication.getInstance().getSharedPrefsDir().listFiles();
 		if (sharedPrefs != null) {
 			for (File file : sharedPrefs) {
 				String fileName = file.getName();

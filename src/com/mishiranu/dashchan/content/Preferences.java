@@ -3,7 +3,6 @@ package com.mishiranu.dashchan.content;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.UriPermission;
 import android.database.Cursor;
 import android.net.Uri;
@@ -17,7 +16,7 @@ import chan.content.ChanManager;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.util.SafeSharedPreferences;
+import com.mishiranu.dashchan.util.SharedPreferences;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import java.io.File;
 import java.util.ArrayList;
@@ -37,11 +36,27 @@ import org.json.JSONObject;
 
 public class Preferences {
 	public static final SharedPreferences PREFERENCES;
+	private static final String PREFERENCES_NAME = "preferences";
 
 	static {
-		Context context = MainApplication.getInstance();
-		String name = context.getPackageName() + "_preferences";
-		PREFERENCES = new SafeSharedPreferences(context.getSharedPreferences(name, Context.MODE_PRIVATE));
+		MainApplication application = MainApplication.getInstance();
+		if (application.isMainProcess()) {
+			// Rename preferences file
+			String oldName = application.getPackageName() + "_preferences";
+			File oldFile = getPreferencesFile(application, oldName);
+			File newFile = getPreferencesFile(application, PREFERENCES_NAME);
+			if (oldFile.exists()) {
+				File oldBackupFile = new File(oldFile.getParentFile(), oldFile.getName() + ".bak");
+				if (oldBackupFile.exists()) {
+					File newBackupFile = new File(newFile.getParentFile(), newFile.getName() + ".bak");
+					oldBackupFile.renameTo(newBackupFile);
+				}
+				oldFile.renameTo(newFile);
+			}
+			PREFERENCES = new SharedPreferences(application, PREFERENCES_NAME);
+		} else {
+			PREFERENCES = null;
+		}
 	}
 
 	private static final String SPECIAL_CHAN_NAME_GENERAL = "general";
@@ -64,10 +79,12 @@ public class Preferences {
 		}
 	}
 
+	private static File getPreferencesFile(MainApplication application, String name) {
+		return new File(application.getSharedPrefsDir(), name + ".xml");
+	}
+
 	public static File getPreferencesFile() {
-		Context context = MainApplication.getInstance();
-		String name = context.getPackageName() + "_preferences";
-		return new File(new File(context.getCacheDir().getParentFile(), "shared_prefs"), name + ".xml");
+		return getPreferencesFile(MainApplication.getInstance(), PREFERENCES_NAME);
 	}
 
 	public static List<String> unpackOrCastMultipleValues(String value, int count) {
@@ -211,16 +228,18 @@ public class Preferences {
 	}
 
 	static {
-		String key = "auto_refresh_mode";
-		String value = PREFERENCES.getString(key, null);
-		if (value != null) {
-			boolean enabled = "enabled".equals(value);
-			SharedPreferences.Editor editor = PREFERENCES.edit();
-			editor.remove(value);
-			if (!enabled) {
-				editor.putInt(KEY_AUTO_REFRESH_INTERVAL, DISABLED_AUTO_REFRESH_INTERVAL);
+		if (PREFERENCES != null) {
+			String key = "auto_refresh_mode";
+			String value = PREFERENCES.getString(key, null);
+			if (value != null) {
+				boolean enabled = "enabled".equals(value);
+				try (SharedPreferences.Editor editor = PREFERENCES.edit()) {
+					editor.remove(value);
+					if (!enabled) {
+						editor.put(KEY_AUTO_REFRESH_INTERVAL, DISABLED_AUTO_REFRESH_INTERVAL);
+					}
+				}
 			}
-			editor.commit();
 		}
 	}
 
@@ -332,13 +351,13 @@ public class Preferences {
 
 	public static void setCaptchaSolvingChans(Collection<String> chanNames) {
 		if (chanNames == null || chanNames.isEmpty()) {
-			PREFERENCES.edit().remove(KEY_CAPTCHA_SOLVING_CHANS).commit();
+			PREFERENCES.edit().remove(KEY_CAPTCHA_SOLVING_CHANS).close();
 		} else {
 			JSONArray jsonArray = new JSONArray();
 			for (String chanName : chanNames) {
 				jsonArray.put(chanName);
 			}
-			PREFERENCES.edit().putString(KEY_CAPTCHA_SOLVING_CHANS, jsonArray.toString()).commit();
+			PREFERENCES.edit().put(KEY_CAPTCHA_SOLVING_CHANS, jsonArray.toString()).close();
 		}
 	}
 
@@ -377,13 +396,7 @@ public class Preferences {
 	}
 
 	public static void setCatalogSort(CatalogSort catalogSort) {
-		SharedPreferences.Editor editor = PREFERENCES.edit();
-		if (catalogSort != null) {
-			editor.putString(KEY_CATALOG_SORT, catalogSort.value);
-		} else {
-			editor.remove(KEY_CATALOG_SORT);
-		}
-		editor.commit();
+		PREFERENCES.edit().put(KEY_CATALOG_SORT, catalogSort != null ? catalogSort.value : null).close();
 	}
 
 	public static final String KEY_CHANS_ORDER = "chans_order";
@@ -410,7 +423,7 @@ public class Preferences {
 		for (String chanName : chanNames) {
 			jsonArray.put(chanName);
 		}
-		PREFERENCES.edit().putString(KEY_CHANS_ORDER, jsonArray.toString()).commit();
+		PREFERENCES.edit().put(KEY_CHANS_ORDER, jsonArray.toString()).close();
 	}
 
 	public static final String KEY_CHECK_UPDATES_ON_START = "check_updates_on_start";
@@ -421,7 +434,7 @@ public class Preferences {
 	}
 
 	public static void setCheckUpdatesOnStart(boolean checkUpdatesOnStart) {
-		PREFERENCES.edit().putBoolean(KEY_CHECK_UPDATES_ON_START, checkUpdatesOnStart).commit();
+		PREFERENCES.edit().put(KEY_CHECK_UPDATES_ON_START, checkUpdatesOnStart).close();
 	}
 
 	public static final String KEY_CLOSE_ON_BACK = "close_on_back";
@@ -471,7 +484,7 @@ public class Preferences {
 	}
 
 	public static void setDefaultBoardName(String chanName, String boardName) {
-		PREFERENCES.edit().putString(KEY_DEFAULT_BOARD_NAME.bind(chanName), boardName).commit();
+		PREFERENCES.edit().put(KEY_DEFAULT_BOARD_NAME.bind(chanName), boardName).close();
 	}
 
 	public static final String KEY_DISPLAY_HIDDEN_THREADS = "display_hidden_threads";
@@ -495,7 +508,7 @@ public class Preferences {
 	}
 
 	public static void setDomainUnhandled(Chan chan, String domain) {
-		PREFERENCES.edit().putString(KEY_DOMAIN.bind(chan.name), domain).commit();
+		PREFERENCES.edit().put(KEY_DOMAIN.bind(chan.name), domain).close();
 	}
 
 	public static final String KEY_DOWNLOAD_DETAIL_NAME = "download_detail_name";
@@ -658,7 +671,7 @@ public class Preferences {
 	}
 
 	public static void setExpandedScreen(boolean expandedScreen) {
-		PREFERENCES.edit().putBoolean(KEY_EXPANDED_SCREEN, expandedScreen).commit();
+		PREFERENCES.edit().put(KEY_EXPANDED_SCREEN, expandedScreen).close();
 	}
 
 	public enum FavoriteOnReplyMode {
@@ -696,12 +709,14 @@ public class Preferences {
 	}
 
 	static {
-		String key = "favorite_on_reply";
-		Object value = PREFERENCES.getAll().get(key);
-		if (value instanceof Boolean) {
-			FavoriteOnReplyMode favoriteOnReplyMode = (boolean) value
-					? FavoriteOnReplyMode.ENABLED : FavoriteOnReplyMode.DISABLED;
-			PREFERENCES.edit().remove(key).putString(KEY_FAVORITE_ON_REPLY, favoriteOnReplyMode.value).commit();
+		if (PREFERENCES != null) {
+			String key = "favorite_on_reply";
+			Object value = PREFERENCES.getAll().get(key);
+			if (value instanceof Boolean) {
+				FavoriteOnReplyMode favoriteOnReplyMode = (boolean) value
+						? FavoriteOnReplyMode.ENABLED : FavoriteOnReplyMode.DISABLED;
+				PREFERENCES.edit().remove(key).put(KEY_FAVORITE_ON_REPLY, favoriteOnReplyMode.value).close();
+			}
 		}
 	}
 
@@ -781,7 +796,7 @@ public class Preferences {
 	}
 
 	public static void setLastUpdateCheck(long lastUpdateCheck) {
-		PREFERENCES.edit().putLong(KEY_LAST_UPDATE_CHECK, lastUpdateCheck).commit();
+		PREFERENCES.edit().put(KEY_LAST_UPDATE_CHECK, lastUpdateCheck).close();
 	}
 
 	public static final ChanKey KEY_LOAD_CATALOG = new ChanKey("load_catalog");
@@ -819,7 +834,7 @@ public class Preferences {
 	}
 
 	public static void setDrawerLocked(boolean locked) {
-		PREFERENCES.edit().putBoolean(KEY_LOCK_DRAWER, locked).commit();
+		PREFERENCES.edit().put(KEY_LOCK_DRAWER, locked).close();
 	}
 
 	public static final String KEY_MERGE_CHANS = "merge_chans";
@@ -904,7 +919,7 @@ public class Preferences {
 		String password = PREFERENCES.getString(key, null);
 		if (StringUtils.isEmpty(password)) {
 			password = generatePassword();
-			PREFERENCES.edit().putString(key, password).commit();
+			PREFERENCES.edit().put(key, password).close();
 		}
 		return password;
 	}
@@ -964,7 +979,7 @@ public class Preferences {
 	public static final String KEY_SHOWCASE_GALLERY = "showcase_gallery";
 
 	public static void consumeShowcaseGallery() {
-		PREFERENCES.edit().putBoolean(KEY_SHOWCASE_GALLERY, false).commit();
+		PREFERENCES.edit().put(KEY_SHOWCASE_GALLERY, false).close();
 	}
 
 	public static boolean isShowcaseGalleryEnabled() {
@@ -979,7 +994,7 @@ public class Preferences {
 	}
 
 	public static void setSfwMode(boolean sfwMode) {
-		PREFERENCES.edit().putBoolean(KEY_SFW_MODE, sfwMode).commit();
+		PREFERENCES.edit().put(KEY_SFW_MODE, sfwMode).close();
 	}
 
 	public static final String KEY_SHOW_MY_POSTS = "show_my_posts";
@@ -990,7 +1005,7 @@ public class Preferences {
 	}
 
 	public static void setShowMyPosts(boolean showMyPosts) {
-		PREFERENCES.edit().putBoolean(KEY_SHOW_MY_POSTS, showMyPosts).commit();
+		PREFERENCES.edit().put(KEY_SHOW_MY_POSTS, showMyPosts).close();
 	}
 
 	public static final String KEY_SHOW_SPOILERS = "show_spoilers";
@@ -1001,7 +1016,7 @@ public class Preferences {
 	}
 
 	public static void setShowSpoilers(boolean showSpoilers) {
-		PREFERENCES.edit().putBoolean(KEY_SHOW_SPOILERS, showSpoilers).commit();
+		PREFERENCES.edit().put(KEY_SHOW_SPOILERS, showSpoilers).close();
 	}
 
 	public static final String KEY_SUBDIR_PATTERN = "subdir_pattern";
@@ -1110,7 +1125,7 @@ public class Preferences {
 	}
 
 	public static void setTheme(String value) {
-		PREFERENCES.edit().putString(KEY_THEME, value).commit();
+		PREFERENCES.edit().put(KEY_THEME, value).close();
 	}
 
 	public enum ThreadsView {
@@ -1140,20 +1155,16 @@ public class Preferences {
 	}
 
 	public static void setThreadsView(ThreadsView threadsView) {
-		SharedPreferences.Editor editor = PREFERENCES.edit();
-		if (threadsView != null) {
-			editor.putString(KEY_THREADS_VIEW, threadsView.value);
-		} else {
-			editor.remove(KEY_THREADS_VIEW);
-		}
-		editor.commit();
+		PREFERENCES.edit().put(KEY_THREADS_VIEW, threadsView != null ? threadsView.value : null).close();
 	}
 
 	static {
-		Object threadsGridMode = PREFERENCES.getAll().get("threads_grid_mode");
-		if (threadsGridMode instanceof Boolean) {
-			String value = (boolean) threadsGridMode ? ThreadsView.LARGE_GRID.value : ThreadsView.CARDS.value;
-			PREFERENCES.edit().remove("threads_grid_mode").putString(KEY_THREADS_VIEW, value).commit();
+		if (PREFERENCES != null) {
+			Object threadsGridMode = PREFERENCES.getAll().get("threads_grid_mode");
+			if (threadsGridMode instanceof Boolean) {
+				String value = (boolean) threadsGridMode ? ThreadsView.LARGE_GRID.value : ThreadsView.CARDS.value;
+				PREFERENCES.edit().remove("threads_grid_mode").put(KEY_THREADS_VIEW, value).close();
+			}
 		}
 	}
 
@@ -1182,7 +1193,7 @@ public class Preferences {
 		packageNameFingerprints = packageNameFingerprints != null
 				? new HashSet<>(packageNameFingerprints) : new HashSet<>();
 		packageNameFingerprints.add(packageNameFingerprint);
-		PREFERENCES.edit().putStringSet(KEY_TRUSTED_EXSTENSIONS, packageNameFingerprints).commit();
+		PREFERENCES.edit().put(KEY_TRUSTED_EXSTENSIONS, packageNameFingerprints).close();
 	}
 
 	public static final String KEY_USE_GMS_PROVIDER = "use_gms_provider";
@@ -1201,7 +1212,7 @@ public class Preferences {
 	}
 
 	public static void setUseHttps(Chan chan, boolean useHttps) {
-		PREFERENCES.edit().putBoolean(KEY_USE_HTTPS.bind(chan.name), useHttps).commit();
+		PREFERENCES.edit().put(KEY_USE_HTTPS.bind(chan.name), useHttps).close();
 	}
 
 	public static boolean isUseHttpsGeneral() {
@@ -1222,7 +1233,7 @@ public class Preferences {
 	}
 
 	public static void setUserAgentReference(String userAgentReference) {
-		PREFERENCES.edit().putString(KEY_USER_AGENT_REFERENCE, userAgentReference).commit();
+		PREFERENCES.edit().put(KEY_USER_AGENT_REFERENCE, userAgentReference).close();
 	}
 
 	public static final ChanKey KEY_USER_AUTHORIZATION = new ChanKey("user_authorization");
@@ -1295,15 +1306,17 @@ public class Preferences {
 	}
 
 	static {
-		String key = "watcher_refresh_periodically";
-		Object value = PREFERENCES.getAll().get(key);
-		if (value instanceof Boolean) {
-			SharedPreferences.Editor editor = PREFERENCES.edit();
-			editor.remove(key);
-			if (!((boolean) value)) {
-				editor.putInt(KEY_WATCHER_REFRESH_INTERVAL, DISABLED_WATCHER_REFRESH_INTERVAL);
+		if (PREFERENCES != null) {
+			String key = "watcher_refresh_periodically";
+			Object value = PREFERENCES.getAll().get(key);
+			if (value instanceof Boolean) {
+				try (SharedPreferences.Editor editor = PREFERENCES.edit()) {
+					editor.remove(key);
+					if (!((boolean) value)) {
+						editor.put(KEY_WATCHER_REFRESH_INTERVAL, DISABLED_WATCHER_REFRESH_INTERVAL);
+					}
+				}
 			}
-			editor.commit();
 		}
 	}
 
@@ -1362,7 +1375,7 @@ public class Preferences {
 				strings.add(notificationFeature.value);
 			}
 		}
-		PREFERENCES.edit().putStringSet(KEY_WATCHER_NOTIFICATIONS, strings).commit();
+		PREFERENCES.edit().put(KEY_WATCHER_NOTIFICATIONS, strings).close();
 	}
 
 	public static final String KEY_WATCHER_WATCH_INITIALLY = "watcher_watch_initially";

@@ -1,6 +1,5 @@
 package com.mishiranu.dashchan.ui.preference;
 
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.SpannableStringBuilder;
@@ -27,6 +26,7 @@ import com.mishiranu.dashchan.ui.preference.core.MultipleEditPreference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.SharedPreferences;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ProgressDialog;
 import java.util.Arrays;

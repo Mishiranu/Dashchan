@@ -1,7 +1,6 @@
 package com.mishiranu.dashchan.ui.preference.core;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -10,6 +9,7 @@ import android.widget.TextView;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.SharedPreferences;
 import com.mishiranu.dashchan.widget.ViewFactory;
 
 public abstract class Preference<T> {

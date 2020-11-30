@@ -1,6 +1,5 @@
 package com.mishiranu.dashchan.ui.preference;
 
-import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -15,6 +14,7 @@ import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.SharedPreferences;
 import java.util.Iterator;
 
 public class CategoriesFragment extends PreferenceFragment {

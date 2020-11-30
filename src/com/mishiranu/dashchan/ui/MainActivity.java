@@ -9,7 +9,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -78,6 +77,7 @@ import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.SharedPreferences;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.CustomDrawerLayout;
@@ -173,7 +173,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		ClickableToast.register(this);
 		ForegroundManager.getInstance().register(this);
 		FavoritesStorage.getInstance().getObservable().register(this);
-		Preferences.PREFERENCES.registerOnSharedPreferenceChangeListener(preferencesListener);
+		Preferences.PREFERENCES.register(preferencesListener);
 		ChanManager.getInstance().observable.register(chanManagerCallback);
 		watcherServiceClient = WatcherService.getClient(this);
 		watcherServiceClient.setCallback(this);
@@ -1210,7 +1210,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		unbindService(downloadConnection);
 		watcherServiceClient.setCallback(null);
 		FavoritesStorage.getInstance().getObservable().unregister(this);
-		Preferences.PREFERENCES.unregisterOnSharedPreferenceChangeListener(preferencesListener);
+		Preferences.PREFERENCES.unregister(preferencesListener);
 		ChanManager.getInstance().observable.unregister(chanManagerCallback);
 		for (Chan chan : ChanManager.getInstance().getAvailableChans()) {
 			chan.configuration.commit();
@@ -1441,8 +1441,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		}
 	}
 
-	private final SharedPreferences.OnSharedPreferenceChangeListener preferencesListener
-			= (p, key) -> drawerForm.updatePreferences();
+	private final SharedPreferences.Listener preferencesListener = key -> drawerForm.updatePreferences();
 
 	@Override
 	public void onSelectChan(String chanName) {
