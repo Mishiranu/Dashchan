@@ -102,6 +102,7 @@
 	<string name="crop_thumbnails__summary">Миниатюры будут заполнять квадрат</string>
 	<string name="cyclical_thread">Цикличный тред</string>
 	<string name="cyclical_threads_refresh_mode">Режим обновления цикличных тредов</string>
+	<string name="database">База данных</string>
 	<string name="date_created">Дата создания</string>
 	<string name="ddos_protection_bypass_failed">Не удалось обойти DDoS-защиту</string>
 	<string name="default_name_cant_be_hidden">Нельзя скрыть имя по умолчанию</string>

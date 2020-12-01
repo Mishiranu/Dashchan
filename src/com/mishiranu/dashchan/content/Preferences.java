@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
+import android.util.Pair;
 import androidx.annotation.RequiresApi;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
@@ -36,7 +37,9 @@ import org.json.JSONObject;
 
 public class Preferences {
 	public static final SharedPreferences PREFERENCES;
+
 	private static final String PREFERENCES_NAME = "preferences";
+	private static final String PREFERENCES_RESTORE_NAME = "preferences.restore";
 
 	static {
 		MainApplication application = MainApplication.getInstance();
@@ -52,6 +55,10 @@ public class Preferences {
 					oldBackupFile.renameTo(newBackupFile);
 				}
 				oldFile.renameTo(newFile);
+			}
+			File restoreFile = getPreferencesFile(application, PREFERENCES_RESTORE_NAME);
+			if (restoreFile.exists()) {
+				restoreFile.renameTo(newFile);
 			}
 			PREFERENCES = new SharedPreferences(application, PREFERENCES_NAME);
 		} else {
@@ -83,8 +90,14 @@ public class Preferences {
 		return new File(application.getSharedPrefsDir(), name + ".xml");
 	}
 
-	public static File getPreferencesFile() {
-		return getPreferencesFile(MainApplication.getInstance(), PREFERENCES_NAME);
+	public static Pair<File, File> getFilesForBackup() {
+		File preferences = getPreferencesFile(MainApplication.getInstance(), PREFERENCES_NAME);
+		File restore = getPreferencesFile(MainApplication.getInstance(), PREFERENCES_RESTORE_NAME);
+		return new Pair<>(preferences, restore);
+	}
+
+	public static File getFileForRestore() {
+		return getPreferencesFile(MainApplication.getInstance(), PREFERENCES_RESTORE_NAME);
 	}
 
 	public static List<String> unpackOrCastMultipleValues(String value, int count) {

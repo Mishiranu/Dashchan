@@ -17,10 +17,12 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.ui.preference.core.PreferenceFragment;
+import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.SharedPreferences;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
+import java.util.List;
 
 public class AboutFragment extends PreferenceFragment implements FragmentHandler.Callback {
 	private static final String EXTRA_IN_STORAGE_REQUEST = "inStorageRequest";
@@ -91,10 +93,10 @@ public class AboutFragment extends PreferenceFragment implements FragmentHandler
 				inStorageRequest = true;
 			}
 		} else {
-			LinkedHashMap<DataFile, String> filesMap = BackupManager.getAvailableBackups(requireContext());
-			if (filesMap != null && filesMap.size() > 0) {
-				RestoreDialog dialog = new RestoreDialog(filesMap);
-				dialog.show(getChildFragmentManager(), RestoreDialog.class.getName());
+			List<BackupManager.BackupFile> backupFiles = BackupManager.getAvailableBackups(requireContext());
+			if (backupFiles != null && !backupFiles.isEmpty()) {
+				RestoreListDialog dialog = new RestoreListDialog(backupFiles);
+				dialog.show(getChildFragmentManager(), RestoreListDialog.class.getName());
 			} else {
 				ClickableToast.show(R.string.backups_not_found);
 			}
@@ -125,19 +127,19 @@ public class AboutFragment extends PreferenceFragment implements FragmentHandler
 		}
 	}
 
-	public static class RestoreDialog extends DialogFragment implements DialogInterface.OnClickListener {
+	public static class RestoreListDialog extends DialogFragment {
 		private static final String EXTRA_FILES = "files";
 		private static final String EXTRA_NAMES = "names";
 
-		public RestoreDialog() {}
+		public RestoreListDialog() {}
 
-		public RestoreDialog(LinkedHashMap<DataFile, String> filesMap) {
+		public RestoreListDialog(List<BackupManager.BackupFile> backupFiles) {
 			Bundle args = new Bundle();
-			ArrayList<String> files = new ArrayList<>(filesMap.size());
-			ArrayList<String> names = new ArrayList<>(filesMap.size());
-			for (LinkedHashMap.Entry<DataFile, String> pair : filesMap.entrySet()) {
-				files.add(pair.getKey().getRelativePath());
-				names.add(pair.getValue());
+			ArrayList<String> files = new ArrayList<>(backupFiles.size());
+			ArrayList<String> names = new ArrayList<>(backupFiles.size());
+			for (BackupManager.BackupFile backupFile : backupFiles) {
+				files.add(backupFile.file.getRelativePath());
+				names.add(backupFile.name);
 			}
 			args.putStringArrayList(EXTRA_FILES, files);
 			args.putStringArrayList(EXTRA_NAMES, names);
@@ -150,18 +152,97 @@ public class AboutFragment extends PreferenceFragment implements FragmentHandler
 			ArrayList<String> names = requireArguments().getStringArrayList(EXTRA_NAMES);
 			String[] items = CommonUtils.toArray(names, String.class);
 			return new AlertDialog.Builder(requireContext())
-					.setSingleChoiceItems(items, 0, null)
+					.setTitle(R.string.restore_data)
+					.setItems(items, (d, which) -> {
+						String path = requireArguments().getStringArrayList(EXTRA_FILES).get(which);
+						DataFile file = DataFile.obtain(requireContext(), DataFile.Target.DOWNLOADS, path);
+						List<BackupManager.Entry> entries = BackupManager.readBackupEntries(file);
+						if (entries.isEmpty()) {
+							ClickableToast.show(R.string.invalid_data_format);
+						} else {
+							RestoreEntriesDialog dialog = new RestoreEntriesDialog(file, entries);
+							dialog.show(getParentFragmentManager(), RestoreEntriesDialog.class.getName());
+						}
+					})
 					.setNegativeButton(android.R.string.cancel, null)
-					.setPositiveButton(android.R.string.ok, this)
+					.create();
+		}
+	}
+
+	public static class RestoreEntriesDialog extends DialogFragment {
+		private static final String EXTRA_FILE = "file";
+		private static final String EXTRA_ENTRIES = "entries";
+		private static final String EXTRA_CHECKED = "checked";
+
+		public RestoreEntriesDialog() {}
+
+		public RestoreEntriesDialog(DataFile file, List<BackupManager.Entry> entries) {
+			Bundle args = new Bundle();
+			ArrayList<String> entryNames = new ArrayList<>();
+			for (BackupManager.Entry entry : entries) {
+				entryNames.add(entry.name());
+			}
+			args.putString(EXTRA_FILE, file.getRelativePath());
+			args.putStringArrayList(EXTRA_ENTRIES, entryNames);
+			setArguments(args);
+		}
+
+		private boolean[] checkedItems;
+
+		@NonNull
+		@Override
+		public AlertDialog onCreateDialog(Bundle savedInstanceState) {
+			ArrayList<String> entryNames = requireArguments().getStringArrayList(EXTRA_ENTRIES);
+			String[] items = new String[entryNames.size()];
+			for (int i = 0; i < items.length; i++) {
+				items[i] = getString(BackupManager.Entry.valueOf(entryNames.get(i)).titleResId);
+			}
+			checkedItems = new boolean[items.length];
+			ArrayList<String> checked = savedInstanceState != null
+					? savedInstanceState.getStringArrayList(EXTRA_CHECKED) : null;
+			for (int i = 0; i < checkedItems.length; i++) {
+				checkedItems[i] = checked == null || checked.contains(entryNames.get(i));
+			}
+			return new AlertDialog.Builder(requireContext())
+					.setTitle(R.string.restore_data)
+					.setMultiChoiceItems(items, checkedItems,
+							(d, which, isChecked) -> checkedItems[which] = isChecked)
+					.setNegativeButton(android.R.string.cancel, null)
+					.setPositiveButton(android.R.string.ok, (d, w) -> loadBackup())
 					.create();
 		}
 
 		@Override
-		public void onClick(DialogInterface dialog, int which) {
-			int index = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
-			String path = requireArguments().getStringArrayList(EXTRA_FILES).get(index);
-			DataFile file = DataFile.obtain(requireContext(), DataFile.Target.DOWNLOADS, path);
-			BackupManager.loadBackup(requireContext(), file);
+		public void onSaveInstanceState(@NonNull Bundle outState) {
+			super.onSaveInstanceState(outState);
+
+			ArrayList<String> entryNames = requireArguments().getStringArrayList(EXTRA_ENTRIES);
+			ArrayList<String> checked = new ArrayList<>();
+			for (int i = 0; i < checkedItems.length; i++) {
+				if (checkedItems[i]) {
+					checked.add(entryNames.get(i));
+				}
+			}
+			outState.putStringArrayList(EXTRA_CHECKED, checked);
+		}
+
+		private void loadBackup() {
+			ArrayList<String> entryNames = requireArguments().getStringArrayList(EXTRA_ENTRIES);
+			HashSet<BackupManager.Entry> checked = new HashSet<>();
+			for (int i = 0; i < checkedItems.length; i++) {
+				if (checkedItems[i]) {
+					checked.add(BackupManager.Entry.valueOf(entryNames.get(i)));
+				}
+			}
+			if (!checked.isEmpty()) {
+				String path = requireArguments().getString(EXTRA_FILE);
+				DataFile file = DataFile.obtain(requireContext(), DataFile.Target.DOWNLOADS, path);
+				if (BackupManager.loadBackup(file, checked)) {
+					NavigationUtils.restartApplication(requireContext());
+				} else {
+					ClickableToast.show(R.string.unknown_error);
+				}
+			}
 		}
 	}
 }

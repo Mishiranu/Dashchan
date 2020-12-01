@@ -154,7 +154,7 @@ public class CommonDatabase {
 		}
 	}
 
-	public boolean writeBackup(OutputStream output) throws IOException {
+	public void writeBackup(OutputStream output) throws IOException {
 		File backupFile = MainApplication.getInstance().getDatabasePath(Helper.DATABASE_BACKUP_NAME);
 		try {
 			SQLiteDatabase database = helper.database;
@@ -171,7 +171,6 @@ public class CommonDatabase {
 			try (FileInputStream input = new FileInputStream(backupFile)) {
 				IOUtils.copyStream(input, output);
 			}
-			return true;
 		} finally {
 			for (File file : backupFile.getParentFile().listFiles()) {
 				if (file.getName().startsWith(backupFile.getName())) {

@@ -1,7 +1,6 @@
 package com.mishiranu.dashchan.content;
 
 import android.content.Context;
-import android.text.format.DateFormat;
 import android.util.Pair;
 import chan.util.DataFile;
 import com.mishiranu.dashchan.R;
@@ -13,7 +12,6 @@ import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.content.storage.ThemesStorage;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.Log;
-import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,30 +19,60 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class BackupManager {
-	private static final Pattern NAME_PATTERN = Pattern.compile("backup-(\\d+)\\.zip");
-	private static final Comparator<Pair<DataFile, String>> COMPARATOR =
-			(lhs, rhs) -> rhs.second.compareTo(lhs.second);
+	private static final String FILE_NAME_PREFIX = "backup-";
+	private static final String FILE_NAME_SUFFIX = ".zip";
+
+	private static final String BACKUP_VERSION_0 = "dashchan:0";
+	private static final String BACKUP_VERSION_1 = "dashchan:1";
+
+	public static class BackupFile implements Comparable<BackupFile> {
+		public final DataFile file;
+		public final String name;
+		public final long date;
+
+		public BackupFile(DataFile file, String name, long date) {
+			this.file = file;
+			this.name = name;
+			this.date = date;
+		}
+
+		@Override
+		public int compareTo(BackupFile o) {
+			return Long.compare(o.date, date);
+		}
+	}
+
+	private static class Restore {
+		public final boolean test;
+		public final InputStream input;
+		public String version;
+
+		public Restore(boolean test, InputStream input) {
+			this.test = test;
+			this.input = input;
+		}
+	}
 
 	private interface Writer {
-		boolean write(OutputStream output) throws IOException;
+		void write(OutputStream output) throws IOException;
 	}
 
 	private interface Reader {
-		void read(InputStream input) throws IOException;
+		void read(Restore restore) throws IOException;
 	}
 
 	private static class FileWriter implements Writer {
@@ -55,14 +83,11 @@ public class BackupManager {
 		}
 
 		@Override
-		public boolean write(OutputStream output) throws IOException {
+		public void write(OutputStream output) throws IOException {
 			if (file.exists()) {
 				try (FileInputStream input = new FileInputStream(file)) {
 					IOUtils.copyStream(input, output);
-					return true;
 				}
-			} else {
-				return false;
 			}
 		}
 	}
@@ -75,118 +100,126 @@ public class BackupManager {
 		}
 
 		@Override
-		public void read(InputStream input) throws IOException {
-			try (FileOutputStream output = new FileOutputStream(file)) {
-				IOUtils.copyStream(input, output);
-			}
-		}
-	}
-
-	private static class BackupData {
-		public final String name;
-		public final boolean required;
-		public final Writer writer;
-		public final Reader reader;
-
-		public BackupData(boolean required, File file) {
-			this(file.getName(), required, file);
-		}
-
-		public BackupData(String name, boolean required, File file) {
-			this(name, required, new FileWriter(file), new FileReader(file));
-		}
-
-		public BackupData(String name, boolean required, Writer writer, Reader reader) {
-			this.name = name;
-			this.required = required;
-			this.writer = writer;
-			this.reader = reader;
-		}
-	}
-
-	public static LinkedHashMap<DataFile, String> getAvailableBackups(Context context) {
-		DataFile root = DataFile.obtain(context, DataFile.Target.DOWNLOADS, null);
-		List<DataFile> files = root.getChildren();
-		List<Pair<DataFile, String>> backupFiles = new ArrayList<>();
-		if (files != null) {
-			java.text.DateFormat timeFormat = DateFormat.getTimeFormat(context);
-			java.text.DateFormat dateFormat = DateFormat.getDateFormat(context);
-			for (DataFile file : files) {
-				String name = file.getName();
-				Matcher matcher = NAME_PATTERN.matcher(name);
-				if (matcher.matches()) {
-					long date = Long.parseLong(matcher.group(1));
-					String dateString = dateFormat.format(date) + " " + timeFormat.format(date);
-					backupFiles.add(new Pair<>(file, dateString));
+		public void read(Restore restore) throws IOException {
+			if (!restore.test) {
+				try (FileOutputStream output = new FileOutputStream(file)) {
+					IOUtils.copyStream(restore.input, output);
+					output.getFD().sync();
 				}
 			}
 		}
-		Collections.sort(backupFiles, COMPARATOR);
-		LinkedHashMap<DataFile, String> backups = new LinkedHashMap<>();
-		for (Pair<DataFile, String> pair : backupFiles) {
-			backups.put(pair.first, pair.second);
-		}
-		return backups;
 	}
 
-	private static final Map<String, BackupData> BACKUP_DATA_MAP;
-	private static final String BACKUP_VERSION = "dashchan:1";
-
-	private static void add(Map<String, BackupData> map, BackupData backupData) {
-		map.put(backupData.name, backupData);
-	}
-
-	static {
-		LinkedHashMap<String, BackupData> backupDataMap = new LinkedHashMap<>();
-		add(backupDataMap, new BackupData("version", true, output -> {
-			output.write((BACKUP_VERSION + "\n").getBytes());
-			return true;
-		}, input -> {
+	public enum Entry {
+		VERSION(0, "version", Collections.emptyList(),
+				output -> output.write((BACKUP_VERSION_1 + "\n").getBytes()), restore -> {
+			restore.version = null;
 			byte[] data = new byte[1024];
-			int count = input.read(data);
+			int count = restore.input.read(data);
 			if (count <= 0 || count == data.length) {
 				throw new IOException("Invalid version file");
 			}
-			String version = new String(data).trim();
-			if (!BACKUP_VERSION.equals(version)) {
-				throw new IOException("Unsupported version");
+			restore.version = new String(data).trim();
+		}),
+		DATABASE(R.string.database, "common.db", Collections.singletonList(BACKUP_VERSION_1),
+				CommonDatabase.getInstance()::writeBackup, restore -> {
+			if (!restore.test) {
+				CommonDatabase.getInstance().readBackup(restore.input);
 			}
-		}));
-		add(backupDataMap, new BackupData("preferences.xml", true, Preferences.getPreferencesFile()));
-		add(backupDataMap, new BackupData("common.db", true,
-				CommonDatabase.getInstance()::writeBackup, CommonDatabase.getInstance()::readBackup));
-		add(backupDataMap, new BackupData(false, FavoritesStorage.getInstance().getFile()));
-		add(backupDataMap, new BackupData(false, AutohideStorage.getInstance().getFile()));
-		add(backupDataMap, new BackupData(false, StatisticsStorage.getInstance().getFile()));
-		add(backupDataMap, new BackupData(false, ThemesStorage.getInstance().getFile()));
-		BACKUP_DATA_MAP = Collections.unmodifiableMap(backupDataMap);
+		}),
+		PREFERENCES_0(R.string.preferences, "com.mishiranu.dashchan_preferences.xml",
+				Preferences.getFileForRestore(), Collections.singletonList(BACKUP_VERSION_0)),
+		PREFERENCES_1(R.string.preferences, Preferences.getFilesForBackup(),
+				Collections.singletonList(BACKUP_VERSION_1)),
+		FAVORITES(R.string.favorites, FavoritesStorage.getInstance().getFilesForBackup(),
+				Arrays.asList(BACKUP_VERSION_0, BACKUP_VERSION_1)),
+		AUTOHIDE(R.string.autohide, AutohideStorage.getInstance().getFilesForBackup(),
+				Arrays.asList(BACKUP_VERSION_0, BACKUP_VERSION_1)),
+		STATISTICS(R.string.statistics, StatisticsStorage.getInstance().getFilesForBackup(),
+				Arrays.asList(BACKUP_VERSION_0, BACKUP_VERSION_1)),
+		THEMES(R.string.themes, ThemesStorage.getInstance().getFilesForBackup(),
+				Arrays.asList(BACKUP_VERSION_0, BACKUP_VERSION_1));
+
+		public final int titleResId;
+		private final String name;
+		private final Writer writer;
+		private final Reader reader;
+		private final Set<String> versions;
+
+		Entry(int titleResId, Pair<File, File> backupFiles, Collection<String> versions) {
+			this(titleResId, backupFiles.first.getName(), versions,
+					new FileWriter(backupFiles.first), new FileReader(backupFiles.second));
+		}
+
+		Entry(int titleResId, String name, File restoreFile, Collection<String> versions) {
+			this(titleResId, name, versions, null, new FileReader(restoreFile));
+		}
+
+		Entry(int titleResId, String name, Collection<String> versions, Writer writer, Reader reader) {
+			this.titleResId = titleResId;
+			this.name = name;
+			this.writer = writer;
+			this.reader = reader;
+			this.versions = Collections.unmodifiableSet(new HashSet<>(versions));
+		}
+
+		private static Entry find(String name) {
+			for (Entry entry : Entry.values()) {
+				if (entry.name.equals(name)) {
+					return entry;
+				}
+			}
+			return null;
+		}
+	}
+
+	public static List<BackupFile> getAvailableBackups(Context context) {
+		DataFile root = DataFile.obtain(context, DataFile.Target.DOWNLOADS, null);
+		List<DataFile> files = root.getChildren();
+		List<BackupFile> backupFiles = new ArrayList<>();
+		if (files != null) {
+			DateFormat timeFormat = android.text.format.DateFormat.getTimeFormat(context);
+			DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(context);
+			for (DataFile file : files) {
+				String name = file.getName();
+				if (name.startsWith(FILE_NAME_PREFIX) && name.endsWith(FILE_NAME_SUFFIX)) {
+					name = name.substring(FILE_NAME_PREFIX.length(), name.length() - FILE_NAME_SUFFIX.length());
+					long date;
+					try {
+						date = Long.parseLong(name);
+					} catch (NumberFormatException e) {
+						date = -1;
+					}
+					if (date >= 0) {
+						name = dateFormat.format(date) + " " + timeFormat.format(date);
+						backupFiles.add(new BackupFile(file, name, date));
+					}
+				}
+			}
+		}
+		Collections.sort(backupFiles);
+		return backupFiles;
 	}
 
 	public static void makeBackup(DownloadService.Binder binder, Context context) {
 		File backupFile = new File(context.getCacheDir(), "backup-" + UUID.randomUUID());
-		boolean success = true;
+		boolean success = false;
 		try (ZipOutputStream zip = new ZipOutputStream(new FileOutputStream(backupFile))) {
-			for (BackupData backupData : BACKUP_DATA_MAP.values()) {
-				boolean exists;
-				try {
-					zip.putNextEntry(new ZipEntry(backupData.name));
+			boolean hasEntries = false;
+			for (Entry entry : Entry.values()) {
+				if (entry.writer != null) {
+					zip.putNextEntry(new ZipEntry(entry.name));
 					try {
-						exists = backupData.writer.write(zip);
+						entry.writer.write(zip);
 					} finally {
 						zip.closeEntry();
 					}
-				} catch (IOException e) {
-					success = false;
-					break;
-				}
-				if (backupData.required && !exists) {
-					success = false;
-					break;
+					hasEntries = true;
 				}
 			}
+			success = hasEntries;
 		} catch (IOException e) {
 			Log.persistent().stack(e);
-			success = false;
 		} finally {
 			if (!success) {
 				backupFile.delete();
@@ -204,27 +237,55 @@ public class BackupManager {
 		backupFile.delete();
 		if (success) {
 			binder.downloadStorage(input, null, null, null, null,
-					"backup-" + System.currentTimeMillis() + ".zip", false, false);
+					FILE_NAME_PREFIX + System.currentTimeMillis() + FILE_NAME_SUFFIX, false, false);
 		} else {
 			ClickableToast.show(R.string.no_access);
 		}
 	}
 
-	public static void loadBackup(Context context, DataFile file) {
+	public static List<Entry> readBackupEntries(DataFile file) {
+		String version = BACKUP_VERSION_0;
+		HashSet<Entry> entries = new HashSet<>();
+		try (ZipInputStream zip = new ZipInputStream(file.openInputStream())) {
+			ZipEntry zipEntry;
+			while ((zipEntry = zip.getNextEntry()) != null) {
+				try {
+					Entry entry = Entry.find(zipEntry.getName());
+					if (entry != null) {
+						Restore restore = new Restore(true, zip);
+						restore.version = version;
+						entry.reader.read(restore);
+						version = restore.version;
+						entries.add(entry);
+					}
+				} finally {
+					zip.closeEntry();
+				}
+			}
+		} catch (IOException e) {
+			Log.persistent().stack(e);
+			entries.clear();
+		}
+		ArrayList<Entry> result = new ArrayList<>();
+		for (Entry entry : Entry.values()) {
+			if (entries.contains(entry)) {
+				if (entry.versions.contains(version)) {
+					result.add(entry);
+				}
+			}
+		}
+		return result;
+	}
+
+	public static boolean loadBackup(DataFile file, Collection<Entry> entries) {
 		boolean success = false;
 		try (ZipInputStream zip = new ZipInputStream(file.openInputStream())) {
-			ZipEntry entry;
-			boolean first = true;
-			while ((entry = zip.getNextEntry()) != null) {
-				String name = entry.getName();
-				if (first && !"version".equals(name)) {
-					throw new IOException("Version file should be the first ZIP entry");
-				}
-				first = false;
+			ZipEntry zipEntry;
+			while ((zipEntry = zip.getNextEntry()) != null) {
 				try {
-					BackupData backupData = BACKUP_DATA_MAP.get(name);
-					if (backupData != null) {
-						backupData.reader.read(zip);
+					Entry entry = Entry.find(zipEntry.getName());
+					if (entry != null && entries.contains(entry)) {
+						entry.reader.read(new Restore(false, zip));
 						success = true;
 					}
 				} finally {
@@ -235,10 +296,6 @@ public class BackupManager {
 			Log.persistent().stack(e);
 			success = false;
 		}
-		if (success) {
-			NavigationUtils.restartApplication(context);
-		} else {
-			ClickableToast.show(R.string.unknown_error);
-		}
+		return success;
 	}
 }

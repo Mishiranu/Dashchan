@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.os.SystemClock;
+import android.util.Pair;
 import android.util.SparseArray;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.util.IOUtils;
@@ -120,8 +121,10 @@ public class StorageManager implements Handler.Callback, Runnable {
 			}
 		}
 
-		public final File getFile() {
-			return INSTANCE.getFile(this);
+		public final Pair<File, File> getFilesForBackup() {
+			File storage = INSTANCE.getFile(this);
+			File restore = INSTANCE.getRestoreFile(this);
+			return new Pair<>(storage, restore);
 		}
 
 		public final void serialize() {
@@ -179,10 +182,6 @@ public class StorageManager implements Handler.Callback, Runnable {
 		return file;
 	}
 
-	private File getBackupFile(Storage<?> storage) {
-		return new File(storage.getFile().getAbsolutePath() + "-backup");
-	}
-
 	private File getFile(String name) {
 		return new File(getDirectory(), name + ".json");
 	}
@@ -191,12 +190,23 @@ public class StorageManager implements Handler.Callback, Runnable {
 		return getFile(storage.name);
 	}
 
+	private File getBackupFile(Storage<?> storage) {
+		return getFile(storage.name + ".backup");
+	}
+
+	private File getRestoreFile(Storage<?> storage) {
+		return getFile(storage.name + ".restore");
+	}
+
 	private InputStream open(Storage<?> storage) throws IOException {
 		File file = getFile(storage);
 		File backupFile = getBackupFile(storage);
 		if (backupFile.exists()) {
-			file.delete();
 			backupFile.renameTo(file);
+		}
+		File restoreFile = getRestoreFile(storage);
+		if (restoreFile.exists()) {
+			restoreFile.renameTo(file);
 		}
 		return new FileInputStream(file);
 	}
