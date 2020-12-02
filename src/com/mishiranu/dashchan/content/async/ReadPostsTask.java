@@ -1,6 +1,7 @@
 package com.mishiranu.dashchan.content.async;
 
 import android.net.Uri;
+import android.util.Log;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
@@ -21,7 +22,6 @@ import com.mishiranu.dashchan.content.model.PendingUserPost;
 import com.mishiranu.dashchan.content.model.Post;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
-import com.mishiranu.dashchan.util.Log;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -148,8 +148,7 @@ public class ReadPostsTask extends HttpHolderTask<Void, ReadPostsTask.Result> {
 					throw HttpException.createNotFoundException();
 				}
 				if (!chan.name.equals(target.chanName) || target.threadNumber == null) {
-					Log.persistent().write(Log.TYPE_ERROR, Log.DISABLE_QUOTES,
-							"Only local thread redirects allowed");
+					Log.e("ReadPostsTask", "Only local thread redirects allowed");
 					updateMeta = new UpdateMeta(false, true);
 					return new Result.Fail(new ErrorItem(ErrorItem.Type.INVALID_DATA_FORMAT));
 				} else if (CommonUtils.equals(boardName, target.boardName) &&

@@ -11,7 +11,6 @@ import chan.http.SimpleEntity;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.util.Log;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -197,7 +196,7 @@ public class CaptchaSolving {
 			return service.solveCaptcha(holder, endpointUri, token, captchaType, apiKey, referer);
 		} catch (HttpException e) {
 			if (e.isHttpException() || e.isSocketException()) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 				return null;
 			} else {
 				throw e;

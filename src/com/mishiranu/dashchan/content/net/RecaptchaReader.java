@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.util.Log;
 import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
@@ -41,7 +42,6 @@ import com.mishiranu.dashchan.ui.ForegroundManager;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ScaledWebView;
 import java.util.Arrays;
@@ -368,7 +368,7 @@ public class RecaptchaReader {
 					@SuppressWarnings("deprecation")
 					@Override
 					public void onConsoleMessage(String message, int lineNumber, String sourceID) {
-						Log.persistent().write("recaptcha js log", lineNumber, sourceID, message);
+						Log.d("RecaptchaReader", "Console message: " + lineNumber + " " + sourceID + " " + message);
 						super.onConsoleMessage(message, lineNumber, sourceID);
 					}
 				});

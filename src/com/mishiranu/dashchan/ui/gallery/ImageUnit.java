@@ -26,7 +26,6 @@ import com.mishiranu.dashchan.media.GifDecoder;
 import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.ui.InstanceDialog;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.widget.PhotoView;
 import com.mishiranu.dashchan.widget.SummaryLayout;
 import java.io.File;
@@ -301,7 +300,7 @@ public class ImageUnit {
 			} catch (InterruptedException e) {
 				errorMessageId = R.string.unknown_error;
 			} catch (Exception e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 				errorMessageId = R.string.image_is_corrupted;
 			}
 			return null;

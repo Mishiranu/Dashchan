@@ -18,7 +18,6 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.Log;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -193,7 +192,7 @@ public class HttpClient {
 					proxy = new Proxy(socks ? Proxy.Type.SOCKS : Proxy.Type.HTTP,
 							InetSocketAddress.createUnresolved(host, port));
 				} catch (Exception e) {
-					Log.persistent().stack(e);
+					e.printStackTrace();
 				}
 			}
 			return proxy;
@@ -632,7 +631,7 @@ public class HttpClient {
 			if (isConnectionReset(e)) {
 				// Sometimes server closes the socket, but client is still trying to use it
 				if (session.nextAttempt()) {
-					Log.persistent().stack(e);
+					e.printStackTrace();
 					throw new RetryException();
 				}
 			}
@@ -778,7 +777,7 @@ public class HttpClient {
 		ErrorItem.Type errorType;
 		try {
 			errorType = getErrorTypeForException(exception);
-			Log.persistent().stack(exception);
+			exception.printStackTrace();
 		} catch (InterruptedIOException e) {
 			errorType = null;
 		}

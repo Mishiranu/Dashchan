@@ -40,7 +40,6 @@ import com.mishiranu.dashchan.ui.MainActivity;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.MimeTypes;
 import com.mishiranu.dashchan.util.WeakObservable;
 import com.mishiranu.dashchan.widget.ClickableToast;
@@ -261,7 +260,7 @@ public class DownloadService extends BaseService implements ReadFileTask.Callbac
 					IOUtils.copyStream(taskData.input, output);
 					success = true;
 				} catch (IOException e) {
-					Log.persistent().stack(e);
+					e.printStackTrace();
 				} finally {
 					IOUtils.close(taskData.input);
 					IOUtils.close(output);

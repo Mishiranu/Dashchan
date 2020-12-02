@@ -2,15 +2,16 @@
 #define PLAYER_UTIL_H
 
 #include <pthread.h>
+#include <android/log.h>
 
 #define UNUSED __attribute__((unused))
 
 #ifdef DEBUG_VERBOSE
-#include <android/log.h>
-#define LOG(...) __android_log_print(ANDROID_LOG_DEBUG, "Dashchan", __VA_ARGS__)
+#define LOG(...) __android_log_print(ANDROID_LOG_DEBUG, "Player", __VA_ARGS__)
 #else
 #define LOG(...)
 #endif
+#define LOGP(...) __android_log_print(ANDROID_LOG_DEBUG, "Player", __VA_ARGS__)
 
 typedef struct QueueItem QueueItem;
 typedef struct Queue Queue;

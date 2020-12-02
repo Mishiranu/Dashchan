@@ -17,7 +17,7 @@ import com.mishiranu.dashchan.content.database.ChanDatabase;
 import com.mishiranu.dashchan.content.database.CommonDatabase;
 import com.mishiranu.dashchan.content.database.PagesDatabase;
 import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.Log;
+import com.mishiranu.dashchan.util.Logger;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
@@ -63,7 +63,7 @@ public class MainApplication extends Application {
 
 		LocaleManager.getInstance().updateConfiguration(getResources().getConfiguration());
 		if (isMainProcess()) {
-			Log.init();
+			Logger.init(this);
 			ChanManager.getInstance();
 			HttpClient.getInstance();
 			CommonDatabase.getInstance();

@@ -12,7 +12,6 @@ import chan.http.HttpResponse;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.BuildConfig;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.util.Log;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -199,7 +198,7 @@ public class ReadChangelogTask extends HttpHolderTask<Void, Pair<ErrorItem, List
 			Collections.reverse(entries);
 			return new Pair<>(null, entries);
 		} catch (JSONException e) {
-			Log.persistent().stack(e);
+			e.printStackTrace();
 			return new Pair<>(new ErrorItem(ErrorItem.Type.INVALID_RESPONSE), null);
 		} catch (HttpException e) {
 			return new Pair<>(e.getErrorItemAndHandle(), null);

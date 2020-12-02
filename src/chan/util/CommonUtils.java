@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.SystemClock;
 import chan.annotation.Public;
-import com.mishiranu.dashchan.util.Log;
+import com.mishiranu.dashchan.util.Logger;
 import java.lang.reflect.Array;
 import java.util.Collection;
 import org.json.JSONException;
@@ -211,7 +211,7 @@ public class CommonUtils {
 
 	@Public
 	public static void writeLog(Object... data) {
-		Log.persistent().write(data);
+		Logger.write(Logger.Type.DEBUG, "PublicApi", data);
 	}
 
 	public static <T> T[] removeNullItems(T[] array, Class<T> itemClass) {

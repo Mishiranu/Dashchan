@@ -14,7 +14,6 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.LruCache;
 import java.io.IOException;
 import java.util.Iterator;
@@ -247,7 +246,7 @@ public class DecoderDrawable extends BaseDrawable {
 				}
 			} catch (Throwable t) {
 				error = true;
-				Log.persistent().stack(t);
+				t.printStackTrace();
 				return null;
 			}
 		}

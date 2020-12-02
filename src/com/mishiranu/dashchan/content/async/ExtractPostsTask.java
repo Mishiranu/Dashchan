@@ -13,7 +13,6 @@ import com.mishiranu.dashchan.content.database.ThreadsDatabase;
 import com.mishiranu.dashchan.content.model.Post;
 import com.mishiranu.dashchan.content.model.PostItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
-import com.mishiranu.dashchan.util.Log;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -88,7 +87,7 @@ public class ExtractPostsTask extends ExecutorTask<Void, ExtractPostsTask.Result
 		try {
 			diff = PagesDatabase.getInstance().collectDiffPosts(threadKey, cache, cleanup, signal);
 		} catch (ParseException e) {
-			Log.persistent().stack(e);
+			e.printStackTrace();
 			return null;
 		} catch (OperationCanceledException e) {
 			return null;

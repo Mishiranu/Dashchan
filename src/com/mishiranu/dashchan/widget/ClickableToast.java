@@ -37,7 +37,6 @@ import com.mishiranu.dashchan.graphics.BaseDrawable;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import java.lang.ref.WeakReference;
@@ -394,7 +393,7 @@ public class ClickableToast implements LifecycleObserver {
 			// PRIVATE_FLAG_NO_MOVE_ANIMATION == 0x00000040
 			field.set(layoutParams, field.getInt(layoutParams) | 0x00000040);
 		} catch (Exception e) {
-			Log.persistent().stack(e);
+			e.printStackTrace();
 		}
 		return updateLayoutParams(layoutParams);
 	}

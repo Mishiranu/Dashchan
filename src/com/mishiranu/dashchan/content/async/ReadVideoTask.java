@@ -1,6 +1,7 @@
 package com.mishiranu.dashchan.content.async;
 
 import android.net.Uri;
+import android.util.Log;
 import chan.content.Chan;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
@@ -11,7 +12,6 @@ import chan.http.HttpResponse;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,7 +81,7 @@ public class ReadVideoTask extends HttpHolderTask<long[], Boolean> {
 			if (start > 0) {
 				List<String> headers = response.getHeaderFields().get("Content-Range");
 				if (headers == null || headers.size() != 1) {
-					Log.persistent().write("Not a partial response");
+					Log.e("ReadVideoTask", "Not a partial response");
 					errorItem = new ErrorItem(ErrorItem.Type.INVALID_RESPONSE);
 					disallowRangeRequests = true;
 					return false;
@@ -89,7 +89,7 @@ public class ReadVideoTask extends HttpHolderTask<long[], Boolean> {
 				String contentRange = headers.get(0);
 				Matcher matcher = PATTERN_BYTES.matcher(contentRange);
 				if (!matcher.matches()) {
-					Log.persistent().write("Invalid header: " + contentRange);
+					Log.e("ReadVideoTask", "Invalid header: " + contentRange);
 					errorItem = new ErrorItem(ErrorItem.Type.INVALID_RESPONSE);
 					disallowRangeRequests = true;
 					return false;
@@ -98,12 +98,12 @@ public class ReadVideoTask extends HttpHolderTask<long[], Boolean> {
 				long responseEnd = Long.parseLong(matcher.group(2)) + 1;
 				long responseTotal = Long.parseLong(matcher.group(3));
 				if (responseEnd <= responseStart || responseTotal != responseEnd) {
-					Log.persistent().write("Invalid header data range");
+					Log.e("ReadVideoTask", "Invalid header data range");
 					errorItem = new ErrorItem(ErrorItem.Type.INVALID_RESPONSE);
 					return false;
 				}
 				if (Math.max(1, responseStart - 100000) > start) {
-					Log.persistent().write("Invalid data range start");
+					Log.e("ReadVideoTask", "Invalid data range start");
 					errorItem = new ErrorItem(ErrorItem.Type.INVALID_RESPONSE);
 					return false;
 				}

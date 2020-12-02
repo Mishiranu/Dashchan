@@ -2,7 +2,6 @@ package chan.content;
 
 import androidx.annotation.NonNull;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.widget.ClickableToast;
 
 public class ExtensionException extends Exception implements ErrorItem.Holder {
@@ -19,7 +18,7 @@ public class ExtensionException extends Exception implements ErrorItem.Holder {
 
 	public static void logException(Throwable t, boolean showToast) {
 		if (t instanceof LinkageError || t instanceof RuntimeException) {
-			Log.persistent().stack(t);
+			t.printStackTrace();
 			if (showToast) {
 				ClickableToast.show(new ErrorItem(ErrorItem.Type.EXTENSION));
 			}

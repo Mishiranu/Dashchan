@@ -13,7 +13,6 @@ import chan.http.HttpResponse;
 import chan.util.DataFile;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -204,12 +203,12 @@ public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 
 	public static ErrorItem.Type getErrorTypeFromExceptionAndHandle(IOException exception) {
 		if (exception instanceof FileNotFoundException) {
-			Log.persistent().stack(exception);
+			exception.printStackTrace();
 			return ErrorItem.Type.NO_ACCESS_TO_MEMORY;
 		} else {
 			String message = exception.getMessage();
 			if (message != null && message.contains("ENOSPC")) {
-				Log.persistent().stack(exception);
+				exception.printStackTrace();
 				return ErrorItem.Type.INSUFFICIENT_SPACE;
 			}
 		}

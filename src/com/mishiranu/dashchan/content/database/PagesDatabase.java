@@ -23,7 +23,6 @@ import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.Hasher;
-import com.mishiranu.dashchan.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -583,7 +582,7 @@ public class PagesDatabase {
 				try (JsonSerial.Reader reader = JsonSerial.reader(cursor.getBlob(1))) {
 					meta = Meta.deserialize(reader, deleted, error);
 				} catch (IOException | ParseException e) {
-					Log.persistent().stack(e);
+					e.printStackTrace();
 					return null;
 				}
 			}
@@ -1282,7 +1281,7 @@ public class PagesDatabase {
 		try (LegacyObjectInputStream input = new LegacyObjectInputStream(new FileInputStream(postsFile))) {
 			legacyPosts = (Legacy.Posts) input.readObject();
 		} catch (Exception e) {
-			Log.persistent().stack(e);
+			e.printStackTrace();
 			return false;
 		} finally {
 			postsFile.delete();
@@ -1403,7 +1402,7 @@ public class PagesDatabase {
 				posts.get(i).serialize(writer);
 				data[i] = writer.build();
 			} catch (IOException e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 				return false;
 			}
 		}
@@ -1436,7 +1435,7 @@ public class PagesDatabase {
 			try {
 				upsertMeta(threadKey, time, meta);
 			} catch (IOException e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 				return false;
 			}
 			int[] index = {0};

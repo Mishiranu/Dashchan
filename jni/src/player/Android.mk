@@ -10,10 +10,9 @@ LOCAL_MODULE := player
 LOCAL_SRC_FILES := native.c player.c util.c
 LOCAL_CFLAGS += -std=c99 -Wall -Wextra -Wpedantic
 LOCAL_LDFLAGS += -Wl,--build-id=none
-LOCAL_LDLIBS += -landroid -lOpenSLES
+LOCAL_LDLIBS += -landroid -lOpenSLES -llog
 ifeq ($(notdir $(realpath $(dir $(NDK_OUT)))),ndebug)
 LOCAL_CFLAGS += -DDEBUG_VERBOSE
-LOCAL_LDLIBS += -llog
 else
 LOCAL_CFLAGS += -Werror
 endif

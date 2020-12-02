@@ -3,8 +3,8 @@
 
 #define JCALL(name) Java_com_mishiranu_dashchan_media_VideoPlayer_00024Holder_##name
 
-jlong JCALL(preInit)(JNIEnv * env, UNUSED jobject this, jint fd, jint logFd) {
-	return preInit(env, fd, logFd);
+jlong JCALL(preInit)(JNIEnv * env, UNUSED jobject this, jint fd) {
+	return preInit(env, fd);
 }
 
 void JCALL(init)(JNIEnv * env, UNUSED jobject this, jlong pointer, jobject nativeBridge, jboolean seekAnyFrame) {

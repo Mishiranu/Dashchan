@@ -18,7 +18,6 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.BuildConfig;
 import com.mishiranu.dashchan.content.FileProvider;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.util.Log;
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -625,7 +624,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Pair<ErrorItem, ReadUpd
 					}
 				}
 			} catch (HttpException | JSONException e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 			}
 			if (Thread.currentThread().isInterrupted()) {
 				return Collections.emptyList();
@@ -733,7 +732,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Pair<ErrorItem, ReadUpd
 					}
 				}
 			} catch (JSONException e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 			}
 			if (isCancelled()) {
 				return null;
@@ -776,7 +775,7 @@ public class ReadUpdateTask extends HttpHolderTask<Void, Pair<ErrorItem, ReadUpd
 					}
 				}
 			} catch (JSONException e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 			}
 			if (isCancelled()) {
 				return null;

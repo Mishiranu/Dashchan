@@ -40,7 +40,6 @@ import com.mishiranu.dashchan.ui.preference.core.Preference;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
@@ -171,7 +170,7 @@ public class ThemesFragment extends BaseListFragment {
 							IOUtils.copyStream(input, output);
 							success = true;
 						} catch (IOException e) {
-							Log.persistent().stack(e);
+							e.printStackTrace();
 							success = false;
 						}
 						byte[] array = output.toByteArray();

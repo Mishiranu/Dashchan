@@ -15,7 +15,6 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.media.WebViewBitmapDecoder;
 import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.MimeTypes;
 import java.io.Closeable;
 import java.io.File;
@@ -239,7 +238,7 @@ public abstract class FileHolder implements Serializable {
 					decoder = BitmapRegionDecoder.newInstance(input, false);
 					return decoder.decodeRegion(new Rect(0, 0, decoder.getWidth(), decoder.getHeight()), options);
 				} catch (IOException e) {
-					Log.persistent().stack(e);
+					e.printStackTrace();
 				} finally {
 					IOUtils.close(input);
 					if (decoder != null) {
@@ -260,7 +259,7 @@ public abstract class FileHolder implements Serializable {
 			input = openInputStream();
 			return BitmapFactory.decodeStream(input, null, options);
 		} catch (IOException e) {
-			Log.persistent().stack(e);
+			e.printStackTrace();
 			return null;
 		} finally {
 			IOUtils.close(input);
@@ -395,7 +394,7 @@ public abstract class FileHolder implements Serializable {
 			} catch (SecurityException e) {
 				throw new IOException(e);
 			} catch (Exception e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 				throw new IOException(e);
 			}
 		}
@@ -407,7 +406,7 @@ public abstract class FileHolder implements Serializable {
 			} catch (SecurityException e) {
 				throw new IOException(e);
 			} catch (Exception e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 				throw new IOException(e);
 			}
 		}
@@ -503,7 +502,7 @@ public abstract class FileHolder implements Serializable {
 			} catch (SecurityException e) {
 				return null;
 			} catch (Exception e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 				return null;
 			} finally {
 				if (cursor != null) {

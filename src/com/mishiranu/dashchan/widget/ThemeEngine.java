@@ -37,7 +37,6 @@ import com.mishiranu.dashchan.graphics.ColorScheme;
 import com.mishiranu.dashchan.graphics.ThemeChoiceDrawable;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.util.WeakIterator;
@@ -821,7 +820,7 @@ public class ThemeEngine {
 		try {
 			return parseThemeInternal(context, jsonObject, false);
 		} catch (JSONException e) {
-			Log.persistent().stack(e);
+			e.printStackTrace();
 			return null;
 		}
 	}

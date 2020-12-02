@@ -11,7 +11,6 @@ import com.mishiranu.dashchan.content.storage.FavoritesStorage;
 import com.mishiranu.dashchan.content.storage.StatisticsStorage;
 import com.mishiranu.dashchan.content.storage.ThemesStorage;
 import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import java.io.File;
 import java.io.FileInputStream;
@@ -219,7 +218,7 @@ public class BackupManager {
 			}
 			success = hasEntries;
 		} catch (IOException e) {
-			Log.persistent().stack(e);
+			e.printStackTrace();
 		} finally {
 			if (!success) {
 				backupFile.delete();
@@ -230,7 +229,7 @@ public class BackupManager {
 			try {
 				input = new FileInputStream(backupFile);
 			} catch (IOException e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 			}
 		}
 		// FileInputStream holds a file descriptor
@@ -263,7 +262,7 @@ public class BackupManager {
 				}
 			}
 		} catch (IOException e) {
-			Log.persistent().stack(e);
+			e.printStackTrace();
 			entries.clear();
 		}
 		ArrayList<Entry> result = new ArrayList<>();
@@ -293,7 +292,7 @@ public class BackupManager {
 				}
 			}
 		} catch (IOException e) {
-			Log.persistent().stack(e);
+			e.printStackTrace();
 			success = false;
 		}
 		return success;

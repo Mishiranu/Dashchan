@@ -67,7 +67,6 @@ import com.mishiranu.dashchan.ui.posting.Replyable;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.SearchHelper;
 import com.mishiranu.dashchan.util.ViewUtils;
@@ -1202,7 +1201,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					}
 				}
 			} catch (ParseException e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 				retainableExtra.threadExtra = null;
 			} catch (IOException e) {
 				throw new RuntimeException(e);
@@ -1212,7 +1211,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			try {
 				hidePerformer.decodeLocalFilters(null);
 			} catch (ParseException e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
@@ -1274,7 +1273,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					}
 				}
 			} catch (ParseException e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}

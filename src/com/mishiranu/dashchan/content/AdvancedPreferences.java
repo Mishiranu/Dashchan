@@ -5,7 +5,6 @@ import chan.http.CookieBuilder;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.net.UserAgentProvider;
 import com.mishiranu.dashchan.util.IOUtils;
-import com.mishiranu.dashchan.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,9 +35,11 @@ public class AdvancedPreferences {
 					inputStream = new FileInputStream(file);
 					ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 					IOUtils.copyStream(inputStream, outputStream);
-					jsonString = new String(outputStream.toByteArray(), "UTF-8");
+					@SuppressWarnings("CharsetObjectCanBeUsed")
+					String jsonStringSuppress = new String(outputStream.toByteArray(), "UTF-8");
+					jsonString = jsonStringSuppress;
 				} catch (IOException e) {
-					Log.persistent().stack(e);
+					e.printStackTrace();
 				} finally {
 					IOUtils.close(inputStream);
 				}
@@ -86,7 +87,7 @@ public class AdvancedPreferences {
 						}
 						tabSize = jsonObject.optInt("tabSize");
 					} catch (JSONException e) {
-						Log.persistent().stack(e);
+						e.printStackTrace();
 					}
 				}
 			}

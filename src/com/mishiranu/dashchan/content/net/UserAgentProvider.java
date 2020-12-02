@@ -11,7 +11,6 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.HttpHolderTask;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
-import com.mishiranu.dashchan.util.Log;
 import java.util.HashMap;
 import java.util.Locale;
 import org.json.JSONArray;
@@ -98,14 +97,14 @@ public class UserAgentProvider {
 					try {
 						chromiumVersionData = new String(Base64.decode(chromeVersionResponse, Base64.DEFAULT));
 					} catch (Exception e) {
-						Log.persistent().stack(e);
+						e.printStackTrace();
 						return null;
 					}
 					String webKitVersionData;
 					try {
 						webKitVersionData = new String(Base64.decode(webKitVersionResponse, Base64.DEFAULT));
 					} catch (Exception e) {
-						Log.persistent().stack(e);
+						e.printStackTrace();
 						return null;
 					}
 					HashMap<String, Integer> chromeMap = new HashMap<>();
@@ -158,7 +157,7 @@ public class UserAgentProvider {
 					return chromeMajor + "." + chromeMinor + "." + chromeBuild + "." + chromePatch + "." +
 							webKitMajor + "." + webKitMinor;
 				} catch (HttpException | JSONException e) {
-					Log.persistent().stack(e);
+					e.printStackTrace();
 					return null;
 				}
 			}

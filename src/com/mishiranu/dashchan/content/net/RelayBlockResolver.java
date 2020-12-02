@@ -25,7 +25,6 @@ import com.mishiranu.dashchan.content.service.webview.IWebViewService;
 import com.mishiranu.dashchan.content.service.webview.WebViewExtra;
 import com.mishiranu.dashchan.content.service.webview.WebViewService;
 import com.mishiranu.dashchan.ui.ForegroundManager;
-import com.mishiranu.dashchan.util.Log;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -337,7 +336,7 @@ public class RelayBlockResolver {
 							finished[0] = result;
 						}
 					} catch (RemoteException e) {
-						Log.persistent().stack(e);
+						e.printStackTrace();
 					}
 				});
 				blockingCallThread.start();
@@ -347,7 +346,7 @@ public class RelayBlockResolver {
 					try {
 						service.interrupt(requestId);
 					} catch (RemoteException e1) {
-						Log.persistent().stack(e1);
+						e1.printStackTrace();
 					}
 					requestCallback.interrupt();
 					throw e;

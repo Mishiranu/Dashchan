@@ -21,7 +21,6 @@ import com.mishiranu.dashchan.content.async.HttpHolderTask;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.LruCache;
 import com.mishiranu.dashchan.widget.AttachmentView;
 import java.io.ByteArrayOutputStream;
@@ -158,7 +157,7 @@ public class ImageLoader {
 					notFound = true;
 				}
 			} catch (Exception | OutOfMemoryError e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 			}
 			return bitmap;
 		}

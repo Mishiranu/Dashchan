@@ -13,6 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.content.pm.PackageInfoCompat;
 import chan.util.StringUtils;
@@ -24,7 +25,6 @@ import com.mishiranu.dashchan.graphics.ChanIconDrawable;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.Hasher;
-import com.mishiranu.dashchan.util.Log;
 import com.mishiranu.dashchan.util.WeakObservable;
 import dalvik.system.PathClassLoader;
 import java.io.File;
@@ -488,7 +488,7 @@ public class ChanManager {
 				: libExtension ? META_LIB_EXTENSION_NAME : null);
 		if (name == null || !VALID_EXTENSION_NAME.matcher(name).matches() ||
 				(chanExtension ? RESERVED_CHAN_NAMES : RESERVED_EXTENSION_NAMES).contains(name)) {
-			Log.persistent().write("Invalid extension name: " + name);
+			Log.e("ChanManager", "Invalid extension name: " + name);
 			return null;
 		}
 		boolean nameConflict;
@@ -499,7 +499,7 @@ public class ChanManager {
 			nameConflict = extension != null && !extension.item.packageName.equals(packageInfo.packageName);
 		}
 		if (nameConflict) {
-			Log.persistent().write("Extension name conflict: " + name + " already exists");
+			Log.e("ChanManager", "Extension name conflict: " + name + " already exists");
 			return null;
 		}
 		String title = data.getString(chanExtension ? META_CHAN_EXTENSION_TITLE
@@ -513,7 +513,7 @@ public class ChanManager {
 			int invalidVersion = Integer.MIN_VALUE;
 			int apiVersion = data.getInt(META_CHAN_EXTENSION_VERSION, invalidVersion);
 			if (apiVersion == invalidVersion) {
-				Log.persistent().write("Invalid extension version");
+				Log.e("ChanManager", "Invalid extension version");
 				return null;
 			}
 			int iconResId = data.getInt(META_CHAN_EXTENSION_ICON);
@@ -525,7 +525,7 @@ public class ChanManager {
 			String classMarkup = data.getString(META_CHAN_EXTENSION_CLASS_MARKUP);
 			if (classConfiguration == null || classPerformer == null || classLocator == null
 					|| classMarkup == null) {
-				Log.persistent().write("Undefined extension class");
+				Log.e("ChanManager", "Undefined extension class");
 				return null;
 			}
 			classConfiguration = extendClassName(classConfiguration, packageInfo.packageName);
@@ -584,7 +584,7 @@ public class ChanManager {
 				chanProvider.set(chan);
 				return chan;
 			} catch (Exception | LinkageError e) {
-				Log.persistent().stack(e);
+				e.printStackTrace();
 			}
 		}
 		return null;
