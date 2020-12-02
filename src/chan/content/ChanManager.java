@@ -417,7 +417,7 @@ public class ChanManager {
 			Map<String, List<String>> archiveMap = new HashMap<>();
 			for (Extension extension : ordered.values()) {
 				ChanConfiguration.Archivation archivation = extension.chan != null ?
-						extension.chan.configuration.obtainArchivationConfiguration() : null;
+						extension.chan.configuration.safe().obtainArchivation() : null;
 				if (archivation != null) {
 					for (String host : archivation.hosts) {
 						String chanName = getChanNameByHost(host);

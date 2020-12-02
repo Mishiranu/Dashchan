@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class FavoritesStorage extends StorageManager.Storage<List<FavoritesStorage.FavoriteItem>> {
 	private static final String KEY_DATA = "data";
@@ -222,10 +223,11 @@ public class FavoritesStorage extends StorageManager.Storage<List<FavoritesStora
 		}
 	}
 
-	public void add(String chanName, String boardName, String threadNumber, String title) {
+	public void add(String chanName, String boardName, String threadNumber, String title, boolean allowWatcherEnabled) {
+		Objects.requireNonNull(threadNumber);
 		FavoriteItem favoriteItem = new FavoriteItem(chanName, boardName, threadNumber);
 		favoriteItem.title = title;
-		favoriteItem.watcherEnabled = favoriteItem.threadNumber != null && Preferences.isWatcherWatchInitially();
+		favoriteItem.watcherEnabled = allowWatcherEnabled && Preferences.isWatcherWatchInitially();
 		add(favoriteItem);
 	}
 

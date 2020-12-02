@@ -36,6 +36,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
+import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
@@ -1469,7 +1470,12 @@ public class DialogUnit {
 		}
 		state.archiveChanName = archiveChanName;
 		state.options = archivation.options;
-		showPerformSendDialog(fragmentManager, state, null, null, null, posts, true);
+		state.archiveQueryOnly = archivation.queryOnly;
+		if (state.isArchiveSimpleQueryOnly()) {
+			startMultifunctionalProcess(fragmentManager, state, null, null, null);
+		} else {
+			showPerformSendDialog(fragmentManager, state, null, null, null, posts, true);
+		}
 	}
 
 	private static void showPerformSendDialog(FragmentManager fragmentManager,
@@ -1640,7 +1646,8 @@ public class DialogUnit {
 		new InstanceDialog(fragmentManager, null, provider -> {
 			Context context = provider.getContext();
 			ProgressDialog dialog = new ProgressDialog(context, null);
-			dialog.setMessage(context.getString(R.string.sending__ellipsis));
+			dialog.setMessage(context.getString(state.archiveQueryOnly
+					? R.string.loading__ellipsis : R.string.sending__ellipsis));
 			MultifunctionalViewModel viewModel = provider.getViewModel(MultifunctionalViewModel.class);
 			if (!viewModel.hasTaskOrValue()) {
 				SendMultifunctionalTask task = new SendMultifunctionalTask(viewModel.callback,
@@ -1661,13 +1668,21 @@ public class DialogUnit {
 						case ARCHIVE: {
 							if (archiveThreadNumber != null) {
 								String chanName = state.archiveChanName;
-								FavoritesStorage.getInstance().add(chanName, archiveBoardName,
-										archiveThreadNumber, state.archiveThreadTitle);
+								ChanLocator.NavigationData navigationData = new ChanLocator
+										.NavigationData(ChanLocator.NavigationData.Target.POSTS,
+										archiveBoardName, archiveThreadNumber, null, null);
 								UiManager uiManager = UiManager.extract(provider);
-								ClickableToast.show(context.getString(R.string.completed), null,
-										new ClickableToast.Button(R.string.open_thread, false,
-												() -> uiManager.navigator().navigatePosts(chanName, archiveBoardName,
-														archiveThreadNumber, null, state.archiveThreadTitle)));
+								if (state.archiveQueryOnly) {
+									uiManager.navigator().navigateTargetAllowReturn(chanName, navigationData);
+								} else {
+									FavoritesStorage.getInstance().add(chanName, archiveBoardName,
+											archiveThreadNumber, state.archiveThreadTitle, false);
+									ClickableToast.show(context.getString(R.string.completed), null,
+											new ClickableToast.Button(R.string.open_thread, false, () -> uiManager
+													.navigator().navigateTargetAllowReturn(chanName, navigationData)));
+								}
+							} else if (state.archiveQueryOnly) {
+								ClickableToast.show(R.string.invalid_server_response);
 							} else {
 								ClickableToast.show(R.string.completed);
 							}
@@ -1680,7 +1695,9 @@ public class DialogUnit {
 				public void onSendFail(ErrorItem errorItem) {
 					provider.dismiss();
 					ClickableToast.show(errorItem);
-					showPerformSendDialog(provider.getFragmentManager(), state, type, text, options, null, false);
+					if (!state.isArchiveSimpleQueryOnly()) {
+						showPerformSendDialog(provider.getFragmentManager(), state, type, text, options, null, false);
+					}
 				}
 			});
 			return dialog;

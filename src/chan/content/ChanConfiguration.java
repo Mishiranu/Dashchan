@@ -208,6 +208,7 @@ public class ChanConfiguration implements Chan.Linked {
 	public static final class Archivation {
 		@Public public final List<String> hosts = new ArrayList<>();
 		@Public public final List<Pair<String, String>> options = new ArrayList<>();
+		@Public public boolean queryOnly = false;
 
 		@Public
 		public Archivation() {}

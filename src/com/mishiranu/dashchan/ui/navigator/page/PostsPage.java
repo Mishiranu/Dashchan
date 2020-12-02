@@ -741,8 +741,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 			case R.id.menu_star_text:
 			case R.id.menu_star_icon: {
 				ParcelableExtra parcelableExtra = getParcelableExtra(ParcelableExtra.FACTORY);
-				FavoritesStorage.getInstance().add(page.chanName, page.boardName,
-						page.threadNumber, parcelableExtra.threadTitle);
+				FavoritesStorage.getInstance().add(page.chanName, page.boardName, page.threadNumber,
+						parcelableExtra.threadTitle, true);
 				updateOptionsMenu();
 				return true;
 			}
@@ -775,10 +775,8 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					}
 					posts.add(postItem.getPost());
 				}
-				if (!posts.isEmpty()) {
-					getUiManager().dialog().performSendArchiveThread(getFragmentManager(),
-							page.chanName, page.boardName, page.threadNumber, threadTitle, posts);
-				}
+				getUiManager().dialog().performSendArchiveThread(getFragmentManager(),
+						page.chanName, page.boardName, page.threadNumber, threadTitle, posts);
 				return true;
 			}
 		}

@@ -11,6 +11,7 @@ import chan.http.HttpException;
 import chan.http.HttpHolder;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.content.model.PostNumber;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,6 +53,7 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Boolean> {
 		public List<PostNumber> postNumbers;
 		public String archiveThreadTitle;
 		public String archiveChanName;
+		public boolean archiveQueryOnly;
 
 		public State(Operation operation, String chanName, String boardName, String threadNumber,
 				List<Pair<String, String>> types, List<Pair<String, String>> options, boolean commentField) {
@@ -62,6 +64,10 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Boolean> {
 			this.types = types;
 			this.options = options;
 			this.commentField = commentField;
+		}
+
+		public boolean isArchiveSimpleQueryOnly() {
+			return archiveQueryOnly && (options == null || options.isEmpty());
 		}
 
 		private String getWorkChanName() {
@@ -119,9 +125,20 @@ public class SendMultifunctionalTask extends HttpHolderTask<Void, Boolean> {
 						return false;
 					}
 					chan = archiveChan;
-					ChanPerformer.SendAddToArchiveResult result = chan.performer.safe()
-							.onSendAddToArchive(new ChanPerformer.SendAddToArchiveData(uri, state.boardName,
-									state.threadNumber, options, holder));
+					ChanPerformer.SendAddToArchiveResult result;
+					try {
+						result = chan.performer.safe().onSendAddToArchive(new ChanPerformer
+								.SendAddToArchiveData(uri, state.boardName, state.threadNumber, options, holder));
+					} catch (HttpException e) {
+						if (state.archiveQueryOnly) {
+							int responseCode = e.getResponseCode();
+							if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+								errorItem = new ErrorItem(ErrorItem.Type.THREAD_NOT_EXISTS);
+								return false;
+							}
+						}
+						throw e;
+					}
 					if (result != null && result.threadNumber != null) {
 						archiveBoardName = result.boardName;
 						archiveThreadNumber = result.threadNumber;
