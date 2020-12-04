@@ -178,7 +178,7 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 
 	public static Set<PostNumber> collectReferences(Set<PostNumber> references, String comment) {
 		if (!StringUtils.isEmpty(comment)) {
-			// Fast find <a.+?>(?:>>|&gt;&gt;)(\d+)</a>
+			// Fast find all <a.+?>(?:>>|&gt;&gt;)(\d+)(?:\.(\d+))?</a>
 			int index1 = -1;
 			while (true) {
 				index1 = StringUtils.nearestIndexOf(comment, index1, "<a ", "<a\n", "<a\r");
@@ -192,29 +192,40 @@ public class PostItem implements AttachmentItem.Master, ChanMarkup.MarkupExtra, 
 				int index2 = comment.indexOf("</a>", index1);
 				if (index2 > index1++) {
 					int start = -1;
-					String text = comment.substring(index1, index2);
 					int length = index2 - index1;
-					if (text.startsWith(">>")) {
+					if (length > 2 && comment.startsWith(">>", index1)) {
 						start = 2;
-					} else if (text.startsWith("&gt;&gt;")) {
+					} else if (length > 8 && comment.startsWith("&gt;&gt;", index1)) {
 						start = 8;
 					}
-					if (start >= 0 && start < length) {
+					if (start >= 0) {
 						boolean number = true;
+						int dotIndex = -1;
 						for (int i = start; i < length; i++) {
-							char c = text.charAt(i);
-							if (c < '0' || c > '9') {
+							char c = comment.charAt(index1 + i);
+							if (c == '.') {
+								if (dotIndex < 0) {
+									dotIndex = i;
+								} else {
+									number = false;
+									break;
+								}
+							} else if (c < '0' || c > '9') {
 								number = false;
 								break;
 							}
 						}
-						if (!number) {
+						if (!number || dotIndex >= 0 && dotIndex <= start || dotIndex >= length - 1) {
 							continue;
 						}
 						if (references == null) {
 							references = new TreeSet<>();
 						}
-						references.add(new PostNumber(Integer.parseInt(text.substring(start)), 0));
+						int major = Integer.parseInt(comment.substring(index1 + start,
+								index1 + (dotIndex >= 0 ? dotIndex : length)));
+						int minor = dotIndex >= 0 ? Integer.parseInt(comment.substring(index1 + dotIndex + 1,
+								index1 + length)) : 0;
+						references.add(new PostNumber(major, minor));
 					}
 				} else {
 					break;
