@@ -6,28 +6,34 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
 
-	<LinearLayout
+	<FrameLayout
 		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:orientation="horizontal">
+		android:layout_height="match_parent">
 
-		<FrameLayout
-			android:id="@+id/drawer_wide"
-			android:layout_width="0dp"
+		<LinearLayout
+			android:layout_width="match_parent"
 			android:layout_height="match_parent"
-			tools:ignore="Suspicious0dp" />
+			android:orientation="horizontal">
+
+			<FrameLayout
+				android:id="@+id/drawer_wide"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				tools:ignore="Suspicious0dp" />
+
+			<FrameLayout
+				android:id="@+id/content_fragment"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent" />
+
+		</LinearLayout>
 
 		<FrameLayout
-			android:id="@+id/content_fragment"
+			android:id="@+id/drawer_interlayer"
 			android:layout_width="match_parent"
 			android:layout_height="match_parent" />
 
-	</LinearLayout>
-
-	<FrameLayout
-		android:id="@+id/drawer_interlayer"
-		android:layout_width="match_parent"
-		android:layout_height="match_parent" />
+	</FrameLayout>
 
 	<FrameLayout
 		android:id="@+id/drawer_common"
