@@ -10,6 +10,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.RequiresApi;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
+import com.mishiranu.dashchan.util.ResourceUtils;
 
 public class InsetsLayout extends FrameLayout {
 	public static final class Insets {
@@ -62,16 +63,16 @@ public class InsetsLayout extends FrameLayout {
 	public static class Apply {
 		public final Insets window;
 		public final boolean useGesture29;
-		public final int imeBottom30;
+		public final int imeBottom29;
 
-		private Apply(Insets window, boolean useGesture29, int imeBottom30) {
+		private Apply(Insets window, boolean useGesture29, int imeBottom29) {
 			this.window = window;
 			this.useGesture29 = useGesture29;
-			this.imeBottom30 = imeBottom30;
+			this.imeBottom29 = imeBottom29;
 		}
 
 		public Insets get() {
-			int bottom = Math.max(window.bottom, imeBottom30);
+			int bottom = Math.max(window.bottom, imeBottom29);
 			return bottom != window.bottom ? new Insets(window.left, window.top, window.right, window.bottom) : window;
 		}
 	}
@@ -117,16 +118,16 @@ public class InsetsLayout extends FrameLayout {
 
 	private Insets lastWindow = Insets.DEFAULT;
 	private Insets lastGesture29 = Insets.DEFAULT;
-	private Insets lastIme30 = Insets.DEFAULT;
+	private Insets lastIme29 = Insets.DEFAULT;
 
-	private void onInsetsChangedInternal(Insets window, Insets gesture29, Insets ime30) {
-		if (!lastWindow.equals(window) || !lastGesture29.equals(gesture29) || !lastIme30.equals(ime30)) {
+	private void onInsetsChangedInternal(Insets window, Insets gesture29, Insets ime29) {
+		if (!lastWindow.equals(window) || !lastGesture29.equals(gesture29) || !lastIme29.equals(ime29)) {
 			lastWindow = window;
 			lastGesture29 = gesture29;
-			lastIme30 = ime30;
+			lastIme29 = ime29;
 			if (onApplyInsetsListener != null) {
 				boolean useGesture29 = C.API_Q && (gesture29.left > window.left || gesture29.right > window.right);
-				onApplyInsetsListener.onApplyInsets(new Apply(window, useGesture29, ime30.bottom));
+				onApplyInsetsListener.onApplyInsets(new Apply(window, useGesture29, ime29.bottom));
 			}
 		}
 	}
@@ -157,13 +158,13 @@ public class InsetsLayout extends FrameLayout {
 				setPadding(0, 0, 0, 0);
 				Insets window;
 				Insets gesture29;
-				Insets ime30;
+				Insets ime29;
 				if (C.API_R) {
 					Insets realWindow = new Insets(insets.getInsetsIgnoringVisibility
 							(WindowInsets.Type.displayCutout() | WindowInsets.Type.systemBars()));
 					gesture29 = new Insets(insets.getInsets(WindowInsets.Type.systemGestures()));
-					ime30 = new Insets(insets.getInsets(WindowInsets.Type.ime()));
-					if (ime30.bottom > realWindow.bottom) {
+					ime29 = new Insets(insets.getInsets(WindowInsets.Type.ime()));
+					if (ime29.bottom > realWindow.bottom) {
 						// Assume keyboard can be at the bottom only
 						window = new Insets(realWindow.left, realWindow.top, realWindow.right, 0);
 					} else {
@@ -171,12 +172,20 @@ public class InsetsLayout extends FrameLayout {
 					}
 				} else if (C.API_Q) {
 					@SuppressWarnings("deprecation")
-					Insets windowDeprecated = new Insets(insets.getSystemWindowInsets());
-					window = getWindowWithCutout(windowDeprecated, insets);
+					Insets realWindow = new Insets(insets.getSystemWindowInsets());
 					@SuppressWarnings("deprecation")
 					Insets gesture29Deprecated = new Insets(insets.getSystemGestureInsets());
 					gesture29 = gesture29Deprecated;
-					ime30 = Insets.DEFAULT;
+					float density = ResourceUtils.obtainDensity(this);
+					int minKeyboardHeight = (int) (200f * density);
+					if (realWindow.bottom >= minKeyboardHeight) {
+						// Sometimes SOFT_INPUT_ADJUST_RESIZE doesn't work with Android 10 gestures
+						window = new Insets(realWindow.left, realWindow.top, realWindow.right, 0);
+						ime29 = new Insets(0, 0, 0, realWindow.bottom);
+					} else {
+						window = realWindow;
+						ime29 = Insets.DEFAULT;
+					}
 				} else {
 					@SuppressWarnings("deprecation")
 					int left = insets.getSystemWindowInsetLeft();
@@ -188,9 +197,9 @@ public class InsetsLayout extends FrameLayout {
 					int bottom = insets.getSystemWindowInsetBottom();
 					window = getWindowWithCutout(new Insets(left, top, right, bottom), insets);
 					gesture29 = Insets.DEFAULT;
-					ime30 = Insets.DEFAULT;
+					ime29 = Insets.DEFAULT;
 				}
-				onInsetsChangedInternal(window, gesture29, ime30);
+				onInsetsChangedInternal(window, gesture29, ime29);
 			}
 		}
 	}

@@ -36,7 +36,7 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 	private final Activity activity;
 	private InsetsLayout.Insets windowInsets = InsetsLayout.Insets.DEFAULT;
 	private boolean useGesture29;
-	private int imeBottom30;
+	private int imeBottom29;
 
 	private final View rootView;
 	private final View toolbarView;
@@ -177,10 +177,10 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 					windowInsets = applyData.window;
 				}
 				if (!this.windowInsets.equals(windowInsets) || useGesture29 != applyData.useGesture29 ||
-						imeBottom30 != applyData.imeBottom30) {
+						imeBottom29 != applyData.imeBottom29) {
 					this.windowInsets = windowInsets;
 					useGesture29 = applyData.useGesture29;
-					imeBottom30 = applyData.imeBottom30;
+					imeBottom29 = applyData.imeBottom29;
 					updatePaddings();
 				}
 			});
@@ -536,7 +536,7 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 			int rightNavigationBarHeight = windowInsets.right;
 			int bottomNavigationBarHeight = windowInsets.bottom;
 			boolean useGesture29 = this.useGesture29;
-			int bottomImeHeight = imeBottom30;
+			int bottomImeHeight = imeBottom29;
 			if (rootView != null) {
 				ViewUtils.setNewMargin(rootView, leftNavigationBarHeight, 0,
 						rightNavigationBarHeight, bottomImeHeight);
