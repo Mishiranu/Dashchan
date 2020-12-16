@@ -2,9 +2,10 @@ package com.mishiranu.dashchan.content.model;
 
 import com.mishiranu.dashchan.text.HtmlParser;
 import com.mishiranu.dashchan.text.SimilarTextEstimator;
+import java.util.List;
 
 public interface PendingUserPost {
-	boolean isUserPost(Post post, boolean originalPost);
+	PostNumber findUserPost(List<Post> posts, PostNumber lastExistingPostNumber, boolean firstPostIsOriginal);
 
 	class NewThread implements PendingUserPost {
 		public static final NewThread INSTANCE = new NewThread();
@@ -12,8 +13,9 @@ public interface PendingUserPost {
 		private NewThread() {}
 
 		@Override
-		public boolean isUserPost(Post post, boolean originalPost) {
-			return originalPost;
+		public PostNumber findUserPost(List<Post> posts,
+				PostNumber lastExistingPostNumber, boolean firstPostIsOriginal) {
+			return firstPostIsOriginal && !posts.isEmpty() ? posts.get(0).number : null;
 		}
 
 		@Override
@@ -31,16 +33,37 @@ public interface PendingUserPost {
 		private static final SimilarTextEstimator ESTIMATOR = new SimilarTextEstimator(Integer.MAX_VALUE, true);
 
 		private final SimilarTextEstimator.WordsData<Void> wordsData;
+		private final long time;
 
-		public SimilarComment(String comment) {
+		public SimilarComment(String comment, long time) {
 			wordsData = ESTIMATOR.getWords(comment);
+			this.time = time;
 		}
 
 		@Override
-		public boolean isUserPost(Post post, boolean originalPost) {
-			String comment = HtmlParser.clear(post.comment);
-			SimilarTextEstimator.WordsData<Void> wordsData = ESTIMATOR.getWords(comment);
-			return ESTIMATOR.checkSimiliar(this.wordsData, wordsData) || this.wordsData == null && wordsData == null;
+		public PostNumber findUserPost(List<Post> posts,
+				PostNumber lastExistingPostNumber, boolean firstPostIsOriginal) {
+			if (lastExistingPostNumber != null) {
+				for (int i = 0; i < posts.size(); i++) {
+					Post post = posts.get(i);
+					if (post.number.compareTo(lastExistingPostNumber) > 0) {
+						posts = posts.subList(i, posts.size());
+						break;
+					}
+				}
+			}
+			Post foundPost = null;
+			for (Post post : posts) {
+				String comment = HtmlParser.clear(post.comment);
+				SimilarTextEstimator.WordsData<Void> wordsData = ESTIMATOR.getWords(comment);
+				if (ESTIMATOR.checkSimiliar(this.wordsData, wordsData) ||
+						this.wordsData == null && wordsData == null) {
+					if (foundPost == null || Math.abs(foundPost.timestamp - time) > Math.abs(post.timestamp - time)) {
+						foundPost = post;
+					}
+				}
+			}
+			return foundPost != null ? foundPost.number : null;
 		}
 
 		@Override

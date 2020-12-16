@@ -435,10 +435,6 @@ public class PostingService extends BaseService implements SendPostTask.Callback
 			Chan chan = Chan.get(chanName);
 			String targetThreadNumber = data.threadNumber != null ? data.threadNumber
 					: StringUtils.nullIfEmpty(threadNumber);
-			if (targetThreadNumber != null && Preferences.getFavoriteOnReply().isEnabled(data.optionSage)) {
-				FavoritesStorage.getInstance().add(chanName, data.boardName, targetThreadNumber, null, true);
-			}
-			StatisticsStorage.getInstance().incrementPostsSent(chanName, data.threadNumber == null);
 			DraftsStorage draftsStorage = DraftsStorage.getInstance();
 			draftsStorage.removeCaptchaDraft();
 			draftsStorage.removePostDraft(chanName, data.boardName, data.threadNumber);
@@ -469,7 +465,7 @@ public class PostingService extends BaseService implements SendPostTask.Callback
 				} else if (newThread) {
 					pendingUserPost = PendingUserPost.NewThread.INSTANCE;
 				} else {
-					pendingUserPost = new PendingUserPost.SimilarComment(comment);
+					pendingUserPost = new PendingUserPost.SimilarComment(comment, System.currentTimeMillis());
 				}
 				if (pendingUserPost != null) {
 					HashSet<PendingUserPost> pendingUserPosts = PENDING_USER_POST_MAP.get(arrayKey);
@@ -515,6 +511,11 @@ public class PostingService extends BaseService implements SendPostTask.Callback
 				notificationManager.notify(tag, 0, builder.build());
 			}
 
+			if (targetThreadNumber != null && Preferences.getFavoriteOnReply().isEnabled(data.optionSage)) {
+				// Add to favorites after processing the response to ensure watcher is not triggered too early
+				FavoritesStorage.getInstance().add(chanName, data.boardName, targetThreadNumber, null, true);
+			}
+			StatisticsStorage.getInstance().incrementPostsSent(chanName, data.threadNumber == null);
 			ArrayList<Callback> callbacks = this.callbacks.get(key);
 			if (callbacks != null) {
 				for (Callback callback : callbacks) {
@@ -646,8 +647,7 @@ public class PostingService extends BaseService implements SendPostTask.Callback
 
 	private static final HashMap<Key, ArrayList<NewPostData>> NEW_POST_DATA_MAP = new HashMap<>();
 
-	public static boolean consumeNewPostData(Context context, String chanName, String boardName,
-			String threadNumber) {
+	public static boolean consumeNewPostData(Context context, String chanName, String boardName, String threadNumber) {
 		ArrayList<NewPostData> newPostDataList = NEW_POST_DATA_MAP
 				.remove(new Key(chanName, boardName, threadNumber));
 		if (newPostDataList != null) {
