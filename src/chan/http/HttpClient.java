@@ -355,7 +355,8 @@ public class HttpClient {
 	}
 
 	@SuppressWarnings("CharsetObjectCanBeUsed")
-	private void encodeUriBufferPart(StringBuilder uriStringBuilder, char[] chars, int i, int start, boolean ascii) {
+	private static void encodeUriBufferPart(StringBuilder uriStringBuilder,
+			char[] chars, int i, int start, boolean ascii) {
 		if (!ascii) {
 			try {
 				for (byte b : new String(chars, start, i - start).getBytes("UTF-8")) {
@@ -371,7 +372,7 @@ public class HttpClient {
 		}
 	}
 
-	private void encodeUriAppend(StringBuilder uriStringBuilder, String part) {
+	private static void encodeUriAppend(StringBuilder uriStringBuilder, String part) {
 		char[] chars = part.toCharArray();
 		boolean ascii = true;
 		int start = 0;
@@ -387,7 +388,7 @@ public class HttpClient {
 		encodeUriBufferPart(uriStringBuilder, chars, chars.length, start, ascii);
 	}
 
-	URL encodeUri(Uri uri) throws MalformedURLException {
+	public static URL encodeUri(Uri uri) throws MalformedURLException {
 		StringBuilder uriStringBuilder = new StringBuilder();
 		uriStringBuilder.append(StringUtils.emptyIfNull(uri.getScheme())).append("://");
 		String host = IDN.toASCII(StringUtils.emptyIfNull(uri.getHost()));
@@ -773,7 +774,7 @@ public class HttpClient {
 		return message != null ? message : originalMessage;
 	}
 
-	static HttpException transformIOException(IOException exception) {
+	public static HttpException transformIOException(IOException exception) {
 		ErrorItem.Type errorType;
 		try {
 			errorType = getErrorTypeForException(exception);
