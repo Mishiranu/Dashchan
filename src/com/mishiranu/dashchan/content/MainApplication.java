@@ -5,6 +5,7 @@ import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Process;
 import androidx.annotation.NonNull;
@@ -126,6 +127,16 @@ public class MainApplication extends Application {
 			return dir;
 		} else {
 			return super.getDir(name, mode);
+		}
+	}
+
+	@Override
+	public SQLiteDatabase openOrCreateDatabase(String name, int mode, SQLiteDatabase.CursorFactory factory) {
+		if ("http_auth.db".equals(name)) {
+			// Create in-memory database for WebView
+			return SQLiteDatabase.create(factory);
+		} else {
+			return super.openOrCreateDatabase(name, mode, factory);
 		}
 	}
 }

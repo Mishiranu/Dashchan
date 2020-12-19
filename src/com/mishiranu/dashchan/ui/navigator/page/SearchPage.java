@@ -24,6 +24,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.HeaderItemDecoration;
+import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import java.util.ArrayList;
@@ -112,6 +113,7 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 			parcelableExtra.groupMode = false;
 		}
 		adapter.setGroupMode(parcelableExtra.groupMode);
+		ListPosition listPosition = takeListPosition();
 		if (initRequest.errorItem != null) {
 			switchError(initRequest.errorItem);
 		} else {
@@ -119,7 +121,9 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 			if (!initRequest.shouldLoad && !retainableExtra.postItems.isEmpty()) {
 				load = false;
 				adapter.setItems(retainableExtra.postItems);
-				restoreListPosition();
+				if (listPosition != null) {
+					listPosition.apply(recyclerView);
+				}
 				if (retainableExtra.dialogsState != null) {
 					uiManager.dialog().restoreState(adapter.getConfigurationSet(), retainableExtra.dialogsState);
 					retainableExtra.dialogsState.dropState();

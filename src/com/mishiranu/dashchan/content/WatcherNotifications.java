@@ -95,14 +95,13 @@ public class WatcherNotifications {
 		}
 
 		private static void applyPreferencesPreOreo(NotificationCompat.Builder builder,
-				int color, boolean important, boolean sound, boolean vibration, String title) {
+				int color, boolean important, boolean sound, boolean vibration) {
 			builder.setPriority(important ? NotificationCompat.PRIORITY_HIGH : NotificationCompat.PRIORITY_DEFAULT);
 			if (important) {
 				if (C.API_LOLLIPOP && !sound && !vibration) {
 					builder.setVibrate(new long[0]);
 				}
 				builder.setLights(color, 1000, 1000);
-				builder.setTicker(title);
 			}
 			builder.setDefaults((sound ? NotificationCompat.DEFAULT_SOUND : 0) |
 					(vibration ? NotificationCompat.DEFAULT_VIBRATE : 0));
@@ -145,9 +144,13 @@ public class WatcherNotifications {
 			for (PagesDatabase.InsertResult.Reply reply : replies) {
 				NotificationCompat.Builder builder = new NotificationCompat
 						.Builder(context, C.NOTIFICATION_CHANNEL_REPLIES);
-				builder.setContentTitle(title);
 				String comment = StringUtils.clearHtml(reply.comment);
-				builder.setContentText(comment.replace('\n', ' ').replaceAll(" {2,}", " "));
+				String text = comment.replace('\n', ' ').replaceAll(" {2,}", " ");
+				builder.setContentTitle(title);
+				builder.setContentText(text);
+				if (important) {
+					builder.setTicker((title + "\n" + text).trim());
+				}
 				builder.setStyle(new NotificationCompat.BigTextStyle().bigText(buildLongComment(comment)));
 				builder.setWhen(reply.timestamp);
 				configureNotification(builder, color);
@@ -159,7 +162,7 @@ public class WatcherNotifications {
 						builder.setDefaults(0);
 					}
 				} else {
-					applyPreferencesPreOreo(builder, color, important, sound, vibration, title);
+					applyPreferencesPreOreo(builder, color, important, sound, vibration);
 				}
 				String tag = makeTag(chanName, boardName, threadNumber, reply.postNumber);
 				Intent intent = new Intent(context, MainActivity.class).setAction(tag)
@@ -177,7 +180,7 @@ public class WatcherNotifications {
 						.Builder(context, C.NOTIFICATION_CHANNEL_REPLIES);
 				configureNotification(builder, color);
 				if (!C.API_OREO) {
-					applyPreferencesPreOreo(builder, color, important, sound, vibration, title);
+					applyPreferencesPreOreo(builder, color, important, sound, vibration);
 				}
 				builder.setGroup(GROUP_REPLIES);
 				builder.setGroupSummary(true);

@@ -25,6 +25,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import java.util.Collections;
@@ -223,7 +224,10 @@ public class UserBoardsPage extends ListPage implements UserBoardsAdapter.Callba
 	public void onGetBoardsResult(ChanDatabase.BoardCursor cursor) {
 		getTask = null;
 		getAdapter().setCursor(cursor);
-		restoreListPosition();
+		ListPosition listPosition = takeListPosition();
+		if (listPosition != null) {
+			listPosition.apply(getRecyclerView());
+		}
 	}
 
 	@Override

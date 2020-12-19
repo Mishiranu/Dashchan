@@ -227,6 +227,11 @@ public class ThemeEngine {
 				return null;
 			}
 		}
+
+		@Override
+		public void onFinished() {
+			mutableItem.decorView = null;
+		}
 	}
 
 	private static class ThemeContext extends ContextWrapper {

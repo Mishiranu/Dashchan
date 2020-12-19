@@ -846,9 +846,9 @@ public class WatcherService extends BaseService {
 			if (!foreground) {
 				for (Client client : workClients) {
 					Client.Callback callback = client.getCallback();
-					if (callback != null && callback.isWatcherClientForeground()) {
+					if (!foreground && callback != null && callback.isWatcherClientForeground()) {
+						// Consume iterator completely
 						foreground = true;
-						break;
 					}
 				}
 			}
@@ -875,12 +875,14 @@ public class WatcherService extends BaseService {
 	}
 
 	private boolean isBlocked(ThreadKey threadKey) {
+		boolean blocked = false;
 		for (InternalSession session : getSessionConcurrentIterable(threadKey)) {
-			if (session.isUpdateBlocked()) {
-				return true;
+			if (!blocked && session.isUpdateBlocked()) {
+				// Consume iterator completely
+				blocked = true;
 			}
 		}
-		return false;
+		return blocked;
 	}
 
 	private boolean isEnabled(ThreadKey threadKey) {

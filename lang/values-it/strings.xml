@@ -464,7 +464,6 @@
     <string name="update_reminder__sentence">Puoi vedere il progresso del download nella barra delle notifiche.\n\nPuoi
         installare applicazioni quando il download finisce.</string>
     <string name="updates">Aggiornamenti</string>
-    <string name="updates__genitive">Aggiornamenti</string>
     <string name="updates_available__genitive">Aggiornamenti disponibili</string>
     <string name="use_built_in_video_player">Usa il player video interno</string>
     <string name="use_built_in_video_player__summary">Riproduci allegati video WebM</string>

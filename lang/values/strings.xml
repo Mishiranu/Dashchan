@@ -499,7 +499,6 @@
 	<string name="update_reminder__sentence">You can track downloading progress in notification bar.\n\nYou can install
 		applications when download finishes.</string>
 	<string name="updates">Updates</string>
-	<string name="updates__genitive">Updates</string>
 	<string name="updates_available__genitive">Updates available</string>
 	<string name="use_built_in_video_player">Use built-in video player</string>
 	<string name="use_built_in_video_player__summary">Play WebM video attachments</string>

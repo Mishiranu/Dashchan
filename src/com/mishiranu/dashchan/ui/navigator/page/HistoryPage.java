@@ -23,6 +23,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.HeaderItemDecoration;
+import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 
 public class HistoryPage extends ListPage implements HistoryAdapter.Callback, GetHistoryTask.Callback {
@@ -157,10 +158,11 @@ public class HistoryPage extends ListPage implements HistoryAdapter.Callback, Ge
 		boolean firstLoad = this.firstLoad;
 		this.firstLoad = false;
 		getAdapter().setCursor(cursor);
+		ListPosition listPosition = takeListPosition();
 		if (cursor.hasItems) {
 			switchList();
-			if (firstLoad) {
-				restoreListPosition();
+			if (firstLoad && listPosition != null) {
+				listPosition.apply(getRecyclerView());
 			}
 		} else {
 			switchError(R.string.history_is_empty);

@@ -667,6 +667,8 @@ public class DownloadService extends BaseService implements ReadFileTask.Callbac
 			}
 			accumulateState = false;
 			return () -> {
+				boolean accumulateState = this.accumulateState;
+				this.accumulateState = null;
 				if (accumulateState) {
 					handleRequests();
 				}

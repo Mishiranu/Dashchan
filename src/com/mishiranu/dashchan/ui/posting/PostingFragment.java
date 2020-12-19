@@ -33,7 +33,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
-import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -248,7 +247,7 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 		attachmentContainer = view.findViewById(R.id.attachment_container);
 		FrameLayout footerContainer = view.findViewById(R.id.footer_container);
 		int[] oldScrollViewHeight = {-1};
-		scrollView.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+		scrollView.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
 			if (scrollView != null) {
 				int scrollViewHeight = scrollView.getHeight();
 				if (scrollViewHeight != oldScrollViewHeight[0]) {
@@ -1636,19 +1635,20 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 		}
 	};
 
-	private class MarkupButtonsBuilder implements ViewTreeObserver.OnGlobalLayoutListener, Runnable {
+	private class MarkupButtonsBuilder implements View.OnLayoutChangeListener, Runnable {
 		private final boolean addPaddingToRoot;
 		private int lastWidth;
 
 		public MarkupButtonsBuilder(boolean addPaddingToRoot, int initialWidth) {
 			this.addPaddingToRoot = addPaddingToRoot;
-			textFormatView.getViewTreeObserver().addOnGlobalLayoutListener(this);
+			textFormatView.addOnLayoutChangeListener(this);
 			lastWidth = initialWidth;
 			fillContainer();
 		}
 
 		@Override
-		public void onGlobalLayout() {
+		public void onLayoutChange(View v, int left, int top, int right, int bottom,
+				int oldLeft, int oldTop, int oldRight, int oldBottom) {
 			if (textFormatView != null) {
 				int width = textFormatView.getWidth();
 				if (lastWidth != width) {

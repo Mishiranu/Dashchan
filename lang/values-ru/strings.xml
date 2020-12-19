@@ -517,7 +517,6 @@
 	<string name="update_reminder__sentence">Прогресс загрузки можно отследить в панели уведомлений.\n\nВы можете
 		установить приложения после окончания загрузки.</string>
 	<string name="updates">Обновления</string>
-	<string name="updates__genitive">Обновлений</string>
 	<string name="updates_available__genitive">Доступно обновлений</string>
 	<string name="use_built_in_video_player">Использовать встроенный видеоплеер</string>
 	<string name="use_built_in_video_player__summary">Воспроизводить вложенные WebM видео</string>

@@ -8,6 +8,7 @@ public class WeakIterator<T, R, N> implements Iterator<N> {
 	public interface Provider<T, R, N> {
 		WeakReference<R> getWeakReference(T data);
 		N transform(T data, R referenced);
+		default void onFinished() {}
 
 		@SuppressWarnings("unchecked")
 		static <T> Provider<WeakReference<T>, T, T> identity() {
@@ -56,7 +57,11 @@ public class WeakIterator<T, R, N> implements Iterator<N> {
 				}
 			}
 		}
-		return next != null;
+		if (next == null) {
+			provider.onFinished();
+			return false;
+		}
+		return true;
 	}
 
 	@Override

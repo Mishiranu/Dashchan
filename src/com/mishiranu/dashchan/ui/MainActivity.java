@@ -1381,7 +1381,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 					navigateData(newChanName, newBoardName, null, null, null, null,
 							FLAG_DATA_CLOSE_OVERLAYS | (fromCache ? FLAG_DATA_FROM_CACHE : 0));
 				} else {
-					onBackPressed(true, true, super::onBackPressed);
+					fragments.clear();
+					removeFragment();
 				}
 				return true;
 			}

@@ -233,14 +233,18 @@ public class HttpClient {
 	private ProxyData getProxyData(Map<String, String> map) {
 		if (map != null) {
 			String host = map.get(Preferences.SUB_KEY_PROXY_HOST);
-			int port;
-			try {
-				port = Integer.parseInt(map.get(Preferences.SUB_KEY_PROXY_PORT));
-			} catch (Exception e) {
-				return null;
+			if (!StringUtils.isEmpty(host)) {
+				int port;
+				try {
+					port = Integer.parseInt(map.get(Preferences.SUB_KEY_PROXY_PORT));
+				} catch (Exception e) {
+					port = -1;
+				}
+				if (port > 0) {
+					boolean socks = Preferences.VALUE_PROXY_TYPE_SOCKS.equals(map.get(Preferences.SUB_KEY_PROXY_TYPE));
+					return new ProxyData(socks, host, port);
+				}
 			}
-			boolean socks = Preferences.VALUE_PROXY_TYPE_SOCKS.equals(map.get(Preferences.SUB_KEY_PROXY_TYPE));
-			return new ProxyData(socks, host, port);
 		}
 		return null;
 	}
@@ -507,12 +511,11 @@ public class HttpClient {
 						connection.setFixedLengthStreamingMode((int) contentLength);
 					}
 				}
-				ClientOutputStream output = new ClientOutputStream(new BufferedOutputStream(connection
-						.getOutputStream(), 1024), session, forceGet ? null : request.outputListener, contentLength);
-				entity.write(output);
-				output.flush();
-				output.close();
-				session.checkInterrupted();
+				try (ClientOutputStream output = new ClientOutputStream(new BufferedOutputStream(connection
+						.getOutputStream(), 1024), session, forceGet ? null : request.outputListener, contentLength)) {
+					entity.write(output);
+					output.flush();
+				}
 			}
 
 			int responseCode;
@@ -527,6 +530,7 @@ public class HttpClient {
 					throw e;
 				}
 			}
+			session.closeInput = true;
 			HttpValidator resultValidator = HttpValidator.obtain(connection);
 			String contentType = connection.getHeaderField("Content-Type");
 			String charsetName = extractCharsetName(contentType);
@@ -659,6 +663,14 @@ public class HttpClient {
 		}
 	}
 
+	InputStream getInput(HttpURLConnection connection) throws IOException {
+		try {
+			return connection.getInputStream();
+		} catch (FileNotFoundException e) {
+			return connection.getErrorStream();
+		}
+	}
+
 	InputStream open(HttpResponse response) throws HttpException {
 		if (response.session == null) {
 			throw new IllegalStateException();
@@ -669,38 +681,42 @@ public class HttpClient {
 			if (connection == null) {
 				throw new InterruptedHttpException();
 			}
-			response.session.checkInterrupted();
-			InputStream input;
+			InputStream input = getInput(connection);
+			boolean success = false;
 			try {
-				input = connection.getInputStream();
-			} catch (FileNotFoundException e) {
-				input = connection.getErrorStream();
+				if (input == null) {
+					throw new HttpException(ErrorItem.Type.EMPTY_RESPONSE, false, false);
+				}
+				response.session.checkInterrupted();
+				input = new BufferedInputStream(input, 8192);
+				switch (Encoding.get(connection)) {
+					case IDENTITY: {
+						break;
+					}
+					case GZIP: {
+						input = new GZIPInputStream(input);
+						break;
+					}
+					case DEFLATE: {
+						input = new DeflateInputStream(input);
+						break;
+					}
+					case BROTLI: {
+						input = new BrotliInputStream(input);
+						break;
+					}
+					default: {
+						throw new HttpException(ErrorItem.Type.DOWNLOAD, false, false);
+					}
+				}
+				success = true;
+				return new ClientInputStream(input, response.session);
+			} finally {
+				response.session.closeInput = false;
+				if (!success) {
+					IOUtils.close(input);
+				}
 			}
-			if (input == null) {
-				throw new HttpException(ErrorItem.Type.EMPTY_RESPONSE, false, false);
-			}
-			input = new BufferedInputStream(input, 8192);
-			switch (Encoding.get(connection)) {
-				case IDENTITY: {
-					break;
-				}
-				case GZIP: {
-					input = new GZIPInputStream(input);
-					break;
-				}
-				case DEFLATE: {
-					input = new DeflateInputStream(input);
-					break;
-				}
-				case BROTLI: {
-					input = new BrotliInputStream(input);
-					break;
-				}
-				default: {
-					throw new HttpException(ErrorItem.Type.DOWNLOAD, false, false);
-				}
-			}
-			return new ClientInputStream(input, response.session);
 		} catch (InterruptedHttpException e) {
 			throw e.toHttp();
 		} catch (IOException e) {

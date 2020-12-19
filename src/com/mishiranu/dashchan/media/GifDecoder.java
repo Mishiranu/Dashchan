@@ -25,7 +25,7 @@ public class GifDecoder implements Runnable {
 	private static final Handler HANDLER = new Handler(Looper.getMainLooper());
 
 	private final long pointer;
-	private boolean consumed = false;
+	private boolean destroyed = false;
 
 	private final int width;
 	private final int height;
@@ -58,8 +58,8 @@ public class GifDecoder implements Runnable {
 	}
 
 	public void recycle() {
-		if (!consumed) {
-			consumed = true;
+		if (!destroyed) {
+			destroyed = true;
 			if (bitmap != null) {
 				bitmap.recycle();
 			}
@@ -105,7 +105,7 @@ public class GifDecoder implements Runnable {
 
 				@Override
 				public void draw(@NonNull Canvas canvas) {
-					if (!consumed) {
+					if (!destroyed) {
 						Rect bounds = getBounds();
 						canvas.save();
 						canvas.scale((float) bounds.width() / width, (float) bounds.height() / height);

@@ -14,6 +14,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.CustomSearchView;
+import java.lang.ref.WeakReference;
 
 public abstract class ContentFragment extends Fragment {
 	public boolean isSearchMode() {
@@ -33,6 +34,15 @@ public abstract class ContentFragment extends Fragment {
 	}
 
 	public void onTerminate() {}
+
+	@Override
+	public void onDestroyView() {
+		super.onDestroyView();
+		ViewHolderFragment viewHolder = getViewHolder();
+		if (viewHolder != null) {
+			viewHolder.resetSearchView(this);
+		}
+	}
 
 	@Override
 	public Animator onCreateAnimator(int transit, boolean enter, int nextAnim) {
@@ -71,23 +81,45 @@ public abstract class ContentFragment extends Fragment {
 		}
 	}
 
-	protected ViewHolderFragment getViewHolder() {
+	private ViewHolderFragment getViewHolder() {
 		FragmentManager fragmentManager = getParentFragmentManager();
 		return (ViewHolderFragment) fragmentManager.findFragmentByTag(ViewHolderFragment.TAG);
+	}
+
+	protected CustomSearchView obtainSearchView() {
+		ViewHolderFragment viewHolder = getViewHolder();
+		return viewHolder.obtainSearchView(this);
 	}
 
 	public static class ViewHolderFragment extends Fragment {
 		public static final String TAG = ViewHolderFragment.class.getName();
 
 		private CustomSearchView searchView;
+		private WeakReference<ContentFragment> searchViewOwner;
 
-		public CustomSearchView obtainSearchView() {
+		private void resetSearchView(ContentFragment fragment) {
+			if (searchView != null) {
+				boolean reset;
+				if (fragment != null && searchViewOwner != null) {
+					ContentFragment ownerFragment = searchViewOwner.get();
+					reset = ownerFragment == null || ownerFragment == fragment;
+				} else {
+					reset = true;
+				}
+				if (reset) {
+					searchView.setOnSubmitListener(null);
+					searchView.setOnChangeListener(null);
+				}
+			}
+		}
+
+		private CustomSearchView obtainSearchView(ContentFragment fragment) {
+			resetSearchView(null);
 			if (searchView == null) {
 				searchView = new CustomSearchView(C.API_LOLLIPOP ? new ContextThemeWrapper(requireContext(),
 						R.style.Theme_Special_White) : requireActivity().getActionBar().getThemedContext());
 			}
-			searchView.setOnSubmitListener(null);
-			searchView.setOnChangeListener(null);
+			searchViewOwner = new WeakReference<>(fragment);
 			ViewUtils.removeFromParent(searchView);
 			searchView.setQuery("");
 			return searchView;

@@ -270,7 +270,10 @@ public class DialogUnit {
 
 		public void saveState(View view) {
 			DialogHolder<?> holder = (DialogHolder<?>) view.getTag();
-			factory.listPosition = ListPosition.obtain(holder.recyclerView, null);
+			ListPosition listPosition = ListPosition.obtain(holder.recyclerView, null);
+			if (listPosition != null) {
+				factory.listPosition = listPosition;
+			}
 		}
 
 		public boolean isScrolledToTop(View view) {

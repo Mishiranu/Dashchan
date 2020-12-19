@@ -65,12 +65,9 @@ public class CommentTextView extends TextView {
 	private SpanStateListener spanStateListener;
 	private PrepareToCopyListener prepareToCopyListener;
 	private LinkListener linkListener;
+	private LinkConfiguration linkConfiguration;
 	private List<ExtraButton> extraButtons;
 	private boolean spoilersEnabled;
-
-	private String chanName;
-	private String boardName;
-	private String threadNumber;
 
 	private static final double[][] BASE_POINTS;
 	private static final int RING_RADIUS = 6;
@@ -161,6 +158,12 @@ public class CommentTextView extends TextView {
 		void onLinkLongClick(CommentTextView view, Uri uri, Extra extra);
 	}
 
+	public interface LinkConfiguration {
+		String getChanName();
+		String getBoardName();
+		String getThreadNumber();
+	}
+
 	public static class ExtraButton {
 		public static class Text {
 			public final CharSequence text;
@@ -215,11 +218,9 @@ public class CommentTextView extends TextView {
 		prepareToCopyListener = listener;
 	}
 
-	public void setLinkListener(LinkListener listener, String chanName, String boardName, String threadNumber) {
+	public void setLinkListener(LinkListener listener, LinkConfiguration configuration) {
 		linkListener = listener;
-		this.chanName = chanName;
-		this.boardName = boardName;
-		this.threadNumber = threadNumber;
+		linkConfiguration = configuration;
 	}
 
 	public void setExtraButtons(List<ExtraButton> extraButtons) {
@@ -609,9 +610,12 @@ public class CommentTextView extends TextView {
 	}
 
 	private Uri createUri(String uriString) {
+		LinkConfiguration configuration = linkConfiguration;
+		String chanName = configuration != null ? configuration.getChanName() : null;
 		if (chanName != null) {
 			Chan chan = Chan.get(chanName);
-			return chan.locator.validateClickedUriString(uriString, boardName, threadNumber);
+			return chan.locator.validateClickedUriString(uriString,
+					configuration.getBoardName(), configuration.getThreadNumber());
 		} else {
 			return Uri.parse(uriString);
 		}
@@ -657,6 +661,7 @@ public class CommentTextView extends TextView {
 			Uri uri = createUri(linkSpan.uriString);
 			setSpanToClick(null, lastX, lastY);
 			if (uri != null) {
+				String chanName = linkConfiguration != null ? linkConfiguration.getChanName() : null;
 				LinkListener.Extra extra = new LinkListener.Extra(chanName, linkSpan.inBoardLink());
 				getLinkListener().onLinkLongClick(CommentTextView.this, uri, extra);
 			}
@@ -668,6 +673,7 @@ public class CommentTextView extends TextView {
 			LinkSpan linkSpan = (LinkSpan) spanToClick;
 			Uri uri = createUri(linkSpan.uriString);
 			if (uri != null) {
+				String chanName = linkConfiguration != null ? linkConfiguration.getChanName() : null;
 				LinkListener.Extra extra = new LinkListener.Extra(chanName, linkSpan.inBoardLink());
 				getLinkListener().onLinkClick(this, uri, extra, false);
 			}

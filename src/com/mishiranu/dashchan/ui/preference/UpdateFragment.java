@@ -138,8 +138,8 @@ public class UpdateFragment extends BaseListFragment {
 				}
 			}
 		}
-		((FragmentHandler) requireActivity()).setTitleSubtitle(count <= 0 ? getString(R.string.updates__genitive)
-				: ResourceUtils.getColonString(getResources(), R.string.updates__genitive, count), null);
+		((FragmentHandler) requireActivity()).setTitleSubtitle(count <= 0 ? getString(R.string.updates)
+				: ResourceUtils.getColonString(getResources(), R.string.updates, count), null);
 	}
 
 	private boolean isUpdateDataProvided() {

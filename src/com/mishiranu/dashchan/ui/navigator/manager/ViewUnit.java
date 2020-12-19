@@ -343,8 +343,6 @@ public class ViewUnit {
 		holder.configure(postItem, configurationSet);
 		holder.selection = demandSet.selection;
 
-		String boardName = postItem.getBoardName();
-		String threadNumber = postItem.getThreadNumber();
 		PostNumber postNumber = postItem.getPostNumber();
 		boolean bumpLimitReached = false;
 		PostItem.BumpLimitState bumpLimitReachedState = postItem.getBumpLimitReachedState(chan, 0);
@@ -404,9 +402,6 @@ public class ViewUnit {
 		holder.comment.setSpoilersEnabled(!Preferences.isShowSpoilers());
 		holder.comment.setSubjectAndComment(makeHighlightedText(demandSet.highlightText, subject),
 				makeHighlightedText(demandSet.highlightText, comment));
-		holder.comment.setLinkListener(configurationSet.linkListener != null
-				? configurationSet.linkListener : defaultLinkListener,
-				configurationSet.chanName, boardName, threadNumber);
 		holder.comment.setVisibility(subject.length() > 0 || comment.length() > 0 ? View.VISIBLE : View.GONE);
 		holder.comment.bindSelectionPaddingView(demandSet.lastInList ? holder.textSelectionPadding : null);
 
@@ -1151,7 +1146,8 @@ public class ViewUnit {
 
 	private static class PostViewHolder extends BasePostViewHolder implements
 			Lazy.Provider<PostViewHolder.Dimensions>, CommentTextView.RecyclerKeeper.Holder,
-			View.OnAttachStateChangeListener, CommentTextView.LimitListener, View.OnClickListener {
+			View.OnAttachStateChangeListener, CommentTextView.LimitListener,
+			CommentTextView.LinkListener, CommentTextView.LinkConfiguration, View.OnClickListener {
 		public static class Dimensions {
 			public final int thumbnailWidth;
 			public final int multipleAttachmentInfoWidth;
@@ -1190,6 +1186,7 @@ public class ViewUnit {
 
 		public final UiManager.ThumbnailClickListener thumbnailClickListener;
 		public final UiManager.ThumbnailLongClickListener thumbnailLongClickListener;
+		public final CommentTextView.LinkListener defaultLinkListener;
 
 		public UiManager.Selection selection;
 		public Animator expandAnimator;
@@ -1222,12 +1219,14 @@ public class ViewUnit {
 
 			thumbnailClickListener = uiManager.interaction().createThumbnailClickListener();
 			thumbnailLongClickListener = uiManager.interaction().createThumbnailLongClickListener();
+			defaultLinkListener = uiManager.view().defaultLinkListener;
 			ListViewUtils.bind(this, itemView, true, null, this);
 
 			head.setOnTouchListener(uiManager.view().headContentTouchListener);
 			comment.setLimitListener(this);
 			comment.setSpanStateListener(uiManager.view().spanStateListener);
 			comment.setPrepareToCopyListener(uiManager.view().prepareToCopyListener);
+			comment.setLinkListener(this, this);
 			comment.setExtraButtons(uiManager.view().extraButtons);
 			thumbnail.setOnClickListener(thumbnailClickListener);
 			thumbnail.setOnLongClickListener(thumbnailLongClickListener);
@@ -1367,6 +1366,36 @@ public class ViewUnit {
 				bottomBarExpand.setVisibility(limited ? View.VISIBLE : View.GONE);
 				invalidateBottomBar();
 			}
+		}
+
+		private CommentTextView.LinkListener getLinkListener() {
+			UiManager.ConfigurationSet configurationSet = getConfigurationSet();
+			return configurationSet.linkListener != null ? configurationSet.linkListener : defaultLinkListener;
+		}
+
+		@Override
+		public void onLinkClick(CommentTextView view, Uri uri, Extra extra, boolean confirmed) {
+			getLinkListener().onLinkClick(view, uri, extra, confirmed);
+		}
+
+		@Override
+		public void onLinkLongClick(CommentTextView view, Uri uri, Extra extra) {
+			getLinkListener().onLinkLongClick(view, uri, extra);
+		}
+
+		@Override
+		public String getChanName() {
+			return getConfigurationSet().chanName;
+		}
+
+		@Override
+		public String getBoardName() {
+			return getPostItem().getBoardName();
+		}
+
+		@Override
+		public String getThreadNumber() {
+			return getPostItem().getThreadNumber();
 		}
 
 		@Override

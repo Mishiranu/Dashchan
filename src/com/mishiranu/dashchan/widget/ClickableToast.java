@@ -424,6 +424,7 @@ public class ClickableToast implements LifecycleObserver {
 		if (showing == null) {
 			return;
 		}
+		onClickListener = null;
 		showing = null;
 		clickable = false;
 		realClickable = false;

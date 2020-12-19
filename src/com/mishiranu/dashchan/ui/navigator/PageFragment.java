@@ -277,7 +277,7 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 
 	private CustomSearchView getSearchView(boolean required) {
 		if (searchView == null && required) {
-			searchView = getViewHolder().obtainSearchView();
+			searchView = obtainSearchView();
 			searchView.setOnSubmitListener(query -> {
 				if (listPage.onSearchSubmit(query)) {
 					searchSubmitQuery = null;
@@ -411,12 +411,17 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 		if (listPage != null && listPage.isRunning()) {
 			for (int i = 0; i < menu.size(); i++) {
 				MenuItem menuItem = menu.getItem(i);
-				menuItem.setVisible(!searchMode || menuItem.getItemId() == R.id.menu_search);
-			}
-			if (searchMode) {
-				return;
+				if (!menuItem.isVisible() && !searchMode) {
+					menuItem.setVisible(true);
+				}
 			}
 			listPage.onPrepareOptionsMenu(menu);
+			for (int i = 0; i < menu.size(); i++) {
+				MenuItem menuItem = menu.getItem(i);
+				if (menuItem.isVisible() && searchMode && menuItem.getItemId() != R.id.menu_search) {
+					menuItem.setVisible(false);
+				}
+			}
 		}
 	}
 

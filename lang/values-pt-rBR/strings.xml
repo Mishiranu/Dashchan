@@ -357,7 +357,7 @@
 	<string name="unsupported_version">Versão não suportada</string>
 	<string name="update_reminder__sentence">Você pode acompanhar o progresso de download na barra de status.\n\nVocê
 		pode instalar as aplicações quando o download acabar.</string>
-	<string name="updates__genitive">Atualizações</string>
+	<string name="updates">Atualizações</string>
 	<string name="updates_available__genitive">Atualizações disponíveis</string>
 	<string name="use_built_in_video_player">Usar reprodutor de vídeo embutido</string>
 	<string name="use_built_in_video_player__summary">Reproduzir anexos Webm</string>

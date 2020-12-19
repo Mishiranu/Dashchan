@@ -26,6 +26,7 @@ import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.HeaderItemDecoration;
+import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 
@@ -194,6 +195,7 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback,
 		boolean firstLoad = retainableExtra.firstLoad;
 		retainableExtra.firstLoad = false;
 		ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
+		ListPosition listPosition = takeListPosition();
 		if (cursor == null || !cursor.hasItems) {
 			if (cursor != null) {
 				cursor.close();
@@ -209,9 +211,12 @@ public class BoardsPage extends ListPage implements BoardsAdapter.Callback,
 		} else {
 			switchList();
 			getAdapter().setCursor(cursor);
-			restoreListPosition();
+			PaddedRecyclerView recyclerView = getRecyclerView();
+			if (listPosition != null) {
+				listPosition.apply(recyclerView);
+			}
 			if (readViewModel.hasTaskOrValue()) {
-				getRecyclerView().getPullable().startBusyState(PullableWrapper.Side.TOP);
+				recyclerView.getPullable().startBusyState(PullableWrapper.Side.TOP);
 			}
 		}
 	}

@@ -36,8 +36,8 @@ public class SearchImageDialog extends DialogFragment {
 		return new DialogMenu(new ContextThemeWrapper(context, R.style.Theme_Gallery))
 				.add("Google", () -> searchImageUri(locator.buildQueryWithHost("www.google.com",
 						"searchbyimage", "image_url", imageUriString)))
-				.add("Yandex", () -> searchImageUri(locator.buildQueryWithHost("yandex.ru",
-						"images/search", "rpt", "imageview", "img_url", imageUriString)))
+				.add("Yandex", () -> searchImageUri(locator.buildQueryWithHost("www.yandex.ru",
+						"images/search", "rpt", "imageview", "url", imageUriString)))
 				.add("TinEye", () -> searchImageUri(locator.buildQueryWithHost("www.tineye.com",
 						"search", "url", imageUriString)))
 				.add("SauceNAO", () -> searchImageUri(locator.buildQueryWithHost("saucenao.com",

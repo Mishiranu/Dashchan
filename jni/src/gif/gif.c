@@ -1,4 +1,5 @@
 #include "gif.h"
+#include "util.h"
 
 #include <android/bitmap.h>
 #include <gif_lib.h>

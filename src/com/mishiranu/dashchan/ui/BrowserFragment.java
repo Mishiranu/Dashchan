@@ -37,6 +37,7 @@ import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.util.WebViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.ExpandedLayout;
@@ -62,7 +63,7 @@ public class BrowserFragment extends ContentFragment implements DownloadListener
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		ExpandedLayout layout = new ExpandedLayout(container.getContext(), true);
-		webView = new WebView(layout.getContext());
+		webView = new WebView(layout.getContext().getApplicationContext());
 		layout.addView(webView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
 		progressView = new ProgressView(layout.getContext());
 		float density = ResourceUtils.obtainDensity(this);
@@ -116,6 +117,9 @@ public class BrowserFragment extends ContentFragment implements DownloadListener
 		((FragmentHandler) requireActivity()).setNavigationAreaLocked(navigationDrawerLocker, false);
 		webView.stopLoading();
 		webView.destroy();
+		// Remove references to fragment and parent view since WebView bugs may cause memory leaks
+		webView.setOnLongClickListener(null);
+		ViewUtils.removeFromParent(webView);
 		webView = null;
 		progressView = null;
 	}

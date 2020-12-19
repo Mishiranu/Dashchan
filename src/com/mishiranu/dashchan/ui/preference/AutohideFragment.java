@@ -68,7 +68,7 @@ public class AutohideFragment extends BaseListFragment {
 	public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		searchView = getViewHolder().obtainSearchView();
+		searchView = obtainSearchView();
 		searchView.setHint(getString(R.string.filter));
 		searchView.setOnChangeListener(query -> {
 			((Adapter) getRecyclerView().getAdapter()).setSearchQuery(query);

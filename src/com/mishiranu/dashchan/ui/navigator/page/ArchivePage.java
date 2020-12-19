@@ -26,6 +26,7 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
 import com.mishiranu.dashchan.widget.DividerItemDecoration;
+import com.mishiranu.dashchan.widget.ListPosition;
 import com.mishiranu.dashchan.widget.PaddedRecyclerView;
 import com.mishiranu.dashchan.widget.PullableWrapper;
 import java.util.List;
@@ -64,6 +65,7 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 		InitRequest initRequest = getInitRequest();
 		RetainableExtra retainableExtra = getRetainableExtra(RetainableExtra.FACTORY);
 		ReadViewModel readViewModel = getViewModel(ReadViewModel.class);
+		ListPosition listPosition = takeListPosition();
 		if (initRequest.errorItem != null) {
 			switchError(initRequest.errorItem);
 		} else {
@@ -71,7 +73,9 @@ public class ArchivePage extends ListPage implements ArchiveAdapter.Callback,
 			if (retainableExtra.threadSummaries != null) {
 				load = false;
 				adapter.setItems(retainableExtra.threadSummaries);
-				restoreListPosition();
+				if (listPosition != null) {
+					listPosition.apply(recyclerView);
+				}
 			}
 			if (readViewModel.hasTaskOrValue()) {
 				if (adapter.isRealEmpty()) {

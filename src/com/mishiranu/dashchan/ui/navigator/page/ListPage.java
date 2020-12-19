@@ -164,13 +164,6 @@ public abstract class ListPage implements LifecycleOwner, PullableWrapper.PullCa
 		return listPosition;
 	}
 
-	protected final void restoreListPosition() {
-		ListPosition listPosition = takeListPosition();
-		if (listPosition != null) {
-			listPosition.apply(recyclerView);
-		}
-	}
-
 	protected final InitRequest getInitRequest() {
 		return initRequest != null ? initRequest : InitRequest.EMPTY_REQUEST;
 	}

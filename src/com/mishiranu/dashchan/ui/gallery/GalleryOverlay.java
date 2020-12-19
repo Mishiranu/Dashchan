@@ -147,11 +147,7 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
-
-		if (showcaseDestroy != null) {
-			showcaseDestroy.run();
-			showcaseDestroy = null;
-		}
+		destroyShowcase(false);
 	}
 
 	@Override
@@ -370,9 +366,7 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 
 	@Override
 	public boolean onBackPressed() {
-		if (showcaseDestroy != null) {
-			showcaseDestroy.run();
-			showcaseDestroy = null;
+		if (destroyShowcase(true)) {
 			return true;
 		}
 		return returnToGallery();
@@ -571,9 +565,10 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 
 	@Override
 	public void modifyVerticalSwipeState(boolean ignoreIfGallery, float value) {
-		if (!ignoreIfGallery && !galleryWindow) {
-			rootView.getBackground().setAlpha((int) (0xff * (1f - value)));
+		if (ignoreIfGallery || galleryWindow) {
+			value = 0f;
 		}
+		rootView.getBackground().setAlpha((int) (0xff * (1f - value)));
 	}
 
 	@Override
@@ -745,6 +740,18 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 
 	private Runnable showcaseDestroy;
 
+	private boolean destroyShowcase(boolean consume) {
+		if (showcaseDestroy != null) {
+			if (consume) {
+				Preferences.consumeShowcaseGallery();
+			}
+			showcaseDestroy.run();
+			showcaseDestroy = null;
+			return true;
+		}
+		return false;
+	}
+
 	private void displayShowcase() {
 		if (showcaseDestroy != null || !Preferences.isShowcaseGalleryEnabled() ||
 				!ViewCompat.isAttachedToWindow(rootView)) {
@@ -803,10 +810,6 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 		windowManager.addView(frameLayout, layoutParams);
 
 		showcaseDestroy = () -> windowManager.removeView(frameLayout);
-		button.setOnClickListener(v -> {
-			Preferences.consumeShowcaseGallery();
-			showcaseDestroy.run();
-			showcaseDestroy = null;
-		});
+		button.setOnClickListener(v -> destroyShowcase(true));
 	}
 }

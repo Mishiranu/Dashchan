@@ -1,6 +1,7 @@
 package chan.http;
 
 import android.net.Uri;
+import com.mishiranu.dashchan.util.IOUtils;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
@@ -23,6 +24,7 @@ public final class HttpSession {
 	int attempt;
 	boolean forceGet;
 	boolean executing;
+	boolean closeInput;
 
 	HttpURLConnection connection;
 	HttpURLConnection deadConnection;
@@ -89,6 +91,8 @@ public final class HttpSession {
 
 	void disconnectAndClear() {
 		checkThread();
+		boolean closeInput = this.closeInput;
+		this.closeInput = false;
 		HttpURLConnection connection = this.connection;
 		this.connection = null;
 		HttpHolder.Callback callback = this.callback;
@@ -99,10 +103,18 @@ public final class HttpSession {
 		}
 		if (connection != null) {
 			try {
-				connection.disconnect();
+				if (closeInput) {
+					IOUtils.close(client.getInput(connection));
+				}
+			} catch (IOException e) {
+				// Ignore
 			} finally {
-				deadConnection = connection;
-				client.onDisconnect(connection);
+				try {
+					connection.disconnect();
+				} finally {
+					deadConnection = connection;
+					client.onDisconnect(connection);
+				}
 			}
 		}
 		if (callback != null) {
