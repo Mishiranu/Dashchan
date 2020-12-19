@@ -26,6 +26,7 @@ import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.Hasher;
 import com.mishiranu.dashchan.util.WeakObservable;
+import dalvik.system.DelegateLastClassLoader;
 import dalvik.system.PathClassLoader;
 import java.io.File;
 import java.util.ArrayList;
@@ -436,23 +437,30 @@ public class ChanManager {
 		}
 	}
 
-	private static class CompatPathClassLoader extends PathClassLoader {
-		public CompatPathClassLoader(String dexPath, String librarySearchPath, ClassLoader parent) {
+	private static class CompatDelegateLastClassLoader extends PathClassLoader {
+		public CompatDelegateLastClassLoader(String dexPath, String librarySearchPath, ClassLoader parent) {
 			super(dexPath, librarySearchPath, parent);
 		}
 
 		@Override
 		protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-			if ("chan.text.TemplateParser".equals(name) ||
-					name != null && name.startsWith("chan.text.TemplateParser$")) {
-				// TemplateParser is moved to the library, which resolution should have higher priority
+			Class<?> loaded = findLoadedClass(name);
+			if (loaded != null) {
+				return loaded;
+			}
+			try {
+				return Object.class.getClassLoader().loadClass(name);
+			} catch (ClassNotFoundException e1) {
 				try {
 					return findClass(name);
-				} catch (ClassNotFoundException e) {
-					// Extension still uses API class
+				} catch (ClassNotFoundException exception) {
+					try {
+						return getParent().loadClass(name);
+					} catch (ClassNotFoundException e2) {
+						throw exception;
+					}
 				}
 			}
-			return super.loadClass(name, resolve);
 		}
 	}
 
@@ -566,8 +574,14 @@ public class ChanManager {
 				if (nativeLibraryDir != null && !new File(nativeLibraryDir).exists()) {
 					nativeLibraryDir = null;
 				}
-				ClassLoader classLoader = new CompatPathClassLoader(chanItem.applicationInfo.sourceDir,
-						nativeLibraryDir, ChanManager.class.getClassLoader());
+				ClassLoader classLoader;
+				String dexPath = chanItem.applicationInfo.sourceDir;
+				ClassLoader parent = ChanManager.class.getClassLoader();
+				if (C.API_OREO_MR1) {
+					classLoader = new DelegateLastClassLoader(dexPath, nativeLibraryDir, parent);
+				} else {
+					classLoader = new CompatDelegateLastClassLoader(dexPath, nativeLibraryDir, parent);
+				}
 				Resources resources = packageManager.getResourcesForApplication(chanItem.applicationInfo);
 				Chan.Provider chanProvider = new Chan.Provider(null);
 				ChanConfiguration configuration = ChanConfiguration.INITIALIZER.initialize(classLoader,
