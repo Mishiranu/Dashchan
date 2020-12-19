@@ -4,16 +4,20 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Pair;
-import com.mishiranu.dashchan.ui.SeekBarForm;
+import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.SharedPreferences;
+import com.mishiranu.dashchan.widget.ViewFactory;
 
 public class SeekPreference extends DialogPreference<Integer> {
-	private static final String STATE_SWITCH_VALUE = "switchValue";
-	private static final String STATE_CURRENT_VALUE = "currentValue";
+	private static final String STATE_ENABLED = "enabled";
+	private static final String STATE_VALUE = "value";
 
-	private final SeekBarForm seekBarForm;
+	private final String valueFormat;
 	private final Integer specialValue;
+	private final int minValue;
+	private final int maxValue;
+	private final int step;
 
 	public SeekPreference(Context context, String key, int defaultValue, CharSequence title, String valueFormat,
 			Pair<Integer, String> specialValue, int minValue, int maxValue, int step) {
@@ -22,8 +26,11 @@ public class SeekPreference extends DialogPreference<Integer> {
 		if (specialValue != null && specialValue.first >= minValue && specialValue.first <= maxValue) {
 			throw new IllegalArgumentException();
 		}
-		seekBarForm = new SeekBarForm(specialValue != null, minValue, maxValue, step, valueFormat);
+		this.valueFormat = valueFormat;
 		this.specialValue = specialValue != null ? specialValue.first : null;
+		this.minValue = minValue;
+		this.maxValue = maxValue;
+		this.step = step;
 	}
 
 	@Override
@@ -38,27 +45,29 @@ public class SeekPreference extends DialogPreference<Integer> {
 
 	@Override
 	protected AlertDialog.Builder configureDialog(Bundle savedInstanceState, AlertDialog.Builder builder) {
+		ViewFactory.SeekLayoutHolder holder = ViewFactory.createSeekLayout(builder.getContext(),
+				specialValue != null, minValue, maxValue, step, valueFormat);
 		if (savedInstanceState != null) {
-			seekBarForm.setSwitchValue(savedInstanceState.getBoolean(STATE_SWITCH_VALUE));
-			seekBarForm.setCurrentValue(savedInstanceState.getInt(STATE_CURRENT_VALUE));
+			holder.setEnabled(savedInstanceState.getBoolean(STATE_ENABLED));
+			holder.setValue(savedInstanceState.getInt(STATE_VALUE));
 		} else {
 			int value = getValue();
-			seekBarForm.setSwitchValue(specialValue == null || specialValue != value);
-			seekBarForm.setCurrentValue(specialValue != null && specialValue == value ? defaultValue : value);
+			holder.setEnabled(specialValue == null || specialValue != value);
+			holder.setValue(specialValue != null && specialValue == value ? defaultValue : value);
 		}
-
-		return super.configureDialog(savedInstanceState, builder)
-				.setView(seekBarForm.inflate(builder.getContext()))
+		return super.configureDialog(savedInstanceState, builder).setView(holder.layout)
 				.setPositiveButton(android.R.string.ok, (d, which) -> ConcurrentUtils.HANDLER
-						.post(() -> setValue(specialValue != null && !seekBarForm.getSwitchValue()
-								? specialValue : seekBarForm.getCurrentValue())));
+						.post(() -> setValue(specialValue != null && !holder.isEnabled()
+								? specialValue : holder.getValue())));
 	}
 
 	@Override
 	protected void saveState(AlertDialog dialog, Bundle outState) {
 		super.saveState(dialog, outState);
 
-		outState.putBoolean(STATE_SWITCH_VALUE, seekBarForm.getSwitchValue());
-		outState.putInt(STATE_CURRENT_VALUE, seekBarForm.getCurrentValue());
+		ViewFactory.SeekLayoutHolder holder = (ViewFactory.SeekLayoutHolder)
+				dialog.findViewById(R.id.seek_layout).getTag();
+		outState.putBoolean(STATE_ENABLED, holder.isEnabled());
+		outState.putInt(STATE_VALUE, holder.getValue());
 	}
 }

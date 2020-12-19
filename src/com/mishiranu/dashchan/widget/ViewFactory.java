@@ -1,5 +1,6 @@
 package com.mishiranu.dashchan.widget;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.text.TextUtils;
@@ -10,6 +11,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toolbar;
 import androidx.core.widget.TextViewCompat;
@@ -267,5 +270,89 @@ public class ViewFactory {
 		layout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.MATCH_PARENT));
 		return new ErrorHolder(layout, text);
+	}
+
+	public static class SeekLayoutHolder {
+		public final View layout;
+		private final TextView valueText;
+		private final Switch switchView;
+		private final SeekBar seekBar;
+
+		private final int minValue;
+		private final int step;
+		private final String valueFormat;
+
+		public SeekLayoutHolder(View layout, TextView valueText, Switch switchView, SeekBar seekBar,
+				int minValue, int step, String valueFormat) {
+			this.layout = layout;
+			this.valueText = valueText;
+			this.switchView = switchView;
+			this.seekBar = seekBar;
+			this.minValue = minValue;
+			this.step = step;
+			this.valueFormat = valueFormat;
+		}
+
+		public void setEnabled(boolean enabled) {
+			if (switchView.isChecked() != enabled) {
+				switchView.setChecked(enabled);
+			}
+			seekBar.setEnabled(enabled);
+		}
+
+		public boolean isEnabled() {
+			return seekBar.isEnabled();
+		}
+
+		public void setValue(int value) {
+			int progress = (value - minValue) / step;
+			if (seekBar.getProgress() != progress) {
+				seekBar.setProgress(progress);
+			}
+			String text = valueFormat != null ? String.format(valueFormat, value) : Integer.toString(value);
+			valueText.setText(text);
+		}
+
+		public int getValue() {
+			return seekBar.getProgress() * step + minValue;
+		}
+	}
+
+	public static SeekLayoutHolder createSeekLayout(Context context, boolean showSwitch,
+			int minValue, int maxValue, int step, String valueFormat) {
+		LayoutInflater inflater = LayoutInflater.from(context);
+		View layout = inflater.inflate(R.layout.dialog_seek_bar, null);
+		layout.<TextView>findViewById(R.id.min_value).setText(Integer.toString(minValue));
+		layout.<TextView>findViewById(R.id.max_value).setText(Integer.toString(maxValue));
+		TextView valueText = layout.findViewById(R.id.current_value);
+		Switch switchView = layout.findViewById(R.id.switch_view);
+		SeekBar seekBar = layout.findViewById(R.id.seek_bar);
+		SeekLayoutHolder holder = new SeekLayoutHolder(layout,
+				valueText, switchView, seekBar, minValue, step, valueFormat);
+		layout.setTag(holder);
+		seekBar.setSaveEnabled(false);
+		seekBar.setMax((maxValue - minValue) / step);
+		seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				holder.setValue(progress * step + minValue);
+			}
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {}
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {}
+		});
+		switchView.setSaveEnabled(false);
+		if (!showSwitch) {
+			switchView.setVisibility(View.GONE);
+		} else {
+			switchView.setOnCheckedChangeListener((v, isChecked) -> holder.setEnabled(isChecked));
+			if (C.API_LOLLIPOP) {
+				ViewUtils.setNewMarginRelative(switchView, null, null, 0, null);
+			}
+		}
+		return holder;
 	}
 }

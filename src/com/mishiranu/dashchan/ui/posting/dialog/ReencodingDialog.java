@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -14,10 +13,11 @@ import android.widget.ScrollView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.ui.SeekBarForm;
 import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ThemeEngine;
+import com.mishiranu.dashchan.widget.ViewFactory;
 import java.util.Locale;
 
 public class ReencodingDialog extends DialogFragment implements DialogInterface.OnClickListener,
@@ -28,8 +28,8 @@ public class ReencodingDialog extends DialogFragment implements DialogInterface.
 	private static final String EXTRA_REDUCE = "reduce";
 
 	private RadioGroup radioGroup;
-	private SeekBarForm qualityForm;
-	private SeekBarForm reduceForm;
+	private ViewFactory.SeekLayoutHolder qualityLayoutHolder;
+	private ViewFactory.SeekLayoutHolder reduceLayoutHolder;
 
 	private static final String[] OPTIONS = {GraphicsUtils.Reencoding.FORMAT_JPEG.toUpperCase(Locale.US),
 			GraphicsUtils.Reencoding.FORMAT_PNG.toUpperCase(Locale.US)};
@@ -41,20 +41,15 @@ public class ReencodingDialog extends DialogFragment implements DialogInterface.
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		Context context = getActivity();
-		qualityForm = new SeekBarForm(false, 1, 100, 1,
+		qualityLayoutHolder = ViewFactory.createSeekLayout(context, false, 1, 100, 1,
 				ResourceUtils.getColonString(getResources(), R.string.quality, "%d%%"));
-		qualityForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_QUALITY) : 90);
-		reduceForm = new SeekBarForm(false, 1, 8, 1,
+		qualityLayoutHolder.setValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_QUALITY) : 90);
+		reduceLayoutHolder = ViewFactory.createSeekLayout(context, false, 1, 8, 1,
 				ResourceUtils.getColonString(getResources(), R.string.reduce, "%dx"));
-		reduceForm.setCurrentValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_REDUCE) : 1);
+		reduceLayoutHolder.setValue(savedInstanceState != null ? savedInstanceState.getInt(EXTRA_REDUCE) : 1);
 		int padding = getResources().getDimensionPixelSize(R.dimen.dialog_padding_view);
-		View qualityView = qualityForm.inflate(context);
-		qualityForm.getSeekBar().setSaveEnabled(false);
-		qualityView.setPadding(qualityView.getPaddingLeft(), 0, qualityView.getPaddingRight(), padding / 2);
-		View reduceView = reduceForm.inflate(context);
-		reduceForm.getSeekBar().setSaveEnabled(false);
-		reduceView.setPadding(reduceView.getPaddingLeft(), 0, reduceView.getPaddingRight(),
-				reduceView.getPaddingBottom());
+		ViewUtils.setNewPadding(qualityLayoutHolder.layout, null, 0, null, padding / 2);
+		ViewUtils.setNewPadding(reduceLayoutHolder.layout, null, 0, null, null);
 		radioGroup = new RadioGroup(context);
 		radioGroup.setOrientation(RadioGroup.VERTICAL);
 		radioGroup.setPadding(padding, padding, padding, padding / 2);
@@ -71,10 +66,10 @@ public class ReencodingDialog extends DialogFragment implements DialogInterface.
 		linearLayout.setOrientation(LinearLayout.VERTICAL);
 		FrameLayout qualityLayout = new FrameLayout(context);
 		qualityLayout.setId(android.R.id.text1);
-		qualityLayout.addView(qualityView);
+		qualityLayout.addView(qualityLayoutHolder.layout);
 		FrameLayout reduceLayout = new FrameLayout(context);
 		reduceLayout.setId(android.R.id.text2);
-		reduceLayout.addView(reduceView);
+		reduceLayout.addView(reduceLayoutHolder.layout);
 		linearLayout.addView(radioGroup, LinearLayout.LayoutParams.MATCH_PARENT,
 				LinearLayout.LayoutParams.WRAP_CONTENT);
 		linearLayout.addView(qualityLayout, LinearLayout.LayoutParams.MATCH_PARENT,
@@ -92,8 +87,8 @@ public class ReencodingDialog extends DialogFragment implements DialogInterface.
 	@Override
 	public void onSaveInstanceState(@NonNull Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putInt(EXTRA_QUALITY, qualityForm.getCurrentValue());
-		outState.putInt(EXTRA_REDUCE, reduceForm.getCurrentValue());
+		outState.putInt(EXTRA_QUALITY, qualityLayoutHolder.getValue());
+		outState.putInt(EXTRA_REDUCE, reduceLayoutHolder.getValue());
 	}
 
 	@Override
@@ -107,7 +102,7 @@ public class ReencodingDialog extends DialogFragment implements DialogInterface.
 			}
 		}
 		((AttachmentOptionsDialog) getParentFragment()).setReencoding(new GraphicsUtils
-				.Reencoding(format, qualityForm.getCurrentValue(), reduceForm.getCurrentValue()));
+				.Reencoding(format, qualityLayoutHolder.getValue(), reduceLayoutHolder.getValue()));
 	}
 
 	@Override
@@ -119,6 +114,6 @@ public class ReencodingDialog extends DialogFragment implements DialogInterface.
 				break;
 			}
 		}
-		qualityForm.getSeekBar().setEnabled(allowQuality);
+		reduceLayoutHolder.setEnabled(allowQuality);
 	}
 }
