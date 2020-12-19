@@ -13,6 +13,7 @@ import android.graphics.Paint;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
@@ -23,11 +24,14 @@ import com.mishiranu.dashchan.graphics.BaseDrawable;
 import com.mishiranu.dashchan.util.AnimationUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.FlagUtils;
+import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
-import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 	private final boolean expandingEnabled;
@@ -40,16 +44,14 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 
 	private final View rootView;
 	private final View toolbarView;
-	private final View drawerInterlayer;
+	private final FrameLayout drawerInterlayer;
 	private final View drawerContent;
 	private final View drawerHeader;
-
-	private View actionModeView;
-	private View statusGuardView;
 
 	private boolean drawerOverToolbarEnabled;
 	private final LinkedHashMap<View, RecyclerView> contentViews = new LinkedHashMap<>();
 
+	private final List<ForegroundDrawable> foregroundDrawables;
 	private ValueAnimator foregroundAnimator;
 	private boolean foregroundAnimatorShow;
 
@@ -60,6 +62,9 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 			return 1 << ordinal();
 		}
 	}
+
+	// The same value is hardcoded in ActionBarImpl.
+	private static final int ACTION_BAR_ANIMATION_TIME = 250;
 
 	private final HashSet<String> lockers = new HashSet<>();
 	private int stateFlags = State.SHOW.flag();
@@ -124,6 +129,10 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 		fullScreenLayoutEnabled = init.fullScreenLayoutEnabled;
 		activity = init.activity;
 		Window window = activity.getWindow();
+		ForegroundDrawable contentForeground;
+		ForegroundDrawable statusBarContentForeground;
+		ForegroundDrawable statusBarDrawerForeground;
+		List<ForegroundDrawable> foregroundDrawables;
 		if (fullScreenLayoutEnabled) {
 			if (C.API_LOLLIPOP) {
 				int statusBarColor = window.getStatusBarColor() | Color.BLACK;
@@ -133,19 +142,24 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 				contentForeground = new LollipopContentForeground(statusBarColor, navigationBarColor);
 				statusBarContentForeground = new LollipopStatusBarForeground(statusBarColor);
 				statusBarDrawerForeground = new LollipopDrawerForeground();
+				foregroundDrawables = Arrays.asList(contentForeground,
+						statusBarContentForeground, statusBarDrawerForeground);
 			} else if (C.API_KITKAT) {
 				contentForeground = new KitKatContentForeground();
 				statusBarContentForeground = null;
 				statusBarDrawerForeground = null;
+				foregroundDrawables = Collections.singletonList(contentForeground);
 			} else {
 				contentForeground = null;
 				statusBarContentForeground = null;
 				statusBarDrawerForeground = null;
+				foregroundDrawables = Collections.emptyList();
 			}
 		} else {
 			contentForeground = null;
 			statusBarContentForeground = null;
 			statusBarDrawerForeground = null;
+			foregroundDrawables = Collections.emptyList();
 		}
 
 		Resources resources = activity.getResources();
@@ -160,6 +174,7 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 		}
 		this.drawerContent = drawerContent;
 		this.drawerHeader = drawerHeader;
+		this.foregroundDrawables = foregroundDrawables;
 		if (fullScreenLayoutEnabled) {
 			FrameLayout content = activity.findViewById(android.R.id.content);
 			InsetsLayout insetsLayout = new InsetsLayout(activity);
@@ -192,23 +207,22 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 		updatePaddings();
 	}
 
-	// The same value is hardcoded in ActionBarImpl.
-	private static final int ACTION_BAR_ANIMATION_TIME = 250;
+	private static class ForegroundDrawable extends BaseDrawable {
+		public void applyAlpha(int alpha) {}
+		public void applyStatusGuardColor(int color) {}
+	}
 
-	private final ForegroundDrawable contentForeground;
-	private final ForegroundDrawable statusBarContentForeground;
-	private final ForegroundDrawable statusBarDrawerForeground;
-
-	private static abstract class ForegroundDrawable extends BaseDrawable {
+	private static class AlphaForegroundDrawable extends ForegroundDrawable {
 		protected int alpha = 0xff;
 
-		public final void applyAlpha(float value) {
-			alpha = (int) (0xff * value);
+		@Override
+		public void applyAlpha(int alpha) {
+			this.alpha = alpha;
 			invalidateSelf();
 		}
 	}
 
-	private class KitKatContentForeground extends ForegroundDrawable {
+	private class KitKatContentForeground extends AlphaForegroundDrawable {
 		private final Paint paint = new Paint();
 
 		@Override
@@ -222,7 +236,7 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 		}
 	}
 
-	private class LollipopContentForeground extends ForegroundDrawable {
+	private class LollipopContentForeground extends AlphaForegroundDrawable {
 		private final Paint paint = new Paint();
 		private final int statusBarColor;
 		private final int navigationBarColor;
@@ -272,12 +286,20 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 		}
 	}
 
-	private class LollipopStatusBarForeground extends ForegroundDrawable {
+	private class LollipopStatusBarForeground extends AlphaForegroundDrawable {
 		private final Paint paint = new Paint();
 		private final int statusBarColor;
 
+		private int statusGuardColor = 0;
+
 		public LollipopStatusBarForeground(int statusBarColor) {
 			this.statusBarColor = statusBarColor;
+		}
+
+		@Override
+		public void applyStatusGuardColor(int color) {
+			statusGuardColor = color;
+			invalidateSelf();
 		}
 
 		@Override
@@ -291,6 +313,10 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 				if (alpha > 0) {
 					paint.setColor(statusBarColor);
 					paint.setAlpha(alpha);
+					canvas.drawRect(0f, 0f, width, statusBarHeight, paint);
+				}
+				if (Color.alpha(statusBarColor) > 0) {
+					paint.setColor(statusGuardColor);
 					canvas.drawRect(0f, 0f, width, statusBarHeight, paint);
 				}
 			}
@@ -323,18 +349,13 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 
 		@Override
 		public void onAnimationUpdate(ValueAnimator animation) {
-			float alpha = (float) animation.getAnimatedValue();
-			if (contentForeground != null) {
-				contentForeground.applyAlpha(alpha);
-			}
-			if (statusBarContentForeground != null) {
-				statusBarContentForeground.applyAlpha(alpha);
-			}
-			if (statusBarDrawerForeground != null) {
-				statusBarDrawerForeground.applyAlpha(alpha);
+			float value = (float) animation.getAnimatedValue();
+			int alpha = (int) (0xff * value);
+			for (ForegroundDrawable foregroundDrawable : foregroundDrawables) {
+				foregroundDrawable.applyAlpha(alpha);
 			}
 			if (toolbarView != null) {
-				toolbarView.setAlpha(alpha);
+				toolbarView.setAlpha(value);
 			}
 		}
 
@@ -553,9 +574,6 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 							null, bottomNavigationBarHeight);
 				}
 			}
-			if (actionModeView != null) {
-				ViewUtils.setNewMargin(actionModeView, leftNavigationBarHeight, null, rightNavigationBarHeight, null);
-			}
 			if (drawerContent != null) {
 				int paddingTop = C.API_LOLLIPOP && drawerOverToolbarEnabled && toolbarView != null
 						? statusBarHeight : statusBarHeight + actionBarHeight;
@@ -566,14 +584,8 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 					ViewUtils.setNewPadding(drawerContent, null, paddingTop, null, bottomNavigationBarHeight);
 				}
 			}
-			if (contentForeground != null) {
-				contentForeground.invalidateSelf();
-			}
-			if (statusBarContentForeground != null) {
-				statusBarContentForeground.invalidateSelf();
-			}
-			if (statusBarDrawerForeground != null) {
-				statusBarDrawerForeground.invalidateSelf();
+			for (ForegroundDrawable foregroundDrawable : foregroundDrawables) {
+				foregroundDrawable.invalidateSelf();
 			}
 		}
 	}
@@ -600,28 +612,31 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 		setShowActionBar(show, true);
 	}
 
+	private boolean actionModeViewInitialized = false;
+
 	public void setActionModeState(boolean actionMode) {
-		if (actionMode && fullScreenLayoutEnabled && actionModeView == null) {
-			// ActionModeBar view has lazy initialization
-			int actionModeBarId = activity.getResources().getIdentifier("action_mode_bar", "id", "android");
-			actionModeView = actionModeBarId != 0 ? activity.findViewById(actionModeBarId) : null;
-			updatePaddings();
-		}
-		if (!actionMode && fullScreenLayoutEnabled && C.API_MARSHMALLOW && !C.API_Q
-				&& activity.getWindow().hasFeature(Window.FEATURE_NO_TITLE)) {
-			// Fix marshmallow bug with hidden action bar and action mode overlay
-			if (statusGuardView == null) {
-				View decorView = activity.getWindow().getDecorView();
-				try {
-					Field statusGuardField = decorView.getClass().getDeclaredField("mStatusGuard");
-					statusGuardField.setAccessible(true);
-					statusGuardView = (View) statusGuardField.get(decorView);
-				} catch (Exception e) {
-					// Ignore
+		if (actionMode && !actionModeViewInitialized) {
+			if (C.API_LOLLIPOP && drawerInterlayer != null) {
+				// ActionModeBar view has lazy initialization
+				int actionModeBarId = activity.getResources().getIdentifier("action_mode_bar", "id", "android");
+				View actionModeView = actionModeBarId != 0 ? activity.findViewById(actionModeBarId) : null;
+				if (drawerInterlayer != null && actionModeView != null) {
+					actionModeViewInitialized = true;
+					ViewUtils.removeFromParent(actionModeView);
+					float maxZ = 0;
+					int childCount = drawerInterlayer.getChildCount();
+					for (int i = 0; i < childCount; i++) {
+						View child = drawerInterlayer.getChildAt(i);
+						maxZ = Math.max(maxZ, child.getElevation() + child.getTranslationZ());
+					}
+					// Use simple ViewGroup without MarginLayoutParams to avoid StatusGuardView in DecorView
+					ActionModeBoxView box = new ActionModeBoxView(actionModeView, maxZ);
+					drawerInterlayer.addView(box, FrameLayout.LayoutParams.MATCH_PARENT,
+							FrameLayout.LayoutParams.WRAP_CONTENT);
 				}
 			}
-			if (statusGuardView != null) {
-				statusGuardView.post(statusGuardHideRunnable);
+			if (fullScreenLayoutEnabled) {
+				updatePaddings();
 			}
 		}
 		setState(State.ACTION_MODE, actionMode);
@@ -632,5 +647,50 @@ public class ExpandedScreen implements RecyclerScrollTracker.OnScrollListener {
 		}
 	}
 
-	private final Runnable statusGuardHideRunnable = () -> statusGuardView.setVisibility(View.GONE);
+	private class ActionModeBoxView extends ViewGroup implements ViewTreeObserver.OnPreDrawListener {
+		private final int backgroundColor;
+
+		public ActionModeBoxView(View actionModeView, float maxZ) {
+			super(actionModeView.getContext());
+			setTranslationZ(maxZ);
+			addView(actionModeView, LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+			actionModeView.getViewTreeObserver().addOnPreDrawListener(this);
+			backgroundColor = ResourceUtils.getColor(getContext(), android.R.attr.colorBackground);
+		}
+
+		@Override
+		protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+			View child = getChildAt(0);
+			child.measure(widthMeasureSpec, heightMeasureSpec);
+			setMeasuredDimension(child.getMeasuredWidth(), child.getMeasuredHeight());
+		}
+
+		@Override
+		protected void onLayout(boolean changed, int l, int t, int r, int b) {
+			View child = getChildAt(0);
+			child.layout(0, 0, r - l, b - t);
+		}
+
+		private float lastAlpha = -1f;
+
+		@Override
+		public boolean onPreDraw() {
+			View child = getChildAt(0);
+			float value = child.getAlpha();
+			if (child.getVisibility() != View.VISIBLE) {
+				value = 0f;
+			}
+			if (lastAlpha != value) {
+				lastAlpha = value;
+				int alpha = (int) (0xff * value);
+				int color = GraphicsUtils.mixColors(0xff000000 | backgroundColor,
+						ViewUtils.STATUS_OVERLAY_TRANSPARENT);
+				int alphaColor = (alpha << 24) | (0x00ffffff & color);
+				for (ForegroundDrawable foregroundDrawable : foregroundDrawables) {
+					foregroundDrawable.applyStatusGuardColor(alphaColor);
+				}
+			}
+			return true;
+		}
+	}
 }

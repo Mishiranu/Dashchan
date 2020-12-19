@@ -79,6 +79,7 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 
 	private boolean galleryWindow;
 	private boolean galleryMode;
+	private CornerAnimator cornerAnimator;
 	private final boolean scrollThread = Preferences.isScrollThreadGallery();
 
 	private Pair<CharSequence, CharSequence> titleSubtitle;
@@ -341,6 +342,9 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 	public void onDestroy() {
 		super.onDestroy();
 
+		if (cornerAnimator != null) {
+			cornerAnimator.cancel();
+		}
 		if (pagerUnit != null) {
 			pagerUnit.onFinish();
 		}
@@ -526,6 +530,9 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 		private static final int INTERVAL = 200;
 
 		public CornerAnimator(int actionBarAlpha, int statusBarAlpha) {
+			if (cornerAnimator != null) {
+				cornerAnimator.cancel();
+			}
 			Drawable drawable = getDialog().getActionBarView().getBackground();
 			fromActionBarAlpha = Color.alpha(drawable instanceof ColorDrawable
 					? ((ColorDrawable) drawable).getColor() : statusBarAlpha);
@@ -538,6 +545,7 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 				toStatusBarAlpha = 0x00;
 			}
 			if (fromActionBarAlpha != toActionBarAlpha || fromStatusBarAlpha != toStatusBarAlpha) {
+				cornerAnimator = this;
 				run();
 			}
 		}
@@ -548,8 +556,12 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 			int actionBarColorAlpha = (int) AnimationUtils.lerp(fromActionBarAlpha, toActionBarAlpha, t);
 			GalleryDialog dialog = getDialog();
 			if (dialog != null) {
-				dialog.getActionBarView().setBackgroundColor((actionBarColorAlpha << 24)
-						| (0x00ffffff & ACTION_BAR_COLOR));
+				int actionBarColor = (actionBarColorAlpha << 24) | (0x00ffffff & ACTION_BAR_COLOR);
+				dialog.getActionBarView().setBackgroundColor(actionBarColor);
+				View actionContextBar = dialog.getActionContextBarView();
+				if (actionContextBar != null) {
+					actionContextBar.setBackgroundColor(actionBarColor);
+				}
 				if (C.API_LOLLIPOP) {
 					int statusBarColorAlpha = (int) AnimationUtils.lerp(fromStatusBarAlpha, toStatusBarAlpha, t);
 					int color = (statusBarColorAlpha << 24) | (0x00ffffff & ACTION_BAR_COLOR);
@@ -558,8 +570,26 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 				}
 				if (t < 1f) {
 					rootView.postOnAnimation(this);
+				} else if (cornerAnimator == this) {
+					cornerAnimator = null;
 				}
 			}
+		}
+
+		public void cancel() {
+			rootView.removeCallbacks(this);
+			if (cornerAnimator == this) {
+				cornerAnimator = null;
+			}
+		}
+	}
+
+	@Override
+	public void onCreateActionContextBarView() {
+		GalleryDialog dialog = getDialog();
+		Drawable drawable = dialog.getActionBarView().getBackground();
+		if (drawable instanceof ColorDrawable) {
+			dialog.getActionContextBarView().setBackgroundColor(((ColorDrawable) drawable).getColor());
 		}
 	}
 

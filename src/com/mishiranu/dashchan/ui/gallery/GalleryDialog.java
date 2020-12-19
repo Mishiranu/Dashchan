@@ -4,6 +4,7 @@ import android.app.ActionBar;
 import android.app.Dialog;
 import android.graphics.Insets;
 import android.media.AudioManager;
+import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -22,6 +23,7 @@ import com.mishiranu.dashchan.widget.ViewFactory;
 public class GalleryDialog extends Dialog {
 	public interface Callback {
 		boolean onBackPressed();
+		void onCreateActionContextBarView();
 	}
 
 	private final Fragment fragment;
@@ -29,6 +31,7 @@ public class GalleryDialog extends Dialog {
 
 	private ViewFactory.ToolbarHolder toolbarHolder;
 	private View actionBar;
+	private View actionContextBar;
 
 	public GalleryDialog(Fragment fragment) {
 		super(fragment.requireContext(), R.style.Theme_Gallery);
@@ -98,12 +101,26 @@ public class GalleryDialog extends Dialog {
 		return actionBar;
 	}
 
+	private View getPhoneWindowView(String resourceName) {
+		int id = fragment.getResources().getIdentifier(resourceName, "id", "android");
+		return id != 0 ? getWindow().getDecorView().findViewById(id) : null;
+	}
+
 	public View getActionBarView() {
 		if (actionBar == null) {
-			actionBar = getWindow().getDecorView().findViewById(fragment
-					.getResources().getIdentifier("action_bar", "id", "android"));
+			actionBar = getPhoneWindowView("action_bar");
 		}
 		return actionBar;
+	}
+
+	public View getActionContextBarView() {
+		if (actionContextBar == null) {
+			actionContextBar = getPhoneWindowView("action_context_bar");
+			if (actionContextBar != null && fragment instanceof Callback) {
+				((Callback) fragment).onCreateActionContextBarView();
+			}
+		}
+		return actionContextBar;
 	}
 
 	public interface OnFocusChangeListener {
@@ -165,5 +182,11 @@ public class GalleryDialog extends Dialog {
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		return fragment.onOptionsItemSelected(item);
+	}
+
+	@Override
+	public void onActionModeStarted(ActionMode mode) {
+		super.onActionModeStarted(mode);
+		getActionContextBarView();
 	}
 }
