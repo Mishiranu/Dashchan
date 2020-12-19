@@ -2,6 +2,7 @@ package com.mishiranu.dashchan.util;
 
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
@@ -33,6 +34,7 @@ import androidx.core.view.ViewCompat;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 public class ViewUtils {
 	public static final int STATUS_OVERLAY_TRANSPARENT = 0x4d000000;
@@ -374,6 +376,64 @@ public class ViewUtils {
 		canvas.drawRect(width - right, top, width, height - bottom, paint);
 		if (translate) {
 			canvas.restore();
+		}
+	}
+
+	public static View getDecorView(View view) {
+		View decorView = view;
+		while (true) {
+			ViewParent viewParent = decorView.getParent();
+			if (viewParent instanceof View) {
+				decorView = (View) viewParent;
+			} else {
+				break;
+			}
+		}
+		return decorView;
+	}
+
+	private static class WindowFocusListenerView extends View {
+		private final ArrayList<OnFocusChangeListener> listeners = new ArrayList<>();
+
+		public WindowFocusListenerView(Context context) {
+			super(context);
+		}
+
+		@Override
+		public void onWindowFocusChanged(boolean hasWindowFocus) {
+			super.onWindowFocusChanged(hasWindowFocus);
+			for (OnFocusChangeListener listener : listeners) {
+				listener.onFocusChange((View) getParent(), hasWindowFocus);
+			}
+		}
+
+		private static WindowFocusListenerView get(View view, boolean create) {
+			ViewGroup decorView = (ViewGroup) getDecorView(view);
+			int childCount = decorView.getChildCount();
+			for (int i = 0; i < childCount; i++) {
+				View child = decorView.getChildAt(i);
+				if (child instanceof WindowFocusListenerView) {
+					return (WindowFocusListenerView) child;
+				}
+			}
+			if (create) {
+				WindowFocusListenerView listenerView = new WindowFocusListenerView(decorView.getContext());
+				decorView.addView(listenerView, 0, 0);
+				return listenerView;
+			}
+			return null;
+		}
+	}
+
+	public static void addWindowFocusListener(View view, View.OnFocusChangeListener listener) {
+		WindowFocusListenerView listenerView = WindowFocusListenerView.get(view, true);
+		listenerView.listeners.add(listener);
+	}
+
+	public static void removeWindowFocusListener(View view, View.OnFocusChangeListener listener) {
+		WindowFocusListenerView listenerView = WindowFocusListenerView.get(view, false);
+		if (listenerView != null) {
+			listenerView.listeners.remove(listener);
 		}
 	}
 

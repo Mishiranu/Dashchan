@@ -123,25 +123,6 @@ public class GalleryDialog extends Dialog {
 		return actionContextBar;
 	}
 
-	public interface OnFocusChangeListener {
-		void onFocusChange(boolean hasFocus);
-	}
-
-	private OnFocusChangeListener onFocusChangeListener;
-
-	@Override
-	public void onWindowFocusChanged(boolean hasFocus) {
-		super.onWindowFocusChanged(hasFocus);
-
-		if (onFocusChangeListener != null) {
-			onFocusChangeListener.onFocusChange(hasFocus);
-		}
-	}
-
-	public void setOnFocusChangeListener(OnFocusChangeListener listener) {
-		this.onFocusChangeListener = listener;
-	}
-
 	@Override
 	public void onBackPressed() {
 		if (!(fragment instanceof Callback) || !((Callback) fragment).onBackPressed()) {

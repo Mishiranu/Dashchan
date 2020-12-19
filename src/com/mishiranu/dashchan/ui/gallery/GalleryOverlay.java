@@ -213,7 +213,7 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 				invalidateSystemUiFlags();
 			}
 		};
-		dialog.setOnFocusChangeListener(hasFocus -> {
+		ViewUtils.addWindowFocusListener(rootView, (v, hasFocus) -> {
 			if (pagerUnit != null) {
 				// Block touch events when dialogs are opened
 				pagerUnit.setHasFocus(hasFocus);
@@ -839,7 +839,7 @@ public class GalleryOverlay extends DialogFragment implements GalleryDialog.Call
 		}
 		windowManager.addView(frameLayout, layoutParams);
 
-		showcaseDestroy = () -> windowManager.removeView(frameLayout);
+		showcaseDestroy = () -> windowManager.removeViewImmediate(frameLayout);
 		button.setOnClickListener(v -> destroyShowcase(true));
 	}
 }

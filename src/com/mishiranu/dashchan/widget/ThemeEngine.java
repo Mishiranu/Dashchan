@@ -13,7 +13,6 @@ import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.AbsSeekBar;
 import android.widget.Button;
 import android.widget.CheckedTextView;
@@ -323,19 +322,6 @@ public class ThemeEngine {
 		}
 	}
 
-	private static View getDecorView(View view) {
-		View decorView = view;
-		while (true) {
-			ViewParent viewParent = decorView.getParent();
-			if (viewParent instanceof View) {
-				decorView = (View) viewParent;
-			} else {
-				break;
-			}
-		}
-		return decorView;
-	}
-
 	private interface AttachListener extends View.OnAttachStateChangeListener {
 		boolean isProcessed();
 		void handleView(View view);
@@ -369,7 +355,7 @@ public class ThemeEngine {
 		public void handleView(View view) {
 			if (!processed) {
 				processed = true;
-				View decorView = getDecorView(view);
+				View decorView = ViewUtils.getDecorView(view);
 				if ("DecorView".equals(decorView.getClass().getSimpleName())) {
 					ThemeContext themeContext = obtainThemeContext(decorView.getContext());
 					if (themeContext != null) {
@@ -380,16 +366,11 @@ public class ThemeEngine {
 						boolean forceDialog = tag instanceof Boolean && (boolean) tag;
 						boolean dialog = this.dialog || forceDialog;
 						themeContext.dispatchOverlayFocused(decorView, direct, dialog);
-						ViewGroup viewGroup = (ViewGroup) decorView;
-						viewGroup.addView(new View(decorView.getContext()) {
-							@Override
-							public void onWindowFocusChanged(boolean hasWindowFocus) {
-								super.onWindowFocusChanged(hasWindowFocus);
-								if (hasWindowFocus) {
-									themeContext.dispatchOverlayFocused(decorView, direct, dialog);
-								}
+						ViewUtils.addWindowFocusListener(decorView, (v, hasFocus) -> {
+							if (hasFocus) {
+								themeContext.dispatchOverlayFocused(decorView, direct, dialog);
 							}
-						}, 0, 0);
+						});
 					}
 				}
 			}
@@ -405,7 +386,7 @@ public class ThemeEngine {
 
 		@Override
 		public void handleView(View view) {
-			View decorView = getDecorView(view);
+			View decorView = ViewUtils.getDecorView(view);
 			Object tag = decorView.getTag(R.id.tag_theme_engine);
 			if (tag == null || !((boolean) tag)) {
 				// Mark as handled
