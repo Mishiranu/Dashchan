@@ -61,7 +61,7 @@ public class AboutFragment extends PreferenceFragment implements FragmentHandler
 						.pushFragment(new TextFragment(TextFragment.Type.LICENSES)));
 		String versionDate = TextFragment.formatChangelogDate
 				(DateFormat.getDateFormat(requireContext()), BuildConfig.VERSION_DATE);
-		addButton(getString(R.string.build_version), BuildConfig.VERSION_NAME +
+		addButton(getString(R.string.version), BuildConfig.VERSION_NAME +
 				(versionDate != null ? " " + versionDate : ""));
 	}
 

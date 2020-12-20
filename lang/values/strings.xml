@@ -41,7 +41,6 @@
 	<string name="board">Board</string>
 	<string name="board_doesnt_exist">The board doesn\'t exist</string>
 	<string name="boards">Boards</string>
-	<string name="build_version">Build version</string>
 	<string name="bump_limit">Bump limit</string>
 	<string name="cache_is_unavailable">Cache is unavailable</string>
 	<string name="cache_size">Cache size</string>
@@ -517,6 +516,7 @@
 	<string name="validation_completed">Validation completed</string>
 	<string name="verify_certificate">Verify certificate</string>
 	<string name="verify_certificate__summary">Connection will be terminated if the certificate is not valid</string>
+	<string name="version">Version</string>
 	<string name="vibration">Vibration</string>
 	<string name="video_player">Video player</string>
 	<string name="view__verb">View</string>

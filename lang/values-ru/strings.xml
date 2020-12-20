@@ -39,7 +39,6 @@
 	<string name="board">Раздел</string>
 	<string name="board_doesnt_exist">Раздел не существует</string>
 	<string name="boards">Разделы</string>
-	<string name="build_version">Версия сборки</string>
 	<string name="bump_limit">Бамплимит</string>
 	<string name="cache_is_unavailable">Кэш недоступен</string>
 	<string name="cache_size">Размер кэша</string>
@@ -535,6 +534,7 @@
 	<string name="validation_completed">Проверка завершена</string>
 	<string name="verify_certificate">Проверять сертификат</string>
 	<string name="verify_certificate__summary">Соединение будет разорвано, если сертификат не достоверен</string>
+	<string name="version">Версия</string>
 	<string name="vibration">Вибрация</string>
 	<string name="video_player">Видеоплеер</string>
 	<string name="view__verb">Просмотреть</string>

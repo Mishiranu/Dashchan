@@ -1,74 +1,65 @@
 package com.mishiranu.dashchan.ui.preference;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.SpannableStringBuilder;
+import android.text.style.RelativeSizeSpan;
 import android.text.style.ReplacementSpan;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.ProgressBar;
-import android.widget.ScrollView;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
 import chan.content.ChanMarkup;
+import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.LocaleManager;
 import com.mishiranu.dashchan.content.async.ReadChangelogTask;
 import com.mishiranu.dashchan.content.async.TaskViewModel;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.graphics.ColorScheme;
+import com.mishiranu.dashchan.text.SpanComparator;
 import com.mishiranu.dashchan.text.style.HeadingSpan;
-import com.mishiranu.dashchan.ui.ContentFragment;
 import com.mishiranu.dashchan.ui.FragmentHandler;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.IOUtils;
+import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.CommentTextView;
+import com.mishiranu.dashchan.widget.DividerItemDecoration;
 import com.mishiranu.dashchan.widget.ExpandedLayout;
+import com.mishiranu.dashchan.widget.PostLinearLayout;
+import com.mishiranu.dashchan.widget.PostsLayoutManager;
 import com.mishiranu.dashchan.widget.ThemeEngine;
 import com.mishiranu.dashchan.widget.ViewFactory;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-public class TextFragment extends ContentFragment implements View.OnClickListener {
+public class TextFragment extends BaseListFragment {
 	private static final String EXTRA_TYPE = "type";
 
 	private static final String EXTRA_CHANGELOG_ENTRIES = "changelogEntries";
 	private static final String EXTRA_ERROR_ITEM = "errorItem";
 
-	public enum Type {
-		LICENSES(markup -> {
-			markup.addTag("h1", ChanMarkup.TAG_HEADING);
-			markup.addTag("pre", ChanMarkup.TAG_CODE);
-		}),
-		CHANGELOG(null);
-
-		private final ChanMarkup.MarkupBuilder builder;
-
-		Type(ChanMarkup.MarkupBuilder.Constructor constructor) {
-			builder = constructor != null ? new ChanMarkup.MarkupBuilder(constructor) : null;
-		}
-	}
-
-	private View contentView;
-	private CommentTextView textView;
-	private ViewFactory.ErrorHolder errorHolder;
-	private View progressView;
+	public enum Type {LICENSES, CHANGELOG}
 
 	private List<ReadChangelogTask.Entry> changelogEntries;
 	private ErrorItem errorItem;
+
+	private View progressView;
 
 	public TextFragment() {}
 
@@ -80,51 +71,14 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		float density = ResourceUtils.obtainDensity(this);
-		ExpandedLayout layout = new ExpandedLayout(container.getContext(), true);
-		layout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.MATCH_PARENT));
-		ScrollView scrollView = new ScrollView(layout.getContext()) {
-			@Override
-			public boolean requestChildRectangleOnScreen(View child, Rect rectangle, boolean immediate) {
-				// Don't scroll on select
-				return true;
-			}
-		};
-		scrollView.setId(android.R.id.list);
-		scrollView.setClipToPadding(false);
-		ThemeEngine.applyStyle(scrollView);
-		layout.addView(scrollView, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-		contentView = scrollView;
-		FrameLayout frameLayout = new FrameLayout(scrollView.getContext());
-		frameLayout.setOnClickListener(this);
-		scrollView.addView(frameLayout, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-		textView = new CommentTextView(requireActivity(), null, android.R.attr.textAppearanceLarge);
-		int padding = (int) (16f * density);
-		textView.setPadding(padding, padding, padding, padding);
-		ViewUtils.setTextSizeScaled(textView, 14);
-		frameLayout.addView(textView, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-		errorHolder = ViewFactory.createErrorLayout(layout);
-		errorHolder.layout.setVisibility(View.GONE);
-		layout.addView(errorHolder.layout);
-		FrameLayout progress = new FrameLayout(layout.getContext());
-		layout.addView(progress, ExpandedLayout.LayoutParams.MATCH_PARENT, ExpandedLayout.LayoutParams.MATCH_PARENT);
-		progress.setVisibility(View.GONE);
-		progressView = progress;
-		ProgressBar progressBar = new ProgressBar(progress.getContext());
-		progress.addView(progressBar, FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-		((FrameLayout.LayoutParams) progressBar.getLayoutParams()).gravity = Gravity.CENTER;
-		ThemeEngine.applyStyle(progressBar);
+		ExpandedLayout layout = (ExpandedLayout) super.onCreateView(inflater, container, savedInstanceState);
+		progressView = ViewFactory.createProgressLayout(layout);
 		return layout;
 	}
 
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
-
-		contentView = null;
-		textView = null;
-		errorHolder = null;
 		progressView = null;
 	}
 
@@ -132,10 +86,17 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
+		RecyclerView recyclerView = getRecyclerView();
+		Context context = recyclerView.getContext();
+		recyclerView.setLayoutManager(new PostsLayoutManager(context));
+		TextAdapter adapter = new TextAdapter();
+		recyclerView.setAdapter(adapter);
+
 		switch (Type.valueOf(requireArguments().getString(EXTRA_TYPE))) {
 			case LICENSES: {
 				((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.foss_licenses), null);
-				setText(IOUtils.readRawResourceString(getResources(), R.raw.markup_licenses));
+				String text = IOUtils.readRawResourceString(getResources(), R.raw.markup_licenses);
+				adapter.setItems(context, formatText(text));
 				break;
 			}
 			case CHANGELOG: {
@@ -144,13 +105,12 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 						.getParcelableArrayList(EXTRA_CHANGELOG_ENTRIES) : null;
 				errorItem = savedInstanceState != null ? savedInstanceState.getParcelable(EXTRA_ERROR_ITEM) : null;
 				if (errorItem != null) {
-					contentView.setVisibility(View.GONE);
-					errorHolder.layout.setVisibility(View.VISIBLE);
-					errorHolder.text.setText(errorItem.toString());
+					recyclerView.setVisibility(View.GONE);
+					setErrorText(errorItem.toString());
 				} else if (changelogEntries != null) {
-					setText(formatChangelogEntries(changelogEntries));
+					adapter.setItems(context, formatChangelogEntries(context, changelogEntries));
 				} else {
-					contentView.setVisibility(View.GONE);
+					recyclerView.setVisibility(View.GONE);
 					progressView.setVisibility(View.VISIBLE);
 					ChangelogViewModel viewModel = new ViewModelProvider(this).get(ChangelogViewModel.class);
 					if (!viewModel.hasTaskOrValue()) {
@@ -164,12 +124,11 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 						this.errorItem = errorItem;
 						progressView.setVisibility(View.GONE);
 						if (entries != null) {
-							contentView.setVisibility(View.VISIBLE);
-							setText(formatChangelogEntries(entries));
+							recyclerView.setVisibility(View.VISIBLE);
+							adapter.setItems(context, formatChangelogEntries(context, entries));
 						} else {
 							errorItem = errorItem != null ? errorItem : new ErrorItem(ErrorItem.Type.UNKNOWN);
-							errorHolder.layout.setVisibility(View.VISIBLE);
-							errorHolder.text.setText(errorItem.toString());
+							setErrorText(errorItem.toString());
 						}
 					});
 				}
@@ -191,79 +150,208 @@ public class TextFragment extends ContentFragment implements View.OnClickListene
 		}
 	}
 
-	private CharSequence formatChangelogEntries(List<ReadChangelogTask.Entry> changelogEntries) {
-		DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(requireContext());
-		SpannableStringBuilder builder = new SpannableStringBuilder();
-		for (ReadChangelogTask.Entry entry : changelogEntries) {
-			if (builder.length() > 0) {
-				builder.append("\n\n");
-			}
-			String header;
-			ReadChangelogTask.Entry.Version start = entry.versions.get(0);
-			if (entry.versions.size() >= 2) {
-				ReadChangelogTask.Entry.Version end = entry.versions.get(entry.versions.size() - 1);
-				header = start.name + " " + formatChangelogDate(dateFormat, start.date) + " — " +
-						end.name + " " + formatChangelogDate(dateFormat, end.date);
-			} else {
-				header = start.name + " " + formatChangelogDate(dateFormat, start.date);
-			}
-			builder.append(header);
-			builder.setSpan(new HeadingSpan(), builder.length() - header.length(), builder.length(),
-					SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
-			builder.append("\n\n");
-			boolean newLine = false;
-			for (String line : entry.text.split("\n")) {
-				if (!line.isEmpty()) {
-					if (!newLine) {
-						newLine = true;
+	private static final ChanMarkup.MarkupBuilder BUILDER = new ChanMarkup.MarkupBuilder(markup -> {
+		markup.addTag("h1", ChanMarkup.TAG_HEADING);
+		markup.addTag("pre", ChanMarkup.TAG_CODE);
+	});
+
+	private static List<CharSequence> formatText(String html) {
+		CharSequence text = BUILDER.fromHtmlReduced(html);
+		SpannableStringBuilder builder = new SpannableStringBuilder(text);
+		HeadingSpan[] spans = builder.getSpans(0, builder.length(), HeadingSpan.class);
+		if (spans != null && spans.length > 1) {
+			Arrays.sort(spans, new SpanComparator(builder, SpanComparator.Property.START));
+			ArrayList<CharSequence> items = new ArrayList<>();
+			for (int i = 0; i < spans.length; i++) {
+				int start = builder.getSpanStart(spans[i]);
+				int end = i < spans.length - 1 ? builder.getSpanStart(spans[i + 1]) : builder.length();
+				SpannableStringBuilder subBuilder = new SpannableStringBuilder(builder, start, end);
+				int subEnd = subBuilder.length();
+				while (subEnd > 0) {
+					if (subBuilder.charAt(subEnd - 1) == '\n') {
+						subEnd--;
 					} else {
-						builder.append('\n');
+						break;
 					}
-					boolean bullet = false;
-					if (line.startsWith("*")) {
-						line = line.substring(1).trim();
-						bullet = true;
-					}
-					if (bullet) {
-						builder.append("\u2022 ");
-					}
-					if (line.startsWith("[")) {
-						int end = line.indexOf(']');
-						if (end >= 0) {
-							String prefix = line.substring(0, end + 1);
-							line = line.substring(end + 1).trim();
-							builder.append(prefix);
-							builder.setSpan(new PrefixSpan(), builder.length() - prefix.length(), builder.length(),
-									SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
-							builder.append(' ');
-						}
-					}
-					builder.append(line);
+				}
+				if (subEnd < subBuilder.length()) {
+					subBuilder.delete(subEnd, subBuilder.length());
+				}
+				if (subBuilder.length() > 0) {
+					int spanEnd = subBuilder.getSpanEnd(spans[i]);
+					subBuilder.removeSpan(spans[i]);
+					subBuilder.setSpan(new ListHeaderSpan(false), 0, spanEnd,
+							SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+					items.add(subBuilder);
 				}
 			}
+			return items;
+		} else {
+			return Collections.singletonList(builder);
 		}
-		return builder;
 	}
 
-	private void setText(CharSequence text) {
-		Type type = Type.valueOf(requireArguments().getString(EXTRA_TYPE));
-		if (type.builder != null) {
-			text = type.builder.fromHtmlReduced(text.toString());
+	private static List<CharSequence> formatChangelogEntries(Context context,
+			List<ReadChangelogTask.Entry> changelogEntries) {
+		DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(context);
+		ArrayList<CharSequence> items = new ArrayList<>();
+		String versionText = context.getString(R.string.version);
+		for (ReadChangelogTask.Entry entry : changelogEntries) {
+			SpannableStringBuilder builder = new SpannableStringBuilder();
+			String header;
+			String subHeader;
+			ReadChangelogTask.Entry.Version start = entry.versions.get(0);
+			String startName = start.getMajorMinor();
+			String startDate = formatChangelogDate(dateFormat, start.date);
+			if (entry.versions.size() >= 2) {
+				ReadChangelogTask.Entry.Version end = entry.versions.get(entry.versions.size() - 1);
+				String endName = end.getMajorMinor();
+				String endDate = formatChangelogDate(dateFormat, end.date);
+				if (startName.equals(endName)) {
+					if (startDate.equals(endDate)) {
+						header = versionText + " " + startName;
+						subHeader = startDate;
+					} else {
+						header = versionText + " " + startName;
+						subHeader = startDate + " — " + endDate;
+					}
+				} else {
+					header = versionText + " " + startName + " — " + endName;
+					subHeader = startDate + " — " + endDate;
+				}
+			} else {
+				String startNameSuffix = start.name.substring(startName.length());
+				if (startNameSuffix.equals(".0")) {
+					header = versionText + " " + startName;
+				} else {
+					header = versionText + " " + start.name;
+				}
+				subHeader = startDate;
+			}
+			builder.append(header);
+			builder.setSpan(new ListHeaderSpan(false), builder.length() - header.length(), builder.length(),
+					SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+			builder.append("\n");
+			builder.append(subHeader);
+			builder.append("\n\n");
+			boolean newLine = false;
+			for (String text : entry.texts) {
+				for (String line : text.split("\n")) {
+					if (!line.isEmpty()) {
+						if (!newLine) {
+							newLine = true;
+						} else {
+							builder.append('\n');
+						}
+						boolean bullet = false;
+						if (line.startsWith("*")) {
+							line = line.substring(1).trim();
+							bullet = true;
+						}
+						if (bullet) {
+							builder.append("\u2022 ");
+						}
+						if (line.startsWith("[")) {
+							int end = line.indexOf(']');
+							if (end >= 0) {
+								String prefix = line.substring(0, end + 1);
+								line = line.substring(end + 1).trim();
+								builder.append(prefix);
+								builder.setSpan(new PrefixSpan(), builder.length() - prefix.length(), builder.length(),
+										SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE);
+								builder.append(' ');
+							}
+						}
+						builder.append(line);
+					}
+				}
+			}
+			items.add(StringUtils.reduceEmptyLines(builder));
 		}
-		ThemeEngine.getColorScheme(requireContext()).apply(text);
-		textView.setText(text);
+		return items;
 	}
 
-	private long lastClickTime;
+	private static int getPadding(Resources resources) {
+		float density = ResourceUtils.obtainDensity(resources);
+		return (int) (16f * density);
+	}
 
 	@Override
-	public void onClick(View v) {
-		long time = SystemClock.elapsedRealtime();
-		if (time - lastClickTime < ViewConfiguration.getDoubleTapTimeout()) {
-			lastClickTime = 0L;
-			textView.startSelection();
-		} else {
-			lastClickTime = time;
+	protected void setListPadding(RecyclerView recyclerView) {}
+
+	@Override
+	protected DividerItemDecoration.Configuration configureDivider
+			(DividerItemDecoration.Configuration configuration, int position) {
+		int padding = getPadding(getResources());
+		return configuration.need(true).horizontal(padding, padding);
+	}
+
+	private static class ListHeaderSpan extends RelativeSizeSpan {
+		public ListHeaderSpan(boolean sub) {
+			super((sub ? 12f : 16f) / 14f);
+		}
+	}
+
+	private static class TextAdapter extends RecyclerView.Adapter<TextAdapter.ViewHolder> {
+		private static class ViewHolder extends RecyclerView.ViewHolder
+				implements ListViewUtils.ClickCallback<Void, ViewHolder> {
+			public final CommentTextView textView;
+
+			private long lastClickTime;
+
+			public ViewHolder(ViewGroup parent) {
+				super(new PostLinearLayout(parent.getContext()));
+				PostLinearLayout layout = (PostLinearLayout) itemView;
+				layout.setLayoutParams(new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MATCH_PARENT,
+						RecyclerView.LayoutParams.WRAP_CONTENT));
+				ViewUtils.setSelectableItemBackground(layout);
+				textView = new CommentTextView(parent.getContext(), null, android.R.attr.textAppearance);
+				ViewUtils.setTextSizeScaled(textView, 14);
+				int padding = getPadding(textView.getResources());
+				textView.setPadding(padding, padding, padding, padding);
+				layout.addView(textView, PostLinearLayout.LayoutParams.MATCH_PARENT,
+						PostLinearLayout.LayoutParams.WRAP_CONTENT);
+				ListViewUtils.bind(this, false, null, this);
+			}
+
+			@Override
+			public boolean onItemClick(ViewHolder holder, int position, Void item, boolean longClick) {
+				long time = SystemClock.elapsedRealtime();
+				if (time - lastClickTime < ViewConfiguration.getDoubleTapTimeout()) {
+					lastClickTime = 0;
+					textView.startSelection();
+				} else {
+					lastClickTime = time;
+				}
+				return true;
+			}
+		}
+
+		private List<CharSequence> items = Collections.emptyList();
+
+		public void setItems(Context context, List<CharSequence> items) {
+			ColorScheme colorScheme = ThemeEngine.getColorScheme(context);
+			for (CharSequence text : items) {
+				colorScheme.apply(text);
+			}
+			this.items = items;
+			notifyDataSetChanged();
+		}
+
+		@Override
+		public int getItemCount() {
+			return items.size();
+		}
+
+		@NonNull
+		@Override
+		public TextAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+			return new ViewHolder(parent);
+		}
+
+		@Override
+		public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+			holder.textView.setText(items.get(position));
 		}
 	}
 

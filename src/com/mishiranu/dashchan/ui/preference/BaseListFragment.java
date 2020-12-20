@@ -27,6 +27,7 @@ public abstract class BaseListFragment extends ContentFragment {
 		recyclerView = new PaddedRecyclerView(layout.getContext());
 		recyclerView.setId(android.R.id.list);
 		recyclerView.setMotionEventSplittingEnabled(false);
+		recyclerView.setVerticalScrollBarEnabled(true);
 		recyclerView.setClipToPadding(false);
 		recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), this::configureDivider));
@@ -35,10 +36,7 @@ public abstract class BaseListFragment extends ContentFragment {
 		errorHolder = ViewFactory.createErrorLayout(layout);
 		errorHolder.layout.setVisibility(View.GONE);
 		layout.addView(errorHolder.layout);
-		if (!C.API_LOLLIPOP) {
-			float density = ResourceUtils.obtainDensity(recyclerView);
-			ViewUtils.setNewPadding(recyclerView, (int) (16f * density), null, (int) (16f * density), null);
-		}
+		setListPadding(recyclerView);
 		return layout;
 	}
 
@@ -57,6 +55,13 @@ public abstract class BaseListFragment extends ContentFragment {
 	public void setErrorText(CharSequence text) {
 		errorHolder.layout.setVisibility(StringUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
 		errorHolder.text.setText(text);
+	}
+
+	protected void setListPadding(RecyclerView recyclerView) {
+		if (!C.API_LOLLIPOP) {
+			float density = ResourceUtils.obtainDensity(recyclerView);
+			ViewUtils.setNewPadding(recyclerView, (int) (16f * density), null, (int) (16f * density), null);
+		}
 	}
 
 	protected DividerItemDecoration.Configuration configureDivider

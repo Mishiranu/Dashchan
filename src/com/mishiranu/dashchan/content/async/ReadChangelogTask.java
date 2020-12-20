@@ -38,14 +38,34 @@ public class ReadChangelogTask extends ExecutorTask<Void, Pair<ErrorItem, List<R
 				this.name = name;
 				this.date = date;
 			}
+
+			public String getMajorMinor() {
+				int index = name.indexOf('.');
+				index = name.indexOf('.', index + 1);
+				return index >= 0 ? name.substring(0, index) : name;
+			}
 		}
 
 		public final List<Version> versions;
-		public final String text;
+		public final List<String> texts;
 
-		public Entry(List<Version> versions, String text) {
+		public Entry(List<Version> versions, List<String> texts) {
 			this.versions = versions;
-			this.text = text;
+			this.texts = texts;
+		}
+
+		private String getSingleMajorMinorOrNull() {
+			String majorMinor = null;
+			for (Version version : versions) {
+				String versionMajorMinor = version.getMajorMinor();
+				if (majorMinor == null) {
+					majorMinor = versionMajorMinor;
+				} else if (!versionMajorMinor.equals(majorMinor)) {
+					majorMinor = null;
+					break;
+				}
+			}
+			return majorMinor;
 		}
 
 		@Override
@@ -60,7 +80,10 @@ public class ReadChangelogTask extends ExecutorTask<Void, Pair<ErrorItem, List<R
 				dest.writeString(version.name);
 				dest.writeString(version.date);
 			}
-			dest.writeString(text);
+			dest.writeInt(texts.size());
+			for (String text : texts) {
+				dest.writeString(text);
+			}
 		}
 
 		public static final Creator<Entry> CREATOR = new Creator<Entry>() {
@@ -73,8 +96,13 @@ public class ReadChangelogTask extends ExecutorTask<Void, Pair<ErrorItem, List<R
 					String date = source.readString();
 					versions.add(new Version(name, date));
 				}
-				String text = source.readString();
-				return new Entry(versions, text);
+				int textsSize = source.readInt();
+				ArrayList<String> texts = new ArrayList<>(textsSize);
+				for (int i = 0; i < textsSize; i++) {
+					String text = source.readString();
+					texts.add(text);
+				}
+				return new Entry(versions, texts);
 			}
 
 			@Override
@@ -191,16 +219,18 @@ public class ReadChangelogTask extends ExecutorTask<Void, Pair<ErrorItem, List<R
 				String name = jsonObject.getString("name");
 				String date = jsonObject.getString("date");
 				Entry entry = entriesMap.get(code);
-				if ((entry == null || entry.text == null) && jsonObject.optBoolean("changelog")) {
+				if ((entry == null || entry.texts.isEmpty()) && jsonObject.optBoolean("changelog")) {
 					byte[] file = changelogFiles.get(code + ".txt");
 					String changelog = decodeDiffToString(file);
 					if (changelog != null) {
-						entry = new Entry(entry == null ? new ArrayList<>() : entry.versions, changelog);
+						entry = new Entry(entry != null ? entry.versions : new ArrayList<>(),
+								entry != null ? entry.texts : new ArrayList<>());
+						entry.texts.add(changelog);
 						entriesMap.put(code, entry);
 					}
 				}
 				if (entry == null) {
-					entry = new Entry(new ArrayList<>(), null);
+					entry = new Entry(new ArrayList<>(), new ArrayList<>());
 					entriesMap.put(code, entry);
 				}
 				entry.versions.add(new Entry.Version(name, date));
@@ -208,10 +238,22 @@ public class ReadChangelogTask extends ExecutorTask<Void, Pair<ErrorItem, List<R
 
 			ArrayList<Entry> entries = new ArrayList<>(entriesMap.size());
 			for (Entry entry : entriesMap.values()) {
-				if (entry.text != null) {
+				if (!entries.isEmpty()) {
+					Entry lastEntry = entries.get(entries.size() - 1);
+					if (entry.texts.isEmpty()) {
+						lastEntry.versions.addAll(entry.versions);
+					} else {
+						String majorMinor = entry.getSingleMajorMinorOrNull();
+						String lastMajorMinor = lastEntry.getSingleMajorMinorOrNull();
+						if (majorMinor != null && majorMinor.equals(lastMajorMinor)) {
+							lastEntry.versions.addAll(entry.versions);
+							lastEntry.texts.addAll(entry.texts);
+						} else {
+							entries.add(entry);
+						}
+					}
+				} else if (!entry.texts.isEmpty()) {
 					entries.add(entry);
-				} else if (!entries.isEmpty()) {
-					entries.get(entries.size() - 1).versions.addAll(entry.versions);
 				}
 			}
 			Collections.reverse(entries);

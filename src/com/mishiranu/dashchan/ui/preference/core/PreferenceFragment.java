@@ -98,8 +98,8 @@ public abstract class PreferenceFragment extends ContentFragment {
 		recyclerView = new PaddedRecyclerView(container.getContext());
 		recyclerView.setId(android.R.id.list);
 		recyclerView.setMotionEventSplittingEnabled(false);
-		recyclerView.setClipToPadding(false);
 		recyclerView.setVerticalScrollBarEnabled(true);
+		recyclerView.setClipToPadding(false);
 		recyclerView.setLayoutManager(new LinearLayoutManager(container.getContext()));
 		recyclerView.setAdapter(new Adapter());
 		recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), (c, position) -> {

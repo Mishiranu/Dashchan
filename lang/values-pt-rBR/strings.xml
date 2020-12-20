@@ -29,7 +29,6 @@
 	<string name="board">Board</string>
 	<string name="board_doesnt_exist">Essa board não existe</string>
 	<string name="boards">Boards</string>
-	<string name="build_version">Versão</string>
 	<string name="cache_is_unavailable">Cache não disponível</string>
 	<string name="cached_files">Arquivos em cache</string>
 	<string name="captcha">Captcha</string>
@@ -368,6 +367,7 @@
 	<string name="validation_completed">Validação completa</string>
 	<string name="verify_certificate">Verificar certificado</string>
 	<string name="verify_certificate__summary">A conexão será encerrada se o certificado for inválido</string>
+	<string name="version">Versão</string>
 	<string name="video_player">Reprodutor de vídeo</string>
 	<string name="view__verb">Ver</string>
 	<string name="watch_initially">Iniciar o watcher</string>
