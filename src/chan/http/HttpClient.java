@@ -445,6 +445,7 @@ public class HttpClient {
 			connection.setReadTimeout(request.readTimeout);
 			connection.setInstanceFollowRedirects(false);
 			connection.setRequestProperty("Connection", request.keepAlive ? "keep-alive" : "close");
+			String userAgent = null;
 			boolean userAgentSet = false;
 			boolean acceptEncodingSet = false;
 			if (request.headers != null) {
@@ -454,6 +455,7 @@ public class HttpClient {
 					}
 					connection.setRequestProperty(header.first, header.second);
 					if ("User-Agent".equalsIgnoreCase(header.first)) {
+						userAgent = header.first;
 						userAgentSet = true;
 					}
 					if ("Accept-Encoding".equalsIgnoreCase(header.first)) {
@@ -462,8 +464,8 @@ public class HttpClient {
 				}
 			}
 			if (!userAgentSet) {
-				connection.setRequestProperty("User-Agent", AdvancedPreferences
-						.getUserAgent(request.holder.chan.name));
+				userAgent = AdvancedPreferences.getUserAgent(request.holder.chan.name);
+				connection.setRequestProperty("User-Agent", userAgent);
 			}
 			if (!acceptEncodingSet) {
 				StringBuilder acceptEncoding = new StringBuilder();
@@ -477,8 +479,11 @@ public class HttpClient {
 				}
 				connection.setRequestProperty("Accept-Encoding", acceptEncoding.toString());
 			}
+			RelayBlockResolver.Identifier resolverIdentifier = new RelayBlockResolver
+					.Identifier(userAgent, !userAgentSet);
 			CookieBuilder cookieBuilder = request.checkRelayBlock == HttpRequest.CheckRelayBlock.SKIP
-					? request.cookieBuilder : obtainModifiedCookieBuilder(request.cookieBuilder, request.holder.chan);
+					? request.cookieBuilder : obtainModifiedCookieBuilder(request.cookieBuilder,
+					request.holder.chan, resolverIdentifier);
 			if (cookieBuilder != null) {
 				connection.setRequestProperty("Cookie", cookieBuilder.build());
 			}
@@ -607,9 +612,9 @@ public class HttpClient {
 					requestMethod != HttpRequest.RequestMethod.HEAD) {
 				RelayBlockResolver.Result result;
 				try {
-					result = RelayBlockResolver.getInstance()
-							.checkResponse(request.holder.chan, requestedUri, request.holder, response,
-									request.checkRelayBlock == HttpRequest.CheckRelayBlock.RESOLVE);
+					result = RelayBlockResolver.getInstance().checkResponse(request.holder.chan,
+							requestedUri, request.holder, response, resolverIdentifier,
+							request.checkRelayBlock == HttpRequest.CheckRelayBlock.RESOLVE);
 				} catch (InterruptedException e) {
 					throw new InterruptedHttpException();
 				}
@@ -724,8 +729,9 @@ public class HttpClient {
 		}
 	}
 
-	CookieBuilder obtainModifiedCookieBuilder(CookieBuilder cookieBuilder, Chan chan) {
-		Map<String, String> cookies = RelayBlockResolver.getInstance().getCookies(chan);
+	CookieBuilder obtainModifiedCookieBuilder(CookieBuilder cookieBuilder, Chan chan,
+			RelayBlockResolver.Identifier resolverIdentifier) {
+		Map<String, String> cookies = RelayBlockResolver.getInstance().getCookies(chan, resolverIdentifier);
 		if (!cookies.isEmpty()) {
 			cookieBuilder = new CookieBuilder(cookieBuilder);
 			for (Map.Entry<String, String> cookie : cookies.entrySet()) {

@@ -15,8 +15,8 @@ import chan.http.HttpClient;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpResponse;
+import chan.util.StringUtils;
 import com.mishiranu.dashchan.R;
-import com.mishiranu.dashchan.content.AdvancedPreferences;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadCaptchaTask;
@@ -25,6 +25,10 @@ import com.mishiranu.dashchan.content.service.webview.IWebViewService;
 import com.mishiranu.dashchan.content.service.webview.WebViewExtra;
 import com.mishiranu.dashchan.content.service.webview.WebViewService;
 import com.mishiranu.dashchan.ui.ForegroundManager;
+import com.mishiranu.dashchan.util.Hasher;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,6 +43,107 @@ public class RelayBlockResolver {
 	}
 
 	private RelayBlockResolver() {}
+
+	public static class Identifier {
+		public enum Flag {USER_AGENT}
+
+		private static class Generator {
+			private ByteArrayOutputStream output;
+			private OutputStreamWriter writer;
+
+			@SuppressWarnings("CharsetObjectCanBeUsed")
+			public void append(String key, String value) {
+				try {
+					if (output == null) {
+						output = new ByteArrayOutputStream();
+						writer = new OutputStreamWriter(output, "UTF-8");
+					}
+					writer.write(key);
+					writer.write('=');
+					if (value != null) {
+						writer.write(value);
+					}
+					writer.flush();
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
+
+			public String generate() {
+				if (output != null) {
+					byte[] bytes = output.toByteArray();
+					if (bytes.length > 0) {
+						return StringUtils.formatHex(Hasher.getInstanceSha256().calculate(bytes));
+					}
+				}
+				return null;
+			}
+		}
+
+		public static class Formatter {
+			private final String hash;
+
+			private Formatter(String hash) {
+				this.hash = hash;
+			}
+
+			public String key(String cookie) {
+				return hash != null ? cookie + "_" + hash : cookie;
+			}
+
+			public String title(String title) {
+				return hash != null ? title + " #" + hash.substring(0, Math.min(8, hash.length())) : title;
+			}
+		}
+
+		public final String userAgent;
+		public final boolean defaultUserAgent;
+
+		public Identifier(String userAgent, boolean defaultUserAgent) {
+			this.userAgent = userAgent;
+			this.defaultUserAgent = defaultUserAgent;
+		}
+
+		public Formatter toFormatter(Flag... flags) {
+			Generator generator = new Generator();
+			for (Flag flag : flags) {
+				switch (flag) {
+					case USER_AGENT: {
+						if (!defaultUserAgent) {
+							generator.append("user_agent", userAgent);
+						}
+						break;
+					}
+					default: {
+						throw new IllegalArgumentException();
+					}
+				}
+			}
+			return new Formatter(generator.generate());
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (o == this) {
+				return true;
+			}
+			if (o instanceof Identifier) {
+				Identifier identifier = (Identifier) o;
+				return userAgent.equals(identifier.userAgent) &&
+						defaultUserAgent == identifier.defaultUserAgent;
+			}
+			return false;
+		}
+
+		@Override
+		public int hashCode() {
+			int prime = 31;
+			int result = 1;
+			result = prime * result + userAgent.hashCode();
+			result = prime * result + (defaultUserAgent ? 1 : 0);
+			return result;
+		}
+	}
 
 	public static class Session {
 		public final Chan chan;
@@ -272,7 +377,7 @@ public class RelayBlockResolver {
 		}
 	}
 
-	public <T> T resolveWebView(Session session, WebViewClient<T> client)
+	public <T> T resolveWebView(Session session, WebViewClient<T> client, String userAgent)
 			throws CancelException, InterruptedException {
 		Context context = MainApplication.getInstance();
 		class Status {
@@ -319,7 +424,6 @@ public class RelayBlockResolver {
 			if (service != null) {
 				boolean[] finished = {false};
 				Uri initialUri = session.uri.buildUpon().clearQuery().encodedFragment(null).build();
-				String userAgent = AdvancedPreferences.getUserAgent(session.chan.name);
 				String chanTitle = session.chan.configuration.getTitle();
 				HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(session.chan);
 				boolean verifyCertificate = session.chan.locator.isUseHttps() && Preferences.isVerifyCertificate();
@@ -373,21 +477,22 @@ public class RelayBlockResolver {
 	private final HashMap<String, CheckHolder> checkHolders = new HashMap<>();
 	private final HashMap<String, Long> lastCheckCancel = new HashMap<>();
 
-	public boolean runExclusive(Chan chan, Uri uri, HttpHolder holder,
+	public boolean runExclusive(Identifier.Formatter formatter, Chan chan, Uri uri, HttpHolder holder,
 			ResolverFactory resolverFactory) throws HttpException, InterruptedException {
+		String key = formatter.key(chan.name);
 		CheckHolder checkHolder;
 		boolean handle = false;
 		synchronized (lastCheckCancel) {
-			Long cancel = lastCheckCancel.get(chan.name);
+			Long cancel = lastCheckCancel.get(key);
 			if (cancel != null && cancel + 15 * 1000 > SystemClock.elapsedRealtime()) {
 				return false;
 			}
 		}
 		synchronized (checkHolders) {
-			checkHolder = checkHolders.get(chan.name);
+			checkHolder = checkHolders.get(key);
 			if (checkHolder == null) {
 				checkHolder = new CheckHolder(resolverFactory.newResolver());
-				checkHolders.put(chan.name, checkHolder);
+				checkHolders.put(key, checkHolder);
 				handle = true;
 			}
 		}
@@ -399,7 +504,7 @@ public class RelayBlockResolver {
 					checkHolder.success = checkHolder.resolver.resolve(this, session);
 				} catch (CancelException e) {
 					synchronized (lastCheckCancel) {
-						lastCheckCancel.put(chan.name, SystemClock.elapsedRealtime());
+						lastCheckCancel.put(key, SystemClock.elapsedRealtime());
 					}
 				}
 			} finally {
@@ -408,7 +513,7 @@ public class RelayBlockResolver {
 					checkHolder.notifyAll();
 				}
 				synchronized (checkHolders) {
-					checkHolders.remove(chan.name);
+					checkHolders.remove(key);
 				}
 			}
 		} else {
@@ -421,24 +526,24 @@ public class RelayBlockResolver {
 		return checkHolder.success;
 	}
 
-	public Result checkResponse(Chan chan, Uri uri, HttpHolder holder, HttpResponse response, boolean resolve)
-			throws HttpException, InterruptedException {
+	public Result checkResponse(Chan chan, Uri uri, HttpHolder holder, HttpResponse response,
+			Identifier identifier, boolean resolve) throws HttpException, InterruptedException {
 		if (chan.locator.getChanHosts(false).contains(uri.getHost())) {
 			Result result = CloudFlareResolver.getInstance()
-					.checkResponse(this, chan, uri, holder, response, resolve);
+					.checkResponse(this, chan, uri, holder, response, identifier, resolve);
 			if (!result.blocked) {
 				result = StormWallResolver.getInstance()
-						.checkResponse(this, chan, uri, holder, response, resolve);
+						.checkResponse(this, chan, uri, holder, response, identifier, resolve);
 			}
 			return result;
 		}
 		return new Result(false, false);
 	}
 
-	public Map<String, String> getCookies(Chan chan) {
+	public Map<String, String> getCookies(Chan chan, Identifier identifier) {
 		Map<String, String> cookies = null;
-		cookies = CloudFlareResolver.getInstance().addCookies(chan, cookies);
-		cookies = StormWallResolver.getInstance().addCookies(chan, cookies);
+		cookies = CloudFlareResolver.getInstance().addCookies(chan, identifier, cookies);
+		cookies = StormWallResolver.getInstance().addCookies(chan, identifier, cookies);
 		return cookies != null ? cookies : Collections.emptyMap();
 	}
 }

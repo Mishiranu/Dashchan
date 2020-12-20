@@ -11,6 +11,7 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.AdvancedPreferences;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.ErrorItem;
+import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.util.IOUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -126,7 +127,7 @@ public final class WebSocket {
 	}
 
 	private WebSocket addHeader(Pair<String, String> header) {
-		if (header != null) {
+		if (header != null && header.first != null && header.second != null) {
 			if (headers == null) {
 				headers = new ArrayList<>();
 			}
@@ -388,6 +389,7 @@ public final class WebSocket {
 			OutputStream outputStream = new BufferedOutputStream(socket.getOutputStream());
 			StringBuilder requestBuilder = new StringBuilder();
 			requestBuilder.append("GET ").append(url.getFile()).append(" HTTP/1.1\r\n");
+			String userAgent = null;
 			boolean addHost = true;
 			boolean addOrigin = true;
 			boolean addUserAgent = true;
@@ -403,6 +405,7 @@ public final class WebSocket {
 							break;
 						}
 						case "user-agent": {
+							userAgent = header.second;
 							addUserAgent = false;
 							break;
 						}
@@ -441,14 +444,17 @@ public final class WebSocket {
 			requestBuilder.append("Sec-WebSocket-Version: 13\r\n");
 			requestBuilder.append("Sec-WebSocket-Key: ").append(webSocketKeyEncoded).append("\r\n");
 			requestBuilder.append("Sec-WebSocket-Protocol: chat, superchat\r\n");
-			CookieBuilder cookieBuilder = client.obtainModifiedCookieBuilder(this.cookieBuilder, holder.chan);
+			if (addUserAgent) {
+				userAgent = AdvancedPreferences.getUserAgent(holder.chan.name);
+				requestBuilder.append("User-Agent: ").append(userAgent.replaceAll("[\r\n]", "")).append("\r\n");
+			}
+			RelayBlockResolver.Identifier resolverIdentifier = new RelayBlockResolver
+					.Identifier(userAgent, addUserAgent);
+			CookieBuilder cookieBuilder = client.obtainModifiedCookieBuilder(this.cookieBuilder,
+					holder.chan, resolverIdentifier);
 			if (cookieBuilder != null) {
 				requestBuilder.append("Cookie: ").append(cookieBuilder.build().replaceAll("[\r\n]", ""))
 						.append("\r\n");
-			}
-			if (addUserAgent) {
-				requestBuilder.append("User-Agent: ").append(AdvancedPreferences.getUserAgent(holder.chan.name)
-						.replaceAll("[\r\n]", "")).append("\r\n");
 			}
 			requestBuilder.append("\r\n");
 			@SuppressWarnings("CharsetObjectCanBeUsed")

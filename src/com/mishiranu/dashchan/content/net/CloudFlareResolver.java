@@ -109,26 +109,33 @@ public class CloudFlareResolver {
 	}
 
 	private class Resolver implements RelayBlockResolver.Resolver {
+		public final RelayBlockResolver.Identifier identifier;
 		public final String title;
 
-		public Resolver(String title) {
+		public Resolver(RelayBlockResolver.Identifier identifier, String title) {
+			this.identifier = identifier;
 			this.title = title;
 		}
 
 		@Override
 		public boolean resolve(RelayBlockResolver resolver, RelayBlockResolver.Session session)
 				throws RelayBlockResolver.CancelException, InterruptedException {
-			CookieResult result = resolver.resolveWebView(session, new WebViewClient(title));
+			CookieResult result = resolver.resolveWebView(session, new WebViewClient(title), identifier.userAgent);
 			if (result != null) {
-				storeCookie(session.chan, result.cookie, result.uriString);
+				storeCookie(session.chan, identifier, result.cookie, result.uriString);
 				return true;
 			}
 			return false;
 		}
 	}
 
+	private RelayBlockResolver.Identifier.Formatter toFormatter(RelayBlockResolver.Identifier identifier) {
+		return identifier.toFormatter(RelayBlockResolver.Identifier.Flag.USER_AGENT);
+	}
+
 	public RelayBlockResolver.Result checkResponse(RelayBlockResolver resolver,
-			Chan chan, Uri uri, HttpHolder holder, HttpResponse response, boolean resolve)
+			Chan chan, Uri uri, HttpHolder holder, HttpResponse response,
+			RelayBlockResolver.Identifier identifier, boolean resolve)
 			throws HttpException, InterruptedException {
 		int responseCode = response.getResponseCode();
 		if ((responseCode == HttpURLConnection.HTTP_FORBIDDEN || responseCode == HttpURLConnection.HTTP_UNAVAILABLE)
@@ -155,8 +162,8 @@ public class CloudFlareResolver {
 					}
 					if (title != null) {
 						String titleFinal = title;
-						boolean success = resolve && resolver
-								.runExclusive(chan, uri, holder, () -> new Resolver(titleFinal));
+						boolean success = resolve && resolver.runExclusive(toFormatter(identifier),
+								chan, uri, holder, () -> new Resolver(identifier, titleFinal));
 						return new RelayBlockResolver.Result(true, success);
 					}
 				}
@@ -165,8 +172,10 @@ public class CloudFlareResolver {
 		return new RelayBlockResolver.Result(false, false);
 	}
 
-	private void storeCookie(Chan chan, String cookie, String uriString) {
-		chan.configuration.storeCookie(COOKIE_CLOUDFLARE, cookie, cookie != null ? "CloudFlare" : null);
+	private void storeCookie(Chan chan, RelayBlockResolver.Identifier identifier, String cookie, String uriString) {
+		RelayBlockResolver.Identifier.Formatter formatter = toFormatter(identifier);
+		chan.configuration.storeCookie(formatter.key(COOKIE_CLOUDFLARE), cookie,
+				cookie != null ? formatter.title("CloudFlare") : null);
 		chan.configuration.commit();
 		Uri uri = uriString != null ? Uri.parse(uriString) : null;
 		if (uri != null) {
@@ -178,8 +187,10 @@ public class CloudFlareResolver {
 		}
 	}
 
-	public Map<String, String> addCookies(Chan chan, Map<String, String> cookies) {
-		String cookie = chan.configuration.getCookie(COOKIE_CLOUDFLARE);
+	public Map<String, String> addCookies(Chan chan, RelayBlockResolver.Identifier identifier,
+			Map<String, String> cookies) {
+		RelayBlockResolver.Identifier.Formatter formatter = toFormatter(identifier);
+		String cookie = chan.configuration.getCookie(formatter.key(COOKIE_CLOUDFLARE));
 		if (!StringUtils.isEmpty(cookie)) {
 			if (cookies == null) {
 				cookies = new HashMap<>();

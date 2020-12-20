@@ -77,10 +77,13 @@ public class NavigationUtils {
 			if (chanName != null) {
 				Chan chan = Chan.get(chanName);
 				if (chan.locator.safe(false).isAttachmentUri(uri)) {
-					Map<String, String> cookies = RelayBlockResolver.getInstance().getCookies(chan);
+					String userAgent = AdvancedPreferences.getUserAgent(chanName);
+					RelayBlockResolver.Identifier resolverIdentifier = new RelayBlockResolver
+							.Identifier(userAgent, true);
+					Map<String, String> cookies = RelayBlockResolver.getInstance()
+							.getCookies(chan, resolverIdentifier);
 					if (!cookies.isEmpty()) {
 						// For MX Player, see https://sites.google.com/site/mxvpen/api
-						String userAgent = AdvancedPreferences.getUserAgent(chanName);
 						CookieBuilder cookieBuilder = new CookieBuilder();
 						for (Map.Entry<String, String> cookie : cookies.entrySet()) {
 							cookieBuilder.append(cookie.getKey(), cookie.getValue());

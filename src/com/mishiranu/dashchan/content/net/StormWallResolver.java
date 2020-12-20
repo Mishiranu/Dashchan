@@ -92,9 +92,11 @@ public class StormWallResolver {
 	}
 
 	private class Resolver implements RelayBlockResolver.Resolver {
+		public final RelayBlockResolver.Identifier identifier;
 		public final String responseText;
 
-		public Resolver(String responseText) {
+		public Resolver(RelayBlockResolver.Identifier identifier, String responseText) {
+			this.identifier = identifier;
 			this.responseText = responseText;
 		}
 
@@ -117,11 +119,12 @@ public class StormWallResolver {
 					HttpResponse response = new HttpRequest(session.uri, session.holder)
 							.setHeadMethod().setSuccessOnly(false)
 							.setCheckRelayBlock(HttpRequest.CheckRelayBlock.SKIP)
+							.addHeader("User-Agent", identifier.userAgent)
 							.addCookie(COOKIE_STORMWALL, calculatedCookie)
 							.perform();
 					try {
 						if (!isBlocked(response)) {
-							storeCookie(session.chan, calculatedCookie, session.uri.toString());
+							storeCookie(session.chan, identifier, calculatedCookie, session.uri.toString());
 							return true;
 						}
 					} finally {
@@ -129,9 +132,9 @@ public class StormWallResolver {
 					}
 				}
 			}
-			CookieResult result = resolver.resolveWebView(session, new WebViewClient());
+			CookieResult result = resolver.resolveWebView(session, new WebViewClient(), identifier.userAgent);
 			if (result != null) {
-				storeCookie(session.chan, result.cookie, result.uriString);
+				storeCookie(session.chan, identifier, result.cookie, result.uriString);
 				return true;
 			}
 			return false;
@@ -143,8 +146,13 @@ public class StormWallResolver {
 		return headers != null && !headers.isEmpty();
 	}
 
+	private RelayBlockResolver.Identifier.Formatter toFormatter(RelayBlockResolver.Identifier identifier) {
+		return identifier.toFormatter(RelayBlockResolver.Identifier.Flag.USER_AGENT);
+	}
+
 	public RelayBlockResolver.Result checkResponse(RelayBlockResolver resolver,
-			Chan chan, Uri uri, HttpHolder holder, HttpResponse response, boolean resolve)
+			Chan chan, Uri uri, HttpHolder holder, HttpResponse response,
+			RelayBlockResolver.Identifier identifier, boolean resolve)
 			throws HttpException, InterruptedException {
 		if (isBlocked(response)) {
 			boolean success = false;
@@ -152,7 +160,8 @@ public class StormWallResolver {
 				List<String> contentType = response.getHeaderFields().get("Content-Type");
 				if (contentType != null && contentType.size() == 1 && contentType.get(0).startsWith("text/html")) {
 					String responseText = response.readString();
-					success = resolver.runExclusive(chan, uri, holder, () -> new Resolver(responseText));
+					success = resolver.runExclusive(toFormatter(identifier), chan, uri, holder,
+							() -> new Resolver(identifier, responseText));
 				}
 			}
 			return new RelayBlockResolver.Result(true, success);
@@ -160,8 +169,10 @@ public class StormWallResolver {
 		return new RelayBlockResolver.Result(false, false);
 	}
 
-	private void storeCookie(Chan chan, String cookie, String uriString) {
-		chan.configuration.storeCookie(COOKIE_STORMWALL, cookie, cookie != null ? "StormWall" : null);
+	private void storeCookie(Chan chan, RelayBlockResolver.Identifier identifier, String cookie, String uriString) {
+		RelayBlockResolver.Identifier.Formatter formatter = toFormatter(identifier);
+		chan.configuration.storeCookie(formatter.key(COOKIE_STORMWALL), cookie,
+				cookie != null ? formatter.title("StormWall") : null);
 		chan.configuration.commit();
 		Uri uri = uriString != null ? Uri.parse(uriString) : null;
 		if (uri != null) {
@@ -173,8 +184,10 @@ public class StormWallResolver {
 		}
 	}
 
-	public Map<String, String> addCookies(Chan chan, Map<String, String> cookies) {
-		String cookie = chan.configuration.getCookie(COOKIE_STORMWALL);
+	public Map<String, String> addCookies(Chan chan, RelayBlockResolver.Identifier identifier,
+			Map<String, String> cookies) {
+		RelayBlockResolver.Identifier.Formatter formatter = toFormatter(identifier);
+		String cookie = chan.configuration.getCookie(formatter.key(COOKIE_STORMWALL));
 		if (!StringUtils.isEmpty(cookie)) {
 			if (cookies == null) {
 				cookies = new HashMap<>();
