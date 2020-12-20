@@ -497,6 +497,7 @@
 	<string name="threads_will_be_deleted__sentence">Будут удалены следующие треды.</string>
 	<string name="thumbnail_scale">Масштаб миниатюр</string>
 	<string name="thumbnails">Миниатюры</string>
+	<string name="timeout_sec">Таймаут (сек.)</string>
 	<string name="today">Сегодня</string>
 	<string name="too_few_meaningful_words">Слишком мало значащих слов</string>
 	<string name="too_many_attachments">Слишком много вложений</string>

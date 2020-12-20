@@ -3,6 +3,7 @@ package com.mishiranu.dashchan.ui.preference.core;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.util.Pair;
 import android.view.View;
@@ -63,6 +64,10 @@ public class EditPreference extends DialogPreference<String> {
 		editText.setInputType(inputType);
 		if (visiblePassword) {
 			ViewUtils.applyMonospaceTypeface(editText);
+		}
+		if (FlagUtils.get(inputType, InputType.TYPE_CLASS_NUMBER)) {
+			editText.setFilters(new InputFilter[] {new InputFilter
+					.LengthFilter(Integer.toString(Integer.MAX_VALUE).length() - 1)});
 		}
 		editText.setText(text);
 		editText.setSelection(editText.getText().length());

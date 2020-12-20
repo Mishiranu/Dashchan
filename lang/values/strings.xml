@@ -479,6 +479,7 @@
 	<string name="threads_will_be_deleted__sentence">The following threads will be deleted.</string>
 	<string name="thumbnail_scale">Thumbnail scale</string>
 	<string name="thumbnails">Thumbnails</string>
+	<string name="timeout_sec">Timeout (sec.)</string>
 	<string name="today">Today</string>
 	<string name="too_few_meaningful_words">Too few meaningful words</string>
 	<string name="too_many_attachments">Too many attachments</string>

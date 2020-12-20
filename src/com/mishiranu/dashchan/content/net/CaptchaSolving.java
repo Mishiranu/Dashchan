@@ -1,6 +1,7 @@
 package com.mishiranu.dashchan.content.net;
 
 import android.net.Uri;
+import android.os.SystemClock;
 import android.util.Pair;
 import chan.content.Chan;
 import chan.content.InvalidResponseException;
@@ -28,6 +29,24 @@ public class CaptchaSolving {
 	public static class UnsupportedServiceException extends Exception {}
 	public static class InvalidTokenException extends Exception {}
 
+	private static class TimeoutException extends Exception {
+		public TimeoutException(String message) {
+			super(message);
+		}
+	}
+
+	private static class Configuration {
+		public final String endpoint;
+		public final String token;
+		public final int timeout;
+
+		public Configuration(String endpoint, String token, int timeout) {
+			this.endpoint = endpoint;
+			this.token = token;
+			this.timeout = timeout;
+		}
+	}
+
 	private Uri createUri(String endpoint) {
 		Uri uri = Uri.parse(endpoint);
 		if (StringUtils.isEmpty(uri.getScheme())) {
@@ -36,7 +55,7 @@ public class CaptchaSolving {
 		return uri;
 	}
 
-	private Pair<String, String> getConfiguration() {
+	private Configuration getConfiguration() {
 		Map<String, String> map = Preferences.getCaptchaSolving();
 		if (map == null) {
 			return null;
@@ -46,7 +65,16 @@ public class CaptchaSolving {
 		if (StringUtils.isEmpty(endpoint) || StringUtils.isEmpty(token)) {
 			return null;
 		}
-		return new Pair<>(endpoint, token);
+		String timeoutString = map.get(Preferences.SUB_KEY_CAPTCHA_SOLVING_TIMEOUT);
+		int timeout = -1;
+		if (timeoutString != null) {
+			try {
+				timeout = Integer.parseInt(timeoutString);
+			} catch (NumberFormatException e) {
+				// Ignore
+			}
+		}
+		return new Configuration(endpoint, token, timeout);
 	}
 
 	public boolean hasConfiguration() {
@@ -55,18 +83,16 @@ public class CaptchaSolving {
 
 	public Map<String, String> checkService(HttpHolder holder) throws HttpException,
 			UnsupportedServiceException, InvalidTokenException {
-		Pair<String, String> configuration = getConfiguration();
+		Configuration configuration = getConfiguration();
 		if (configuration == null) {
 			throw new UnsupportedServiceException();
 		}
-		String endpoint = configuration.first;
-		String token = configuration.second;
 		LinkedHashMap<String, String> extra = new LinkedHashMap<>();
 		try {
-			checkServiceInternal(holder, endpoint, token, extra);
+			checkServiceInternal(holder, configuration.endpoint, configuration.token, extra);
 		} catch (UnsupportedServiceException e) {
 			// Check for HTTP exception
-			new HttpRequest(createUri(endpoint), holder).setHeadMethod()
+			new HttpRequest(createUri(configuration.endpoint), holder).setHeadMethod()
 					.setSuccessOnly(false).perform().cleanupAndDisconnect();
 			throw e;
 		}
@@ -74,14 +100,12 @@ public class CaptchaSolving {
 	}
 
 	public boolean checkActive(HttpHolder holder) throws HttpException {
-		Pair<String, String> configuration = getConfiguration();
+		Configuration configuration = getConfiguration();
 		if (configuration == null) {
 			return false;
 		}
-		String endpoint = configuration.first;
-		String token = configuration.second;
 		try {
-			checkServiceInternal(holder, endpoint, token, null);
+			checkServiceInternal(holder, configuration.endpoint, configuration.token, null);
 			return true;
 		} catch (HttpException e) {
 			if (!e.isHttpException() && !e.isSocketException()) {
@@ -159,7 +183,19 @@ public class CaptchaSolving {
 		return false;
 	}
 
-	private static void waitOrThrow(int ms) throws HttpException {
+	private static void waitOrThrow(long start, int timeout, int ms) throws HttpException, TimeoutException {
+		if (timeout > 0) {
+			long now = SystemClock.elapsedRealtime();
+			long cancel = start + timeout * 1000L;
+			if (now >= cancel) {
+				if (Thread.currentThread().isInterrupted()) {
+					throw new HttpException(ErrorItem.Type.UNKNOWN, false, false);
+				} else {
+					throw new TimeoutException("Timeout after " + (now - start) + " ms");
+				}
+			}
+			ms = (int) Math.max(Math.min(ms, cancel - now), ms / 2);
+		}
 		try {
 			Thread.sleep(ms);
 		} catch (InterruptedException e) {
@@ -180,20 +216,25 @@ public class CaptchaSolving {
 	public String solveCaptcha(HttpHolder holder, CaptchaType captchaType,
 			String apiKey, String referer) throws HttpException {
 		try {
-			Pair<String, String> configuration = getConfiguration();
+			Configuration configuration = getConfiguration();
 			if (configuration == null) {
 				return null;
 			}
-			String endpoint = configuration.first;
-			String token = configuration.second;
 			Service service;
 			try {
-				service = checkServiceInternal(holder, endpoint, token, null);
+				service = checkServiceInternal(holder, configuration.endpoint, configuration.token, null);
 			} catch (UnsupportedServiceException | InvalidTokenException e) {
 				return null;
 			}
-			Uri endpointUri = createUri(endpoint);
-			return service.solveCaptcha(holder, endpointUri, token, captchaType, apiKey, referer);
+			Uri endpointUri = createUri(configuration.endpoint);
+			while (true) {
+				try {
+					return service.solveCaptcha(holder, endpointUri, configuration.token, configuration.timeout,
+							captchaType, apiKey, referer);
+				} catch (TimeoutException e) {
+					e.printStackTrace();
+				}
+			}
 		} catch (HttpException e) {
 			if (e.isHttpException() || e.isSocketException()) {
 				e.printStackTrace();
@@ -209,8 +250,8 @@ public class CaptchaSolving {
 		boolean checkService(HttpHolder holder, Uri endpointUri) throws HttpException;
 		boolean checkAuth(HttpHolder holder, Uri endpointUri, String token,
 				Map<String, String> outExtra) throws HttpException;
-		String solveCaptcha(HttpHolder holder, Uri endpointUri, String token,
-				CaptchaType captchaType, String apiKey, String referer) throws HttpException;
+		String solveCaptcha(HttpHolder holder, Uri endpointUri, String token, int timeout,
+				CaptchaType captchaType, String apiKey, String referer) throws HttpException, TimeoutException;
 	}
 
 	private static final List<Service> SERVICES = Arrays.asList(new AntigateLegacyService(),
@@ -262,8 +303,8 @@ public class CaptchaSolving {
 		}
 
 		@Override
-		public String solveCaptcha(HttpHolder holder, Uri endpointUri, String token,
-				CaptchaType captchaType, String apiKey, String referer) throws HttpException {
+		public String solveCaptcha(HttpHolder holder, Uri endpointUri, String token, int timeout,
+				CaptchaType captchaType, String apiKey, String referer) throws HttpException, TimeoutException {
 			Uri.Builder builder = endpointUri.buildUpon().appendPath("in.php");
 			builder.appendQueryParameter("key", token);
 			switch (captchaType) {
@@ -297,12 +338,13 @@ public class CaptchaSolving {
 					.appendQueryParameter("action", "get")
 					.appendQueryParameter("id", response)
 					.build();
+			long start = SystemClock.elapsedRealtime();
 			int wait = 0;
 			while (true) {
 				if (wait < 5) {
 					wait++;
 				}
-				waitOrThrow(wait * 1000);
+				waitOrThrow(start, timeout, wait * 1000);
 				response = new HttpRequest(uri, holder).perform().readString();
 				if (response != null && response.startsWith("OK|")) {
 					return response.substring(3);
@@ -390,8 +432,8 @@ public class CaptchaSolving {
 		}
 
 		@Override
-		public String solveCaptcha(HttpHolder holder, Uri endpointUri, String token,
-				CaptchaType captchaType, String apiKey, String referer) throws HttpException {
+		public String solveCaptcha(HttpHolder holder, Uri endpointUri, String token, int timeout,
+				CaptchaType captchaType, String apiKey, String referer) throws HttpException, TimeoutException {
 			JSONObject task = new JSONObject();
 			try {
 				switch (captchaType) {
@@ -427,12 +469,13 @@ public class CaptchaSolving {
 			} catch (JSONException e) {
 				throw createInvalidResponse(response.toString());
 			}
+			long start = SystemClock.elapsedRealtime();
 			int wait = 0;
 			while (true) {
 				if (wait < 5) {
 					wait++;
 				}
-				waitOrThrow(wait * 1000);
+				waitOrThrow(start, timeout, wait * 1000);
 				try {
 					response = run(holder, endpointUri, "getTaskResult", token, null, taskId);
 				} catch (InvalidResponseException e) {

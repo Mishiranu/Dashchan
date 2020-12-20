@@ -69,9 +69,11 @@ public class GeneralFragment extends PreferenceFragment implements FragmentHandl
 					R.string.use_javascript_for_recaptcha, R.string.use_javascript_for_recaptcha__summary);
 		}
 		captchaSolvingPreference = addMultipleEdit(Preferences.KEY_CAPTCHA_SOLVING, R.string.captcha_solving,
-				p -> configureCaptchaSolvingSummary(false), Arrays.asList("Endpoint", "Token"),
+				p -> configureCaptchaSolvingSummary(false),
+				Arrays.asList("Endpoint", "Token", getString(R.string.timeout_sec)),
 				Arrays.asList(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI,
-						InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD),
+						InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD,
+						InputType.TYPE_CLASS_NUMBER),
 				new MultipleEditPreference.MapValueCodec(Preferences.KEYS_CAPTCHA_SOLVING));
 		captchaSolvingPreference.setOnAfterChangeListener(p -> configureCaptchaSolvingSummary(true));
 		captchaSolvingPreference.setDescription(getString(R.string.captcha_solving_info__sentence));

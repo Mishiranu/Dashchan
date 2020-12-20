@@ -332,8 +332,9 @@ public class Preferences {
 	public static final String KEY_CAPTCHA_SOLVING = "captcha_solving";
 	public static final String SUB_KEY_CAPTCHA_SOLVING_ENDPOINT = "endpoint";
 	public static final String SUB_KEY_CAPTCHA_SOLVING_TOKEN = "token";
+	public static final String SUB_KEY_CAPTCHA_SOLVING_TIMEOUT = "timeout";
 	public static final List<String> KEYS_CAPTCHA_SOLVING = Arrays
-			.asList(SUB_KEY_CAPTCHA_SOLVING_ENDPOINT, SUB_KEY_CAPTCHA_SOLVING_TOKEN);
+			.asList(SUB_KEY_CAPTCHA_SOLVING_ENDPOINT, SUB_KEY_CAPTCHA_SOLVING_TOKEN, SUB_KEY_CAPTCHA_SOLVING_TIMEOUT);
 
 	public static Map<String, String> getCaptchaSolving() {
 		String value = PREFERENCES.getString(KEY_CAPTCHA_SOLVING, null);
