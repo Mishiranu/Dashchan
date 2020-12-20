@@ -190,12 +190,15 @@ public class UpdaterActivity extends StateActivity {
 		public final String versionName;
 		public final Uri uri;
 		public final byte[] sha256sum;
+		public final ChanManager.Fingerprints checkFingerprints;
 
-		public Request(String extensionName, String versionName, Uri uri, byte[] sha256sum) {
+		public Request(String extensionName, String versionName, Uri uri,
+				byte[] sha256sum, ChanManager.Fingerprints checkFingerprints) {
 			this.extensionName = extensionName;
 			this.versionName = versionName;
 			this.uri = uri;
 			this.sha256sum = sha256sum;
+			this.checkFingerprints = checkFingerprints;
 		}
 	}
 
@@ -205,7 +208,7 @@ public class UpdaterActivity extends StateActivity {
 		for (Request request : requests) {
 			String name = request.extensionName + "-" + request.versionName + ".apk";
 			DownloadService.DownloadItem downloadItem = new DownloadService.DownloadItem(null,
-					request.uri, name, request.sha256sum);
+					request.uri, name, request.sha256sum, request.checkFingerprints);
 			if (ChanManager.EXTENSION_NAME_CLIENT.equals(request.extensionName)) {
 				clientDownloadItem = downloadItem;
 			} else {

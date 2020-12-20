@@ -2,8 +2,10 @@ package com.mishiranu.dashchan.content.async;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
+import chan.content.ChanManager;
 import chan.content.ChanPerformer;
 import chan.content.ExtensionException;
 import chan.content.InvalidResponseException;
@@ -54,6 +56,7 @@ public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 	private final File cachedMediaFile;
 	private final boolean overwrite;
 	private final byte[] checkSha256;
+	private final ChanManager.Fingerprints checkFingerprints;
 
 	private ErrorItem errorItem;
 
@@ -69,21 +72,22 @@ public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 	public static ReadFileTask createCachedMediaFile(Context context, FileCallback callback, Chan chan,
 			Uri fromUri, File cachedMediaFile) {
 		DataFile toFile = DataFile.obtain(context, DataFile.Target.CACHE, cachedMediaFile.getName());
-		return new ReadFileTask(callback, chan, fromUri, toFile, null, true, null);
+		return new ReadFileTask(callback, chan, fromUri, toFile, null, true, null, null);
 	}
 
-	public static ReadFileTask createShared(Callback callback, Chan chan,
-			Uri fromUri, DataFile toFile, boolean overwrite, byte[] checkSha256) {
+	public static ReadFileTask createShared(Callback callback, Chan chan, Uri fromUri, DataFile toFile,
+			boolean overwrite, byte[] checkSha256, ChanManager.Fingerprints checkFingerprints) {
 		File cachedMediaFile = CacheManager.getInstance().getMediaFile(fromUri, true);
 		if (cachedMediaFile == null || !cachedMediaFile.exists() ||
 				CacheManager.getInstance().cancelCachedMediaBusy(cachedMediaFile)) {
 			cachedMediaFile = null;
 		}
-		return new ReadFileTask(callback, chan, fromUri, toFile, cachedMediaFile, overwrite, checkSha256);
+		return new ReadFileTask(callback, chan, fromUri, toFile, cachedMediaFile,
+				overwrite, checkSha256, checkFingerprints);
 	}
 
-	private ReadFileTask(Callback callback, Chan chan, Uri fromUri, DataFile toFile,
-			File cachedMediaFile, boolean overwrite, byte[] checkSha256) {
+	private ReadFileTask(Callback callback, Chan chan, Uri fromUri, DataFile toFile, File cachedMediaFile,
+			boolean overwrite, byte[] checkSha256, ChanManager.Fingerprints checkFingerprints) {
 		super(chan);
 		this.callback = callback;
 		this.chan = chan;
@@ -92,6 +96,7 @@ public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 		this.cachedMediaFile = cachedMediaFile;
 		this.overwrite = overwrite;
 		this.checkSha256 = checkSha256;
+		this.checkFingerprints = checkFingerprints;
 	}
 
 	@Override
@@ -178,6 +183,29 @@ public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 			if (digest != null) {
 				byte[] sha256 = digest.digest();
 				if (!Arrays.equals(sha256, checkSha256)) {
+					Log.e("ReadFileTask", "SHA-256 validation failed: requested " +
+							Arrays.toString(checkSha256) + ", got " + Arrays.toString(sha256));
+					errorItem = new ErrorItem(ErrorItem.Type.INVALID_RESPONSE);
+					return false;
+				}
+			}
+			if (checkFingerprints != null) {
+				String errorReason = null;
+				File file = toFile.getFileOrUri().first;
+				if (file == null) {
+					errorReason = "not a regular file";
+				} else {
+					ChanManager.Fingerprints fingerprints = ChanManager.getInstance().getFingerprints(file);
+					if (fingerprints == null) {
+						errorReason = "invalid file";
+					} else {
+						if (!checkFingerprints.equals(fingerprints)) {
+							errorReason = "fingerprints do not match";
+						}
+					}
+				}
+				if (errorReason != null) {
+					Log.e("ReadFileTask", "Fingerprint validation failed: " + errorReason);
 					errorItem = new ErrorItem(ErrorItem.Type.INVALID_RESPONSE);
 					return false;
 				}

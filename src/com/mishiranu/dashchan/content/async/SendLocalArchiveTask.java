@@ -237,7 +237,8 @@ public class SendLocalArchiveTask extends ExecutorTask<Integer, SendLocalArchive
 					String iconPath = archiveName + "/" + DIRECTORY_THUMBNAILS + "/" + iconName;
 					htmlBuilder.addIcon(iconPath, icon.title);
 					if (downloadIcon && saveThumbnails) {
-						thumbnailsToDownload.add(new DownloadService.DownloadItem(chan.name, iconUri, iconName, null));
+						thumbnailsToDownload.add(new DownloadService.DownloadItem(chan.name,
+								iconUri, iconName, null, null));
 					}
 				}
 			}
@@ -265,11 +266,11 @@ public class SendLocalArchiveTask extends ExecutorTask<Integer, SendLocalArchive
 								file.width, file.height);
 						if (saveFiles) {
 							filesToDownload.add(new DownloadService.DownloadItem(chan.name,
-									fileUri, fileName, null));
+									fileUri, fileName, null, null));
 						}
 						if (saveThumbnails && thumbnailUri != null) {
 							thumbnailsToDownload.add(new DownloadService.DownloadItem(chan.name,
-									thumbnailUri, thumbnailName, null));
+									thumbnailUri, thumbnailName, null, null));
 						}
 					}
 				}

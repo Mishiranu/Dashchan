@@ -12,6 +12,8 @@ import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import androidx.annotation.NonNull;
@@ -103,7 +105,7 @@ public class ChanManager {
 		return INSTANCE;
 	}
 
-	public static final class Fingerprints {
+	public static final class Fingerprints implements Parcelable {
 		public final Set<String> fingerprints;
 
 		public Fingerprints(Set<String> fingerprints) {
@@ -133,6 +135,37 @@ public class ChanManager {
 			}
 			return builder.toString();
 		}
+
+		@Override
+		public int describeContents() {
+			return 0;
+		}
+
+		@Override
+		public void writeToParcel(Parcel dest, int flags) {
+			dest.writeInt(fingerprints.size());
+			for (String fingerprint : fingerprints) {
+				dest.writeString(fingerprint);
+			}
+		}
+
+		public static final Creator<Fingerprints> CREATOR = new Creator<Fingerprints>() {
+			@Override
+			public Fingerprints createFromParcel(Parcel source) {
+				int fingerprintsSize = source.readInt();
+				HashSet<String> fingerprints = new HashSet<>();
+				for (int i = 0; i < fingerprintsSize; i++) {
+					String fingerprint = source.readString();
+					fingerprints.add(fingerprint);
+				}
+				return new Fingerprints(Collections.unmodifiableSet(fingerprints));
+			}
+
+			@Override
+			public Fingerprints[] newArray(int size) {
+				return new Fingerprints[size];
+			}
+		};
 	}
 
 	public static class ExtensionItem {
@@ -868,6 +901,22 @@ public class ChanManager {
 
 	public Fingerprints getApplicationFingerprints() {
 		return applicationFingerprints;
+	}
+
+	public Fingerprints getFingerprints(File file) {
+		PackageManager packageManager = MainApplication.getInstance().getPackageManager();
+		PackageInfo packageInfo;
+		try {
+			packageInfo = packageManager.getPackageArchiveInfo(file.getPath(), PACKAGE_MANAGER_SIGNATURE_FLAGS);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		if (packageInfo == null) {
+			Log.e("ChanManager", "Invalid package file: " + file.getName());
+			return null;
+		}
+		return extractFingerprints(packageInfo);
 	}
 
 	Chan getFallbackChan() {
