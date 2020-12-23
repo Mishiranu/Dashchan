@@ -7,7 +7,6 @@ import android.util.Pair;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,7 +75,9 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 	private View progressView;
 	private ViewFactory.ErrorHolder errorHolder;
 	private PaddedRecyclerView recyclerView;
+
 	private CustomSearchView searchView;
+	private MenuItem searchMenuItem;
 
 	private String actionBarLockerPull;
 	private String actionBarLockerSearch;
@@ -93,8 +94,6 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 
 	private boolean allowShowScale;
 	private Runnable doOnResume;
-	private Menu currentMenu;
-	private boolean fillMenuOnResume;
 	private boolean searchMode = false;
 	private boolean saveToStack = false;
 
@@ -164,13 +163,13 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 		errorHolder = null;
 		recyclerView = null;
 		searchView = null;
+		searchMenuItem = null;
 	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		setHasOptionsMenu(true);
 		ErrorItem initErrorItem = this.initErrorItem;
 		this.initErrorItem = null;
 		ListPage.InitRequest initRequest = this.initRequest;
@@ -189,13 +188,6 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 		super.onResume();
 
 		listPage.resume();
-		if (currentMenu != null && fillMenuOnResume) {
-			fillMenuOnResume = false;
-			// Menu can be requested too early on some Android 4.x
-			currentMenu.clear();
-			onCreateOptionsMenu(currentMenu);
-			onPrepareOptionsMenu(currentMenu);
-		}
 		Runnable doOnResume = this.doOnResume;
 		this.doOnResume = null;
 		if (doOnResume != null) {
@@ -242,14 +234,8 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 
 	@Override
 	public void onTerminate() {
-		if (currentMenu != null) {
-			MenuItem menuItem = currentMenu.findItem(R.id.menu_search);
-			if (menuItem != null && menuItem.isActionViewExpanded()) {
-				menuItem.setOnActionExpandListener(null);
-				menuItem.collapseActionView();
-			}
-		}
-		currentMenu = null;
+		super.onTerminate();
+
 		if (listPage != null) {
 			listPage.destroy();
 			listPage = null;
@@ -260,7 +246,7 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 	public void onChansChanged(Collection<String> changed, Collection<String> removed) {
 		Page page = getPage();
 		if (changed.contains(page.chanName)) {
-			updateOptionsMenu();
+			invalidateOptionsMenu();
 		}
 	}
 
@@ -289,8 +275,9 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 		return searchView;
 	}
 
-	private boolean setSearchMode(MenuItem menuItem, boolean search, boolean toggle) {
-		if (searchMode != search) {
+	private boolean setSearchMode(boolean search, boolean toggle) {
+		MenuItem menuItem = searchMenuItem;
+		if (menuItem != null && searchMode != search) {
 			searchMode = search;
 			if (search) {
 				CustomSearchView searchView = getSearchView(true);
@@ -300,7 +287,7 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 				listPage.onSearchQueryChange("");
 				listPage.onSearchCancel();
 			}
-			updateOptionsMenu();
+			invalidateOptionsMenu();
 			((FragmentHandler) requireActivity()).setActionBarLocked(actionBarLockerSearch, search);
 			getCallback().invalidateHomeUpState();
 			if (toggle) {
@@ -316,11 +303,7 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 	}
 
 	private boolean setSearchMode(boolean search) {
-		if (currentMenu != null) {
-			MenuItem menuItem = currentMenu.findItem(R.id.menu_search);
-			return setSearchMode(menuItem, search, true);
-		}
-		return false;
+		return setSearchMode(search, true);
 	}
 
 	public void setInitRequest(ListPage.InitRequest initRequest) {
@@ -358,18 +341,19 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 	}
 
 	@Override
-	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-		onCreateOptionsMenu(menu);
+	public boolean isValidOptionsMenuState() {
+		return listPage != null && listPage.isRunning();
 	}
 
-	private void onCreateOptionsMenu(Menu menu) {
-		currentMenu = menu;
-		if (listPage != null && listPage.isRunning()) {
-			listPage.onCreateOptionsMenu(menu);
+	@Override
+	public void onCreateOptionsMenu(Menu menu, boolean primary) {
+		listPage.onCreateOptionsMenu(menu);
+		if (primary) {
 			MenuItem searchMenuItem = menu.findItem(R.id.menu_search);
+			this.searchMenuItem = searchMenuItem;
 			if (searchMenuItem != null) {
-				CustomSearchView searchView = getSearchView(true);
-				searchMenuItem.setActionView(searchView);
+				this.searchMenuItem = searchMenuItem;
+				searchMenuItem.setActionView(getSearchView(true));
 				searchMenuItem.setOnActionExpandListener(new MenuExpandListener((menuItem, expand) -> {
 					if (expand) {
 						searchView.setFocusOnExpand(searchFocused);
@@ -382,34 +366,29 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 						searchCurrentQuery = null;
 						searchSubmitQuery = null;
 					}
-					setSearchMode(menuItem, expand, false);
+					setSearchMode(expand, false);
 					return true;
 				}));
 				if (searchCurrentQuery != null) {
 					searchMenuItem.expandActionView();
 				}
 			}
-		} else {
-			fillMenuOnResume = true;
 		}
 	}
 
 	@Override
-	public void onPrepareOptionsMenu(@NonNull Menu menu) {
-		currentMenu = menu;
-		if (listPage != null && listPage.isRunning()) {
-			for (int i = 0; i < menu.size(); i++) {
-				MenuItem menuItem = menu.getItem(i);
-				if (!menuItem.isVisible() && !searchMode) {
-					menuItem.setVisible(true);
-				}
+	public void onPrepareOptionsMenu(Menu menu, boolean primary) {
+		for (int i = 0; i < menu.size(); i++) {
+			MenuItem menuItem = menu.getItem(i);
+			if (!menuItem.isVisible() && !searchMode) {
+				menuItem.setVisible(true);
 			}
-			listPage.onPrepareOptionsMenu(menu);
-			for (int i = 0; i < menu.size(); i++) {
-				MenuItem menuItem = menu.getItem(i);
-				if (menuItem.isVisible() && searchMode && menuItem.getItemId() != R.id.menu_search) {
-					menuItem.setVisible(false);
-				}
+		}
+		listPage.onPrepareOptionsMenu(menu);
+		for (int i = 0; i < menu.size(); i++) {
+			MenuItem menuItem = menu.getItem(i);
+			if (menuItem.isVisible() && searchMode && menuItem.getItemId() != R.id.menu_search) {
+				menuItem.setVisible(false);
 			}
 		}
 	}
@@ -417,8 +396,16 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 		if (item.getItemId() == R.id.menu_search) {
-			searchFocused = true;
-			return false;
+			if (item == searchMenuItem) {
+				searchFocused = true;
+				return false;
+			} else if (searchMenuItem != null) {
+				searchFocused = true;
+				searchMenuItem.expandActionView();
+				return true;
+			} else {
+				return true;
+			}
 		}
 		if (listPage.onOptionsItemSelected(item)) {
 			return true;
@@ -441,13 +428,6 @@ public final class PageFragment extends ContentFragment implements FragmentHandl
 		Pair<String, String> titleSubtitle = listPage.obtainTitleSubtitle();
 		getCallback().setPageTitle(titleSubtitle != null ? titleSubtitle.first : null,
 				titleSubtitle != null ? titleSubtitle.second : null);
-	}
-
-	@Override
-	public void updateOptionsMenu() {
-		if (currentMenu != null) {
-			onPrepareOptionsMenu(currentMenu);
-		}
 	}
 
 	@Override

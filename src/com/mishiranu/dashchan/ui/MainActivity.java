@@ -20,6 +20,7 @@ import android.provider.DocumentsContract;
 import android.util.Pair;
 import android.view.ActionMode;
 import android.view.ContextThemeWrapper;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -1429,6 +1430,12 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 			}
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	@Override
+	public boolean dispatchKeyEvent(KeyEvent event) {
+		ContentFragment fragment = getCurrentFragment();
+		return fragment.dispatchKeyEvent(event) || super.dispatchKeyEvent(event);
 	}
 
 	@Override

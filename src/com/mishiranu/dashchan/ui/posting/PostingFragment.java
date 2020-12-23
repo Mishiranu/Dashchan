@@ -28,7 +28,6 @@ import android.util.Pair;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -644,7 +643,6 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		setHasOptionsMenu(true);
 		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(StringUtils.isEmpty(getThreadNumber())
 				? R.string.new_thread : R.string.new_post), null);
 		requireActivity().bindService(new Intent(requireContext(), PostingService.class),
@@ -821,7 +819,7 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 			}
 			invalidateAttachments(attachmentCount);
 			if (attachmentCount) {
-				requireActivity().invalidateOptionsMenu();
+				invalidateOptionsMenu();
 			}
 		}
 	}
@@ -879,14 +877,14 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 	}
 
 	@Override
-	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+	public void onCreateOptionsMenu(Menu menu, boolean primary) {
 		menu.add(0, R.id.menu_attach, 0, R.string.attach)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionAttach))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 	}
 
 	@Override
-	public void onPrepareOptionsMenu(Menu menu) {
+	public void onPrepareOptionsMenu(Menu menu, boolean primary) {
 		menu.findItem(R.id.menu_attach).setVisible(attachments.size() < postingConfiguration.attachmentCount);
 	}
 
@@ -1347,7 +1345,7 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 				} else {
 					invalidateAttachments(true);
 				}
-				requireActivity().invalidateOptionsMenu();
+				invalidateOptionsMenu();
 				resizeComment(true);
 				DraftsStorage.getInstance().store(obtainPostDraft());
 			}
@@ -1505,7 +1503,7 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 		removeButton.setTag(holder);
 		options.setTag(holder);
 		attachments.add(holder);
-		requireActivity().invalidateOptionsMenu();
+		invalidateOptionsMenu();
 		resizeComment(true);
 		return holder;
 	}

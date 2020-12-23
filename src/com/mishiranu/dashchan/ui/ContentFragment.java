@@ -3,9 +3,16 @@ package com.mishiranu.dashchan.ui;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.os.Bundle;
 import android.view.ContextThemeWrapper;
+import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.Toolbar;
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -15,8 +22,15 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.CustomSearchView;
 import java.lang.ref.WeakReference;
+import java.util.WeakHashMap;
 
 public abstract class ContentFragment extends Fragment {
+	private static class MenuState {
+		public boolean created;
+	}
+
+	private final WeakHashMap<Menu, MenuState> menuStates = new WeakHashMap<>();
+
 	public boolean isSearchMode() {
 		return false;
 	}
@@ -33,15 +47,58 @@ public abstract class ContentFragment extends Fragment {
 		return false;
 	}
 
-	public void onTerminate() {}
+	private void clearOptionMenus() {
+		for (WeakHashMap.Entry<Menu, MenuState> entry : menuStates.entrySet()) {
+			if (entry.getValue().created) {
+				Menu menu = entry.getKey();
+				int size = menu.size();
+				for (int i = 0; i < size; i++) {
+					MenuItem menuItem = menu.getItem(i);
+					if (menuItem.getActionView() != null) {
+						menuItem.setOnActionExpandListener(null);
+						if (menuItem.isActionViewExpanded()) {
+							menuItem.collapseActionView();
+						}
+					}
+				}
+			}
+		}
+		menuStates.clear();
+	}
+
+	public void onTerminate() {
+		clearOptionMenus();
+	}
 
 	@Override
 	public void onDestroyView() {
 		super.onDestroyView();
+
+		clearOptionMenus();
 		ViewHolderFragment viewHolder = getViewHolder();
 		if (viewHolder != null) {
 			viewHolder.resetSearchView(this);
 		}
+	}
+
+	public boolean dispatchKeyEvent(KeyEvent event) {
+		if (event.getKeyCode() == KeyEvent.KEYCODE_MENU) {
+			// Block hardware menu button if menu is empty. This fixes menu issues on some Android 5 devices
+			// and ensures empty hardware menu will never appear.
+			boolean hasMenuItems = false;
+			for (WeakHashMap.Entry<Menu, MenuState> entry : menuStates.entrySet()) {
+				hasMenuItems = entry.getValue().created && entry.getKey().hasVisibleItems();
+			}
+			if (!hasMenuItems) {
+				return true;
+			} else if (C.API_OREO && !C.API_PIE) {
+				// Fix invalid hardware menu layout on Android 8 and 8.1
+				Toolbar toolbar = (Toolbar) ((FragmentHandler) requireActivity()).getToolbarView();
+				toolbar.showOverflowMenu();
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -78,6 +135,88 @@ public abstract class ContentFragment extends Fragment {
 		if (viewHolder == null) {
 			viewHolder = new ViewHolderFragment();
 			fragmentManager.beginTransaction().add(viewHolder, ViewHolderFragment.TAG).commitNow();
+		}
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		super.setHasOptionsMenu(true);
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		// Menu can be requested too early on some Android 4.x
+		invalidateMenuInternal(true);
+	}
+
+	@Override
+	public void setHasOptionsMenu(boolean hasMenu) {
+		throw new UnsupportedOperationException();
+	}
+
+	private MenuState obtainMenuState(Menu menu) {
+		MenuState menuState = menuStates.get(menu);
+		if (menuState == null) {
+			menuState = new MenuState();
+			menuStates.put(menu, menuState);
+		}
+		return menuState;
+	}
+
+	@Override
+	public final void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+		MenuState menuState = obtainMenuState(menu);
+		if (isAdded() && isValidOptionsMenuState()) {
+			menuState.created = true;
+			onCreateOptionsMenu(menu, isPrimaryMenu(menu));
+		}
+	}
+
+	@Override
+	public final void onPrepareOptionsMenu(@NonNull Menu menu) {
+		if (isAdded() && isValidOptionsMenuState()) {
+			boolean primary = isPrimaryMenu(menu);
+			MenuState menuState = obtainMenuState(menu);
+			if (!menuState.created) {
+				// onPrepareOptionsMenu can be called when onCreateOptionsMenu was called in
+				// invalid state (when isValidOptionsMenuState returned false) or wasn't called at all
+				// (this is the case for devices with hardware menu button which have 2 Menu instances)
+				menuState.created = true;
+				menu.clear();
+				onCreateOptionsMenu(menu, primary);
+			}
+			onPrepareOptionsMenu(menu, primary);
+		}
+	}
+
+	public boolean isValidOptionsMenuState() {
+		return true;
+	}
+
+	public void onCreateOptionsMenu(Menu menu, boolean primary) {}
+
+	public void onPrepareOptionsMenu(Menu menu, boolean primary) {}
+
+	public void invalidateOptionsMenu() {
+		invalidateMenuInternal(false);
+	}
+
+	private void invalidateMenuInternal(boolean prepareOnly) {
+		for (WeakHashMap.Entry<Menu, MenuState> entry : menuStates.entrySet()) {
+			if (!prepareOnly || !entry.getValue().created) {
+				onPrepareOptionsMenu(entry.getKey());
+			}
+		}
+	}
+
+	private boolean isPrimaryMenu(Menu menu) {
+		if (C.API_LOLLIPOP) {
+			Toolbar toolbar = (Toolbar) ((FragmentHandler) requireActivity()).getToolbarView();
+			return toolbar.getMenu() == menu;
+		} else {
+			return true;
 		}
 	}
 

@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +31,6 @@ public class StatisticsFragment extends BaseListFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		setHasOptionsMenu(true);
 		long startTime = StatisticsStorage.getInstance().getStartTime();
 		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.statistics),
 				startTime > 0 ? getString(R.string.since_date__format,
@@ -84,11 +82,10 @@ public class StatisticsFragment extends BaseListFragment {
 	}
 
 	@Override
-	public void onCreateOptionsMenu(Menu menu, @NonNull MenuInflater inflater) {
+	public void onCreateOptionsMenu(Menu menu, boolean primary) {
 		menu.add(0, R.id.menu_clear, 0, R.string.clear)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionDelete))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		super.onCreateOptionsMenu(menu, inflater);
 	}
 
 	@Override

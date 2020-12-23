@@ -141,13 +141,17 @@ public class GalleryDialog extends Dialog {
 
 	@Override
 	public boolean onCreateOptionsMenu(@NonNull Menu menu) {
-		fragment.onCreateOptionsMenu(menu, menuInflater);
+		if (fragment.isAdded()) {
+			fragment.onCreateOptionsMenu(menu, menuInflater);
+		}
 		return true;
 	}
 
 	@Override
 	public boolean onPrepareOptionsMenu(@NonNull Menu menu) {
-		fragment.onPrepareOptionsMenu(menu);
+		if (fragment.isAdded()) {
+			fragment.onPrepareOptionsMenu(menu);
+		}
 		return true;
 	}
 
@@ -162,7 +166,7 @@ public class GalleryDialog extends Dialog {
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-		return fragment.onOptionsItemSelected(item);
+		return fragment.isAdded() && fragment.onOptionsItemSelected(item);
 	}
 
 	@Override

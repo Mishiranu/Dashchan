@@ -16,7 +16,6 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -128,7 +127,6 @@ public class BrowserFragment extends ContentFragment implements DownloadListener
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		setHasOptionsMenu(true);
 		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.web_browser), null);
 		if (savedInstanceState == null) {
 			WebViewUtils.clearAll(webView);
@@ -158,7 +156,7 @@ public class BrowserFragment extends ContentFragment implements DownloadListener
 	}
 
 	@Override
-	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+	public void onCreateOptionsMenu(Menu menu, boolean primary) {
 		menu.add(0, R.id.menu_reload, 0, R.string.reload)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionRefresh))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);

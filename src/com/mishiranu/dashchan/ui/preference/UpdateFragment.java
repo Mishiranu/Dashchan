@@ -10,7 +10,6 @@ import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -161,7 +160,6 @@ public class UpdateFragment extends BaseListFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		setHasOptionsMenu(true);
 		if (isUpdateDataProvided()) {
 			updateDataMap = requireArguments().getParcelable(EXTRA_UPDATE_DATA_MAP);
 		} else {
@@ -407,7 +405,7 @@ public class UpdateFragment extends BaseListFragment {
 	}
 
 	@Override
-	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+	public void onCreateOptionsMenu(Menu menu, boolean primary) {
 		menu.add(0, R.id.menu_download, 0, R.string.download_files)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionDownload))
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
@@ -415,7 +413,7 @@ public class UpdateFragment extends BaseListFragment {
 	}
 
 	@Override
-	public void onPrepareOptionsMenu(@NonNull Menu menu) {
+	public void onPrepareOptionsMenu(Menu menu, boolean primary) {
 		long length = 0;
 		RecyclerView recyclerView = getRecyclerView();
 		if (updateDataMap != null && recyclerView != null) {
@@ -530,7 +528,7 @@ public class UpdateFragment extends BaseListFragment {
 					listItem.setTarget(requireContext(), applicationItem, targetIndex);
 					onTargetChanged(requireContext(), adapter, updateDataMap, listItem);
 					adapter.notifyDataSetChanged();
-					requireActivity().invalidateOptionsMenu();
+					invalidateOptionsMenu();
 					updateTitle();
 				}
 				break;

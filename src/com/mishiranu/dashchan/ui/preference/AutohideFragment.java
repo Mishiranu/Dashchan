@@ -9,7 +9,6 @@ import android.text.TextWatcher;
 import android.text.style.BackgroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -82,7 +81,6 @@ public class AutohideFragment extends BaseListFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		setHasOptionsMenu(true);
 		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.autohide), null);
 		items.addAll(AutohideStorage.getInstance().getItems());
 		if (items.isEmpty()) {
@@ -111,14 +109,6 @@ public class AutohideFragment extends BaseListFragment {
 	}
 
 	@Override
-	public void onTerminate() {
-		if (searchMenuItem != null && searchMenuItem.isActionViewExpanded()) {
-			searchMenuItem.setOnActionExpandListener(null);
-			searchMenuItem.collapseActionView();
-		}
-	}
-
-	@Override
 	public boolean onBackPressed() {
 		if (searchMenuItem != null && searchMenuItem.isActionViewExpanded()) {
 			searchMenuItem.collapseActionView();
@@ -128,34 +118,38 @@ public class AutohideFragment extends BaseListFragment {
 	}
 
 	@Override
-	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+	public void onCreateOptionsMenu(Menu menu, boolean primary) {
 		menu.add(0, R.id.menu_new_rule, 0, R.string.new_rule)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionAddRule))
 				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-		searchMenuItem = menu.add(0, R.id.menu_search, 0, R.string.filter).setActionView(searchView)
-				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
-				.setOnActionExpandListener(new MenuExpandListener((menuItem, expand) -> {
-					if (expand) {
-						searchView.setFocusOnExpand(searchFocused);
-						if (searchQuery != null) {
-							searchView.setQuery(searchQuery);
-						} else {
-							searchQuery = "";
-						}
+		MenuItem searchMenuItem = menu.add(0, R.id.menu_search, 0, R.string.filter)
+				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+		if (primary) {
+			this.searchMenuItem = searchMenuItem;
+			searchMenuItem.setActionView(searchView);
+			searchMenuItem.setOnActionExpandListener(new MenuExpandListener((menuItem, expand) -> {
+				if (expand) {
+					searchView.setFocusOnExpand(searchFocused);
+					if (searchQuery != null) {
+						searchView.setQuery(searchQuery);
 					} else {
-						searchQuery = null;
+						searchQuery = "";
 					}
-					((Adapter) getRecyclerView().getAdapter()).setSearchQuery(searchQuery);
-					onPrepareOptionsMenu(menu);
-					return true;
-				}));
-		if (searchQuery != null) {
-			searchMenuItem.expandActionView();
+				} else {
+					searchQuery = null;
+				}
+				((Adapter) getRecyclerView().getAdapter()).setSearchQuery(searchQuery);
+				onPrepareOptionsMenu(menu);
+				return true;
+			}));
+			if (searchQuery != null) {
+				searchMenuItem.expandActionView();
+			}
 		}
 	}
 
 	@Override
-	public void onPrepareOptionsMenu(@NonNull Menu menu) {
+	public void onPrepareOptionsMenu(Menu menu, boolean primary) {
 		menu.findItem(R.id.menu_new_rule).setVisible(searchQuery == null);
 	}
 
@@ -167,8 +161,16 @@ public class AutohideFragment extends BaseListFragment {
 				return true;
 			}
 			case R.id.menu_search: {
-				searchFocused = true;
-				return false;
+				if (item == searchMenuItem) {
+					searchFocused = true;
+					return false;
+				} else if (searchMenuItem != null) {
+					searchFocused = true;
+					searchMenuItem.expandActionView();
+					return true;
+				} else {
+					return true;
+				}
 			}
 		}
 		return super.onOptionsItemSelected(item);

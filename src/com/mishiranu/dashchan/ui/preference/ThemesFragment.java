@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Pair;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,7 +65,6 @@ public class ThemesFragment extends BaseListFragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		setHasOptionsMenu(true);
 		((FragmentHandler) requireActivity()).setTitleSubtitle(getString(R.string.themes), null);
 		RecyclerView recyclerView = getRecyclerView();
 		recyclerView.setAdapter(new Adapter(recyclerView.getContext(), (theme, installed, longClick) -> {
@@ -131,7 +129,7 @@ public class ThemesFragment extends BaseListFragment {
 	}
 
 	@Override
-	public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+	public void onCreateOptionsMenu(Menu menu, boolean primary) {
 		menu.add(0, R.id.menu_add_theme, 0, R.string.add_theme)
 				.setIcon(((FragmentHandler) requireActivity()).getActionBarIcon(R.attr.iconActionAddRule))
 				.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
