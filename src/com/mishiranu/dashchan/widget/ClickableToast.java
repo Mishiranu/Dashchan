@@ -29,11 +29,11 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.OnLifecycleEvent;
-import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.model.ErrorItem;
 import com.mishiranu.dashchan.graphics.BaseDrawable;
+import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
@@ -41,7 +41,6 @@ import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -342,7 +341,7 @@ public class ClickableToast implements LifecycleObserver {
 				int type = WindowManager.LayoutParams.TYPE_PHONE;
 				added = addContainerToWindowManager(type);
 			}
-		} else if (C.API_LOLLIPOP && !IS_MIUI) {
+		} else if (C.API_LOLLIPOP && !AndroidUtils.IS_MIUI) {
 			// TYPE_TOAST works well only on Android 5.0-7.1, but doesn't work on MIUI
 			@SuppressWarnings("deprecation")
 			int type = WindowManager.LayoutParams.TYPE_TOAST;
@@ -597,19 +596,5 @@ public class ClickableToast implements LifecycleObserver {
 		public int getIntrinsicWidth() {
 			return width;
 		}
-	}
-
-	private static final boolean IS_MIUI;
-
-	static {
-		boolean isMiui = false;
-		try {
-			Method getProperty = Class.forName("android.os.SystemProperties")
-					.getMethod("get", String.class, String.class);
-			isMiui = !StringUtils.isEmpty((String) getProperty.invoke(null, "ro.miui.ui.version.name", ""));
-		} catch (Exception e) {
-			// Ignore exception
-		}
-		IS_MIUI = isMiui;
 	}
 }

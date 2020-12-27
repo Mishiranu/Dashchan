@@ -10,9 +10,26 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
 import androidx.annotation.RequiresApi;
+import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
+import java.lang.reflect.Method;
 
 public class AndroidUtils {
+	public static final boolean IS_MIUI;
+
+	static {
+		boolean isMiui = false;
+		try {
+			@SuppressLint("PrivateApi")
+			Method getProperty = Class.forName("android.os.SystemProperties")
+					.getMethod("get", String.class, String.class);
+			isMiui = !StringUtils.isEmpty((String) getProperty.invoke(null, "ro.miui.ui.version.name", ""));
+		} catch (Exception e) {
+			// Ignore exception
+		}
+		IS_MIUI = isMiui;
+	}
+
 	public interface OnReceiveListener {
 		void onReceive(BroadcastReceiver receiver, Context context, Intent intent);
 	}

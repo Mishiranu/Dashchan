@@ -1,12 +1,11 @@
 package com.mishiranu.dashchan.widget;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.net.Uri;
-import android.os.Build;
 import android.os.SystemClock;
 import android.text.Layout;
 import android.text.Selection;
@@ -18,13 +17,16 @@ import android.text.style.RelativeSizeSpan;
 import android.text.style.TypefaceSpan;
 import android.util.AttributeSet;
 import android.view.ActionMode;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.WindowManager;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
 import chan.util.StringUtils;
@@ -32,11 +34,16 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.text.style.LinkSpan;
 import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
+import com.mishiranu.dashchan.util.AndroidUtils;
 import com.mishiranu.dashchan.util.ListViewUtils;
 import com.mishiranu.dashchan.util.NavigationUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
+import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,7 +55,7 @@ public class CommentTextView extends TextView {
 	private final int[][] deltaAttempts;
 	private final int touchSlop;
 
-	private boolean selectionMode;
+	private SelectionMode selectionMode;
 	private ClickableSpan spanToClick;
 	private float spanStartX, spanStartY;
 	private float lastX, lastY;
@@ -57,9 +64,6 @@ public class CommentTextView extends TextView {
 	private int linesLimitAdditionalHeight;
 	private View selectionPaddingView;
 	private boolean useAdditionalPadding;
-
-	private ActionMode currentActionMode;
-	private Menu currentActionModeMenu;
 
 	private LimitListener limitListener;
 	private SpanStateListener spanStateListener;
@@ -101,7 +105,8 @@ public class CommentTextView extends TextView {
 	}
 
 	public CommentTextView(Context context, AttributeSet attrs, int defStyleAttr) {
-		super(context, attrs, defStyleAttr);
+		super(C.API_LOLLIPOP && AndroidUtils.IS_MIUI ? new MiuiContext(context) : context, attrs, defStyleAttr);
+		ThemeEngine.applyStyle(this);
 		float density = ResourceUtils.obtainDensity(this);
 		int delta = (int) (RING_RADIUS * density);
 		deltaAttempts = new int[1 + RINGS * BASE_POINTS.length][2];
@@ -117,12 +122,29 @@ public class CommentTextView extends TextView {
 			add += BASE_POINTS.length;
 		}
 		touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-		super.setCustomSelectionActionModeCallback(new CustomSelectionCallback());
+		MiuiContext miuiContext = getMiuiContext();
+		if (miuiContext != null) {
+			miuiContext.setTextView(this);
+			super.setCustomSelectionActionModeCallback(miuiContext);
+		} else {
+			super.setCustomSelectionActionModeCallback(new CustomSelectionCallback(this));
+		}
 		super.setTextIsSelectable(true);
 	}
 
-	/* init */ {
-		ThemeEngine.applyStyle(this);
+	private interface SelectionMode {
+		SelectionMode INITIAL = new SelectionMode() {
+			@Override
+			public boolean isActive() {
+				return false;
+			}
+
+			@Override
+			public void invalidateMenu() {}
+		};
+
+		boolean isActive();
+		void invalidateMenu();
 	}
 
 	public interface ClickableSpan {
@@ -262,6 +284,21 @@ public class CommentTextView extends TextView {
 		}
 	}
 
+	private Spanned getSpannedText() {
+		CharSequence text = getText();
+		return text instanceof Spanned ? (Spanned) text : null;
+	}
+
+	private Spannable getSpannableText() {
+		CharSequence text = getText();
+		return text instanceof Spannable ? (Spannable) text : null;
+	}
+
+	private MiuiContext getMiuiContext() {
+		Context context = getContext();
+		return context instanceof MiuiContext ? (MiuiContext) context : null;
+	}
+
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -273,7 +310,7 @@ public class CommentTextView extends TextView {
 			if (count > linesLimit) {
 				int removeHeight = layout.getLineTop(count) - layout.getLineTop(linesLimit);
 				if (removeHeight > linesLimitAdditionalHeight) {
-					if (!selectionMode) {
+					if (!isSelectionMode()) {
 						setMeasuredDimension(getMeasuredWidth(), getMeasuredHeight() - removeHeight);
 					}
 					limited = true;
@@ -300,12 +337,32 @@ public class CommentTextView extends TextView {
 		spoilersEnabled = enabled;
 	}
 
-	private void setSelectionMode(boolean selectionMode) {
-		if (this.selectionMode != selectionMode) {
-			this.selectionMode = selectionMode;
+	@Override
+	public void setCustomSelectionActionModeCallback(ActionMode.Callback actionModeCallback) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void setTextIsSelectable(boolean selectable) {
+		throw new UnsupportedOperationException();
+	}
+
+	public boolean isSelectionMode() {
+		return selectionMode != null;
+	}
+
+	private void setSelectionMode(SelectionMode selectionMode) {
+		boolean oldSelection = isSelectionMode();
+		this.selectionMode = selectionMode;
+		boolean newSelection = isSelectionMode();
+		if (!newSelection || selectionMode.isActive()) {
+			// Stop selection fixing when selection is disabled or becomes active
+			restoreSelectionRunnable = null;
+		}
+		if (oldSelection != newSelection) {
 			updateUseAdditionalPadding(false);
 			requestLayout();
-			if (!selectionMode && isFocused()) {
+			if (!newSelection && isFocused()) {
 				View rootView = ListViewUtils.getRootViewInList(this);
 				if (rootView != null) {
 					View listView = (View) rootView.getParent();
@@ -319,16 +376,20 @@ public class CommentTextView extends TextView {
 		}
 	}
 
+	private void removeSelection() {
+		Spannable text = getSpannableText();
+		if (text != null) {
+			Selection.removeSelection(text);
+		}
+	}
+
 	private Runnable restoreSelectionRunnable;
 
 	private final Runnable resetSelectionRunnable = () -> {
-		if (selectionMode && currentActionMode == null) {
-			CharSequence text = getText();
-			if (text instanceof Spannable) {
-				Selection.removeSelection((Spannable) text);
-			}
+		if (isSelectionMode() && !selectionMode.isActive()) {
 			restoreSelectionRunnable = null;
-			setSelectionMode(false);
+			removeSelection();
+			setSelectionMode(null);
 		}
 	};
 
@@ -341,17 +402,16 @@ public class CommentTextView extends TextView {
 	}
 
 	private void startSelection(int x, int y, int start, int end) {
-		CharSequence text = getText();
-		if (!(text instanceof Spannable)) {
+		Spannable text = getSpannableText();
+		if (text == null) {
 			return;
 		}
-		Spannable spannable = (Spannable) text;
-		int length = spannable.length();
+		int length = text.length();
 		Layout layout = getLayout();
 		if (x != Integer.MAX_VALUE && y != Integer.MAX_VALUE &&
 				(start < 0 || end < 0 || end > length || start >= end)) {
 			start = 0;
-			end = spannable.length();
+			end = text.length();
 			int lx = x - getTotalPaddingLeft();
 			int ly = y - getTotalPaddingTop();
 			if (lx >= 0 && ly >= 0 && lx < getWidth() - getTotalPaddingRight() &&
@@ -359,19 +419,19 @@ public class CommentTextView extends TextView {
 				int offset = layout.getOffsetForHorizontal(layout.getLineForVertical(ly), lx);
 				if (offset >= 0 && offset < length) {
 					for (int i = offset; i >= 0; i--) {
-						if (spannable.charAt(i) == '\n') {
+						if (text.charAt(i) == '\n') {
 							start = i + 1;
 							break;
 						}
 					}
 					for (int i = offset; i < length; i++) {
-						if (spannable.charAt(i) == '\n') {
+						if (text.charAt(i) == '\n') {
 							end = i;
 							break;
 						}
 					}
 					if (end > start) {
-						String part = spannable.subSequence(start, end).toString();
+						String part = text.subSequence(start, end).toString();
 						Matcher matcher = LIST_PATTERN.matcher(part);
 						if (matcher.find()) {
 							start += matcher.group().length();
@@ -382,26 +442,25 @@ public class CommentTextView extends TextView {
 		}
 		if (end <= start || start < 0) {
 			start = 0;
-			end = spannable.length();
+			end = text.length();
 		}
 		x = getTotalPaddingLeft();
 		y = getTotalPaddingRight();
-		setSelectionMode(true);
+		setSelectionMode(SelectionMode.INITIAL);
 		int finalX = x;
 		int finalY = y;
 		int finalStart = start;
 		int finalEnd = end;
 		post(() -> {
 			removeCallbacks(resetSelectionRunnable);
-			CharSequence newText = getText();
-			if (!(newText instanceof Spannable)) {
+			Spannable newText = getSpannableText();
+			if (newText == null) {
 				resetSelectionRunnable.run();
 				return;
 			}
-			Spannable newSpannable = (Spannable) text;
-			int max = newSpannable.length();
-			Runnable restoreSelectionRunnable = () ->
-					Selection.setSelection(newSpannable, Math.min(finalStart, max), Math.min(finalEnd, max));
+			int max = newText.length();
+			Runnable restoreSelectionRunnable = () -> Selection.setSelection(newText,
+					Math.min(finalStart, max), Math.min(finalEnd, max));
 			// restoreSelectionRunnable can be nullified during sending motion event
 			this.restoreSelectionRunnable = restoreSelectionRunnable;
 			sendFakeMotionEvent(MotionEvent.ACTION_DOWN, finalX, finalY);
@@ -427,66 +486,47 @@ public class CommentTextView extends TextView {
 		startSelection(Integer.MAX_VALUE, Integer.MAX_VALUE, start, end);
 	}
 
-	public boolean isSelectionMode() {
-		return selectionMode;
-	}
-
-	@Override
-	public void setCustomSelectionActionModeCallback(ActionMode.Callback actionModeCallback) {}
-
 	private String getPartialCommentString(Spannable text, int start, int end) {
 		return prepareToCopyListener != null ? prepareToCopyListener
 				.onPrepareToCopy(CommentTextView.this, text, start, end) : text.subSequence(start, end).toString();
 	}
 
-	private static final int[] EXTRA_BUTTON_IDS = {android.R.id.button1, android.R.id.button2, android.R.id.button3};
+	private static class CustomSelectionCallback implements ActionMode.Callback {
+		private final WeakReference<CommentTextView> textView;
+		private ActionMode currentActionMode;
 
-	private class CustomSelectionCallback implements ActionMode.Callback {
-		@TargetApi(Build.VERSION_CODES.M)
+		public CustomSelectionCallback(CommentTextView textView) {
+			this.textView = new WeakReference<>(textView);
+		}
+
 		@Override
 		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-			currentActionMode = mode;
-			currentActionModeMenu = menu;
-			setSelectionMode(true);
-			int order = 0;
-			if (C.API_MARSHMALLOW && mode.getType() == ActionMode.TYPE_FLOATING) {
-				order = 1; // Only "cut" menu item uses this order which doesn't present in non-editable TextView
-			}
-			for (int i = 0; i < EXTRA_BUTTON_IDS.length; i++) {
-				ExtraButton extraButton = getExtraButton(i);
-				if (extraButton != null) {
-					menu.add(0, EXTRA_BUTTON_IDS[i], order, extraButton.title)
-							.setIcon(ResourceUtils.getDrawable(getContext(), extraButton.iconAttr, 0))
-							.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+			SelectionMode selectionMode = new SelectionMode() {
+				@Override
+				public boolean isActive() {
+					return true;
 				}
-			}
-			// Stop selection fixation after creating action mode
-			restoreSelectionRunnable = null;
+
+				@Override
+				public void invalidateMenu() {
+					// Call "onPrepareActionMode" instead of "invalidate"
+					// to fix action mode resizing bug in Android 5
+					onPrepareActionMode(mode, menu);
+				}
+			};
+			CommentTextView textView = this.textView.get();
+			textView.setSelectionMode(selectionMode);
+			currentActionMode = mode;
+			boolean floating = C.API_MARSHMALLOW && mode.getType() == ActionMode.TYPE_FLOATING;
+			// Only "cut" menu item uses this order "1" which doesn't present in non-editable TextView
+			textView.onCreateSelectionMenu(menu, floating ? 1 : 0);
 			return true;
-		}
-
-		private ExtraButton getExtraButton(int index) {
-			return extraButtons != null && index < extraButtons.size() && index < EXTRA_BUTTON_IDS.length
-					? extraButtons.get(index) : null;
-		}
-
-		private ExtraButton.Text getText() {
-			int start = getSelectionStart();
-			int end = getSelectionEnd();
-			int min = Math.max(0, Math.min(start, end));
-			int max = Math.max(0, Math.max(start, end));
-			return new ExtraButton.Text(CommentTextView.this.getText(), min, max);
 		}
 
 		@Override
 		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-			ExtraButton.Text text = getText();
-			for (int i = 0; i < EXTRA_BUTTON_IDS.length; i++) {
-				ExtraButton extraButton = getExtraButton(i);
-				if (extraButton != null) {
-					menu.findItem(EXTRA_BUTTON_IDS[i]).setVisible(extraButton.callback
-							.handle(CommentTextView.this, text, false));
-				}
+			if (currentActionMode == mode) {
+				textView.get().onPrepareSelectionMenu(menu);
 			}
 			return true;
 		}
@@ -495,49 +535,272 @@ public class CommentTextView extends TextView {
 		public void onDestroyActionMode(ActionMode mode) {
 			if (currentActionMode == mode) {
 				currentActionMode = null;
-				currentActionModeMenu = null;
-				setSelectionMode(false);
+				textView.get().setSelectionMode(null);
 			}
 		}
 
 		@Override
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-			ExtraButton.Text text = getText();
-			switch (item.getItemId()) {
-				case android.R.id.copy: {
-					if (text.text instanceof Spannable) {
-						StringUtils.copyToClipboard(getContext(),
-								getPartialCommentString((Spannable) text.text, text.start, text.end));
+			boolean result = textView.get().onSelectionItemClicked(item.getItemId());
+			if (result) {
+				mode.finish();
+			}
+			return result;
+		}
+	}
+
+	private static class MiuiContext extends ContextWrapper implements ActionMode.Callback,
+			View.OnKeyListener, View.OnAttachStateChangeListener {
+		private WeakReference<CommentTextView> textView;
+		private WindowManager windowManagerProxy;
+		private WeakReference<Menu> actionModeMenu;
+
+		private WeakHashMap<View, Object> addedViews;
+		private boolean hasAttachedViews;
+		private boolean selectionMode;
+
+		private final CommentTextView.SelectionMode activeSelectionMode = new CommentTextView.SelectionMode() {
+			@Override
+			public boolean isActive() {
+				return true;
+			}
+
+			@Override
+			public void invalidateMenu() {
+				updateMenu(false);
+			}
+		};
+
+		public MiuiContext(Context base) {
+			super(base);
+		}
+
+		public void setTextView(CommentTextView textView) {
+			if (this.textView != null || textView == null) {
+				throw new IllegalStateException();
+			}
+			this.textView = new WeakReference<>(textView);
+			textView.setOnKeyListener(this);
+		}
+
+		private static WindowManager createWindowManagerProxy(WindowManager windowManager,
+				WeakHashMap<View, Object> addedViews, OnAttachStateChangeListener listener) {
+			Class<?>[] instances = {WindowManager.class};
+			InvocationHandler handler = (proxy, method, args) -> {
+				if (method.getName().equals("addView")) {
+					View view = (View) args[0];
+					if (!addedViews.containsKey(view)) {
+						addedViews.put(view, view);
+						view.addOnAttachStateChangeListener(listener);
 					}
-					mode.finish();
-					return true;
+				}
+				return method.invoke(windowManager, args);
+			};
+			return (WindowManager) Proxy.newProxyInstance(MiuiContext.class.getClassLoader(), instances, handler);
+		}
+
+		@Override
+		public Object getSystemService(String name) {
+			if (WINDOW_SERVICE.equals(name)) {
+				// Return tracking WindowManager for Editor inner classes
+				String editorClass = "android.widget.Editor";
+				for (StackTraceElement element : Thread.currentThread().getStackTrace()) {
+					String className = StringUtils.emptyIfNull(element.getClassName());
+					if (className.equals(editorClass) || className.startsWith(editorClass) &&
+							className.charAt(editorClass.length()) == '$') {
+						if (windowManagerProxy == null) {
+							addedViews = new WeakHashMap<>();
+							WindowManager windowManager = (WindowManager) super.getSystemService(name);
+							windowManagerProxy = createWindowManagerProxy(windowManager, addedViews, this);
+						}
+						return windowManagerProxy;
+					}
 				}
 			}
-			for (int i = 0; i < EXTRA_BUTTON_IDS.length; i++) {
-				if (EXTRA_BUTTON_IDS[i] == item.getItemId()) {
-					ExtraButton extraButton = getExtraButton(i);
-					if (extraButton != null) {
-						extraButton.callback.handle(CommentTextView.this, text, true);
-						mode.finish();
-					}
-					return true;
-				}
+			return super.getSystemService(name);
+		}
+
+		public boolean onTextContextMenuItem(int id) {
+			CommentTextView textView = this.textView.get();
+			if (textView.onSelectionItemClicked(id)) {
+				stopAndRemoveSelection(textView);
+				return true;
 			}
 			return false;
 		}
+
+		private static void stopAndRemoveSelection(CommentTextView textView) {
+			// onVisibilityChanged causes stopTextActionMode call
+			int visibility = textView.getVisibility();
+			if (visibility == View.VISIBLE) {
+				textView.onVisibilityChanged(textView, View.INVISIBLE);
+				textView.onVisibilityChanged(textView, View.VISIBLE);
+			}
+			textView.removeSelection();
+		}
+
+		private void updateMenu(boolean reset) {
+			Menu menu = actionModeMenu != null ? actionModeMenu.get() : null;
+			if (menu != null) {
+				CommentTextView textView = this.textView.get();
+				if (reset) {
+					menu.clear();
+					textView.onCreateSelectionMenu(menu, 0);
+				}
+				textView.onPrepareSelectionMenu(menu);
+			}
+		}
+
+		@Override
+		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+			// Fake action mode is created only once
+			actionModeMenu = new WeakReference<>(menu);
+			updateMenu(true);
+			return true;
+		}
+
+		@Override
+		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+			// Prepare is never called by MIUI, but this may be changed in the future
+			return onCreateActionMode(mode, menu);
+		}
+
+		@Override
+		public void onDestroyActionMode(ActionMode mode) {}
+
+		@Override
+		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+			CommentTextView textView = this.textView.get();
+			textView.onSelectionItemClicked(item.getItemId());
+			stopAndRemoveSelection(textView);
+			return true;
+		}
+
+		@Override
+		public boolean onKey(View v, int keyCode, KeyEvent event) {
+			CommentTextView textView = this.textView.get();
+			if (keyCode == KeyEvent.KEYCODE_BACK && v == textView && textView.isSelectionMode()) {
+				// MIUI ignores KEYCODE_BACK key events
+				if (event.getAction() == KeyEvent.ACTION_UP && !event.isLongPress()) {
+					stopAndRemoveSelection(textView);
+				}
+				return true;
+			}
+			return false;
+		}
+
+		@Override
+		public void onViewAttachedToWindow(View v) {
+			if (!hasAttachedViews) {
+				hasAttachedViews = true;
+				CommentTextView textView = this.textView.get();
+				textView.setSelectionMode(activeSelectionMode);
+				selectionMode = true;
+				updateMenu(true);
+			}
+		}
+
+		@Override
+		public void onViewDetachedFromWindow(View v) {
+			if (hasAttachedViews) {
+				boolean hasAttachedViews = false;
+				for (View view : addedViews.keySet()) {
+					if (view != v && ViewCompat.isAttachedToWindow(view)) {
+						hasAttachedViews = true;
+						break;
+					}
+				}
+				if (!hasAttachedViews) {
+					this.hasAttachedViews = false;
+					if (selectionMode) {
+						selectionMode = false;
+						CommentTextView textView = this.textView.get();
+						textView.setSelectionMode(null);
+						textView.removeSelection();
+					}
+				}
+			}
+		}
+	}
+
+	private static final int[] EXTRA_BUTTON_IDS = {android.R.id.button1, android.R.id.button2, android.R.id.button3};
+
+	private ExtraButton getExtraButton(int index) {
+		return extraButtons != null && index < extraButtons.size() && index < EXTRA_BUTTON_IDS.length
+				? extraButtons.get(index) : null;
+	}
+
+	private ExtraButton.Text getExtraButtonText() {
+		int start = getSelectionStart();
+		int end = getSelectionEnd();
+		int min = Math.max(0, Math.min(start, end));
+		int max = Math.max(0, Math.max(start, end));
+		return new ExtraButton.Text(getText(), min, max);
+	}
+
+	private void onCreateSelectionMenu(Menu menu, int order) {
+		for (int i = 0; i < EXTRA_BUTTON_IDS.length; i++) {
+			ExtraButton extraButton = getExtraButton(i);
+			if (extraButton != null) {
+				menu.add(0, EXTRA_BUTTON_IDS[i], order, extraButton.title)
+						.setIcon(ResourceUtils.getDrawable(getContext(), extraButton.iconAttr, 0))
+						.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+			}
+		}
+	}
+
+	private void onPrepareSelectionMenu(Menu menu) {
+		ExtraButton.Text text = getExtraButtonText();
+		for (int i = 0; i < EXTRA_BUTTON_IDS.length; i++) {
+			ExtraButton extraButton = getExtraButton(i);
+			if (extraButton != null) {
+				menu.findItem(EXTRA_BUTTON_IDS[i]).setVisible(extraButton.callback
+						.handle(CommentTextView.this, text, false));
+			}
+		}
+	}
+
+	private boolean onSelectionItemClicked(int id) {
+		ExtraButton.Text text = getExtraButtonText();
+		switch (id) {
+			case android.R.id.copy: {
+				if (text.text instanceof Spannable) {
+					StringUtils.copyToClipboard(getContext(),
+							getPartialCommentString((Spannable) text.text, text.start, text.end));
+				}
+				return true;
+			}
+		}
+		for (int i = 0; i < EXTRA_BUTTON_IDS.length; i++) {
+			if (EXTRA_BUTTON_IDS[i] == id) {
+				ExtraButton extraButton = getExtraButton(i);
+				if (extraButton != null) {
+					extraButton.callback.handle(CommentTextView.this, text, true);
+				}
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean onTextContextMenuItem(int id) {
+		MiuiContext miuiContext = getMiuiContext();
+		if (miuiContext != null && miuiContext.onTextContextMenuItem(id)) {
+			return true;
+		}
+		return super.onTextContextMenuItem(id);
 	}
 
 	@Override
 	protected void onSelectionChanged(int selStart, int selEnd) {
 		super.onSelectionChanged(selStart, selEnd);
-		if (selectionMode && restoreSelectionRunnable != null) {
-			// Fixate selection while during selection mode initialization
-			restoreSelectionRunnable.run();
-		}
-		if (currentActionMode != null) {
-			// This works better than simple "invalidate" call
-			// because "invalidate" can cause action mode resizing bug in Android 5
-			getCustomSelectionActionModeCallback().onPrepareActionMode(currentActionMode, currentActionModeMenu);
+		if (isSelectionMode()) {
+			if (restoreSelectionRunnable != null) {
+				// Fix selection during selection mode initialization
+				restoreSelectionRunnable.run();
+			}
+			selectionMode.invalidateMenu();
 		}
 	}
 
@@ -571,18 +834,13 @@ public class CommentTextView extends TextView {
 	}
 
 	private void updateUseAdditionalPadding(boolean force) {
-		boolean useAdditionalPadding = selectionPaddingView != null && selectionMode;
+		boolean useAdditionalPadding = selectionPaddingView != null && isSelectionMode();
 		if (this.useAdditionalPadding != useAdditionalPadding || force) {
 			if (selectionPaddingView != null) {
 				selectionPaddingView.setVisibility(useAdditionalPadding ? View.VISIBLE : View.GONE);
 			}
 			this.useAdditionalPadding = useAdditionalPadding;
 		}
-	}
-
-	@Override
-	public void setTextIsSelectable(boolean selectable) {
-		// Unsupported operation
 	}
 
 	@Override
@@ -597,12 +855,12 @@ public class CommentTextView extends TextView {
 
 	@Override
 	public boolean hasExplicitFocusable() {
-		return super.hasExplicitFocusable() && selectionMode;
+		return super.hasExplicitFocusable() && isSelectionMode();
 	}
 
 	@Override
 	public boolean hasFocusable() {
-		return super.hasFocusable() && selectionMode;
+		return super.hasFocusable() && isSelectionMode();
 	}
 
 	public long getPreferredDoubleTapTimeout() {
@@ -643,9 +901,9 @@ public class CommentTextView extends TextView {
 			layoutPosition = fillLayoutPosition(x, y);
 		}
 		Layout layout = getLayout();
-		if (layout != null && getText() instanceof Spanned) {
-			Spanned spanned = (Spanned) getText();
-			ArrayList<Object> spans = findSpansToClick(layout, spanned, Object.class, layoutPosition);
+		Spanned text = getSpannedText();
+		if (layout != null && text != null) {
+			ArrayList<Object> spans = findSpansToClick(layout, text, Object.class, layoutPosition);
 			for (Object span : spans) {
 				if (span == spanToClick) {
 					return true;
@@ -693,7 +951,7 @@ public class CommentTextView extends TextView {
 		if (!isEnabled()) {
 			return false;
 		}
-		if (selectionMode) {
+		if (isSelectionMode()) {
 			return super.onTouchEvent(event);
 		}
 		int action = event.getAction();
@@ -719,17 +977,17 @@ public class CommentTextView extends TextView {
 			}
 			return true;
 		}
-		if (action == MotionEvent.ACTION_DOWN && getText() instanceof Spanned) {
+		if (action == MotionEvent.ACTION_DOWN) {
 			Layout layout = getLayout();
-			if (layout != null) {
-				Spanned spanned = (Spanned) getText();
+			Spanned text = getSpannedText();
+			if (layout != null && text != null) {
 				if (spanToClick != null) {
 					setSpanToClick(null, x, y);
 				}
 				// 1st priority: show spoiler
 				ArrayList<SpoilerSpan> spoilerSpans = null;
 				if (spoilersEnabled) {
-					spoilerSpans = findSpansToClick(layout, spanned, SpoilerSpan.class, layoutPosition);
+					spoilerSpans = findSpansToClick(layout, text, SpoilerSpan.class, layoutPosition);
 					for (SpoilerSpan span : spoilerSpans) {
 						if (!span.isVisible()) {
 							setSpanToClick(span, x, y);
@@ -738,7 +996,7 @@ public class CommentTextView extends TextView {
 					}
 				}
 				// 2nd priority: open link
-				ArrayList<LinkSpan> linkSpans = findSpansToClick(layout, spanned, LinkSpan.class, layoutPosition);
+				ArrayList<LinkSpan> linkSpans = findSpansToClick(layout, text, LinkSpan.class, layoutPosition);
 				if (!linkSpans.isEmpty()) {
 					setSpanToClick(linkSpans.get(0), x, y);
 					postDelayed(linkLongClickRunnable, ViewConfiguration.getLongPressTimeout());
@@ -805,8 +1063,8 @@ public class CommentTextView extends TextView {
 		return spans;
 	}
 
-	private static SpanWatcher getSpanWatcher(Spannable spannable) {
-		SpanWatcher[] watchers = spannable.getSpans(0, spannable.length(), SpanWatcher.class);
+	private static SpanWatcher getSpanWatcher(Spannable text) {
+		SpanWatcher[] watchers = text.getSpans(0, text.length(), SpanWatcher.class);
 		if (watchers != null && watchers.length > 0) {
 			for (SpanWatcher watcher : watchers) {
 				if (watcher.getClass().getName().equals("android.widget.TextView$ChangeWatcher")) {
@@ -821,16 +1079,15 @@ public class CommentTextView extends TextView {
 		if (spanToClick == null) {
 			return;
 		}
-		CharSequence text = getText();
-		if (text instanceof Spannable) {
-			Spannable spannable = (Spannable) text;
-			int start = spannable.getSpanStart(spanToClick);
-			int end = spannable.getSpanEnd(spanToClick);
+		Spannable text = getSpannableText();
+		if (text != null) {
+			int start = text.getSpanStart(spanToClick);
+			int end = text.getSpanEnd(spanToClick);
 			if (start >= 0 && end >= start) {
-				SpanWatcher watcher = getSpanWatcher(spannable);
+				SpanWatcher watcher = getSpanWatcher(text);
 				if (watcher != null) {
 					// Notify span changed to redraw it
-					watcher.onSpanChanged(spannable, spanToClick, start, end, start, end);
+					watcher.onSpanChanged(text, spanToClick, start, end, start, end);
 				}
 			}
 		}
@@ -844,16 +1101,15 @@ public class CommentTextView extends TextView {
 	}
 
 	public void invalidateAllSpans() {
-		CharSequence text = getText();
-		if (text instanceof Spannable) {
-			Spannable spannable = (Spannable) text;
-			ClickableSpan[] spans = spannable.getSpans(0, spannable.length(), ClickableSpan.class);
+		Spannable text = getSpannableText();
+		if (text != null) {
+			ClickableSpan[] spans = text.getSpans(0, text.length(), ClickableSpan.class);
 			if (spans != null && spans.length > 0) {
-				SpanWatcher watcher = getSpanWatcher(spannable);
+				SpanWatcher watcher = getSpanWatcher(text);
 				for (ClickableSpan span : spans) {
-					int start = spannable.getSpanStart(span);
-					int end = spannable.getSpanEnd(span);
-					watcher.onSpanChanged(spannable, span, start, end, start, end);
+					int start = text.getSpanStart(span);
+					int end = text.getSpanEnd(span);
+					watcher.onSpanChanged(text, span, start, end, start, end);
 				}
 			}
 		}

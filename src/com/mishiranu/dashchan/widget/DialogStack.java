@@ -117,8 +117,8 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 		}
 	}
 
-	private final KeyBackHandler keyBackHandler = C.API_MARSHMALLOW ? new MarshmallowKeyBackHandler()
-			: new RegularKeyBackHandler();
+	private final KeyBackHandler keyBackHandler = C.API_MARSHMALLOW && !C.API_OREO
+			? new MarshmallowKeyBackHandler() : new RegularKeyBackHandler();
 
 	private interface KeyBackHandler {
 		boolean onBackKey(KeyEvent event, boolean allowPop);
@@ -216,15 +216,20 @@ public class DialogStack<T extends DialogStack.ViewFactory<T>> implements Iterab
 					}
 					super.onActionModeFinished(mode);
 				}
+
+				@Override
+				public boolean dispatchKeyEvent(@NonNull KeyEvent event) {
+					if (getWindow().superDispatchKeyEvent(event)) {
+						return true;
+					}
+					if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+						return keyBackHandler.onBackKey(event, !visibleViews.isEmpty());
+					}
+					return false;
+				}
 			};
 			dialog.setContentView(contentView);
 			dialog.setCancelable(false);
-			dialog.setOnKeyListener((d, keyCode, event) -> {
-				if (keyCode == KeyEvent.KEYCODE_BACK) {
-					return keyBackHandler.onBackKey(event, !visibleViews.isEmpty());
-				}
-				return false;
-			});
 			rootView.resetDrag();
 			Window window = dialog.getWindow();
 			WindowManager.LayoutParams layoutParams = window.getAttributes();

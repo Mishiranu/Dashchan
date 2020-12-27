@@ -256,7 +256,11 @@
 
 	</style>
 
-	<style name="Theme.Launcher" parent="@android:style/Theme.Material.NoActionBar" />
+	<style name="Theme.Launcher" parent="@android:style/Theme.Material.NoActionBar">
+
+		<item name="android:navigationBarColor">@android:color/black</item>
+
+	</style>
 
 	<style name="Widget.OverlapPopupMenu" parent="@android:style/Widget.Material.PopupMenu">
 
