@@ -63,7 +63,6 @@ public class AnimatedPngDecoder implements Runnable {
 		// Transform APNG to multiple PNG images and decode them
 		byte[] buffer = new byte[8192];
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		InputStream input = null;
 		boolean validFile = false;
 		byte[] head = null;
 		Frame currentFrame = null;
@@ -71,8 +70,7 @@ public class AnimatedPngDecoder implements Runnable {
 		int framesCount = 0;
 		int totalTime = 0;
 		CRC32 crc32 = new CRC32();
-		try {
-			input = new BufferedInputStream(fileHolder.openInputStream());
+		try (InputStream input = new BufferedInputStream(fileHolder.openInputStream())) {
 			if (!IOUtils.readExactlyCheck(input, buffer, 0, 8)) {
 				throw new IOException();
 			}
@@ -204,8 +202,6 @@ public class AnimatedPngDecoder implements Runnable {
 					break;
 				}
 			}
-		} finally {
-			IOUtils.close(input);
 		}
 		if (!validFile) {
 			throw new IOException();

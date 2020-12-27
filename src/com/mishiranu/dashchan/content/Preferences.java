@@ -586,14 +586,12 @@ public class Preferences {
 				Uri treeUri = uriPermission.getUri();
 				Uri uri = DocumentsContract.buildDocumentUriUsingTree(treeUri,
 						DocumentsContract.getTreeDocumentId(treeUri));
-				Cursor cursor = contentResolver.query(uri, null, null, null, null);
-				if (cursor == null) {
-					return null;
-				}
-				try {
-					return cursor.moveToFirst() ? treeUri : null;
-				} finally {
-					cursor.close();
+				try (Cursor cursor = contentResolver.query(uri, null, null, null, null)) {
+					if (cursor != null && cursor.moveToFirst()) {
+						return treeUri;
+					}
+				} catch (SecurityException e) {
+					e.printStackTrace();
 				}
 			}
 		}

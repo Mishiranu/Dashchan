@@ -351,9 +351,7 @@ public class JpegData {
 		if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_JPEG) {
 			byte[] exifBytes = null;
 			byte[] sofBytes = null;
-			InputStream input = null;
-			try {
-				input = new BufferedInputStream(fileHolder.openInputStream(), 327680);
+			try (InputStream input = new BufferedInputStream(fileHolder.openInputStream(), 327680)) {
 				byte[] buffer = new byte[2];
 				while (true) {
 					int oneByte = input.read();
@@ -401,9 +399,7 @@ public class JpegData {
 					}
 				}
 			} catch (IOException e) {
-				// Ignore exception
-			} finally {
-				IOUtils.close(input);
+				// Ignore
 			}
 			boolean forbidRegionDecoder = sofBytes != null && sofBytes.length > 7 && (sofBytes[5] & 0xff) == 1
 					&& (sofBytes[7] & 0xff) != 0x11;

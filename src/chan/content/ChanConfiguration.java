@@ -773,7 +773,7 @@ public class ChanConfiguration implements Chan.Linked {
 
 	@Public
 	public final DataFile getDownloadDirectory() {
-		return DataFile.obtain(getContext(), DataFile.Target.DOWNLOADS, null);
+		return DataFile.obtain(DataFile.Target.DOWNLOADS, null);
 	}
 
 	public final void updateFromBoards(BoardCategory[] boardCategories) {

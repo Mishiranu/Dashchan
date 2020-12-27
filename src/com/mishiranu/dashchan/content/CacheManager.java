@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -503,10 +502,8 @@ public class CacheManager implements Runnable {
 			return null;
 		}
 		Bitmap bitmap;
-		FileInputStream fis = null;
-		try {
-			fis = new FileInputStream(file);
-			bitmap = BitmapFactory.decodeStream(fis);
+		try (FileInputStream input = new FileInputStream(file)) {
+			bitmap = BitmapFactory.decodeStream(input);
 			if (bitmap == null) {
 				file.delete();
 				return null;
@@ -515,8 +512,6 @@ public class CacheManager implements Runnable {
 			return bitmap;
 		} catch (IOException e) {
 			return null;
-		} finally {
-			IOUtils.close(fis);
 		}
 	}
 
@@ -529,16 +524,13 @@ public class CacheManager implements Runnable {
 			return;
 		}
 		boolean success = false;
-		OutputStream outputStream = null;
 		File file = new File(directory, thumbnailKey);
-		try {
-			outputStream = new FileOutputStream(file);
-			data.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+		try (FileOutputStream output = new FileOutputStream(file)) {
+			data.compress(Bitmap.CompressFormat.PNG, 100, output);
 			success = true;
 		} catch (IOException e) {
-			// Ignore exception
+			e.printStackTrace();
 		} finally {
-			IOUtils.close(outputStream);
 			validateNewCachedFile(file, thumbnailKey, CacheItem.Type.THUMBNAILS, success);
 		}
 	}

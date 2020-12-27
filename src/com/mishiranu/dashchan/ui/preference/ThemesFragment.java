@@ -160,11 +160,11 @@ public class ThemesFragment extends BaseListFragment {
 			switch (requestCode) {
 				case C.REQUEST_CODE_ATTACH: {
 					Uri uri = data.getData();
-					FileHolder fileHolder = uri != null ? FileHolder.obtain(requireContext(), uri) : null;
+					FileHolder fileHolder = uri != null ? FileHolder.obtain(uri) : null;
 					if (fileHolder != null) {
 						ByteArrayOutputStream output = new ByteArrayOutputStream();
 						boolean success;
-						try (InputStream input = FileHolder.obtain(requireContext(), uri).openInputStream()) {
+						try (InputStream input = fileHolder.openInputStream()) {
 							IOUtils.copyStream(input, output);
 							success = true;
 						} catch (IOException e) {

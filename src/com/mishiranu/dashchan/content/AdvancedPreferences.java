@@ -30,18 +30,14 @@ public class AdvancedPreferences {
 			file = new File(file.getParentFile(), "files/advanced.json");
 			if (file.exists()) {
 				String jsonString = null;
-				FileInputStream inputStream = null;
-				try {
-					inputStream = new FileInputStream(file);
-					ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-					IOUtils.copyStream(inputStream, outputStream);
+				try (FileInputStream input = new FileInputStream(file)) {
+					ByteArrayOutputStream output = new ByteArrayOutputStream();
+					IOUtils.copyStream(input, output);
 					@SuppressWarnings("CharsetObjectCanBeUsed")
-					String jsonStringSuppress = new String(outputStream.toByteArray(), "UTF-8");
+					String jsonStringSuppress = new String(output.toByteArray(), "UTF-8");
 					jsonString = jsonStringSuppress;
 				} catch (IOException e) {
 					e.printStackTrace();
-				} finally {
-					IOUtils.close(inputStream);
 				}
 				if (jsonString != null) {
 					try {

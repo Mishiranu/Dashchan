@@ -155,7 +155,7 @@ public class AboutFragment extends PreferenceFragment implements FragmentHandler
 					.setTitle(R.string.restore_data)
 					.setItems(items, (d, which) -> {
 						String path = requireArguments().getStringArrayList(EXTRA_FILES).get(which);
-						DataFile file = DataFile.obtain(requireContext(), DataFile.Target.DOWNLOADS, path);
+						DataFile file = DataFile.obtain(DataFile.Target.DOWNLOADS, path);
 						List<BackupManager.Entry> entries = BackupManager.readBackupEntries(file);
 						if (entries.isEmpty()) {
 							ClickableToast.show(R.string.invalid_data_format);
@@ -236,7 +236,7 @@ public class AboutFragment extends PreferenceFragment implements FragmentHandler
 			}
 			if (!checked.isEmpty()) {
 				String path = requireArguments().getString(EXTRA_FILE);
-				DataFile file = DataFile.obtain(requireContext(), DataFile.Target.DOWNLOADS, path);
+				DataFile file = DataFile.obtain(DataFile.Target.DOWNLOADS, path);
 				if (BackupManager.loadBackup(file, checked)) {
 					NavigationUtils.restartApplication(requireContext());
 				} else {

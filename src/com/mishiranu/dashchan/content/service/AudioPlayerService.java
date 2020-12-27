@@ -141,7 +141,7 @@ public class AudioPlayerService extends BaseService implements MediaPlayer.OnCom
 							initAndPlayAudio(cachedFile);
 						} else {
 							Chan chan = Chan.getPreferred(chanName, uri);
-							readFileTask = ReadFileTask.createCachedMediaFile(this, this, chan, uri, cachedFile);
+							readFileTask = ReadFileTask.createCachedMediaFile(this, chan, uri, cachedFile);
 							readFileTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 						}
 					}

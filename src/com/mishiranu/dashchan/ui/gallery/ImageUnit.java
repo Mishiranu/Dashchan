@@ -113,8 +113,7 @@ public class ImageUnit {
 		}
 		readBitmapCallback = new ReadBitmapCallback(holder.galleryItem);
 		Chan chan = Chan.getPreferred(instance.galleryInstance.chanName, uri);
-		readFileTask = ReadFileTask.createCachedMediaFile(instance.galleryInstance.context, readBitmapCallback,
-				chan, uri, cachedFile);
+		readFileTask = ReadFileTask.createCachedMediaFile(readBitmapCallback, chan, uri, cachedFile);
 		readFileTask.execute(ConcurrentUtils.PARALLEL_EXECUTOR);
 	}
 

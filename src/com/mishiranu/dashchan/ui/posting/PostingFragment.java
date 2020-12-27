@@ -20,6 +20,7 @@ import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -79,7 +80,6 @@ import com.mishiranu.dashchan.ui.posting.text.NameEditWatcher;
 import com.mishiranu.dashchan.ui.posting.text.QuoteEditWatcher;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
 import com.mishiranu.dashchan.util.GraphicsUtils;
-import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.ResourceUtils;
 import com.mishiranu.dashchan.util.ViewUtils;
 import com.mishiranu.dashchan.widget.ClickableToast;
@@ -1269,7 +1269,7 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 					}
 					ArrayList<Pair<String, String>> attachmentsToAdd = new ArrayList<>();
 					for (Uri uri : uris) {
-						FileHolder fileHolder = FileHolder.obtain(requireContext(), uri);
+						FileHolder fileHolder = FileHolder.obtain(uri);
 						if (fileHolder != null) {
 							String hash = DraftsStorage.getInstance().store(fileHolder);
 							if (hash != null) {
@@ -1537,26 +1537,21 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 				try {
 					bitmap = fileHolder.readImageBitmap(targetImageSize, false, false);
 				} catch (OutOfMemoryError e) {
-					// Ignore exception
+					// Ignore
 				}
 				fileSize += " " + fileHolder.getImageWidth() + '×' + fileHolder.getImageHeight();
 			}
 			if (bitmap == null) {
 				if (Chan.getFallback().locator.isVideoExtension(fileHolder.getName())) {
 					MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-					FileHolder.Descriptor descriptor = null;
-					try {
-						descriptor = fileHolder.openDescriptor();
+					try (ParcelFileDescriptor descriptor = fileHolder.openFileDescriptor()) {
 						retriever.setDataSource(descriptor.getFileDescriptor());
 						Bitmap fullBitmap = retriever.getFrameAtTime(-1);
 						if (fullBitmap != null) {
 							bitmap = GraphicsUtils.reduceBitmapSize(fullBitmap, targetImageSize, true);
 						}
 					} catch (Exception | OutOfMemoryError e) {
-						// Ignore exception
-					} finally {
-						retriever.release();
-						IOUtils.close(descriptor);
+						e.printStackTrace();
 					}
 				}
 			}

@@ -1,6 +1,5 @@
 package com.mishiranu.dashchan.content.model;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -11,15 +10,17 @@ import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.util.Pair;
+import chan.util.DataFile;
 import chan.util.StringUtils;
+import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.media.WebViewBitmapDecoder;
 import com.mishiranu.dashchan.util.IOUtils;
 import com.mishiranu.dashchan.util.MimeTypes;
-import java.io.Closeable;
 import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -33,11 +34,7 @@ public abstract class FileHolder implements Serializable {
 	public abstract String getName();
 	public abstract int getSize();
 	public abstract InputStream openInputStream() throws IOException;
-	public abstract Descriptor openDescriptor() throws IOException;
-
-	public interface Descriptor extends Closeable {
-		FileDescriptor getFileDescriptor() throws IOException;
-	}
+	public abstract ParcelFileDescriptor openFileDescriptor() throws IOException;
 
 	public String getExtension() {
 		return StringUtils.getFileExtension(getName());
@@ -99,7 +96,7 @@ public abstract class FileHolder implements Serializable {
 						signature = new byte[12];
 						success = IOUtils.readExactlyCheck(input, signature, 0, signature.length);
 					} catch (IOException e) {
-						// Ignore exception
+						// Ignore
 					}
 					if (success) {
 						ImageType type = null;
@@ -159,7 +156,7 @@ public abstract class FileHolder implements Serializable {
 							parser.next();
 						}
 					} catch (IOException | XmlPullParserException e) {
-						// Ignore exception
+						// Ignore
 					}
 				}
 			}
@@ -231,16 +228,13 @@ public abstract class FileHolder implements Serializable {
 				return bitmap;
 			}
 			if (mayUseRegionDecoder && isRegionDecoderSupported()) {
-				InputStream input = null;
 				BitmapRegionDecoder decoder = null;
-				try {
-					input = openInputStream();
+				try (InputStream input = openInputStream()) {
 					decoder = BitmapRegionDecoder.newInstance(input, false);
 					return decoder.decodeRegion(new Rect(0, 0, decoder.getWidth(), decoder.getHeight()), options);
 				} catch (IOException e) {
 					e.printStackTrace();
 				} finally {
-					IOUtils.close(input);
 					if (decoder != null) {
 						decoder.recycle();
 					}
@@ -254,15 +248,11 @@ public abstract class FileHolder implements Serializable {
 	}
 
 	private Bitmap readBitmapSimple(BitmapFactory.Options options) {
-		InputStream input = null;
-		try {
-			input = openInputStream();
+		try (InputStream input = openInputStream()) {
 			return BitmapFactory.decodeStream(input, null, options);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
-		} finally {
-			IOUtils.close(input);
 		}
 	}
 
@@ -304,8 +294,12 @@ public abstract class FileHolder implements Serializable {
 		}
 
 		@Override
-		public Descriptor openDescriptor() throws IOException {
-			return new FileFileHolderDescriptor(openInputStream());
+		public ParcelFileDescriptor openFileDescriptor() throws IOException {
+			ParcelFileDescriptor descriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+			if (descriptor == null) {
+				throw new FileNotFoundException("File descriptor is null");
+			}
+			return descriptor;
 		}
 
 		@Override
@@ -323,52 +317,28 @@ public abstract class FileHolder implements Serializable {
 		public int hashCode() {
 			return file.hashCode();
 		}
-
-		private static class FileFileHolderDescriptor implements Descriptor {
-			private final FileInputStream fileInputStream;
-
-			public FileFileHolderDescriptor(FileInputStream fileInputStream) {
-				this.fileInputStream = fileInputStream;
-			}
-
-			@Override
-			public FileDescriptor getFileDescriptor() throws IOException {
-				return fileInputStream.getFD();
-			}
-
-			@Override
-			public void close() throws IOException {
-				fileInputStream.close();
-			}
-		}
 	}
 
 	private static class ContentFileHolder extends FileHolder {
 		private static final long serialVersionUID = 1L;
 
-		private final Context context;
 		private final String uriString;
 		private final String name;
 		private final int size;
 
-		public ContentFileHolder(Context context, Uri uri, String name, int size) {
-			this.context = context.getApplicationContext();
+		public ContentFileHolder(Uri uri, String name, int size) {
 			this.uriString = uri.toString();
 			this.name = name;
-			InputStream input = null;
-			try {
+			try (InputStream input = openInputStream()) {
 				int newSize = 0;
 				byte[] buffer = new byte[8192];
-				input = openInputStream();
 				int count;
 				while ((count = input.read(buffer)) >= 0) {
 					newSize += count;
 				}
 				size = newSize;
 			} catch (IOException e) {
-				// Ignore exception
-			} finally {
-				IOUtils.close(input);
+				// Ignore
 			}
 			this.size = size;
 		}
@@ -386,7 +356,8 @@ public abstract class FileHolder implements Serializable {
 		@Override
 		public InputStream openInputStream() throws IOException {
 			try {
-				InputStream inputStream = context.getContentResolver().openInputStream(toUri());
+				InputStream inputStream = MainApplication.getInstance()
+						.getContentResolver().openInputStream(toUri());
 				if (inputStream == null) {
 					throw new IOException("InputStream is empty");
 				}
@@ -400,13 +371,15 @@ public abstract class FileHolder implements Serializable {
 		}
 
 		@Override
-		public Descriptor openDescriptor() throws IOException {
+		public ParcelFileDescriptor openFileDescriptor() throws IOException {
 			try {
-				return new ContentFileHolderDescriptor(context.getContentResolver().openFileDescriptor(toUri(), "r"));
+				ParcelFileDescriptor descriptor = MainApplication.getInstance()
+						.getContentResolver().openFileDescriptor(toUri(), "r");
+				if (descriptor == null) {
+					throw new FileNotFoundException("File descriptor is null");
+				}
+				return descriptor;
 			} catch (SecurityException e) {
-				throw new IOException(e);
-			} catch (Exception e) {
-				e.printStackTrace();
 				throw new IOException(e);
 			}
 		}
@@ -430,24 +403,6 @@ public abstract class FileHolder implements Serializable {
 		public int hashCode() {
 			return uriString.hashCode();
 		}
-
-		private static class ContentFileHolderDescriptor implements Descriptor {
-			private final ParcelFileDescriptor parcelFileDescriptor;
-
-			public ContentFileHolderDescriptor(ParcelFileDescriptor parcelFileDescriptor) {
-				this.parcelFileDescriptor = parcelFileDescriptor;
-			}
-
-			@Override
-			public FileDescriptor getFileDescriptor() {
-				return parcelFileDescriptor.getFileDescriptor();
-			}
-
-			@Override
-			public void close() throws IOException {
-				parcelFileDescriptor.close();
-			}
-		}
 	}
 
 	private static long fileNameStart = System.currentTimeMillis();
@@ -456,18 +411,17 @@ public abstract class FileHolder implements Serializable {
 		return new FileFileHolder(file);
 	}
 
-	public static FileHolder obtain(Context context, Uri uri) {
+	public static FileHolder obtain(Uri uri) {
 		String scheme = uri.getScheme();
 		if ("file".equals(scheme)) {
 			String path = uri.getPath();
 			return new FileFileHolder(new File(path));
 		} else if ("content".equals(scheme)) {
-			Cursor cursor = null;
-			try {
-				cursor = context.getContentResolver().query(uri, null, null, null, null);
+			try (Cursor cursor = MainApplication.getInstance()
+					.getContentResolver().query(uri, null, null, null, null)) {
 				if (cursor != null && cursor.moveToFirst()) {
 					int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-					int sizeIndex = Math.max(cursor.getColumnIndex(OpenableColumns.SIZE), 0);
+					int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
 					if (nameIndex >= 0 && sizeIndex >= 0) {
 						String name = cursor.getString(nameIndex);
 						int size = cursor.getInt(sizeIndex);
@@ -495,21 +449,26 @@ public abstract class FileHolder implements Serializable {
 							}
 						}
 						if (!StringUtils.isEmpty(name)) {
-							return new ContentFileHolder(context, uri, name, size);
+							return new ContentFileHolder(uri, name, size);
 						}
 					}
 				}
 			} catch (SecurityException e) {
-				return null;
-			} catch (Exception e) {
 				e.printStackTrace();
 				return null;
-			} finally {
-				if (cursor != null) {
-					cursor.close();
-				}
 			}
 		}
 		return null;
+	}
+
+	public static FileHolder obtain(DataFile file) {
+		Pair<File, Uri> fileOrUri = file.getFileOrUri();
+		if (fileOrUri.first != null) {
+			return obtain(fileOrUri.first);
+		} else if (fileOrUri.second != null) {
+			return obtain(fileOrUri.second);
+		} else {
+			return null;
+		}
 	}
 }

@@ -235,44 +235,42 @@ public class GraphicsUtils {
 		ArrayList<SkipRange> skipRanges = null;
 		byte[] decodedBytes = null;
 		String newFileName = null;
-		InputStream input = null;
 		int newWidth = -1;
 		int newHeight = -1;
-		try {
-			if (reencoding != null && fileHolder.isImage()) {
-				Bitmap bitmap;
+		if (reencoding != null && fileHolder.isImage()) {
+			Bitmap bitmap;
+			try {
+				bitmap = fileHolder.readImageBitmap(Integer.MAX_VALUE, true, true);
+			} catch (Exception | OutOfMemoryError e) {
+				bitmap = null;
+			}
+			if (bitmap != null) {
 				try {
-					bitmap = fileHolder.readImageBitmap(Integer.MAX_VALUE, true, true);
-				} catch (Exception | OutOfMemoryError e) {
-					bitmap = null;
-				}
-				if (bitmap != null) {
-					try {
-						if (reencoding.reduce > 1) {
-							Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap,
-									Math.max(bitmap.getWidth() / reencoding.reduce, 1),
-									Math.max(bitmap.getHeight() / reencoding.reduce, 1), true);
-							if (scaledBitmap != bitmap) {
-								bitmap.recycle();
-								bitmap = scaledBitmap;
-							}
-							newWidth = bitmap.getWidth();
-							newHeight = bitmap.getHeight();
+					if (reencoding.reduce > 1) {
+						Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap,
+								Math.max(bitmap.getWidth() / reencoding.reduce, 1),
+								Math.max(bitmap.getHeight() / reencoding.reduce, 1), true);
+						if (scaledBitmap != bitmap) {
+							bitmap.recycle();
+							bitmap = scaledBitmap;
 						}
-						boolean png = Reencoding.FORMAT_PNG.equals(reencoding.format);
-						ByteArrayOutputStream output = new ByteArrayOutputStream();
-						bitmap.compress(Reencoding.FORMAT_PNG.equals(reencoding.format) ? Bitmap.CompressFormat.PNG
-								: Bitmap.CompressFormat.JPEG, reencoding.quality, output);
-						decodedBytes = output.toByteArray();
-						int index = fileName.lastIndexOf('.');
-						newFileName = (index >= 0 ? fileName.substring(0, index) : fileName) + (png ? ".png" : ".jpeg");
-					} finally {
-						bitmap.recycle();
+						newWidth = bitmap.getWidth();
+						newHeight = bitmap.getHeight();
 					}
+					boolean png = Reencoding.FORMAT_PNG.equals(reencoding.format);
+					ByteArrayOutputStream output = new ByteArrayOutputStream();
+					bitmap.compress(Reencoding.FORMAT_PNG.equals(reencoding.format) ? Bitmap.CompressFormat.PNG
+							: Bitmap.CompressFormat.JPEG, reencoding.quality, output);
+					decodedBytes = output.toByteArray();
+					int index = fileName.lastIndexOf('.');
+					newFileName = (index >= 0 ? fileName.substring(0, index) : fileName) + (png ? ".png" : ".jpeg");
+				} finally {
+					bitmap.recycle();
 				}
-			} else if (removeMetadata) {
-				if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_JPEG) {
-					input = new BufferedInputStream(fileHolder.openInputStream(), 16 * 1024);
+			}
+		} else if (removeMetadata) {
+			if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_JPEG) {
+				try (InputStream input = new BufferedInputStream(fileHolder.openInputStream(), 16 * 1024)) {
 					int position = 0;
 					byte[] buffer = new byte[2];
 					while (true) {
@@ -301,8 +299,11 @@ public class GraphicsUtils {
 							break;
 						}
 					}
-				} else if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_PNG) {
-					input = fileHolder.openInputStream();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			} else if (fileHolder.getImageType() == FileHolder.ImageType.IMAGE_PNG) {
+				try (InputStream input = fileHolder.openInputStream()) {
 					if (IOUtils.skipExactlyCheck(input, 8)) {
 						int position = 8;
 						byte[] buffer = new byte[8];
@@ -334,12 +335,10 @@ public class GraphicsUtils {
 							}
 						}
 					}
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			}
-		} catch (IOException e) {
-			// Ignore exception
-		} finally {
-			IOUtils.close(input);
 		}
 		return skipRanges != null || decodedBytes != null || newFileName != null
 				? new TransformationData(skipRanges, decodedBytes, newFileName, newWidth, newHeight) : null;

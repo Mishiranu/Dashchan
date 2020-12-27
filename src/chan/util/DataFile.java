@@ -12,6 +12,7 @@ import chan.annotation.Public;
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.FileProvider;
+import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.util.MimeTypes;
 import java.io.File;
@@ -71,9 +72,9 @@ public abstract class DataFile {
 		}
 	}
 
-	public static DataFile obtain(Context context, Target target, String path) {
+	public static DataFile obtain(Target target, String path) {
 		if (target.safTarget != null && C.USE_SAF) {
-			return new SafFile(target, validatePath(path), context.getApplicationContext());
+			return new SafFile(target, validatePath(path));
 		} else {
 			return new RegularFile(target, validatePath(path));
 		}
@@ -234,39 +235,39 @@ public abstract class DataFile {
 			}
 		}
 
-		private final Context context;
 		private Resolution resolution;
 
-		private SafFile(Target target, String path, Context context, Resolution resolution) {
+		private SafFile(Target target, String path, Resolution resolution) {
 			super(target, path);
-			this.context = context;
 			this.resolution = resolution;
 		}
 
-		private SafFile(Target target, String path, Context context) {
-			this(target, path, context, resolveChild(context,
-					getDocumentUriFromTree(context, target.safTarget), path));
+		private SafFile(Target target, String path) {
+			this(target, path, resolveChild(getDocumentUriFromTree(target.safTarget), path));
 		}
 
-		private static Uri getDocumentUriFromTree(Context context, SafTarget safTarget) {
-			Uri treeUri = safTarget.uriTree.getUriTree(context);
+		private static ContentResolver getContentResolver() {
+			return MainApplication.getInstance().getContentResolver();
+		}
+
+		private static Uri getDocumentUriFromTree(SafTarget safTarget) {
+			Uri treeUri = safTarget.uriTree.getUriTree(MainApplication.getInstance());
 			return treeUri != null ? DocumentsContract.buildDocumentUriUsingTree(treeUri,
 					DocumentsContract.getTreeDocumentId(treeUri)) : null;
 		}
 
-		private static Resolution resolveChild(Context context, Uri documentUri, String path) {
+		private static Resolution resolveChild(Uri documentUri, String path) {
 			if (StringUtils.isEmpty(path)) {
 				return new Resolution(documentUri, null, null, true, 0L);
 			} else if (documentUri == null) {
 				return new Resolution(null, path, null, false, 0L);
 			} else {
-				ContentResolver contentResolver = context.getContentResolver();
 				String[] segments = path.split("/");
 				boolean success = true;
 				CursorExtra cursorExtra = null;
 				for (int i = 0; i < segments.length - 1; i++) {
 					String segment = segments[i];
-					Object uriOrExtra = findChildDocumentUriOrExtra(contentResolver, documentUri, segment, null);
+					Object uriOrExtra = findChildDocumentUriOrExtra(documentUri, segment, null);
 					if (uriOrExtra instanceof Uri) {
 						documentUri = (Uri) uriOrExtra;
 						segments[i] = null;
@@ -279,7 +280,7 @@ public abstract class DataFile {
 				if (success) {
 					String name = segments[segments.length - 1];
 					ChildExtra childExtra = new ChildExtra();
-					Object uriOrExtra = findChildDocumentUriOrExtra(contentResolver, documentUri, name, childExtra);
+					Object uriOrExtra = findChildDocumentUriOrExtra(documentUri, name, childExtra);
 					if (uriOrExtra instanceof Uri) {
 						return new Resolution((Uri) uriOrExtra, null, null,
 								childExtra.isDirectory, childExtra.lastModified);
@@ -312,18 +313,16 @@ public abstract class DataFile {
 				DocumentsContract.Document.COLUMN_DISPLAY_NAME, DocumentsContract.Document.COLUMN_MIME_TYPE,
 				DocumentsContract.Document.COLUMN_LAST_MODIFIED};
 
-		private static Object findChildDocumentUriOrExtra(ContentResolver contentResolver,
-				Uri documentUri, String displayName, ChildExtra childExtra) {
+		private static Object findChildDocumentUriOrExtra(Uri documentUri, String displayName, ChildExtra childExtra) {
 			String[] projection = childExtra != null ? PROJECTION_CHILD_EXTRA : PROJECTION_CHILD_SIMPLE;
 			Uri childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(documentUri,
 					DocumentsContract.getDocumentId(documentUri));
-			Cursor cursor = contentResolver.query(childrenUri, projection, null, null, null);
-			if (cursor == null) {
-				return null;
-			}
-			boolean loading = cursor.getExtras().getBoolean(DocumentsContract.EXTRA_LOADING);
-			boolean error = cursor.getExtras().getBoolean(DocumentsContract.EXTRA_ERROR);
-			try {
+			try (Cursor cursor = getContentResolver().query(childrenUri, projection, null, null, null)) {
+				if (cursor == null) {
+					return null;
+				}
+				boolean loading = cursor.getExtras().getBoolean(DocumentsContract.EXTRA_LOADING);
+				boolean error = cursor.getExtras().getBoolean(DocumentsContract.EXTRA_ERROR);
 				while (cursor.moveToNext()) {
 					if (displayName.toLowerCase(Locale.getDefault()).equals(StringUtils
 							.emptyIfNull(cursor.getString(1)).toLowerCase(Locale.getDefault()))) {
@@ -337,10 +336,11 @@ public abstract class DataFile {
 						return childDocumentUri;
 					}
 				}
-			} finally {
-				cursor.close();
+				return loading ? CursorExtra.LOADING : error ? CursorExtra.ERROR : null;
+			} catch (SecurityException e) {
+				e.printStackTrace();
+				return null;
 			}
-			return loading ? CursorExtra.LOADING : error ? CursorExtra.ERROR : null;
 		}
 
 		@Override
@@ -362,23 +362,23 @@ public abstract class DataFile {
 		public String getName() {
 			String relativePath = getRelativePath();
 			if (relativePath.isEmpty()) {
-				Uri documentUri = getDocumentUriFromTree(context, getTarget().safTarget);
+				Uri documentUri = getDocumentUriFromTree(getTarget().safTarget);
 				if (documentUri == null) {
 					return null;
 				}
 				String[] projection = {DocumentsContract.Document.COLUMN_DISPLAY_NAME};
-				Cursor cursor = context.getContentResolver().query(documentUri, projection, null, null, null);
-				if (cursor == null) {
-					return null;
-				}
-				try {
+				try (Cursor cursor = getContentResolver().query(documentUri, projection, null, null, null)) {
+					if (cursor == null) {
+						return null;
+					}
 					if (cursor.moveToFirst()) {
 						return cursor.getString(0);
 					} else {
 						return null;
 					}
-				} finally {
-					cursor.close();
+				} catch (SecurityException e) {
+					e.printStackTrace();
+					return null;
 				}
 			} else {
 				int index = relativePath.lastIndexOf('/');
@@ -405,8 +405,8 @@ public abstract class DataFile {
 				String fullPath = validatePath(relativePath.isEmpty() ? path : relativePath + "/" + path);
 				String unresolvedPath = validatePath(resolution.unresolvedPath != null
 						? resolution.unresolvedPath + "/" + path : path);
-				Resolution resolution = resolveChild(context, this.resolution.documentUri, unresolvedPath);
-				return new SafFile(getTarget(), fullPath, context, resolution);
+				Resolution resolution = resolveChild(this.resolution.documentUri, unresolvedPath);
+				return new SafFile(getTarget(), fullPath, resolution);
 			}
 		}
 
@@ -416,14 +416,13 @@ public abstract class DataFile {
 			if (exists(resolution) && resolution.isDirectory) {
 				Uri childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(resolution.documentUri,
 						DocumentsContract.getDocumentId(resolution.documentUri));
-				Cursor cursor = context.getContentResolver().query(childrenUri,
-						PROJECTION_CHILD_EXTRA, null, null, null);
-				if (cursor == null) {
-					return Collections.emptyList();
-				}
-				String relativePath = getRelativePath();
-				ArrayList<DataFile> result = new ArrayList<>(cursor.getCount());
-				try {
+				try (Cursor cursor = getContentResolver().query(childrenUri,
+						PROJECTION_CHILD_EXTRA, null, null, null)) {
+					if (cursor == null) {
+						return Collections.emptyList();
+					}
+					String relativePath = getRelativePath();
+					ArrayList<DataFile> result = new ArrayList<>(cursor.getCount());
 					while (cursor.moveToNext()) {
 						Uri documentUri = DocumentsContract.buildDocumentUriUsingTree(childrenUri, cursor.getString(0));
 						String name = cursor.getString(1);
@@ -431,13 +430,14 @@ public abstract class DataFile {
 								.equals(cursor.getString(2));
 						long lastModified = cursor.getLong(3);
 						String path = relativePath.isEmpty() ? name : relativePath + "/" + name;
-						result.add(new SafFile(getTarget(), path, context,
-								new Resolution(documentUri, null, null, isDirectory, lastModified)));
+						result.add(new SafFile(getTarget(), path, new Resolution(documentUri,
+								null, null, isDirectory, lastModified)));
 					}
-				} finally {
-					cursor.close();
+					return result;
+				} catch (SecurityException e) {
+					e.printStackTrace();
+					return null;
 				}
-				return result;
 			} else {
 				return null;
 			}
@@ -451,9 +451,9 @@ public abstract class DataFile {
 					Uri documentUri = DocumentsContract.buildDocumentUriUsingTree(resolution.documentUri,
 							DocumentsContract.getTreeDocumentId(resolution.documentUri));
 					this.resolution = new Resolution(documentUri, getRelativePath(), null, false, 0L);
-					return DocumentsContract.deleteDocument(context.getContentResolver(), resolution.documentUri);
-				} catch (IOException e) {
-					// Ignore
+					return DocumentsContract.deleteDocument(getContentResolver(), resolution.documentUri);
+				} catch (FileNotFoundException | SecurityException e) {
+					e.printStackTrace();
 				}
 			}
 			return false;
@@ -465,7 +465,11 @@ public abstract class DataFile {
 			if (!exists(resolution)) {
 				throw new FileNotFoundException("File not found");
 			}
-			return context.getContentResolver().openInputStream(resolution.documentUri);
+			try {
+				return getContentResolver().openInputStream(resolution.documentUri);
+			} catch (SecurityException e) {
+				throw new IOException(e);
+			}
 		}
 
 		@Override
@@ -473,46 +477,58 @@ public abstract class DataFile {
 			Resolution resolution = this.resolution;
 			boolean mayUpdateResolution = true;
 			if (resolution.documentUri == null) {
-				Uri documentUri = getDocumentUriFromTree(context, getTarget().safTarget);
+				Uri documentUri = getDocumentUriFromTree(getTarget().safTarget);
 				if (documentUri == null) {
 					throw new FileNotFoundException("No access");
 				}
-				resolution = resolveChild(context, documentUri, resolution.unresolvedPath);
+				resolution = resolveChild(documentUri, resolution.unresolvedPath);
 				this.resolution = resolution;
 				mayUpdateResolution = false;
 			}
 			if (exists(resolution)) {
-				return context.getContentResolver().openOutputStream(resolution.documentUri);
+				try {
+					return getContentResolver().openOutputStream(resolution.documentUri);
+				} catch (SecurityException e) {
+					throw new IOException(e);
+				}
 			}
 			if (StringUtils.isEmpty(resolution.unresolvedPath)) {
 				throw new FileNotFoundException("No access");
 			}
 			if (mayUpdateResolution && resolution.cursorExtra != null) {
-				resolution = resolveChild(context, resolution.documentUri, resolution.unresolvedPath);
+				resolution = resolveChild(resolution.documentUri, resolution.unresolvedPath);
 				this.resolution = resolution;
 			}
 			if (resolution.cursorExtra != null) {
 				throw new IOException("Tree is not ready: " + resolution.cursorExtra.name());
 			}
-			ContentResolver contentResolver = context.getContentResolver();
 			String[] segments = resolution.unresolvedPath.split("/");
 			Uri childDocumentUri = resolution.documentUri;
 			for (int i = 0; i < segments.length - 1; i++) {
 				String displayName = segments[i];
-				childDocumentUri = DocumentsContract.createDocument(contentResolver, childDocumentUri,
-						DocumentsContract.Document.MIME_TYPE_DIR, displayName);
+				try {
+					childDocumentUri = DocumentsContract.createDocument(getContentResolver(), childDocumentUri,
+							DocumentsContract.Document.MIME_TYPE_DIR, displayName);
+				} catch (SecurityException e) {
+					throw new IOException(e);
+				}
 				if (childDocumentUri == null) {
 					throw new FileNotFoundException("Couldn't create a directory " + displayName);
 				}
 			}
 			String name = segments[segments.length - 1];
 			String mimeType = MimeTypes.forExtension(StringUtils.getFileExtension(name), "application/octet-stream");
-			Uri documentUri = DocumentsContract.createDocument(contentResolver, childDocumentUri, mimeType, name);
-			if (documentUri == null) {
-				throw new FileNotFoundException("Couldn't create a file " + name);
+			try {
+				Uri documentUri = DocumentsContract.createDocument(getContentResolver(),
+						childDocumentUri, mimeType, name);
+				if (documentUri == null) {
+					throw new FileNotFoundException("Couldn't create a file " + name);
+				}
+				this.resolution = new Resolution(documentUri, null, null, false, System.currentTimeMillis());
+				return getContentResolver().openOutputStream(documentUri);
+			} catch (SecurityException e) {
+				throw new IOException(e);
 			}
-			this.resolution = new Resolution(documentUri, null, null, false, System.currentTimeMillis());
-			return contentResolver.openOutputStream(documentUri);
 		}
 	}
 }

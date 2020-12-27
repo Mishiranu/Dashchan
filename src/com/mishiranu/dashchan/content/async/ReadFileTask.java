@@ -1,6 +1,5 @@
 package com.mishiranu.dashchan.content.async;
 
-import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 import chan.content.Chan;
@@ -69,9 +68,9 @@ public class ReadFileTask extends HttpHolderTask<long[], Boolean> {
 		}
 	};
 
-	public static ReadFileTask createCachedMediaFile(Context context, FileCallback callback, Chan chan,
+	public static ReadFileTask createCachedMediaFile(FileCallback callback, Chan chan,
 			Uri fromUri, File cachedMediaFile) {
-		DataFile toFile = DataFile.obtain(context, DataFile.Target.CACHE, cachedMediaFile.getName());
+		DataFile toFile = DataFile.obtain(DataFile.Target.CACHE, cachedMediaFile.getName());
 		return new ReadFileTask(callback, chan, fromUri, toFile, null, true, null, null);
 	}
 

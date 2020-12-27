@@ -137,9 +137,9 @@ public class VideoPlayer {
 			synchronized (this) {
 				if (sessionData == null && initData == null && !consumed) {
 					long initPointer;
-					try (ParcelFileDescriptor parcelFileDescriptor = ParcelFileDescriptor
+					try (ParcelFileDescriptor descriptor = ParcelFileDescriptor
 							.open(file, ParcelFileDescriptor.MODE_READ_ONLY)) {
-						int fd = parcelFileDescriptor.detachFd();
+						int fd = descriptor.detachFd();
 						initPointer = holder.preInit(fd);
 					}
 					if (rangeCallback == null) {

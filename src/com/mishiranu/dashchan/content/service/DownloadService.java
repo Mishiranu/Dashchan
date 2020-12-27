@@ -149,16 +149,13 @@ public class DownloadService extends BaseService implements ReadFileTask.Callbac
 			File file = getSavedDownloadRetryFile();
 			file.delete();
 			Parcel parcel = Parcel.obtain();
-			FileOutputStream output = null;
-			try {
+			try (FileOutputStream output = new FileOutputStream(file)) {
 				parcel.writeTypedList(new ArrayList<>(errorTasks.values()));
 				byte[] data = parcel.marshall();
-				output = new FileOutputStream(file);
 				IOUtils.copyStream(new ByteArrayInputStream(data), output);
 			} catch (Exception e) {
 				file.delete();
 			} finally {
-				IOUtils.close(output);
 				parcel.recycle();
 			}
 		}
@@ -223,7 +220,7 @@ public class DownloadService extends BaseService implements ReadFileTask.Callbac
 		String key = getTargetPathKey(taskData.target, StringUtils.emptyIfNull(taskData.path));
 		DataFile file = cachedDirectories.get(key);
 		if (file == null) {
-			file = DataFile.obtain(this, taskData.target, taskData.path);
+			file = DataFile.obtain(taskData.target, taskData.path);
 			if (file.exists()) {
 				cachedDirectories.put(key, file);
 			}
@@ -254,17 +251,13 @@ public class DownloadService extends BaseService implements ReadFileTask.Callbac
 			TaskData taskData = iterator.next();
 			iterator.remove();
 			if (taskData.input != null) {
-				OutputStream output = null;
 				boolean success = false;
-				try {
-					output = getDataFile(taskData).openOutputStream();
-					IOUtils.copyStream(taskData.input, output);
+				try (InputStream input = taskData.input;
+						OutputStream output = getDataFile(taskData).openOutputStream()) {
+					IOUtils.copyStream(input, output);
 					success = true;
 				} catch (IOException e) {
 					e.printStackTrace();
-				} finally {
-					IOUtils.close(taskData.input);
-					IOUtils.close(output);
 				}
 				onFinishDownloadingInternal(success, new TaskData(taskData.chanName, taskData.overwrite,
 						null, taskData.target, taskData.path, taskData.name, taskData.allowWrite));
@@ -381,7 +374,7 @@ public class DownloadService extends BaseService implements ReadFileTask.Callbac
 		DataFile lastExistingFile = null;
 		HashSet<String> keys = new HashSet<>();
 		ArrayList<DownloadItem> availableItems = new ArrayList<>();
-		DataFile parent = DataFile.obtain(this, directRequest.target, directRequest.path);
+		DataFile parent = DataFile.obtain(directRequest.target, directRequest.path);
 		HashMap<String, DataFile> children = new HashMap<>();
 		List<DataFile> childrenList = parent.getChildren();
 		if (childrenList != null) {
@@ -444,7 +437,7 @@ public class DownloadService extends BaseService implements ReadFileTask.Callbac
 		String path = replaceRequest.directRequest.path;
 		List<DownloadItem> downloadItems = replaceRequest.directRequest.downloadItems;
 		ArrayList<DownloadItem> finalItems = new ArrayList<>(downloadItems.size());
-		DataFile parent = DataFile.obtain(this, target, path);
+		DataFile parent = DataFile.obtain(target, path);
 		HashSet<String> children = new HashSet<>();
 		List<DataFile> childrenList = parent.getChildren();
 		if (childrenList != null) {
@@ -610,19 +603,16 @@ public class DownloadService extends BaseService implements ReadFileTask.Callbac
 					File file = getSavedDownloadRetryFile();
 					if (file.exists()) {
 						Parcel parcel = Parcel.obtain();
-						FileInputStream input = null;
 						ByteArrayOutputStream output = new ByteArrayOutputStream();
-						try {
-							input = new FileInputStream(file);
+						try (FileInputStream input = new FileInputStream(file)) {
 							IOUtils.copyStream(input, output);
 							byte[] data = output.toByteArray();
 							parcel.unmarshall(data, 0, data.length);
 							parcel.setDataPosition(0);
 							errorTasks.addAll(parcel.createTypedArrayList(TaskData.CREATOR));
 						} catch (Exception e) {
-							// Ignore exception
+							// Ignore
 						} finally {
-							IOUtils.close(input);
 							parcel.recycle();
 							file.delete();
 						}
@@ -956,15 +946,7 @@ public class DownloadService extends BaseService implements ReadFileTask.Callbac
 
 	private void setBuilderImage(DataFile file) {
 		if (file.exists()) {
-			FileHolder fileHolder;
-			Pair<File, Uri> fileOrUri = file.getFileOrUri();
-			if (fileOrUri.first != null) {
-				fileHolder = FileHolder.obtain(fileOrUri.first);
-			} else if (fileOrUri.second != null) {
-				fileHolder = FileHolder.obtain(this, fileOrUri.second);
-			} else {
-				fileHolder = null;
-			}
+			FileHolder fileHolder = FileHolder.obtain(file);
 			if (fileHolder != null) {
 				DisplayMetrics metrics = getResources().getDisplayMetrics();
 				int size = Math.max(metrics.widthPixels, metrics.heightPixels);
@@ -1550,7 +1532,7 @@ public class DownloadService extends BaseService implements ReadFileTask.Callbac
 				String path = intent.getStringExtra(EXTRA_FILE_PATH);
 				boolean allowWrite = intent.getBooleanExtra(EXTRA_ALLOW_WRITE, false);
 				DataFile file = targetString != null && path != null
-						? DataFile.obtain(context, DataFile.Target.valueOf(targetString), path) : null;
+						? DataFile.obtain(DataFile.Target.valueOf(targetString), path) : null;
 				// Broadcast receivers can't bind to services
 				ServiceConnection[] connection = {null};
 				connection[0] = new ServiceConnection() {

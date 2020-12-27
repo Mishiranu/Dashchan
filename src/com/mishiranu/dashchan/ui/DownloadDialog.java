@@ -150,7 +150,7 @@ public class DownloadDialog {
 			state.originalName = Preferences.isDownloadOriginalName();
 		}
 
-		DataFile root = DataFile.obtain(context, DataFile.Target.DOWNLOADS, null);
+		DataFile root = DataFile.obtain(DataFile.Target.DOWNLOADS, null);
 		InputMethodManager inputMethodManager = (InputMethodManager) context
 				.getSystemService(Context.INPUT_METHOD_SERVICE);
 		View view = LayoutInflater.from(context)

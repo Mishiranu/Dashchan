@@ -87,32 +87,22 @@ public class IOUtils {
 	}
 
 	public static String readRawResourceString(Resources resources, int resId) {
-		InputStream input = null;
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
-		try {
-			input = resources.openRawResource(resId);
+		try (InputStream input = resources.openRawResource(resId)) {
 			IOUtils.copyStream(input, output);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
-		} finally {
-			IOUtils.close(input);
 		}
 		return new String(output.toByteArray());
 	}
 
 	public static boolean copyInternalFile(File from, File to) {
-		FileInputStream input = null;
-		FileOutputStream output = null;
-		try {
-			input = new FileInputStream(from);
-			output = new FileOutputStream(to);
+		try (FileInputStream input = new FileInputStream(from);
+				FileOutputStream output = new FileOutputStream(to)) {
 			copyStream(input, output);
 			return true;
 		} catch (IOException e) {
 			return false;
-		} finally {
-			close(input);
-			close(output);
 		}
 	}
 

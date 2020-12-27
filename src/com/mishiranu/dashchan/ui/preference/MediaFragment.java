@@ -72,7 +72,7 @@ public class MediaFragment extends PreferenceFragment implements FragmentHandler
 				R.string.original_file_name, R.string.original_file_name__summary);
 		if (C.USE_SAF) {
 			downloadUriTreePreference = addButton(getString(R.string.download_directory),
-					p -> DataFile.obtain(requireContext(), DataFile.Target.DOWNLOADS, null).getName());
+					p -> DataFile.obtain(DataFile.Target.DOWNLOADS, null).getName());
 			downloadUriTreePreference.setOnClickListener(p -> {
 				if (((FragmentHandler) requireActivity()).requestStorage()) {
 					inStorageRequest = true;

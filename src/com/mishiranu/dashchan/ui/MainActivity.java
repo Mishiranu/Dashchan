@@ -312,10 +312,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 			File file = getSavedPagesFile();
 			if (file != null && file.exists()) {
 				Parcel parcel = Parcel.obtain();
-				FileInputStream input = null;
 				ByteArrayOutputStream output = new ByteArrayOutputStream();
-				try {
-					input = new FileInputStream(file);
+				try (FileInputStream input = new FileInputStream(file)) {
 					IOUtils.copyStream(input, output);
 					byte[] data = output.toByteArray();
 					parcel.unmarshall(data, 0, data.length);
@@ -325,9 +323,8 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 					bundle.readFromParcel(parcel);
 					savedInstanceState = bundle;
 				} catch (IOException e) {
-					// Ignore exception
+					// Ignore
 				} finally {
-					IOUtils.close(input);
 					parcel.recycle();
 					file.delete();
 				}
@@ -451,7 +448,7 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		try {
 			fragmentManager.executePendingTransactions();
 		} catch (IllegalStateException e) {
-			// Ignore exception
+			// Ignore
 		}
 		return (ContentFragment) fragmentManager.findFragmentById(R.id.content_fragment);
 	}
@@ -1830,16 +1827,13 @@ public class MainActivity extends StateActivity implements DrawerForm.Callback, 
 		File file = getSavedPagesFile();
 		if (file != null) {
 			Parcel parcel = Parcel.obtain();
-			FileOutputStream output = null;
-			try {
+			try (FileOutputStream output = new FileOutputStream(file)) {
 				outState.writeToParcel(parcel, 0);
 				byte[] data = parcel.marshall();
-				output = new FileOutputStream(file);
 				IOUtils.copyStream(new ByteArrayInputStream(data), output);
 			} catch (IOException e) {
 				file.delete();
 			} finally {
-				IOUtils.close(output);
 				parcel.recycle();
 			}
 		}

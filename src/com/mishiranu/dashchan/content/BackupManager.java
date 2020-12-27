@@ -173,7 +173,7 @@ public class BackupManager {
 	}
 
 	public static List<BackupFile> getAvailableBackups(Context context) {
-		DataFile root = DataFile.obtain(context, DataFile.Target.DOWNLOADS, null);
+		DataFile root = DataFile.obtain(DataFile.Target.DOWNLOADS, null);
 		List<DataFile> files = root.getChildren();
 		List<BackupFile> backupFiles = new ArrayList<>();
 		if (files != null) {

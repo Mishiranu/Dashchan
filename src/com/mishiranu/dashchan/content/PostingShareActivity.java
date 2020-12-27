@@ -45,7 +45,7 @@ public class PostingShareActivity extends Activity {
 		int success = 0;
 		if (uris != null && !uris.isEmpty()) {
 			for (Uri uri : uris) {
-				FileHolder fileHolder = FileHolder.obtain(this, uri);
+				FileHolder fileHolder = FileHolder.obtain(uri);
 				if (fileHolder != null && draftsStorage.storeFuture(fileHolder)) {
 					success++;
 				}
