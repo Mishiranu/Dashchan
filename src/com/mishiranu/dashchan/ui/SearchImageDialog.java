@@ -37,7 +37,7 @@ public class SearchImageDialog extends DialogFragment {
 				.add("Google", () -> searchImageUri(locator.buildQueryWithHost("www.google.com",
 						"searchbyimage", "image_url", imageUriString)))
 				.add("Yandex", () -> searchImageUri(locator.buildQueryWithHost("yandex.ru",
-						"images/search", "source", "collection","rpt", "imageview", "url", imageUriString)))
+						"images/search", "source", "collection", "rpt", "imageview", "url", imageUriString)))
 				.add("TinEye", () -> searchImageUri(locator.buildQueryWithHost("www.tineye.com",
 						"search", "url", imageUriString)))
 				.add("SauceNAO", () -> searchImageUri(locator.buildQueryWithHost("saucenao.com",
