@@ -649,6 +649,7 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 				.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		menu.add(0, R.id.menu_open_original_thread, 0, R.string.open_original);
 		menu.add(0, R.id.menu_archive, 0, R.string.archive__verb);
+		menu.add(0, R.id.menu_go_to_last_post, 0, R.string.go_to_last_past);
 	}
 
 	@Override
@@ -779,6 +780,10 @@ public class PostsPage extends ListPage implements PostsAdapter.Callback, Favori
 					getUiManager().dialog().performSendArchiveThread(getFragmentManager(),
 							page.chanName, page.boardName, page.threadNumber, threadTitle, posts);
 				}
+				return true;
+			}
+			case R.id.menu_go_to_last_post: {
+				getRecyclerView().scrollToPosition(getAdapter().getItemCount() - 1);
 				return true;
 			}
 		}
