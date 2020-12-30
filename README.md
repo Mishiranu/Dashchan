@@ -46,7 +46,7 @@ key.alias=%KEY_ALIAS%
 key.password=%KEY_PASSWORD%
 ```
 
-### Building extenions
+### Building Extensions
 
 The source code of extensions is available in
 [Dashchan Extensions](https://github.com/Mishiranu/Dashchan-Extensions) repository.

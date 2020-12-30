@@ -9,7 +9,9 @@ import androidx.fragment.app.DialogFragment;
 import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.content.storage.DraftsStorage;
+import com.mishiranu.dashchan.media.ExifData;
 import com.mishiranu.dashchan.media.JpegData;
+import com.mishiranu.dashchan.media.PngData;
 import com.mishiranu.dashchan.ui.posting.AttachmentHolder;
 import com.mishiranu.dashchan.ui.posting.PostingDialogCallback;
 
@@ -39,10 +41,16 @@ public class AttachmentWarningDialog extends DialogFragment {
 			return new Dialog(activity);
 		}
 		JpegData jpegData = fileHolder.getJpegData();
-		boolean hasExif = jpegData != null && jpegData.hasExif;
-		int rotation = fileHolder.getRotation();
-		String geolocation = jpegData != null ? jpegData.getGeolocation(false) : null;
+		PngData pngData = fileHolder.getPngData();
+		boolean hasMetadata = pngData != null && pngData.hasMetadata;
+		boolean hasExif = jpegData != null && jpegData.exifData != null;
+		int rotation = fileHolder.getImageRotation();
+		ExifData exifData = jpegData != null ? jpegData.exifData : null;
+		String geolocation = exifData != null ? exifData.getGeolocation(false) : null;
 		String message = "";
+		if (hasMetadata) {
+			message = appendMessage(message, getString(R.string.metadata));
+		}
 		if (hasExif) {
 			message = appendMessage(message, getString(R.string.exif_metadata));
 		}
@@ -53,7 +61,7 @@ public class AttachmentWarningDialog extends DialogFragment {
 			message = appendMessage(message, getString(R.string.geolocation));
 		}
 		return new AlertDialog.Builder(activity).setTitle(R.string.warning)
-				.setMessage(getString(R.string.image_contains_data__format_sentence, message))
+				.setMessage(getString(R.string.file_contains_data__format_sentence, message))
 				.setPositiveButton(android.R.string.ok, null).create();
 	}
 

@@ -1,25 +1,4 @@
-/*
- * Copyright 2014-2016 Fukurou Mishiranu
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.mishiranu.dashchan.media;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
-import java.util.concurrent.CountDownLatch;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
@@ -34,13 +13,16 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-
 import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.IOUtils;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.util.concurrent.CountDownLatch;
 
-public class WebViewBitmapDecoder extends WebViewClient {
+public class WebViewDecoder extends WebViewClient {
 	private static final int MESSAGE_INIT_WEB_VIEW = 1;
 	private static final int MESSAGE_MEASURE_PICTURE = 2;
 	private static final int MESSAGE_CHECK_PICTURE_SIZE = 3;
@@ -55,7 +37,7 @@ public class WebViewBitmapDecoder extends WebViewClient {
 
 	private WebView webView;
 
-	private WebViewBitmapDecoder(FileHolder fileHolder, BitmapFactory.Options options) throws IOException {
+	private WebViewDecoder(FileHolder fileHolder, BitmapFactory.Options options) throws IOException {
 		this.fileHolder = fileHolder;
 		sampleSize = options != null ? Math.max(options.inSampleSize, 1) : 1;
 		if (!fileHolder.isImage()) {
@@ -159,10 +141,10 @@ public class WebViewBitmapDecoder extends WebViewClient {
 		public boolean handleMessage(Message msg) {
 			switch (msg.what) {
 				case MESSAGE_INIT_WEB_VIEW: {
-					WebViewBitmapDecoder decoder = (WebViewBitmapDecoder) msg.obj;
+					WebViewDecoder decoder = (WebViewDecoder) msg.obj;
 					int width = decoder.fileHolder.getImageWidth();
 					int height = decoder.fileHolder.getImageHeight();
-					int rotation = decoder.fileHolder.getRotation();
+					int rotation = decoder.fileHolder.getImageRotation();
 					if (rotation == 90 || rotation == 270) width = height ^ width ^ (height = width); // Swap
 					width /= decoder.sampleSize;
 					height /= decoder.sampleSize;
@@ -188,14 +170,14 @@ public class WebViewBitmapDecoder extends WebViewClient {
 				}
 				case MESSAGE_MEASURE_PICTURE: {
 					Object[] data = (Object[]) msg.obj;
-					WebViewBitmapDecoder decoder = (WebViewBitmapDecoder) data[0];
+					WebViewDecoder decoder = (WebViewDecoder) data[0];
 					WebView webView = (WebView) data[1];
 					decoder.measurePicture(webView);
 					return true;
 				}
 				case MESSAGE_CHECK_PICTURE_SIZE: {
 					Object[] data = (Object[]) msg.obj;
-					WebViewBitmapDecoder decoder = (WebViewBitmapDecoder) data[0];
+					WebViewDecoder decoder = (WebViewDecoder) data[0];
 					int width = (int) data[1];
 					int height = (int) data[2];
 					decoder.checkPictureSize(width, height);
@@ -216,9 +198,9 @@ public class WebViewBitmapDecoder extends WebViewClient {
 
 	public static Bitmap loadBitmap(FileHolder fileHolder, BitmapFactory.Options options) {
 		if (C.WEB_VIEW_BITMAP_DECODER_SUPPORTED && !MainApplication.getInstance().isLowRam()) {
-			WebViewBitmapDecoder decoder;
+			WebViewDecoder decoder;
 			try {
-				decoder = new WebViewBitmapDecoder(fileHolder, options);
+				decoder = new WebViewDecoder(fileHolder, options);
 			} catch (IOException e) {
 				return null;
 			}

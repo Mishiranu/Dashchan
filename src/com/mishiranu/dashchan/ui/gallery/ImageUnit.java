@@ -22,6 +22,7 @@ import com.mishiranu.dashchan.content.model.GalleryItem;
 import com.mishiranu.dashchan.graphics.DecoderDrawable;
 import com.mishiranu.dashchan.graphics.SimpleBitmapDrawable;
 import com.mishiranu.dashchan.media.AnimatedPngDecoder;
+import com.mishiranu.dashchan.media.ExifData;
 import com.mishiranu.dashchan.media.GifDecoder;
 import com.mishiranu.dashchan.media.JpegData;
 import com.mishiranu.dashchan.ui.InstanceDialog;
@@ -196,23 +197,24 @@ public class ImageUnit {
 
 	public boolean hasMetadata() {
 		JpegData jpegData = instance.currentHolder.jpegData;
-		return jpegData != null && !jpegData.getUserMetadata().isEmpty();
+		return jpegData != null && jpegData.exifData != null && !jpegData.exifData.getUserMetadata().isEmpty();
 	}
 
-	public void viewTechnicalInfo() {
+	public void viewMetadata() {
 		String fileName = instance.currentHolder.galleryItem
 				.getFileName(Chan.get(instance.galleryInstance.chanName));
-		showTechnicalInfo(instance.galleryInstance.callback.getChildFragmentManager(),
+		showMetadata(instance.galleryInstance.callback.getChildFragmentManager(),
 				instance.currentHolder.jpegData, fileName);
 	}
 
-	private static void showTechnicalInfo(FragmentManager fragmentManager, JpegData jpegData, String fileName) {
+	private static void showMetadata(FragmentManager fragmentManager, JpegData jpegData, String fileName) {
 		new InstanceDialog(fragmentManager, null, provider -> {
 			Context context = GalleryInstance.getCallback(provider).getWindow().getContext();
 			AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context)
-					.setTitle(R.string.technical_info)
+					.setTitle(R.string.metadata)
 					.setPositiveButton(android.R.string.ok, null);
-			String geolocation = jpegData.getGeolocation(false);
+			ExifData exifData = jpegData != null ? jpegData.exifData : null;
+			String geolocation = exifData != null ? exifData.getGeolocation(false) : null;
 			if (geolocation != null) {
 				Uri uri = new Uri.Builder().scheme("geo").appendQueryParameter("q",
 						geolocation + "(" + fileName + ")").build();
@@ -224,12 +226,15 @@ public class ImageUnit {
 			}
 			AlertDialog dialog = dialogBuilder.create();
 			SummaryLayout layout = new SummaryLayout(dialog);
-			for (Pair<String, String> pair : jpegData.getUserMetadata()) {
-				if (pair != null) {
-					layout.add(pair.first, pair.second);
-				} else {
-					layout.addDivider();
+			if (exifData != null) {
+				for (Pair<String, String> pair : exifData.getUserMetadata()) {
+					if (pair != null) {
+						layout.add(pair.first, pair.second);
+					} else {
+						layout.addDivider();
+					}
 				}
+				layout.addDivider();
 			}
 			return dialog;
 		});

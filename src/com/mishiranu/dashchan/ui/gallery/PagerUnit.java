@@ -189,17 +189,17 @@ public class PagerUnit implements PagerInstance.Callback {
 		public final boolean available;
 		public final boolean save;
 		public final boolean refresh;
-		public final boolean viewTechnicalInfo;
+		public final boolean viewMetadata;
 		public final boolean searchImage;
 		public final boolean navigatePost;
 		public final boolean shareFile;
 
-		public OptionsMenuCapabilities(boolean available, boolean save, boolean refresh, boolean viewTechnicalInfo,
+		public OptionsMenuCapabilities(boolean available, boolean save, boolean refresh, boolean viewMetadata,
 				boolean searchImage, boolean navigatePost, boolean shareFile) {
 			this.available = available;
 			this.save = save;
 			this.refresh = refresh;
-			this.viewTechnicalInfo = viewTechnicalInfo;
+			this.viewMetadata = viewMetadata;
 			this.searchImage = searchImage;
 			this.navigatePost = navigatePost;
 			this.shareFile = shareFile;
@@ -211,7 +211,7 @@ public class PagerUnit implements PagerInstance.Callback {
 		boolean available = false;
 		boolean save = false;
 		boolean refresh = false;
-		boolean viewTechnicalInfo = false;
+		boolean viewMetadata = false;
 		boolean searchImage = false;
 		boolean navigatePost = false;
 		boolean shareFile = false;
@@ -226,12 +226,12 @@ public class PagerUnit implements PagerInstance.Callback {
 			save = holder.loadState == PagerInstance.LoadState.COMPLETE ||
 					isVideo && (!isOpenableVideo || holder.loadState == PagerInstance.LoadState.ERROR);
 			refresh = !isVideo || isVideoInitialized || holder.loadState == PagerInstance.LoadState.ERROR;
-			viewTechnicalInfo = isVideoInitialized || imageHasMetadata;
+			viewMetadata = isVideoInitialized || imageHasMetadata;
 			searchImage = galleryItem.getDisplayImageUri(chan) != null;
 			navigatePost = galleryItem.postNumber != null;
 			shareFile = holder.loadState == PagerInstance.LoadState.COMPLETE;
 		}
-		return new OptionsMenuCapabilities(available, save, refresh, viewTechnicalInfo,
+		return new OptionsMenuCapabilities(available, save, refresh, viewMetadata,
 				searchImage, navigatePost, shareFile);
 	}
 
@@ -606,12 +606,12 @@ public class PagerUnit implements PagerInstance.Callback {
 					dialogMenu.add(R.string.refresh, this::refreshCurrent);
 				}
 			}
-			if (capabilities.viewTechnicalInfo) {
-				dialogMenu.add(R.string.technical_info, () -> {
+			if (capabilities.viewMetadata) {
+				dialogMenu.add(R.string.metadata, () -> {
 					if (galleryItem.isImage(chan)) {
-						imageUnit.viewTechnicalInfo();
+						imageUnit.viewMetadata();
 					} else if (galleryItem.isVideo(chan)) {
-						videoUnit.viewTechnicalInfo();
+						videoUnit.viewMetadata();
 					}
 				});
 			}

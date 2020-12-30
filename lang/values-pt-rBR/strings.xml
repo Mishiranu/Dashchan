@@ -328,7 +328,6 @@
 	<string name="submission_form">Formulário de envio</string>
 	<string name="success_number_not_loaded_number__format">Sucesso: %1$d, falhou: %2$d</string>
 	<string name="summary">Sumário</string>
-	<string name="technical_info">Informações técnicas</string>
 	<string name="text_scale">Escala do texto</string>
 	<string name="this_post">Este post</string>
 	<string name="this_recaptcha_is_not_supported">Esquema não suportado</string>

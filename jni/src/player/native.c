@@ -56,8 +56,8 @@ jintArray JCALL(getCurrentFrame)(JNIEnv * env, UNUSED jobject this, jlong pointe
 	return getCurrentFrame(env, pointer, dimensions);
 }
 
-jobjectArray JCALL(getTechnicalInfo)(JNIEnv * env, UNUSED jobject this, jlong pointer) {
-	return getTechnicalInfo(env, pointer);
+jobjectArray JCALL(getMetadata)(JNIEnv * env, UNUSED jobject this, jlong pointer) {
+	return getMetadata(env, pointer);
 }
 
 jint JNI_OnLoad(JavaVM * javaVM, UNUSED void * reserved) {

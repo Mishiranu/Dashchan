@@ -21,7 +21,7 @@ void setPlaying(jlong, jboolean);
 void setSurface(JNIEnv *, jlong, jobject);
 
 jintArray getCurrentFrame(JNIEnv *, jlong, jintArray);
-jobjectArray getTechnicalInfo(JNIEnv *, jlong);
+jobjectArray getMetadata(JNIEnv *, jlong);
 
 void initLibs(JavaVM * javaVM);
 

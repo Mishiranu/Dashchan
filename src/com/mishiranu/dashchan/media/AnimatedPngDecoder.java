@@ -222,6 +222,10 @@ public class AnimatedPngDecoder implements Runnable {
 				IOUtils.intToBytes((int) crc32.getValue(), false, 29, 4, head);
 				crc32.reset();
 				frame.bitmap = BitmapFactory.decodeStream(new FrameInputStream(head, frame));
+				Float gammaCorrection = fileHolder.getImageGammaCorrectionForSkia();
+				if (gammaCorrection != null) {
+					frame.bitmap = GraphicsUtils.applyGammaCorrection(frame.bitmap, gammaCorrection);
+				}
 				if (frame.bitmap == null) {
 					recycleFrames(frames);
 					throw new IOException();

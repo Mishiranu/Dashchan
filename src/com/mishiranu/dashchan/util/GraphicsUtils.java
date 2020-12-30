@@ -4,17 +4,24 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.renderscript.Allocation;
+import android.renderscript.RenderScript;
+import android.util.Base64;
 import android.util.Pair;
 import android.view.Gravity;
 import androidx.core.graphics.ColorUtils;
 import com.mishiranu.dashchan.C;
+import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.model.FileHolder;
+import com.mishiranu.dashchan.graphics.ScriptC_GammaCorrection;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -48,6 +55,18 @@ public class GraphicsUtils {
 		0f, 0f, -1f, 0f, 255f,
 		0f, 0f, 0f, 1f, 0f
 	});
+
+	public static final boolean SKIA_SUPPORTS_GAMMA_CORRECTION;
+
+	static {
+		// PNG image with gAMA chunk filled with 0xff7f7f7f
+		String imageBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAABGdBTUEAAAAQ" +
+				"lpJwKQAAAApJREFUCB1jqAcAAIEAgFTzwt4AAAAASUVORK5CYII=";
+		byte[] imageBytes = Base64.decode(imageBase64, 0);
+		Bitmap bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+		int pixel = bitmap.getPixel(0, 0);
+		SKIA_SUPPORTS_GAMMA_CORRECTION = pixel != 0xff7f7f7f;
+	}
 
 	public static int modifyColorGain(int color, float gain) {
 		int r = Color.red(color), g = Color.green(color), b = Color.blue(color);
@@ -345,7 +364,8 @@ public class GraphicsUtils {
 	}
 
 	public static boolean isUselessPngChunk(String name) {
-		return "iTXt".equals(name) || "tEXt".equals(name) || "tIME".equals(name) || "zTXt".equals(name);
+		return "iTXt".equals(name) || "tEXt".equals(name) || "zTXt".equals(name) ||
+				"tIME".equals(name) || "eXIf".equals(name);
 	}
 
 	public static boolean isBlackAndWhiteCaptchaImage(Bitmap image) {
@@ -433,5 +453,76 @@ public class GraphicsUtils {
 			}
 		}
 		return Bitmap.createBitmap(pixels, realSize, realSize, Bitmap.Config.ARGB_8888);
+	}
+
+	public static Bitmap mutateBitmap(Bitmap bitmap) {
+		if (bitmap.isMutable()) {
+			return bitmap;
+		} else {
+			Bitmap newBitmap = bitmap.copy(bitmap.getConfig(), true);
+			if (newBitmap != bitmap) {
+				bitmap.recycle();
+			}
+			return newBitmap;
+		}
+	}
+
+	public static Bitmap applyRotation(Bitmap bitmap, int rotation) {
+		if (rotation / 90 * 90 != rotation) {
+			throw new IllegalArgumentException("Invalid rotation: " + rotation);
+		}
+		if (bitmap == null) {
+			return null;
+		}
+		if (rotation % 360 == 0) {
+			return bitmap;
+		}
+		Matrix matrix = new Matrix();
+		matrix.setRotate(-rotation);
+		try {
+			return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
+		} finally {
+			bitmap.recycle();
+		}
+	}
+
+	public static Bitmap applyGammaCorrection(Bitmap bitmap, float gammaCorrection) {
+		if (bitmap == null) {
+			return null;
+		}
+		bitmap = mutateBitmap(bitmap);
+		if (bitmap == null) {
+			return null;
+		}
+		if (C.API_LOLLIPOP) {
+			RenderScript renderScript = RenderScript.create(MainApplication.getInstance());
+			Allocation allocation = Allocation.createFromBitmap(renderScript, bitmap);
+			ScriptC_GammaCorrection script = new ScriptC_GammaCorrection(renderScript);
+			script.set_gammaCorrection(gammaCorrection);
+			script.forEach_apply(allocation);
+			allocation.copyTo(bitmap);
+			allocation.destroy();
+			renderScript.destroy();
+		} else {
+			int width = bitmap.getWidth();
+			int height = bitmap.getHeight();
+			int[] pixels = new int[width];
+			for (int y = 0; y < height; y++) {
+				bitmap.getPixels(pixels, 0, width, 0, y, width, 1);
+				for (int x = 0; x < width; x++) {
+					int color = pixels[x];
+					float red = Color.red(color) / 255f;
+					float green = Color.green(color) / 255f;
+					float blue = Color.blue(color) / 255f;
+					red = (float) Math.pow(red, gammaCorrection);
+					green = (float) Math.pow(green, gammaCorrection);
+					blue = (float) Math.pow(blue, gammaCorrection);
+					pixels[x] = Color.argb(Color.alpha(color), (int) (red * 255 + 0.5f),
+							(int) (green * 255 + 0.5f), (int) (blue * 255 + 0.5f));
+				}
+				bitmap.setPixels(pixels, 0, width, 0, y, width, 1);
+			}
+		}
+		return bitmap;
 	}
 }

@@ -67,6 +67,7 @@ import com.mishiranu.dashchan.content.storage.DraftsStorage;
 import com.mishiranu.dashchan.graphics.RoundedCornersDrawable;
 import com.mishiranu.dashchan.graphics.TransparentTileDrawable;
 import com.mishiranu.dashchan.media.JpegData;
+import com.mishiranu.dashchan.media.PngData;
 import com.mishiranu.dashchan.ui.CaptchaForm;
 import com.mishiranu.dashchan.ui.ContentFragment;
 import com.mishiranu.dashchan.ui.FragmentHandler;
@@ -1517,6 +1518,7 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 			GraphicsUtils.Reencoding reencoding) {
 		FileHolder fileHolder = DraftsStorage.getInstance().getAttachmentDraftFileHolder(hash);
 		JpegData jpegData = fileHolder != null ? fileHolder.getJpegData() : null;
+		PngData pngData = fileHolder != null ? fileHolder.getPngData() : null;
 		AttachmentHolder holder = addNewAttachment();
 		holder.hash = hash;
 		holder.name = name;
@@ -1562,7 +1564,7 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 			holder.view.getLayoutParams().height = (int) (128f * ResourceUtils.obtainDensity(this));
 		}
 		holder.fileSize.setText(fileSize);
-		if (jpegData == null || !jpegData.hasExif) {
+		if ((jpegData == null || jpegData.exifData == null) && (pngData == null || !pngData.hasMetadata)) {
 			holder.warningButton.setVisibility(View.GONE);
 		}
 		updateAttachmentConfiguration(holder);

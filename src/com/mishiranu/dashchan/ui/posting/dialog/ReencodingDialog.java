@@ -114,6 +114,6 @@ public class ReencodingDialog extends DialogFragment implements DialogInterface.
 				break;
 			}
 		}
-		reduceLayoutHolder.setEnabled(allowQuality);
+		qualityLayoutHolder.setEnabled(allowQuality);
 	}
 }

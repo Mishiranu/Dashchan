@@ -4,15 +4,12 @@ import android.net.Uri;
 import chan.content.Chan;
 import com.mishiranu.dashchan.content.service.DownloadService;
 import com.mishiranu.dashchan.util.NavigationUtils;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.TreeMap;
 
-public class GalleryItem implements Serializable {
-	private static final long serialVersionUID = 1L;
-
+public class GalleryItem {
 	private final String fileUriString;
 	private final String thumbnailUriString;
 

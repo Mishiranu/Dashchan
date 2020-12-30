@@ -98,8 +98,7 @@ public class SummaryLayout implements CommentTextView.PrepareToCopyListener, Vie
 
 		textView.setText(null);
 		if (C.API_LOLLIPOP) {
-			scrollView.setPadding(0, (int) (12f * density), 0, 0);
-			textView.setPadding((int) (24f * density), (int) (8f * density),
+			textView.setPadding((int) (24f * density), (int) (20f * density),
 					(int) (24f * density), (int) (8f * density));
 		} else {
 			textView.setPadding((int) (16f * density), (int) (16f * density),

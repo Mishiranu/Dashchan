@@ -62,11 +62,8 @@ public class VideoPlayer {
 					} catch (Exception | LinkageError e) {
 						e.printStackTrace();
 						String message = StringUtils.emptyIfNull(e.getMessage());
-						String path = context.getPackageCodePath();
-						if (path != null) {
-							File file = new File(path).getParentFile();
-							message = message.replace(file.getPath() + "/", "");
-						}
+						message = shortenMessagePath(context.getPackageCodePath(), message);
+						message = shortenMessagePath(dir, message);
 						if (message.endsWith("...")) {
 							message = message.substring(0, message.length() - 3);
 						} else if (message.endsWith(".")) {
@@ -77,6 +74,18 @@ public class VideoPlayer {
 				}
 			}
 			return new Pair<>(false, null);
+		}
+	}
+
+	private static String shortenMessagePath(String path, String message) {
+		if (path != null) {
+			File file = new File(path);
+			if (!file.isDirectory()) {
+				file = file.getParentFile();
+			}
+			return message.replace(file.getPath() + "/", "");
+		} else {
+			return message;
 		}
 	}
 
@@ -450,10 +459,10 @@ public class VideoPlayer {
 		}
 	}
 
-	public Map<String, String> getTechnicalInfo() {
+	public Map<String, String> getMetadata() {
 		synchronized (this) {
 			if (isInitialized()) {
-				String[] array = holder.getTechnicalInfo(sessionData.pointer);
+				String[] array = holder.getMetadata(sessionData.pointer);
 				if (array != null) {
 					HashMap<String, String> result = new HashMap<>();
 					for (int i = 0; i < array.length; i += 2) {
@@ -690,7 +699,7 @@ public class VideoPlayer {
 		void setPlaying(long pointer, boolean playing);
 
 		int[] getCurrentFrame(long pointer, int[] dimensions);
-		String[] getTechnicalInfo(long pointer);
+		String[] getMetadata(long pointer);
 	}
 
 	private static class Holder implements HolderInterface, InvocationHandler {
@@ -734,7 +743,7 @@ public class VideoPlayer {
 		@Override public native void setPlaying(long pointer, boolean playing);
 
 		@Override public native int[] getCurrentFrame(long pointer, int[] dimensions);
-		@Override public native String[] getTechnicalInfo(long pointer);
+		@Override public native String[] getMetadata(long pointer);
 
 		static {
 			System.loadLibrary("player");

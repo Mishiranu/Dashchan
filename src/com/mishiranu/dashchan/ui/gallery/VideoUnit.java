@@ -458,33 +458,33 @@ public class VideoUnit {
 		}
 	}
 
-	public void viewTechnicalInfo() {
+	public void viewMetadata() {
 		if (initialized) {
-			Map<String, String> technicalInfo = player.getTechnicalInfo();
-			showTechnicalInfo(instance.galleryInstance.callback.getChildFragmentManager(), technicalInfo);
+			Map<String, String> metadata = player.getMetadata();
+			showMetadata(instance.galleryInstance.callback.getChildFragmentManager(), metadata);
 		}
 	}
 
-	private static void showTechnicalInfo(FragmentManager fragmentManager, Map<String, String> technicalInfo) {
+	private static void showMetadata(FragmentManager fragmentManager, Map<String, String> metadata) {
 		new InstanceDialog(fragmentManager, null, provider -> {
 			Context context = GalleryInstance.getCallback(provider).getWindow().getContext();
 			AlertDialog dialog = new AlertDialog.Builder(context)
-					.setTitle(R.string.technical_info)
+					.setTitle(R.string.metadata)
 					.setPositiveButton(android.R.string.ok, null)
 					.create();
 			SummaryLayout layout = new SummaryLayout(dialog);
-			String videoFormat = technicalInfo.get("video_format");
-			String width = technicalInfo.get("width");
-			String height = technicalInfo.get("height");
-			String frameRate = technicalInfo.get("frame_rate");
-			String pixelFormat = technicalInfo.get("pixel_format");
-			String surfaceFormat = technicalInfo.get("surface_format");
-			String frameConversion = technicalInfo.get("frame_conversion");
-			String audioFormat = technicalInfo.get("audio_format");
-			String channels = technicalInfo.get("channels");
-			String sampleRate = technicalInfo.get("sample_rate");
-			String encoder = technicalInfo.get("encoder");
-			String title = technicalInfo.get("title");
+			String videoFormat = metadata.get("video_format");
+			String width = metadata.get("width");
+			String height = metadata.get("height");
+			String frameRate = metadata.get("frame_rate");
+			String pixelFormat = metadata.get("pixel_format");
+			String surfaceFormat = metadata.get("surface_format");
+			String frameConversion = metadata.get("frame_conversion");
+			String audioFormat = metadata.get("audio_format");
+			String channels = metadata.get("channels");
+			String sampleRate = metadata.get("sample_rate");
+			String encoder = metadata.get("encoder");
+			String title = metadata.get("title");
 			if (videoFormat != null) {
 				layout.add("Video", videoFormat);
 			}

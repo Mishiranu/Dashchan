@@ -153,6 +153,7 @@
 	<string name="favorites_first">Сначала избранное</string>
 	<string name="favorites_watcher">Отслеживание избранного</string>
 	<string name="fields_limit_exceeded">Превышение лимита полей</string>
+	<string name="file_contains_data__format_sentence">Данный файл содержит следующие данные: %s.</string>
 	<string name="file_format_is_not_supported">Формат файла не поддерживается</string>
 	<string name="file_name__format">Файл %s</string>
 	<string name="filed_on">Выдан</string>
@@ -194,7 +195,6 @@
 	<string name="history_is_empty">История пуста</string>
 	<string name="huge_captcha">Большая капча</string>
 	<string name="icons_are_enabled">Иконки включены</string>
-	<string name="image_contains_data__format_sentence">Данное изображение содержит следующие данные: %s.</string>
 	<string name="image_is_corrupted">Изображение повреждено</string>
 	<string name="images">Изображения</string>
 	<string name="images_are_disabled">Картинки отключены</string>
@@ -239,6 +239,7 @@
 	<string name="merge_pages">Объединить страницы</string>
 	<string name="merge_pages__summary">Отображать страницы для всех форумов</string>
 	<string name="message_data">Данные сообщения</string>
+	<string name="metadata">Метаданные</string>
 	<string name="minimize">Свернуть</string>
 	<string name="more_info">Подробнее</string>
 	<string name="more_themes">Больше тем</string>
@@ -479,7 +480,6 @@
 	<string name="submission_form">Форма отправки</string>
 	<string name="success_number_not_loaded_number__format">Успешно: %1$d, не загружено: %2$d</string>
 	<string name="summary">Информация</string>
-	<string name="technical_info">Технич. информация</string>
 	<string name="test_string">Тестовая строка</string>
 	<string name="text_scale">Масштаб текста</string>
 	<string name="themes">Темы</string>

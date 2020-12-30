@@ -14,6 +14,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.content.async.ExecutorTask;
 import com.mishiranu.dashchan.content.model.FileHolder;
 import com.mishiranu.dashchan.util.ConcurrentUtils;
+import com.mishiranu.dashchan.util.GraphicsUtils;
 import com.mishiranu.dashchan.util.LruCache;
 import java.io.IOException;
 import java.util.Iterator;
@@ -33,9 +34,10 @@ public class DecoderDrawable extends BaseDrawable {
 	private final LinkedHashMap<Integer, DecodeTask> tasks = new LinkedHashMap<>();
 	private final LruCache<Integer, Bitmap> fragments = new LruCache<>(MIN_MAX_ENTRIES, (k, v) -> v.recycle());
 
-	private final int rotation;
 	private final int width;
 	private final int height;
+	private final int rotation;
+	private final Float gammaCorrection;
 
 	private final Rect rect = new Rect();
 	private final Rect dstRect = new Rect();
@@ -46,13 +48,14 @@ public class DecoderDrawable extends BaseDrawable {
 
 	public DecoderDrawable(Bitmap scaledBitmap, FileHolder fileHolder) throws IOException {
 		this.scaledBitmap = scaledBitmap;
-		if (!fileHolder.isRegionDecoderSupported()) {
+		if (!fileHolder.isImageRegionDecoderSupported()) {
 			throw new IOException("Decoder drawable is not supported");
 		}
 		decoder = BitmapRegionDecoder.newInstance(fileHolder.openInputStream(), false);
-		rotation = fileHolder.getRotation();
 		width = fileHolder.getImageWidth();
 		height = fileHolder.getImageHeight();
+		rotation = fileHolder.getImageRotation();
+		gammaCorrection = fileHolder.getImageGammaCorrectionForSkia();
 	}
 
 	@Override
@@ -234,13 +237,9 @@ public class DecoderDrawable extends BaseDrawable {
 			try {
 				synchronized (DecoderDrawable.this) {
 					Bitmap bitmap = decoder.decodeRegion(rect, options);
-					if (bitmap != null && rotation != 0) {
-						Matrix matrix = new Matrix();
-						matrix.setRotate(-rotation);
-						Bitmap newBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
-								matrix, false);
-						bitmap.recycle();
-						bitmap = newBitmap;
+					bitmap = GraphicsUtils.applyRotation(bitmap, rotation);
+					if (gammaCorrection != null) {
+						bitmap = GraphicsUtils.applyGammaCorrection(bitmap, gammaCorrection);
 					}
 					return bitmap;
 				}

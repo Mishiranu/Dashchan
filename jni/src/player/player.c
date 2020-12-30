@@ -1804,7 +1804,7 @@ static jstring newUtfStringSafe(JNIEnv * env, char * string) {
     return 0;
 }
 
-jobjectArray getTechnicalInfo(JNIEnv * env, jlong pointer) {
+jobjectArray getMetadata(JNIEnv * env, jlong pointer) {
 	char buffer[24];
 	Player * player = POINTER_CAST(pointer);
 	int entries = av_dict_count(player->av.format->metadata);

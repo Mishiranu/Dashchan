@@ -181,7 +181,6 @@
     <string name="history_is_empty">Cronologia vuota</string>
     <string name="huge_captcha">Captcha grossi</string>
     <string name="icons_are_enabled">Icone abilitate</string>
-    <string name="image_contains_data__format_sentence">Questa immagine contiene i seguenti dati: %s.</string>
     <string name="image_is_corrupted">Immagine corrotta</string>
     <string name="images">Immagini</string>
     <string name="images_are_disabled">Immagini disabilitate</string>
@@ -428,7 +427,6 @@
     <string name="submission_form">Form di invio</string>
     <string name="success_number_not_loaded_number__format">Con successo: %1$d, non caricati: %2$d</string>
     <string name="summary">Indice</string>
-    <string name="technical_info">Informazioni tecniche</string>
     <string name="test_string">Stringa di test</string>
     <string name="text_scale">Dimensione testo</string>
     <string name="themes">Temi</string>
