@@ -674,10 +674,11 @@ public class VideoUnit {
 							holder.progressBar.setVisible(false, false);
 							if (successFinal) {
 								initializePlayer();
-								instance.galleryInstance.callback.invalidateOptionsMenu();
 								if (downloadTask == null) {
 									seekBar.setSecondaryProgress(seekBar.getMax());
+									holder.loadState = PagerInstance.LoadState.COMPLETE;
 								}
+								instance.galleryInstance.callback.invalidateOptionsMenu();
 							} else {
 								if (downloadTask != null) {
 									if (!downloadTask.isError()) {
