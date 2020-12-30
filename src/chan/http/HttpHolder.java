@@ -89,8 +89,8 @@ public final class HttpHolder {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// alterchan candydollchan chiochan chuckdfwk diochan kurisach nulltirech owlchan ponyach ponychan sevenchan
-	// shanachan sharechan taima valkyria
+	// alterchan chiochan chuckdfwk diochan kurisach nulltirech owlchan ponyach ponychan sevenchan shanachan taima
+	// valkyria
 	// Added: 18.10.20 19:08
 	@Deprecated
 	@Public
@@ -103,8 +103,8 @@ public final class HttpHolder {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// alterchan candydollchan chiochan chuckdfwk diochan kurisach nulltirech owlchan ponyach ponychan sevenchan
-	// shanachan sharechan taima valkyria
+	// alterchan chiochan chuckdfwk diochan kurisach nulltirech owlchan ponyach ponychan sevenchan shanachan taima
+	// valkyria
 	// Added: 18.10.20 19:08
 	@Deprecated
 	@Public
@@ -132,9 +132,8 @@ public final class HttpHolder {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// alphachan alterchan anonfm archiverbt candydollchan chiochan chuckdfwk desustorage diochan exach fiftyfive
-	// fourplebs horochan kurisach nulltirech onechanca owlchan ponyach ponychan sevenchan shanachan sharechan taima
-	// tiretirech valkyria
+	// alphachan alterchan anonfm archiverbt chiochan chuckdfwk desustorage diochan exach fiftyfive fourplebs horochan
+	// kurisach nulltirech onechanca owlchan ponyach ponychan sevenchan shanachan taima tiretirech valkyria
 	// Added: 18.10.20 19:08
 	@Deprecated
 	@Public
@@ -145,8 +144,7 @@ public final class HttpHolder {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// alphachan alterchan anonfm candydollchan chiochan chuckdfwk diochan exach kurisach onechanca owlchan ponyach
-	// ponychan sharechan
+	// alphachan alterchan anonfm chiochan chuckdfwk diochan exach kurisach onechanca owlchan ponyach ponychan
 	// Added: 18.10.20 19:08
 	@Deprecated
 	@Public

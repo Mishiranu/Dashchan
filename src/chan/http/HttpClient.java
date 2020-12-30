@@ -560,15 +560,8 @@ public class HttpClient {
 						try {
 							action = redirectHandler.onRedirect(response);
 						} catch (AbstractMethodError | NoSuchMethodError e) {
-							synchronized (HttpRequest.RedirectHandler.class) {
-								HttpRequest.RedirectHandler.Action.resetAll();
-								action = redirectHandler.onRedirectReached(responseCode,
-										requestedUri, redirectedUri, request.holder);
-								Uri overriddenRedirectedUri = action.redirectedUri;
-								if (overriddenRedirectedUri != null) {
-									session.redirectedUri = overriddenRedirectedUri;
-								}
-							}
+							action = redirectHandler.onRedirectReached(responseCode,
+									requestedUri, redirectedUri, request.holder);
 						}
 					} catch (HttpException e) {
 						session.disconnectAndClear();

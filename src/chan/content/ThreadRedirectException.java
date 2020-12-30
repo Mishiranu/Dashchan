@@ -5,7 +5,7 @@ import com.mishiranu.dashchan.content.model.PostNumber;
 
 // TODO CHAN
 // Remove this class after updating
-// alphachan anonfm chuckdfwk diochan exach ponychan sharechan
+// alphachan anonfm chuckdfwk diochan exach ponychan
 // Added: 13.10.16 14:55
 @Public
 public final class ThreadRedirectException extends Exception {

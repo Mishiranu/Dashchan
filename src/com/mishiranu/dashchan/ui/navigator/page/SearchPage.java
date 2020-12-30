@@ -211,13 +211,9 @@ public class SearchPage extends ListPage implements SearchAdapter.Callback,
 	@Override
 	public void onPrepareOptionsMenu(Menu menu) {
 		ChanConfiguration.Board board = getChan().configuration.safe().obtainBoard(getPage().boardName);
-		boolean search = board.allowSearch;
-		boolean catalog = board.allowCatalog;
-		boolean catalogSearch = catalog && board.allowCatalogSearch;
-		boolean allowSearch = search || catalogSearch;
-		this.allowSearch = allowSearch;
-		menu.findItem(R.id.menu_search).setVisible(allowSearch);
-		menu.findItem(R.id.menu_refresh).setVisible(allowSearch);
+		this.allowSearch = board.allowSearch;
+		menu.findItem(R.id.menu_search).setVisible(board.allowSearch);
+		menu.findItem(R.id.menu_refresh).setVisible(board.allowSearch);
 		menu.findItem(R.id.menu_group).setChecked(getAdapter().isGroupMode());
 	}
 

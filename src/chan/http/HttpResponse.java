@@ -294,10 +294,10 @@ public final class HttpResponse {
 
 	// TODO CHAN
 	// Remove this method after updating
-	// allchan alphachan alterchan anonfm archiverbt brchan candydollchan chaosach chiochan chuckdfwk dangeru
-	// desustorage diochan endchan exach fiftyfive fourplebs haibane kropyvach kurisach lainchan lolifox nulltirech
-	// onechanca owlchan ponyach ponychan princessluna randomarchive sevenchan shanachan sharechan synch taima
-	// tiretirech tumbach twentyseven uboachan valkyria wizardchan
+	// allchan alphachan alterchan anonfm archiverbt brchan chaosach chiochan chuckdfwk dangeru desustorage diochan
+	// endchan exach fiftyfive fourplebs haibane kropyvach kurisach lainchan lolifox nulltirech onechanca owlchan
+	// ponyach ponychan princessluna randomarchive sevenchan shanachan synch taima tiretirech tumbach twentyseven
+	// uboachan valkyria wizardchan
 	// Added: 18.10.20 18:54
 	@Public
 	@Deprecated
