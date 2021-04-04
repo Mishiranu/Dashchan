@@ -11,6 +11,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+// TODO CHAN
+// Remove @Public annotation after updating all extensions which use HttpHolder in ChanPerformer.
+// Added: 30.03.21 18:45
 @Public
 public final class HttpHolder {
 	public interface Use extends Closeable {
@@ -18,10 +21,12 @@ public final class HttpHolder {
 	}
 
 	private Thread thread;
-	HttpSession session;
+	private HttpSession session;
 	private ArrayList<HttpSession> sessions;
 
 	final Chan chan;
+
+	boolean mayResolveFirewallBlock = true;
 
 	public HttpHolder(Chan chan) {
 		this.chan = chan;
@@ -59,15 +64,16 @@ public final class HttpHolder {
 		}
 	}
 
-	void initSession(HttpClient client, Uri uri, Proxy proxy, boolean verifyCertificate, int delay, int maxAttempts) {
+	HttpSession createSession(HttpClient client, Uri uri, Proxy proxy,
+			boolean verifyCertificate, int delay, int maxAttempts) {
 		checkThread();
 		if (session != null) {
 			session.disconnectAndClear();
 		}
-		session = new HttpSession(this, client, proxy, verifyCertificate, delay);
-		session.requestedUri = uri;
-		session.attempt = maxAttempts;
-		session.forceGet = false;
+		boolean mayCheckFirewallBlock = sessions == null || sessions.isEmpty();
+		session = new HttpSession(this, client, uri, proxy,
+				verifyCertificate, mayCheckFirewallBlock, delay, maxAttempts);
+		return session;
 	}
 
 	private void releaseSession() {
@@ -77,7 +83,7 @@ public final class HttpHolder {
 		}
 	}
 
-	volatile boolean interrupted = false;
+	private volatile boolean interrupted = false;
 
 	public interface Callback {
 		void onDisconnectRequested();
@@ -85,6 +91,16 @@ public final class HttpHolder {
 
 	public void interrupt() {
 		interrupted = true;
+	}
+
+	boolean isInterrupted() {
+		return interrupted;
+	}
+
+	void checkInterrupted() throws HttpClient.InterruptedHttpException {
+		if (isInterrupted()) {
+			throw new HttpClient.InterruptedHttpException();
+		}
 	}
 
 	// TODO CHAN

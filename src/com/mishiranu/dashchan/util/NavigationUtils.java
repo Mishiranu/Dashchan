@@ -17,6 +17,7 @@ import chan.content.Chan;
 import chan.content.ChanLocator;
 import chan.content.ChanManager;
 import chan.http.CookieBuilder;
+import chan.http.FirewallResolver;
 import chan.util.CommonUtils;
 import chan.util.StringUtils;
 import com.mishiranu.dashchan.C;
@@ -24,7 +25,6 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.AdvancedPreferences;
 import com.mishiranu.dashchan.content.CacheManager;
 import com.mishiranu.dashchan.content.Preferences;
-import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.content.service.AudioPlayerService;
 import com.mishiranu.dashchan.media.VideoPlayer;
 import com.mishiranu.dashchan.ui.MainActivity;
@@ -33,7 +33,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 public class NavigationUtils {
 	public enum BrowserType {AUTO, INTERNAL, EXTERNAL}
@@ -78,16 +77,12 @@ public class NavigationUtils {
 				Chan chan = Chan.get(chanName);
 				if (chan.locator.safe(false).isAttachmentUri(uri)) {
 					String userAgent = AdvancedPreferences.getUserAgent(chanName);
-					RelayBlockResolver.Identifier resolverIdentifier = new RelayBlockResolver
+					FirewallResolver.Identifier resolverIdentifier = new FirewallResolver
 							.Identifier(userAgent, true);
-					Map<String, String> cookies = RelayBlockResolver.getInstance()
-							.getCookies(chan, resolverIdentifier);
-					if (!cookies.isEmpty()) {
+					CookieBuilder cookieBuilder = FirewallResolver.Implementation.getInstance()
+							.collectCookies(chan, uri, resolverIdentifier, true);
+					if (!cookieBuilder.isEmpty()) {
 						// For MX Player, see https://sites.google.com/site/mxvpen/api
-						CookieBuilder cookieBuilder = new CookieBuilder();
-						for (Map.Entry<String, String> cookie : cookies.entrySet()) {
-							cookieBuilder.append(cookie.getKey(), cookie.getValue());
-						}
 						intent.putExtra("headers", new String[] {"User-Agent", userAgent,
 								"Cookie", cookieBuilder.build()});
 					}

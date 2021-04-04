@@ -1,4 +1,4 @@
-package com.mishiranu.dashchan.content.net;
+package com.mishiranu.dashchan.content.net.firewall;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -11,6 +11,9 @@ import android.os.SystemClock;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
 import chan.content.ChanPerformer;
+import chan.content.ExtensionException;
+import chan.http.CookieBuilder;
+import chan.http.FirewallResolver;
 import chan.http.HttpClient;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
@@ -20,6 +23,7 @@ import com.mishiranu.dashchan.R;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.async.ReadCaptchaTask;
+import com.mishiranu.dashchan.content.net.RecaptchaReader;
 import com.mishiranu.dashchan.content.service.webview.IRequestCallback;
 import com.mishiranu.dashchan.content.service.webview.IWebViewService;
 import com.mishiranu.dashchan.content.service.webview.WebViewExtra;
@@ -29,25 +33,18 @@ import com.mishiranu.dashchan.util.Hasher;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public class RelayBlockResolver {
-	private static final RelayBlockResolver INSTANCE = new RelayBlockResolver();
+public class FirewallResolvers extends FirewallResolver.Implementation {
 	private static final int WEB_VIEW_TIMEOUT = 20000;
 
-	public static RelayBlockResolver getInstance() {
-		return INSTANCE;
-	}
-
-	private RelayBlockResolver() {}
-
-	public static class Identifier {
-		public enum Flag {USER_AGENT}
-
-		private static class Generator {
+	private static class Key implements FirewallResolver.Exclusive.Key {
+		public static class Generator {
 			private ByteArrayOutputStream output;
 			private OutputStreamWriter writer;
 
@@ -80,37 +77,63 @@ public class RelayBlockResolver {
 			}
 		}
 
-		public static class Formatter {
-			private final String hash;
+		private final String hash;
 
-			private Formatter(String hash) {
-				this.hash = hash;
-			}
-
-			public String key(String cookie) {
-				return hash != null ? cookie + "_" + hash : cookie;
-			}
-
-			public String title(String title) {
-				return hash != null ? title + " #" + hash.substring(0, Math.min(8, hash.length())) : title;
-			}
+		private Key(String hash) {
+			this.hash = hash;
 		}
 
-		public final String userAgent;
-		public final boolean defaultUserAgent;
-
-		public Identifier(String userAgent, boolean defaultUserAgent) {
-			this.userAgent = userAgent;
-			this.defaultUserAgent = defaultUserAgent;
+		@Override
+		public String formatKey(String value) {
+			return hash != null ? value + "_" + hash : value;
 		}
 
-		public Formatter toFormatter(Flag... flags) {
-			Generator generator = new Generator();
-			for (Flag flag : flags) {
+		@Override
+		public String formatTitle(String value) {
+			return hash != null ? value + " #" + hash.substring(0, Math.min(8, hash.length())) : value;
+		}
+	}
+
+	private static abstract class BaseSession implements FirewallResolver.Session {
+		private final Uri uri;
+		private final Chan chan;
+		private final FirewallResolver.Identifier identifier;
+
+		public BaseSession(Uri uri, Chan chan, FirewallResolver.Identifier identifier) {
+			this.uri = uri;
+			this.chan = chan;
+			this.identifier = identifier;
+		}
+
+		@Override
+		public Uri getUri() {
+			return uri;
+		}
+
+		@Override
+		public Chan getChan() {
+			return chan;
+		}
+
+		@Override
+		public ChanConfiguration getChanConfiguration() {
+			return chan.configuration;
+		}
+
+		@Override
+		public FirewallResolver.Identifier getIdentifier() {
+			return identifier;
+		}
+
+		@Override
+		public FirewallResolver.Exclusive.Key getKey(FirewallResolver.Identifier.Flag... flags) {
+			FirewallResolver.Identifier identifier = this.identifier;
+			Key.Generator generator = new Key.Generator();
+			for (FirewallResolver.Identifier.Flag flag : flags) {
 				switch (flag) {
 					case USER_AGENT: {
-						if (!defaultUserAgent) {
-							generator.append("user_agent", userAgent);
+						if (!identifier.defaultUserAgent) {
+							generator.append("user_agent", identifier.userAgent);
 						}
 						break;
 					}
@@ -119,100 +142,86 @@ public class RelayBlockResolver {
 					}
 				}
 			}
-			return new Formatter(generator.generate());
+			return new Key(generator.generate());
+		}
+	}
+
+	private class CheckSession extends BaseSession {
+		private final HttpHolder holder;
+		private final boolean resolve;
+		private final boolean exclusive;
+
+		private CheckSession(Uri uri, HttpHolder holder, Chan chan,
+				FirewallResolver.Identifier identifier, boolean resolve, boolean exclusive) {
+			super(uri, chan, identifier);
+			this.holder = holder;
+			this.resolve = resolve;
+			this.exclusive = exclusive;
 		}
 
 		@Override
-		public boolean equals(Object o) {
-			if (o == this) {
-				return true;
+		public HttpHolder getHolder() {
+			if (exclusive) {
+				return holder;
+			} else {
+				throw new IllegalStateException();
 			}
-			if (o instanceof Identifier) {
-				Identifier identifier = (Identifier) o;
-				return userAgent.equals(identifier.userAgent) &&
-						defaultUserAgent == identifier.defaultUserAgent;
+		}
+
+		@Override
+		public boolean isResolveRequest() {
+			return resolve;
+		}
+
+		@Override
+		public <Result> Result resolveWebView(FirewallResolver.WebViewClient<Result> webViewClient)
+				throws FirewallResolver.CancelException, InterruptedException {
+			if (exclusive) {
+				return FirewallResolvers.this.resolveWebView(this, webViewClient);
+			} else {
+				throw new IllegalStateException();
 			}
+		}
+	}
+
+	private static class CookieSession extends BaseSession {
+		public CookieSession(Uri uri, Chan chan, FirewallResolver.Identifier identifier) {
+			super(uri, chan, identifier);
+		}
+
+		@Override
+		public Uri getUri() {
+			throw new IllegalStateException();
+		}
+
+		@Override
+		public HttpHolder getHolder() {
+			throw new IllegalStateException();
+		}
+
+		@Override
+		public boolean isResolveRequest() {
 			return false;
 		}
 
 		@Override
-		public int hashCode() {
-			int prime = 31;
-			int result = 1;
-			result = prime * result + userAgent.hashCode();
-			result = prime * result + (defaultUserAgent ? 1 : 0);
-			return result;
+		public <Result> Result resolveWebView(FirewallResolver.WebViewClient<Result> webViewClient) {
+			throw new IllegalStateException();
 		}
-	}
-
-	public static class Session {
-		public final Chan chan;
-		public final Uri uri;
-		public final HttpHolder holder;
-
-		private Session(Chan chan, Uri uri, HttpHolder holder) {
-			this.chan = chan;
-			this.uri = uri;
-			this.holder = holder;
-		}
-	}
-
-	public interface Resolver {
-		boolean resolve(RelayBlockResolver resolver, Session session)
-				throws CancelException, HttpException, InterruptedException;
-	}
-
-	public static final class CancelException extends Exception {}
-
-	public interface WebViewClient<Result> {
-		String getName();
-		Result takeResult();
-
-		default boolean onPageFinished(String uriString, Map<String, String> cookies, String title) {
-			return true;
-		}
-
-		default boolean onLoad(Uri initialUri, Uri uri) {
-			return true;
-		}
-
-		default WebViewExtra getExtra() {
-			return null;
-		}
-	}
-
-	public interface ResolverFactory {
-		Resolver newResolver();
 	}
 
 	private static class CheckHolder {
-		public final Resolver resolver;
-
 		public boolean ready = false;
 		public boolean success = false;
-
-		private CheckHolder(Resolver resolver) {
-			this.resolver = resolver;
-		}
 	}
 
-	public static class Result {
-		public final boolean blocked;
-		public final boolean resolved;
-
-		public Result(boolean blocked, boolean resolved) {
-			this.blocked = blocked;
-			this.resolved = resolved;
-		}
-	}
-
-	private static class RelayBlockCaptchaReader implements ReadCaptchaTask.CaptchaReader {
+	private static class FirewallResolverCaptchaReader implements ReadCaptchaTask.CaptchaReader {
 		private final String apiKey;
 		private final String referer;
 		private final Object challengeExtra;
 		private final boolean allowSolveAutomatically;
 
-		public RelayBlockCaptchaReader(String apiKey, String referer,
+		public FirewallResolverCaptchaReader(String apiKey, String referer,
 				Object challengeExtra, boolean allowSolveAutomatically) {
 			this.apiKey = apiKey;
 			this.referer = referer;
@@ -231,12 +240,13 @@ public class RelayBlockResolver {
 	}
 
 	private static class WebViewRequestCallback extends IRequestCallback.Stub {
-		public final WebViewClient<?> client;
+		public final FirewallResolver.WebViewClient<?> client;
 		public final Uri initialUri;
 		public final String chanTitle;
 		public final Runnable cancel;
 
-		private WebViewRequestCallback(WebViewClient<?> client, Uri initialUri, String chanTitle, Runnable cancel) {
+		private WebViewRequestCallback(FirewallResolver.WebViewClient<?> client,
+				Uri initialUri, String chanTitle, Runnable cancel) {
 			this.client = client;
 			this.initialUri = initialUri;
 			this.chanTitle = chanTitle;
@@ -245,6 +255,12 @@ public class RelayBlockResolver {
 
 		@Override
 		public boolean onPageFinished(String uriString, String cookie, String title) {
+			Uri uri;
+			try {
+				uri = Uri.parse(uriString);
+			} catch (Exception e) {
+				uri = null;
+			}
 			Map<String, String> cookies;
 			if (cookie != null && !cookie.isEmpty()) {
 				cookies = new HashMap<>();
@@ -260,12 +276,28 @@ public class RelayBlockResolver {
 			} else {
 				cookies = Collections.emptyMap();
 			}
-			return client.onPageFinished(uriString, cookies, title);
+			try {
+				return client.onPageFinished(uri, cookies, title);
+			} catch (LinkageError | RuntimeException e) {
+				e.printStackTrace();
+				return true;
+			}
 		}
 
 		@Override
 		public boolean onLoad(String uriString) {
-			return client.onLoad(initialUri, Uri.parse(uriString));
+			Uri uri;
+			try {
+				uri = Uri.parse(uriString);
+			} catch (Exception e) {
+				uri = null;
+			}
+			try {
+				return client.onLoad(initialUri, uri);
+			} catch (LinkageError | RuntimeException e) {
+				e.printStackTrace();
+				return false;
+			}
 		}
 
 		private boolean retry = false;
@@ -293,8 +325,8 @@ public class RelayBlockResolver {
 		private String requireUserCaptcha(String captchaType, String apiKey, String referer,
 				Object challengeExtra, boolean allowSolveAutomatically, boolean retry) {
 			String description = MainApplication.getInstance().getLocalizedContext().getString
-					(R.string.relay_block__format_sentence, client.getName() + " (" + chanTitle + ")");
-			RelayBlockCaptchaReader reader = new RelayBlockCaptchaReader(apiKey, referer,
+					(R.string.firewall_block__format_sentence, client.getName() + " (" + chanTitle + ")");
+			FirewallResolverCaptchaReader reader = new FirewallResolverCaptchaReader(apiKey, referer,
 					challengeExtra, allowSolveAutomatically);
 			ChanPerformer.CaptchaData captchaData;
 			synchronized (this) {
@@ -377,8 +409,17 @@ public class RelayBlockResolver {
 		}
 	}
 
-	public <T> T resolveWebView(Session session, WebViewClient<T> client, String userAgent)
-			throws CancelException, InterruptedException {
+	public static abstract class WebViewClientWithExtra<Result> extends FirewallResolver.WebViewClient<Result> {
+		private final WebViewExtra extra;
+
+		public WebViewClientWithExtra(String name, WebViewExtra extra) {
+			super(name);
+			this.extra = extra;
+		}
+	}
+
+	private <T> T resolveWebView(FirewallResolver.Session session, FirewallResolver.WebViewClient<T> client)
+			throws FirewallResolver.CancelException, InterruptedException {
 		Context context = MainApplication.getInstance();
 		class Status {
 			boolean established;
@@ -423,19 +464,23 @@ public class RelayBlockResolver {
 			}
 			if (service != null) {
 				boolean[] finished = {false};
-				Uri initialUri = session.uri.buildUpon().clearQuery().encodedFragment(null).build();
-				String chanTitle = session.chan.configuration.getTitle();
-				HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(session.chan);
-				boolean verifyCertificate = session.chan.locator.isUseHttps() && Preferences.isVerifyCertificate();
+				Chan chan = session.getChan();
+				Uri initialUri = session.getUri().buildUpon().clearQuery().encodedFragment(null).build();
+				String chanTitle = chan.configuration.getTitle();
+				String userAgent = session.getIdentifier().userAgent;
+				HttpClient.ProxyData proxyData = HttpClient.getInstance().getProxyData(chan);
+				boolean verifyCertificate = chan.locator.isUseHttps() && Preferences.isVerifyCertificate();
 				WebViewRequestCallback requestCallback = new WebViewRequestCallback(client, initialUri, chanTitle,
 						() -> status.cancel = true);
 				String requestId = UUID.randomUUID().toString();
 				Thread blockingCallThread = new Thread(() -> {
+					WebViewExtra extra = client instanceof WebViewClientWithExtra
+							? ((WebViewClientWithExtra<?>) client).extra : null;
 					try {
 						boolean result = service.loadWithCookieResult(requestId, initialUri.toString(), userAgent,
 								proxyData != null && proxyData.socks, proxyData != null ? proxyData.host : null,
 								proxyData != null ? proxyData.port : 0, verifyCertificate, WEB_VIEW_TIMEOUT,
-								client.getExtra(), requestCallback);
+								extra, requestCallback);
 						synchronized (finished) {
 							finished[0] = result;
 						}
@@ -460,12 +505,12 @@ public class RelayBlockResolver {
 						return null;
 					}
 				}
-				T result = client.takeResult();
+				T result = client.getResult();
 				if (result != null) {
 					return result;
 				}
 				if (status.cancel) {
-					throw new CancelException();
+					throw new FirewallResolver.CancelException();
 				}
 			}
 			return null;
@@ -474,12 +519,14 @@ public class RelayBlockResolver {
 		}
 	}
 
-	private final HashMap<String, CheckHolder> checkHolders = new HashMap<>();
-	private final HashMap<String, Long> lastCheckCancel = new HashMap<>();
+	private final HashMap<FirewallResolver.Exclusive.Key, CheckHolder> checkHolders = new HashMap<>();
+	private final HashMap<FirewallResolver.Exclusive.Key, Long> lastCheckCancel = new HashMap<>();
 
-	public boolean runExclusive(Identifier.Formatter formatter, Chan chan, Uri uri, HttpHolder holder,
-			ResolverFactory resolverFactory) throws HttpException, InterruptedException {
-		String key = formatter.key(chan.name);
+	private boolean runExclusive(CheckSession session, FirewallResolver.Exclusive.Key key,
+			FirewallResolver.Exclusive exclusive) throws HttpException, InterruptedException {
+		if (session.holder == null) {
+			throw new IllegalStateException();
+		}
 		CheckHolder checkHolder;
 		boolean handle = false;
 		synchronized (lastCheckCancel) {
@@ -491,7 +538,7 @@ public class RelayBlockResolver {
 		synchronized (checkHolders) {
 			checkHolder = checkHolders.get(key);
 			if (checkHolder == null) {
-				checkHolder = new CheckHolder(resolverFactory.newResolver());
+				checkHolder = new CheckHolder();
 				checkHolders.put(key, checkHolder);
 				handle = true;
 			}
@@ -499,10 +546,11 @@ public class RelayBlockResolver {
 
 		if (handle) {
 			try {
-				Session session = new Session(chan, uri, holder);
-				try (HttpHolder.Use ignored = holder.use()) {
-					checkHolder.success = checkHolder.resolver.resolve(this, session);
-				} catch (CancelException e) {
+				try (HttpHolder.Use ignored = session.holder.use()) {
+					CheckSession exclusiveSession = new CheckSession(session.getUri(), session.holder,
+							session.getChan(), session.getIdentifier(), session.resolve, true);
+					checkHolder.success = exclusive.resolve(exclusiveSession, key);
+				} catch (FirewallResolver.CancelException e) {
 					synchronized (lastCheckCancel) {
 						lastCheckCancel.put(key, SystemClock.elapsedRealtime());
 					}
@@ -526,24 +574,59 @@ public class RelayBlockResolver {
 		return checkHolder.success;
 	}
 
-	public Result checkResponse(Chan chan, Uri uri, HttpHolder holder, HttpResponse response,
-			Identifier identifier, boolean resolve) throws HttpException, InterruptedException {
+	private final List<FirewallResolver> resolvers = Arrays
+			.asList(new CloudFlareResolver(), new StormWallResolver());
+
+	@Override
+	public FirewallResolver.CheckResult checkResponse(Chan chan, Uri uri, HttpHolder holder, HttpResponse response,
+			FirewallResolver.Identifier identifier, boolean resolve) throws HttpException, InterruptedException {
 		if (chan.locator.getChanHosts(false).contains(uri.getHost())) {
-			Result result = CloudFlareResolver.getInstance()
-					.checkResponse(this, chan, uri, holder, response, identifier, resolve);
-			if (!result.blocked) {
-				result = StormWallResolver.getInstance()
-						.checkResponse(this, chan, uri, holder, response, identifier, resolve);
+			CheckSession session = new CheckSession(uri, holder, chan, identifier, resolve, false);
+			FirewallResolver.CheckResponseResult result = null;
+			for (FirewallResolver resolver : resolvers) {
+				result = resolver.checkResponse(session, response);
+				if (result != null) {
+					break;
+				}
 			}
-			return result;
+			if (result == null) {
+				List<FirewallResolver> resolvers = chan.performer.getFirewallResolvers();
+				for (FirewallResolver resolver : resolvers) {
+					result = resolver.checkResponse(session, response);
+					if (result != null) {
+						break;
+					}
+				}
+			}
+			if (result != null && result.key != null && result.exclusive != null) {
+				boolean resolved = resolve && runExclusive(session, result.key, result.exclusive);
+				return new FirewallResolver.CheckResult(resolved, result.retransmitOnSuccess);
+			}
 		}
-		return new Result(false, false);
+		return null;
 	}
 
-	public Map<String, String> getCookies(Chan chan, Identifier identifier) {
-		Map<String, String> cookies = null;
-		cookies = CloudFlareResolver.getInstance().addCookies(chan, identifier, cookies);
-		cookies = StormWallResolver.getInstance().addCookies(chan, identifier, cookies);
-		return cookies != null ? cookies : Collections.emptyMap();
+	@Override
+	public CookieBuilder collectCookies(Chan chan, Uri uri, FirewallResolver.Identifier identifier, boolean safe) {
+		CookieBuilder cookieBuilder = new CookieBuilder();
+		CookieSession session = new CookieSession(uri, chan, identifier);
+		for (FirewallResolver resolver : resolvers) {
+			resolver.collectCookies(session, cookieBuilder);
+		}
+		List<FirewallResolver> resolvers = chan.performer.getFirewallResolvers();
+		if (!resolvers.isEmpty()) {
+			try {
+				for (FirewallResolver resolver : resolvers) {
+					resolver.collectCookies(session, cookieBuilder);
+				}
+			} catch (LinkageError | RuntimeException e) {
+				if (safe) {
+					ExtensionException.logException(e, true);
+				} else {
+					throw e;
+				}
+			}
+		}
+		return cookieBuilder;
 	}
 }

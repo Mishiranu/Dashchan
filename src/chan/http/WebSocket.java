@@ -11,7 +11,6 @@ import chan.util.StringUtils;
 import com.mishiranu.dashchan.content.AdvancedPreferences;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.util.IOUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -199,8 +198,8 @@ public final class WebSocket {
 				throw new HttpClient.InterruptedHttpException();
 			}
 			boolean verifyCertificate = holder.chan.locator.isUseHttps() && Preferences.isVerifyCertificate();
-			holder.initSession(client, uri, null, verifyCertificate, 0, 0);
-			SocketResult socketResult = openSocket(uri, verifyCertificate, 5);
+			HttpSession session = holder.createSession(client, uri, null, verifyCertificate, 0, 5);
+			SocketResult socketResult = openSocket(session, verifyCertificate);
 			socket = socketResult.socket;
 			inputStream = socketResult.inputStream;
 			outputStream = socketResult.outputStream;
@@ -303,7 +302,7 @@ public final class WebSocket {
 				}
 			}).start();
 
-			holder.session.setCallback(() -> {
+			session.setCallback(() -> {
 				try {
 					close();
 				} catch (Exception e) {
@@ -336,10 +335,11 @@ public final class WebSocket {
 	}
 
 	@SuppressWarnings("ConditionalBreakInInfiniteLoop")
-	private SocketResult openSocket(Uri uri, boolean verifyCertificate, int attempts)
+	private SocketResult openSocket(HttpSession session, boolean verifyCertificate)
 			throws HttpException, IOException {
 		InetSocket socket = null;
 		try {
+			Uri uri = session.getCurrentRequestedUri();
 			URL url = HttpClient.encodeUri(uri);
 			String scheme = uri.getScheme();
 			boolean secure;
@@ -448,10 +448,10 @@ public final class WebSocket {
 				userAgent = AdvancedPreferences.getUserAgent(holder.chan.name);
 				requestBuilder.append("User-Agent: ").append(userAgent.replaceAll("[\r\n]", "")).append("\r\n");
 			}
-			RelayBlockResolver.Identifier resolverIdentifier = new RelayBlockResolver
+			FirewallResolver.Identifier resolverIdentifier = new FirewallResolver
 					.Identifier(userAgent, addUserAgent);
 			CookieBuilder cookieBuilder = client.obtainModifiedCookieBuilder(this.cookieBuilder,
-					holder.chan, resolverIdentifier);
+					holder.chan, uri, resolverIdentifier);
 			if (cookieBuilder != null) {
 				requestBuilder.append("Cookie: ").append(cookieBuilder.build().replaceAll("[\r\n]", ""))
 						.append("\r\n");
@@ -503,20 +503,24 @@ public final class WebSocket {
 					case HttpURLConnection.HTTP_MOVED_TEMP:
 					case HttpURLConnection.HTTP_SEE_OTHER:
 					case HttpClient.HTTP_TEMPORARY_REDIRECT: {
-						if (attempts > 0) {
+						if (session.nextAttempt()) {
 							for (String header : responseHeaders) {
 								if (header.toLowerCase(Locale.US).startsWith("location:")) {
 									Uri redirectedUri = client.obtainRedirectedUri(uri,
 											header.substring(header.indexOf(':') + 1).trim());
+									if (redirectedUri == null) {
+										throw new HttpException(ErrorItem.Type.DOWNLOAD, false, false);
+									}
 									IOUtils.close(socket);
 									socket = null;
 									scheme = redirectedUri.getScheme();
 									boolean newSecure = "https".equals(scheme) || "wss".equals(scheme);
-									if (holder.session.verifyCertificate && secure && !newSecure) {
+									if (session.verifyCertificate && secure && !newSecure) {
 										// Redirect from https/wss to http/ws is unsafe
 										throw new HttpException(ErrorItem.Type.UNSAFE_REDIRECT, true, false);
 									}
-									return openSocket(redirectedUri, verifyCertificate, attempts - 1);
+									session.setNextRequestedUri(redirectedUri);
+									return openSocket(session, verifyCertificate);
 								}
 							}
 						}
@@ -602,7 +606,7 @@ public final class WebSocket {
 				throw new HttpException(ErrorItem.Type.DOWNLOAD, false, true, exception);
 			}
 			try {
-				holder.session.checkInterrupted();
+				holder.checkInterrupted();
 			} catch (HttpClient.InterruptedHttpException e) {
 				throw new HttpException(null, false, false, e);
 			}

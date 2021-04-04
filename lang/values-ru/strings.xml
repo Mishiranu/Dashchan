@@ -165,6 +165,8 @@
 	<string name="find_in_file_names">Искать в названиях файлов</string>
 	<string name="find_in_names">Искать в именах</string>
 	<string name="find_in_subjects">Искать в темах</string>
+	<string name="firewall_block__format_sentence">Ваш IP-адрес заблокирован %s. Введите капчу,
+		чтобы пройти проверку.</string>
 	<string name="flags_are_enabled">Флаги включены</string>
 	<string name="follow_the_link__sentence">Перейти по ссылке?</string>
 	<string name="forum">Форум</string>
@@ -388,8 +390,6 @@
 	<string name="refresh_open_thread">Обновление открытого треда</string>
 	<string name="regular_expression">Регулярное выражение</string>
 	<string name="rejected_words">Отклонённые слова</string>
-	<string name="relay_block__format_sentence">Ваш IP-адрес заблокирован %s. Введите капчу,
-		чтобы пройти проверку.</string>
 	<string name="reload">Перезагрузить</string>
 	<string name="remember_history">Запоминать историю</string>
 	<string name="remove_file_name">Удалить имя файла</string>

@@ -5,20 +5,22 @@ import com.mishiranu.dashchan.util.IOUtils;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 public final class HttpSession {
-	private final HttpHolder holder;
+	final HttpHolder holder;
 	final HttpClient client;
 	HttpResponse response;
 
 	final Proxy proxy;
 	final boolean verifyCertificate;
+	final boolean mayCheckFirewallBlock;
 	final int delay;
 
-	Uri requestedUri;
+	private final ArrayList<Uri> requestedUris = new ArrayList<>(2);
 	Uri redirectedUri;
 
 	int attempt;
@@ -30,22 +32,16 @@ public final class HttpSession {
 	HttpURLConnection deadConnection;
 	HttpHolder.Callback callback;
 
-	HttpSession(HttpHolder holder, HttpClient client, Proxy proxy, boolean verifyCertificate, int delay) {
+	HttpSession(HttpHolder holder, HttpClient client, Uri uri, Proxy proxy,
+			boolean verifyCertificate, boolean mayCheckFirewallBlock, int delay, int maxAttempts) {
 		this.holder = holder;
 		this.client = client;
 		this.proxy = proxy;
 		this.verifyCertificate = verifyCertificate;
+		this.mayCheckFirewallBlock = mayCheckFirewallBlock;
 		this.delay = delay;
-	}
-
-	private boolean isInterrupted() {
-		return holder.interrupted;
-	}
-
-	void checkInterrupted() throws HttpClient.InterruptedHttpException {
-		if (isInterrupted()) {
-			throw new HttpClient.InterruptedHttpException();
-		}
+		attempt = maxAttempts;
+		requestedUris.add(uri);
 	}
 
 	void checkThread() {
@@ -58,13 +54,28 @@ public final class HttpSession {
 		}
 	}
 
+	List<Uri> getRequestedUris() {
+		checkThread();
+		return requestedUris;
+	}
+
+	Uri getCurrentRequestedUri() {
+		checkThread();
+		return requestedUris.get(requestedUris.size() - 1);
+	}
+
+	void setNextRequestedUri(Uri uri) {
+		checkThread();
+		requestedUris.add(uri);
+	}
+
 	private void setConnection(HttpURLConnection connection, HttpHolder.Callback callback)
 			throws HttpClient.InterruptedHttpException {
 		checkThread();
 		this.connection = connection;
 		this.callback = callback;
 		redirectedUri = null;
-		if (isInterrupted()) {
+		if (holder.isInterrupted()) {
 			this.connection = null;
 			this.callback = null;
 			throw new HttpClient.InterruptedHttpException();

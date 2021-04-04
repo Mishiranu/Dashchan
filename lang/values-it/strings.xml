@@ -150,6 +150,8 @@
     <string name="find_in_comments">Cerca nei commenti</string>
     <string name="find_in_names">Cerca nei nomi</string>
     <string name="find_in_subjects">Cerca nell\'oggetto</string>
+    <string name="firewall_block__format_sentence">%s ha bloccato il tuo indirizzo IP. Inserisci il captcha per passare
+        la verifica.</string>
     <string name="flags_are_enabled">I flag sono abilitati</string>
     <string name="follow_the_link__sentence">Seguire il link?</string>
     <string name="forum">Imageboard</string>
@@ -342,8 +344,6 @@
     <string name="refresh">Aggiorna</string>
     <string name="regular_expression">Espressione regolare</string>
     <string name="rejected_words">Parole respinte</string>
-    <string name="relay_block__format_sentence">%s ha bloccato il tuo indirizzo IP. Inserisci il captcha per passare la
-        verifica.</string>
     <string name="reload">Ricarica</string>
     <string name="remember_history">Ricorda cronologia</string>
     <string name="remove_file_name">Rimuovi nome file</string>

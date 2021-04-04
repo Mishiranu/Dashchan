@@ -17,6 +17,7 @@ import java.io.InputStreamReader;
 import java.io.SequenceInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -27,12 +28,14 @@ import org.json.JSONObject;
 
 @Public
 public final class HttpResponse {
+	private enum ExtractCharset {NONE, CHECK_HTML, FROM_HTML}
+
 	final HttpSession session;
 	private final HttpValidator validator;
 	private String charsetName;
-	private boolean extractCharsetFromHtml;
+	private ExtractCharset extractCharset = ExtractCharset.NONE;
 
-	InputStream input;
+	private InputStream input;
 	private byte[] bytes;
 	private String string;
 
@@ -44,13 +47,15 @@ public final class HttpResponse {
 		if (contentTypes != null && contentTypes.size() == 1) {
 			String contentType = contentTypes.get(0);
 			if ("text/html".equals(contentType)) {
-				extractCharsetFromHtml = true;
+				extractCharset = ExtractCharset.FROM_HTML;
 			}
 		} else if (session != null) {
-			Uri uri = session.requestedUri;
+			Uri uri = session.getCurrentRequestedUri();
 			String path = StringUtils.emptyIfNull(uri.getPath()).toLowerCase(Locale.US);
 			if (path.endsWith(".html")) {
-				extractCharsetFromHtml = true;
+				extractCharset = ExtractCharset.FROM_HTML;
+			} else {
+				extractCharset = ExtractCharset.CHECK_HTML;
 			}
 		}
 	}
@@ -71,12 +76,12 @@ public final class HttpResponse {
 	public void setEncoding(String charsetName) {
 		this.string = null;
 		this.charsetName = charsetName;
-		extractCharsetFromHtml = false;
+		extractCharset = ExtractCharset.NONE;
 	}
 
 	@Public
 	public String getEncoding() throws HttpException {
-		if (extractCharsetFromHtml) {
+		if (extractCharset != ExtractCharset.NONE) {
 			prepareOrGetInput();
 		}
 		return StringUtils.isEmpty(charsetName) ? "ISO-8859-1" : charsetName;
@@ -97,10 +102,19 @@ public final class HttpResponse {
 	@Public
 	public Uri getRequestedUri() {
 		if (session != null) {
-			session.checkThread();
-			return session.requestedUri;
+			return session.getRequestedUris().get(0);
 		} else {
 			return null;
+		}
+	}
+
+	@Public
+	public List<Uri> getRequestedUris() {
+		if (session != null) {
+			List<Uri> uris = session.getRequestedUris();
+			return new ArrayList<>(uris);
+		} else {
+			return Collections.emptyList();
 		}
 	}
 
@@ -143,7 +157,17 @@ public final class HttpResponse {
 		}
 	}
 
-	private static Pair<InputStream, String> extractCharsetFromHtml(InputStream input) throws IOException {
+	private static class ConcatInputStream extends SequenceInputStream {
+		public final InputStream tail;
+
+		public ConcatInputStream(ByteArrayInputStream head, InputStream tail) {
+			super(head, tail);
+			this.tail = tail;
+		}
+	}
+
+	private static Pair<InputStream, String> extractCharsetFromHtml(InputStream input,
+			boolean checkHtml) throws IOException {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		@SuppressWarnings("CharsetObjectCanBeUsed")
 		InputStreamReader reader = new InputStreamReader(new InputStream() {
@@ -166,24 +190,39 @@ public final class HttpResponse {
 			}
 		}, "ISO-8859-1");
 		StringBuilder builder = new StringBuilder();
-		String headClose = "</head>";
-		boolean foundHeadClose = false;
-		char[] buffer = new char[1024];
-		int count;
-		while ((count = reader.read(buffer)) >= 0) {
-			for (int i = 0; i < count; i++) {
-				buffer[i] = Character.toLowerCase(buffer[i]);
+		if (checkHtml) {
+			final String minHtmlStart = "<!DOCTYPE html><html><head>";
+			char[] buffer = new char[minHtmlStart.length()];
+			int count = reader.read(buffer);
+			if (count >= 0) {
+				builder.append(buffer, 0, count);
+				String string = builder.toString().toLowerCase(Locale.US);
+				checkHtml = !string.contains("<!doctype html");
 			}
-			int checkFrom = Math.max(0, builder.length() - headClose.length());
-			builder.append(buffer, 0, count);
-			int index = builder.indexOf(headClose, checkFrom);
-			if (index >= 0) {
-				builder.setLength(index + headClose.length());
-				foundHeadClose = true;
-				break;
+		}
+		boolean foundHeadClose = false;
+		if (!checkHtml) {
+			final String headClose = "</head>";
+			char[] buffer = new char[1024];
+			int count;
+			while ((count = reader.read(buffer)) >= 0) {
+				for (int i = 0; i < count; i++) {
+					buffer[i] = Character.toLowerCase(buffer[i]);
+				}
+				int checkFrom = Math.max(0, builder.length() - headClose.length());
+				builder.append(buffer, 0, count);
+				int index = builder.indexOf(headClose, checkFrom);
+				if (index >= 0) {
+					builder.setLength(index + headClose.length());
+					foundHeadClose = true;
+					break;
+				}
 			}
 		}
 		ByteArrayInputStream headInput = new ByteArrayInputStream(output.toByteArray());
+		if (checkHtml) {
+			return new Pair<>(new ConcatInputStream(headInput, input), null);
+		}
 		if (!foundHeadClose) {
 			try (InputStream ignored = input) {
 				return new Pair<>(headInput, null);
@@ -202,10 +241,15 @@ public final class HttpResponse {
 				String contentType = GroupParser.extractAttr(attrs, "content");
 				charsetName = HttpClient.extractCharsetName(contentType);
 				break;
+			} else {
+				charsetName = GroupParser.extractAttr(attrs, "charset");
+				if (charsetName != null) {
+					break;
+				}
 			}
 			from = end + 1;
 		}
-		return new Pair<>(new SequenceInputStream(headInput, input), charsetName);
+		return new Pair<>(new ConcatInputStream(headInput, input), charsetName);
 	}
 
 	private InputStream prepareOrGetInput() throws HttpException {
@@ -215,9 +259,10 @@ public final class HttpResponse {
 				InputStream input = session.client.open(this);
 				// Set input to ensure client.open called only once
 				this.input = input;
-				if (extractCharsetFromHtml) {
+				if (extractCharset != ExtractCharset.NONE) {
 					try {
-						Pair<InputStream, String> pair = extractCharsetFromHtml(input);
+						Pair<InputStream, String> pair = extractCharsetFromHtml(input,
+								extractCharset == ExtractCharset.CHECK_HTML);
 						this.input = pair.first;
 						if (pair.second != null) {
 							charsetName = pair.second;
@@ -225,7 +270,7 @@ public final class HttpResponse {
 					} catch (IOException e) {
 						throw fail(e);
 					} finally {
-						extractCharsetFromHtml = false;
+						extractCharset = ExtractCharset.NONE;
 					}
 				}
 			}
@@ -275,7 +320,9 @@ public final class HttpResponse {
 		throw new HttpException(ErrorItem.Type.EMPTY_RESPONSE, false, false);
 	}
 
-	private void obtainString() throws HttpException {
+	@Public
+	public String readString() throws HttpException {
+		readBytes();
 		if (string == null && bytes != null) {
 			try {
 				string = new String(bytes, getEncoding());
@@ -283,12 +330,6 @@ public final class HttpResponse {
 				throw new HttpException(ErrorItem.Type.DOWNLOAD, false, false, e);
 			}
 		}
-	}
-
-	@Public
-	public String readString() throws HttpException {
-		readBytes();
-		obtainString();
 		return string;
 	}
 
@@ -367,6 +408,24 @@ public final class HttpResponse {
 		input = null;
 		if (session != null && session.connection != null) {
 			session.disconnectAndClear();
+		}
+	}
+
+	void cleanupAndDisconnectIfEquals(InputStream input) {
+		boolean equals = false;
+		InputStream checkInput = this.input;
+		while (true) {
+			if (checkInput == input) {
+				equals = true;
+			} else if (checkInput instanceof ConcatInputStream) {
+				checkInput = ((ConcatInputStream) checkInput).tail;
+				continue;
+			}
+			break;
+		}
+		if (equals) {
+			this.input = null;
+			cleanupAndDisconnect();
 		}
 	}
 }

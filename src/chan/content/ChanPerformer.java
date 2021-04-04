@@ -15,6 +15,7 @@ import chan.content.model.Posts;
 import chan.content.model.SinglePost;
 import chan.content.model.ThreadSummary;
 import chan.http.ChanFileOpenable;
+import chan.http.FirewallResolver;
 import chan.http.HttpException;
 import chan.http.HttpHolder;
 import chan.http.HttpRequest;
@@ -37,10 +38,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Extendable
 public class ChanPerformer implements Chan.Linked {
 	private final Chan.Provider chanProvider;
+	private final ArrayList<FirewallResolver> firewallResolvers = new ArrayList<>(0);
+
+	private boolean isInitialized = false;
 
 	static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
 
@@ -59,7 +64,9 @@ public class ChanPerformer implements Chan.Linked {
 	}
 
 	@Override
-	public final void init() {}
+	public final void init() {
+		isInitialized = true;
+	}
 
 	@Override
 	public Chan get() {
@@ -69,6 +76,23 @@ public class ChanPerformer implements Chan.Linked {
 	@Public
 	public static ChanPerformer get(Object object) {
 		return ((Chan.Linked) object).get().performer;
+	}
+
+	private void checkInit() {
+		if (isInitialized) {
+			throw new IllegalStateException("This method available only from constructor");
+		}
+	}
+
+	@Public
+	protected final void registerFirewallResolver(FirewallResolver firewallResolver) {
+		Objects.requireNonNull(firewallResolver);
+		checkInit();
+		firewallResolvers.add(firewallResolver);
+	}
+
+	public List<FirewallResolver> getFirewallResolvers() {
+		return firewallResolvers;
 	}
 
 	@SuppressWarnings("RedundantThrows")

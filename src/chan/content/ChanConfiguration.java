@@ -35,7 +35,7 @@ public class ChanConfiguration implements Chan.Linked {
 	private final Resources resources;
 	private final HashMap<ChanDatabase.DataKey, Object> editData;
 
-	private boolean canSetOptions = true;
+	private boolean isInitialized = false;
 
 	static final ChanManager.Initializer INITIALIZER = new ChanManager.Initializer();
 
@@ -59,7 +59,7 @@ public class ChanConfiguration implements Chan.Linked {
 
 	@Override
 	public final void init() {
-		canSetOptions = false;
+		isInitialized = true;
 	}
 
 	@Override
@@ -339,7 +339,7 @@ public class ChanConfiguration implements Chan.Linked {
 	}
 
 	private void checkInit() {
-		if (!canSetOptions) {
+		if (isInitialized) {
 			throw new IllegalStateException("This method available only from constructor");
 		}
 	}

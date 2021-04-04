@@ -30,7 +30,7 @@ public final class ErrorItem implements Parcelable {
 		NO_ACCESS_TO_MEMORY,
 		INSUFFICIENT_SPACE,
 		EXTENSION,
-		RELAY_BLOCK,
+		FIREWALL_BLOCK,
 		UNSUPPORTED_SERVICE,
 		INVALID_AUTHORIZATION_DATA,
 		UNSUPPORTED_RECAPTCHA
@@ -161,7 +161,7 @@ public final class ErrorItem implements Parcelable {
 				resId = R.string.extension_error;
 				break;
 			}
-			case RELAY_BLOCK: {
+			case FIREWALL_BLOCK: {
 				resId = R.string.ddos_protection_bypass_failed;
 				break;
 			}

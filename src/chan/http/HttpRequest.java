@@ -3,6 +3,7 @@ package chan.http;
 import android.net.Uri;
 import android.util.Pair;
 import chan.annotation.Public;
+import com.mishiranu.dashchan.content.Preferences;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -31,8 +32,6 @@ public final class HttpRequest {
 	public interface OutputListener {
 		void onOutputProgressChange(long progress, long progressMax);
 	}
-
-	public enum CheckRelayBlock {RESOLVE, CHECK, SKIP}
 
 	@Public
 	public interface RedirectHandler {
@@ -106,7 +105,7 @@ public final class HttpRequest {
 	}
 
 	final Uri uri;
-	final HttpHolder holder;
+	private final HttpHolder holder;
 	private final HttpClient client;
 
 	enum RequestMethod {GET, HEAD, POST, PUT, DELETE}
@@ -129,8 +128,6 @@ public final class HttpRequest {
 
 	ArrayList<Pair<String, String>> headers;
 	CookieBuilder cookieBuilder;
-
-	CheckRelayBlock checkRelayBlock = CheckRelayBlock.RESOLVE;
 
 	// TODO CHAN
 	// Remove this constructor after updating
@@ -319,11 +316,6 @@ public final class HttpRequest {
 		return this;
 	}
 
-	public HttpRequest setCheckRelayBlock(CheckRelayBlock checkRelayBlock) {
-		this.checkRelayBlock = checkRelayBlock;
-		return this;
-	}
-
 	@Public
 	public HttpRequest copy() {
 		HttpRequest request = new HttpRequest(uri, holder);
@@ -339,13 +331,15 @@ public final class HttpRequest {
 			request.headers = new ArrayList<>(headers);
 		}
 		request.addCookie(cookieBuilder);
-		request.setCheckRelayBlock(checkRelayBlock);
 		return request;
 	}
 
 	@Public
 	public HttpResponse perform() throws HttpException {
-		return client.execute(this);
+		boolean verifyCertificate = holder.chan.locator.isUseHttps() && Preferences.isVerifyCertificate();
+		HttpSession session = holder.createSession(client, uri, client.getProxy(holder.chan),
+				verifyCertificate, delay, 10);
+		return client.execute(session, this);
 	}
 
 	// TODO CHAN

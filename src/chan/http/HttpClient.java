@@ -16,7 +16,6 @@ import com.mishiranu.dashchan.content.AdvancedPreferences;
 import com.mishiranu.dashchan.content.MainApplication;
 import com.mishiranu.dashchan.content.Preferences;
 import com.mishiranu.dashchan.content.model.ErrorItem;
-import com.mishiranu.dashchan.content.net.RelayBlockResolver;
 import com.mishiranu.dashchan.util.IOUtils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -72,8 +71,6 @@ import javax.net.ssl.X509TrustManager;
 import org.brotli.dec.BrotliInputStream;
 
 public class HttpClient {
-	private static final int MAX_ATTEMPS_COUNT = 10;
-
 	private static final HashMap<String, String> SHORT_RESPONSE_MESSAGES = new HashMap<>();
 
 	private static final HostnameVerifier UNSAFE_HOSTNAME_VERIFIER = (hostname, session) -> true;
@@ -132,7 +129,7 @@ public class HttpClient {
 		 * MediaPlayer uses MediaHTTPConnection that uses its own CookieHandler instance.
 		 * This cause some bugs in application work.
 		 *
-		 * This CookieHandler doesn't allow app to store cookies when chan HttpClient used.
+		 * This CookieHandler doesn't allow the application to store cookies when chan HttpClient used.
 		 */
 		CookieHandler.setDefault(new CookieHandler() {
 			private final CookieManager cookieManager = new CookieManager();
@@ -340,15 +337,12 @@ public class HttpClient {
 		return verifyCertificate ? HttpsURLConnection.getDefaultHostnameVerifier() : UNSAFE_HOSTNAME_VERIFIER;
 	}
 
-	HttpResponse execute(HttpRequest request) throws HttpException {
-		boolean verifyCertificate = request.holder.chan.locator.isUseHttps() && Preferences.isVerifyCertificate();
-		request.holder.initSession(this, request.uri, getProxy(request.holder.chan),
-				verifyCertificate, request.delay, MAX_ATTEMPS_COUNT);
+	HttpResponse execute(HttpSession session, HttpRequest request) throws HttpException {
 		handshakeSessions.set(new HandshakeSSLSocket.Session(request.connectTimeout));
 		try {
 			while (true) {
 				try {
-					return executeInternal(request);
+					return executeInternal(session, request);
 				} catch (RetryException e) {
 					// Continue
 				}
@@ -414,15 +408,15 @@ public class HttpClient {
 	}
 
 	@TargetApi(Build.VERSION_CODES.KITKAT)
-	private HttpResponse executeInternal(HttpRequest request) throws HttpException, RetryException {
-		HttpSession session = request.holder.session;
+	private HttpResponse executeInternal(HttpSession session, HttpRequest request)
+			throws HttpException, RetryException {
 		session.checkThread();
 		session.checkExecuting();
 		session.disconnectAndClear();
 		session.executing = true;
 		try {
-			Uri requestedUri = session.requestedUri;
-			if (!request.holder.chan.locator.isWebScheme(requestedUri)) {
+			Uri requestedUri = session.getCurrentRequestedUri();
+			if (!session.holder.chan.locator.isWebScheme(requestedUri)) {
 				throw new HttpException(ErrorItem.Type.UNSUPPORTED_SCHEME, false, false);
 			}
 			URL url = encodeUri(requestedUri);
@@ -464,7 +458,7 @@ public class HttpClient {
 				}
 			}
 			if (!userAgentSet) {
-				userAgent = AdvancedPreferences.getUserAgent(request.holder.chan.name);
+				userAgent = AdvancedPreferences.getUserAgent(session.holder.chan.name);
 				connection.setRequestProperty("User-Agent", userAgent);
 			}
 			if (!acceptEncodingSet) {
@@ -479,11 +473,11 @@ public class HttpClient {
 				}
 				connection.setRequestProperty("Accept-Encoding", acceptEncoding.toString());
 			}
-			RelayBlockResolver.Identifier resolverIdentifier = new RelayBlockResolver
+			FirewallResolver.Identifier resolverIdentifier = new FirewallResolver
 					.Identifier(userAgent, !userAgentSet);
-			CookieBuilder cookieBuilder = request.checkRelayBlock == HttpRequest.CheckRelayBlock.SKIP
+			CookieBuilder cookieBuilder = !session.mayCheckFirewallBlock
 					? request.cookieBuilder : obtainModifiedCookieBuilder(request.cookieBuilder,
-					request.holder.chan, resolverIdentifier);
+					session.holder.chan, requestedUri, resolverIdentifier);
 			if (cookieBuilder != null) {
 				connection.setRequestProperty("Cookie", cookieBuilder.build());
 			}
@@ -539,7 +533,7 @@ public class HttpClient {
 			HttpValidator resultValidator = HttpValidator.obtain(connection);
 			String contentType = connection.getHeaderField("Content-Type");
 			String charsetName = extractCharsetName(contentType);
-			session.checkInterrupted();
+			session.holder.checkInterrupted();
 			HttpResponse response = new HttpResponse(session, resultValidator, charsetName);
 			session.response = response;
 
@@ -561,7 +555,7 @@ public class HttpClient {
 							action = redirectHandler.onRedirect(response);
 						} catch (AbstractMethodError | NoSuchMethodError e) {
 							action = redirectHandler.onRedirectReached(responseCode,
-									requestedUri, redirectedUri, request.holder);
+									requestedUri, redirectedUri, session.holder);
 						}
 					} catch (HttpException e) {
 						session.disconnectAndClear();
@@ -582,8 +576,8 @@ public class HttpClient {
 						if (action == HttpRequest.RedirectHandler.Action.GET) {
 							session.forceGet = true;
 						}
-						session.requestedUri = redirectedUri;
 						session.redirectedUri = null;
+						session.setNextRequestedUri(redirectedUri);
 						if (session.nextAttempt()) {
 							throw new RetryException();
 						} else {
@@ -600,24 +594,31 @@ public class HttpClient {
 				throw new HttpException(responseCode, responseMessage);
 			}
 
-			if (request.holder.chan.name != null &&
-					request.checkRelayBlock != HttpRequest.CheckRelayBlock.SKIP &&
+			if (session.holder.chan.name != null && session.mayCheckFirewallBlock &&
 					requestMethod != HttpRequest.RequestMethod.HEAD) {
-				RelayBlockResolver.Result result;
+				FirewallResolver.CheckResult result;
 				try {
-					result = RelayBlockResolver.getInstance().checkResponse(request.holder.chan,
-							requestedUri, request.holder, response, resolverIdentifier,
-							request.checkRelayBlock == HttpRequest.CheckRelayBlock.RESOLVE);
+					result = FirewallResolver.Implementation.getInstance().checkResponse(session.holder.chan,
+							requestedUri, session.holder, response, resolverIdentifier,
+							session.holder.mayResolveFirewallBlock);
 				} catch (InterruptedException e) {
 					throw new InterruptedHttpException();
 				}
-				if (result.blocked) {
+				if (result != null) {
 					if (result.resolved && session.nextAttempt()) {
-						request.setCheckRelayBlock(HttpRequest.CheckRelayBlock.CHECK);
+						if (result.retransmitOnSuccess) {
+							session.forceGet = false;
+						}
+						Uri redirectedUri = session.redirectedUri;
+						if (redirectedUri != null) {
+							session.redirectedUri = null;
+							session.setNextRequestedUri(redirectedUri);
+						}
+						session.holder.mayResolveFirewallBlock = false;
 						throw new RetryException();
 					} else {
 						session.disconnectAndClear();
-						throw new HttpException(ErrorItem.Type.RELAY_BLOCK, true, false);
+						throw new HttpException(ErrorItem.Type.FIREWALL_BLOCK, true, false);
 					}
 				}
 			}
@@ -625,7 +626,7 @@ public class HttpClient {
 			if (request.successOnly) {
 				session.checkResponseCode();
 			}
-			session.checkInterrupted();
+			session.holder.checkInterrupted();
 			return response;
 		} catch (InterruptedHttpException e) {
 			session.disconnectAndClear();
@@ -685,7 +686,7 @@ public class HttpClient {
 				if (input == null) {
 					throw new HttpException(ErrorItem.Type.EMPTY_RESPONSE, false, false);
 				}
-				response.session.checkInterrupted();
+				response.session.holder.checkInterrupted();
 				input = new BufferedInputStream(input, 8192);
 				switch (Encoding.get(connection)) {
 					case IDENTITY: {
@@ -722,14 +723,13 @@ public class HttpClient {
 		}
 	}
 
-	CookieBuilder obtainModifiedCookieBuilder(CookieBuilder cookieBuilder, Chan chan,
-			RelayBlockResolver.Identifier resolverIdentifier) {
-		Map<String, String> cookies = RelayBlockResolver.getInstance().getCookies(chan, resolverIdentifier);
-		if (!cookies.isEmpty()) {
+	CookieBuilder obtainModifiedCookieBuilder(CookieBuilder cookieBuilder, Chan chan, Uri uri,
+			FirewallResolver.Identifier resolverIdentifier) {
+		CookieBuilder appendCookieBuilder = FirewallResolver.Implementation
+				.getInstance().collectCookies(chan, uri, resolverIdentifier, false);
+		if (!appendCookieBuilder.isEmpty()) {
 			cookieBuilder = new CookieBuilder(cookieBuilder);
-			for (Map.Entry<String, String> cookie : cookies.entrySet()) {
-				cookieBuilder.append(cookie.getKey(), cookie.getValue());
-			}
+			cookieBuilder.append(appendCookieBuilder);
 		}
 		return cookieBuilder;
 	}
@@ -858,7 +858,7 @@ public class HttpClient {
 	private static void checkInterruptedAndClose(HttpSession session,
 			Closeable closeable) throws InterruptedHttpException {
 		try {
-			session.checkInterrupted();
+			session.holder.checkInterrupted();
 		} catch (InterruptedHttpException e) {
 			IOUtils.close(closeable);
 			throw e;
@@ -995,10 +995,7 @@ public class HttpClient {
 						// Ignore
 					}
 					if (validThread && session.response != null) {
-						if (session.response.input == this) {
-							session.response.input = null;
-							session.response.cleanupAndDisconnect();
-						}
+						session.response.cleanupAndDisconnectIfEquals(this);
 					}
 				}
 			}

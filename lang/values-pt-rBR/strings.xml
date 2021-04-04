@@ -110,6 +110,7 @@
 	<string name="find_in_comments">Encontre nas mensagens</string>
 	<string name="find_in_names">Encontre no nome</string>
 	<string name="find_in_subjects">Encontre nos assuntos</string>
+	<string name="firewall_block__format_sentence">Parece que %s bloqueou seu IP. Confirme.</string>
 	<string name="flags_are_enabled">Flags estão habilitados</string>
 	<string name="follow_the_link__sentence">Abrir o link?</string>
 	<string name="forum_only__format">%s somente</string>
@@ -262,7 +263,6 @@
 	<string name="refresh">Atualizar</string>
 	<string name="regular_expression">Expressão regular</string>
 	<string name="rejected_words">Palavras rejeitadas</string>
-	<string name="relay_block__format_sentence">Parece que %s bloqueou seu IP. Confirme</string>
 	<string name="reload">Recarregar</string>
 	<string name="remove_file_name">Remover filename</string>
 	<string name="remove_from_favorites">Remover dos favoritos</string>
