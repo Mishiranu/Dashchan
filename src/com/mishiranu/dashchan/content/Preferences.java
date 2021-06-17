@@ -44,20 +44,22 @@ public class Preferences {
 	static {
 		MainApplication application = MainApplication.getInstance();
 		if (application.isMainProcess()) {
-			// Rename preferences file
-			String oldName = application.getPackageName() + "_preferences";
-			File oldFile = getPreferencesFile(application, oldName);
 			File newFile = getPreferencesFile(application, PREFERENCES_NAME);
-			if (oldFile.exists()) {
+			File newBackupFile = new File(newFile.getParentFile(), newFile.getName() + ".bak");
+			if (!newFile.exists() && !newBackupFile.exists()) {
+				// Rename preferences file
+				File oldFile = getPreferencesFile(application, application.getPackageName() + "_preferences");
 				File oldBackupFile = new File(oldFile.getParentFile(), oldFile.getName() + ".bak");
 				if (oldBackupFile.exists()) {
-					File newBackupFile = new File(newFile.getParentFile(), newFile.getName() + ".bak");
 					oldBackupFile.renameTo(newBackupFile);
 				}
-				oldFile.renameTo(newFile);
+				if (oldFile.exists()) {
+					oldFile.renameTo(newFile);
+				}
 			}
 			File restoreFile = getPreferencesFile(application, PREFERENCES_RESTORE_NAME);
 			if (restoreFile.exists()) {
+				newBackupFile.delete();
 				restoreFile.renameTo(newFile);
 			}
 			PREFERENCES = new SharedPreferences(application, PREFERENCES_NAME);
