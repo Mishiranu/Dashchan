@@ -28,8 +28,8 @@ android {
 	ndkVersion '21.4.7075529'
 
 	defaultConfig {
-		versionCode 1042
-		versionName '3.1.3'
+		versionCode 1043
+		versionName '3.1.4'
 
 		minSdkVersion 16
 		targetSdkVersion 30

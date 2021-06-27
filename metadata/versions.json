@@ -509,6 +509,12 @@
 			"name": "3.1.3",
 			"date": "30.12.2020",
 			"changelog": false
+		},
+		{
+			"code": 1043,
+			"name": "3.1.4",
+			"date": "27.06.2021",
+			"changelog": false
 		}
 	]
 }
