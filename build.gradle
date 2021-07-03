@@ -16,11 +16,11 @@ allprojects {
 	}
 }
 
+apply plugin: 'com.android.application'
+
 tasks.withType(JavaCompile) {
 	options.compilerArgs << '-Xlint:unchecked' << '-Xlint:deprecation'
 }
-
-apply plugin: 'com.android.application'
 
 android {
 	compileSdkVersion 30
@@ -79,16 +79,52 @@ android {
 	buildTypes.create('leak').debuggable true
 	buildTypes.create('ndebug').debuggable true
 
-	if (file('keystore.properties').exists()) {
-		def keystoreProperties = new Properties()
-		keystoreProperties.load(new FileInputStream(file('keystore.properties')))
-		signingConfigs.create('general') {
-			storeFile file(keystoreProperties['store.file'])
-			storePassword keystoreProperties['store.password']
-			keyAlias keystoreProperties['key.alias']
-			keyPassword keystoreProperties['key.password']
+	def keystoreProperties = new Properties()
+	try {
+		file('keystore.properties').newInputStream().withCloseable { keystoreProperties.load(it) }
+	} catch (IOException ignored) {
+		// Ignore
+	}
+	def storeFile = keystoreProperties['store.file'].with { it != null ? file(it) : null }
+	def storePassword = keystoreProperties['store.password']
+	def keyAlias = keystoreProperties['key.alias']
+	def keyPassword = keystoreProperties['key.password']
+	def signerName = keystoreProperties['signer.name']
+
+	if (storeFile != null && storeFile.exists() && storePassword != null) {
+		def apksigner = new File(sdkDirectory, "build-tools/$buildToolsVersion/lib/apksigner.jar")
+		buildTypes.all { signingConfig null }
+		applicationVariants.all { variant ->
+			if (variant.outputs.size() != 1) {
+				throw new IllegalStateException()
+			}
+			def output = variant.outputs[0]
+			def unsignedName = output.outputFileName
+			if (!unsignedName.contains('-unsigned')) {
+				throw new IllegalStateException()
+			}
+			variant.outputsAreSigned true
+			output.outputFileName unsignedName.replace('-unsigned', '')
+			packageApplicationProvider.configure { packageTask ->
+				def outputDirectory = packageTask.outputDirectory.get().asFile
+				def file = new File(outputDirectory, output.outputFileName)
+				packageTask.doLast {
+					def args = ['sign', '--in', file.path, '--out', file.path]
+					args += ['--v4-signing-enabled', 'false']
+					args += ['--ks', storeFile.path, '--ks-pass', "pass:$storePassword"]
+					if (keyAlias != null && keyPassword != null) {
+						args += ['--ks-key-alias', keyAlias, '--key-pass', "pass:$keyPassword"]
+					}
+					if (signerName != null) {
+						args += ['--v1-signer-name', signerName]
+					}
+					javaexec {
+						classpath files(apksigner)
+						it.args args
+					}.rethrowFailure().assertNormalExitValue()
+				}
+			}
 		}
-		buildTypes.all { signingConfig signingConfigs.general }
 	}
 
 	buildTypes.all {
