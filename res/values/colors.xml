@@ -15,6 +15,7 @@
 	<color name="color_text_meta_light">#aa000000</color>
 	<color name="color_text_link_light">@color/color_accent_light</color>
 	<color name="color_text_quote_light">#ff888888</color>
+	<color name="color_text_emphasis_light">#ffaf0a0f</color>
 	<color name="color_text_tripcode_light">@color/color_text_quote_light</color>
 	<color name="color_text_capcode_light">@color/color_text_tripcode_light</color>
 	<color name="color_primary_light">#ff666666</color>
@@ -32,6 +33,7 @@
 	<color name="color_text_meta_dark">#99ffffff</color>
 	<color name="color_text_link_dark">@color/color_accent_dark</color>
 	<color name="color_text_quote_dark">#ff888888</color>
+	<color name="color_text_emphasis_dark">#ffff0000</color>
 	<color name="color_text_tripcode_dark">@color/color_text_quote_dark</color>
 	<color name="color_text_capcode_dark">@color/color_text_tripcode_light</color>
 	<color name="color_primary_dark">#ffaaaaaa</color>

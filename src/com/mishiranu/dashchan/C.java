@@ -47,8 +47,8 @@ public class C {
 
 	static {
 		WEB_VIEW_BITMAP_DECODER_SUPPORTED = API_KITKAT;
-		IMAGE_EXTENSIONS = immutableSet("jpg", "jpe", "jpeg", "png", "apng", "gif", "webp", "bmp",
-				WEB_VIEW_BITMAP_DECODER_SUPPORTED ? "svg" : null);
+		IMAGE_EXTENSIONS = immutableSet("jpg", "jpe", "jpeg", "jfif", "png", "apng", "gif", "webp",
+				"bmp", WEB_VIEW_BITMAP_DECODER_SUPPORTED ? "svg" : null);
 		AUDIO_EXTENSIONS = immutableSet("mp3", "ogg", "flac", "wav");
 		VIDEO_EXTENSIONS = immutableSet("webm", "mkv", "mp4");
 		OPENABLE_VIDEO_EXTENSIONS = immutableSet("webm", "mkv", "mp4");

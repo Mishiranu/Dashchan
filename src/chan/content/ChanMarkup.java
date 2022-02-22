@@ -20,6 +20,7 @@ import com.mishiranu.dashchan.text.style.MediumSpan;
 import com.mishiranu.dashchan.text.style.MonospaceSpan;
 import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.QuoteSpan;
+import com.mishiranu.dashchan.text.style.EmphasisSpan;
 import com.mishiranu.dashchan.text.style.ScriptSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
 import com.mishiranu.dashchan.text.style.TabulationSpan;
@@ -74,6 +75,7 @@ public class ChanMarkup implements Chan.Linked {
 	@Public public static final int TAG_CODE = 0x00000200;
 	@Public public static final int TAG_ASCII_ART = 0x00000400;
 	@Public public static final int TAG_HEADING = 0x00000800;
+	@Public public static final int TAG_EMPHASIS = 0x00001000;
 
 	public static final int TAG_SPECIAL_UNUSED = 0x01000000;
 	public static final int TAG_SPECIAL_LINK = 0x01000001;
@@ -707,6 +709,10 @@ public class ChanMarkup implements Chan.Linked {
 						}
 						case TAG_HEADING: {
 							span = new HeadingSpan();
+							break;
+						}
+						case TAG_EMPHASIS: {
+							span = new EmphasisSpan();
 							break;
 						}
 						case TAG_SPECIAL_LINK: {

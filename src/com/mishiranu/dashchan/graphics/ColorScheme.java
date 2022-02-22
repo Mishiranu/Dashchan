@@ -9,17 +9,18 @@ import com.mishiranu.dashchan.widget.ThemeEngine;
 
 public class ColorScheme {
 	public ColorScheme(Context context, ThemeEngine.Theme theme) {
-		this(context, theme.window, theme.spoiler, theme.link, theme.quote, theme.tripcode, theme.capcode,
-				theme.colorGainFactor);
+		this(context, theme.window, theme.spoiler, theme.link, theme.quote, theme.emphasis,
+				theme.tripcode, theme.capcode, theme.colorGainFactor);
 	}
 
 	private ColorScheme(Context context, int windowBackgroundColor, int spoilerBackgroundColor,
-			int linkColor, int quoteColor, int tripcodeColor, int capcodeColor, float colorGainFactor) {
+			int linkColor, int quoteColor, int emphasisColor, int tripcodeColor, int capcodeColor, float colorGainFactor) {
 		this.windowBackgroundColor = windowBackgroundColor;
 		this.tripcodeColor = tripcodeColor;
 		this.capcodeColor = capcodeColor;
 		this.linkColor = linkColor;
 		this.quoteColor = quoteColor;
+		this.emphasisColor = emphasisColor;
 		this.spoilerBackgroundColor = spoilerBackgroundColor;
 		spoilerTopBackgroundColor = (Math.min((spoilerBackgroundColor >>> 24) * 2, 0xff)) << 24
 				| spoilerBackgroundColor & 0x00ffffff;
@@ -38,6 +39,7 @@ public class ColorScheme {
 
 	public final int linkColor;
 	public final int quoteColor;
+	public final int emphasisColor;
 	public final int clickedColor;
 
 	public final int tripcodeColor;

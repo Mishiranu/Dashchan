@@ -15,6 +15,7 @@
 	<attr name="colorTextPost" format="color|reference" />
 	<attr name="colorTextMeta" format="color|reference" />
 	<attr name="colorTextQuote" format="color|reference" />
+	<attr name="colorTextEmphasis" format="color|reference" />
 	<attr name="colorTextTripcode" format="color|reference" />
 	<attr name="colorTextCapcode" format="color|reference" />
 

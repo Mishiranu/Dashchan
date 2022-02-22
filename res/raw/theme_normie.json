@@ -3,5 +3,6 @@
 	"name": "Normie",
 	"primary": "#ff5181b8",
 	"quote": "#ff7da1ca",
-	"tripcode": "@primary"
+	"tripcode": "@primary",
+	"emphasis": "#ffaf0a0f"
 }
