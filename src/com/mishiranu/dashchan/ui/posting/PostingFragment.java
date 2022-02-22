@@ -587,9 +587,9 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 					}
 					// Remove links in the beginning of the post
 					comment = comment.replaceAll("(^|\n)(>>\\d+(\n|\\s)?)+", "$1");
-					comment = comment.replaceAll("(\n+)", "$1> ");
-					builder.insert(commentCarriage, "> ");
-					commentCarriage += 2;
+					comment = comment.replaceAll("(\n+)", "$1>");
+					builder.insert(commentCarriage, ">");
+					commentCarriage += 1;
 					builder.insert(commentCarriage, comment);
 					commentCarriage += comment.length();
 					builder.insert(commentCarriage++, '\n');
@@ -1595,7 +1595,7 @@ public class PostingFragment extends ContentFragment implements FragmentHandler.
 			commentView.setSelection(selectionStart, selectionEnd - diff);
 		} else {
 			String firstSymbol = oneSymbolBefore.length() == 0 || oneSymbolBefore.equals("\n") ? "" : "\n";
-			String quotedText = firstSymbol + "> " + selectedText.replaceAll("(\n+)", "$1> ");
+			String quotedText = firstSymbol + ">" + selectedText.replaceAll("(\n+)", "$1>");
 			int diff = quotedText.length() - selectedText.length();
 			editable.replace(selectionStart, selectionEnd, quotedText);
 			int newStart = selectionStart + firstSymbol.length();
