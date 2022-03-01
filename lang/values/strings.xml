@@ -530,6 +530,7 @@
 	<string name="with_name_name__format">With name %s</string>
 	<string name="yesterday">Yesterday</string>
 	<string name="you_are_banned">You are banned</string>
+	<string name="your_ip_range_has_been_blocked">Your IP range has been blocked</string>
 	<string name="you_cant_delete_too_new_posts">You can\'t delete too new posts</string>
 	<string name="you_cant_delete_too_old_posts">You can\'t delete too old posts</string>
 	<string name="you_cant_send_too_often">You can\'t send too often</string>

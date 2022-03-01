@@ -29,6 +29,7 @@ public final class ApiException extends Exception {
 	@Public public static final int SEND_ERROR_EMPTY_SUBJECT = 114;
 	@Public public static final int SEND_ERROR_EMPTY_COMMENT = 115;
 	@Public public static final int SEND_ERROR_FILES_LIMIT = 116;
+	@Public public static final int SEND_ERROR_RANGE_BANNED = 117;
 
 	@Public public static final int DELETE_ERROR_NO_ACCESS = 200;
 	@Public public static final int DELETE_ERROR_PASSWORD = 201;
@@ -180,6 +181,10 @@ public final class ApiException extends Exception {
 			}
 			case ApiException.SEND_ERROR_FILES_LIMIT: {
 				resId = R.string.files_limit_reached;
+				break;
+			}
+			case ApiException.SEND_ERROR_RANGE_BANNED:{
+				resId = R.string.your_ip_range_has_been_blocked;
 				break;
 			}
 			case ApiException.DELETE_ERROR_NO_ACCESS: {
