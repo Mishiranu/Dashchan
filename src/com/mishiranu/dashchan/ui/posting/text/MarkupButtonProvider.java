@@ -16,6 +16,7 @@ import com.mishiranu.dashchan.C;
 import com.mishiranu.dashchan.text.style.HeadingSpan;
 import com.mishiranu.dashchan.text.style.MonospaceSpan;
 import com.mishiranu.dashchan.text.style.OverlineSpan;
+import com.mishiranu.dashchan.text.style.EmphasisSpan;
 import com.mishiranu.dashchan.text.style.ScriptSpan;
 import com.mishiranu.dashchan.util.FlagUtils;
 import com.mishiranu.dashchan.widget.ThemeEngine;
@@ -148,6 +149,12 @@ public class MarkupButtonProvider {
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_CODE, 40, 6, "#", new MonospaceSpan(true)));
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_ASCII_ART, 44, 10, "AA", new MonospaceSpan(false)));
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_HEADING, 44, 7, "H", new HeadingSpan()));
+		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_EMPHASIS, 44, 7, "E", null) {
+			@Override
+			public Object getSpan(Context context) {
+				return new EmphasisSpan(ThemeEngine.getTheme(context).emphasis);
+			}
+		});
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_SUBSCRIPT, 44, 8, "SUB", new ScriptSpan(false)));
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_SUPERSCRIPT, 44, 8, "SUP", new ScriptSpan(true)));
 		PROVIDERS.add(new MarkupButtonProvider(ChanMarkup.TAG_SPOILER, 44, 5, "SP", null) {

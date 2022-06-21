@@ -85,6 +85,7 @@ public class ThemeEngine {
 		public final int spoiler;
 		public final int link;
 		public final int quote;
+		public final int emphasis;
 		public final int tripcode;
 		public final int capcode;
 		public final float colorGainFactor;
@@ -94,7 +95,7 @@ public class ThemeEngine {
 
 		public Theme(Base base, String name, boolean builtIn, String json,
 				int window, int primary, int accent, int card, int thread, int post, int meta,
-				int spoiler, int link, int quote, int tripcode, int capcode,
+				int spoiler, int link, int quote, int emphasis, int tripcode, int capcode,
 				float colorGainFactor, int controlNormal21, float disabledAlpha21) {
 			this.base = base;
 			this.name = name;
@@ -110,6 +111,7 @@ public class ThemeEngine {
 			this.spoiler = spoiler;
 			this.link = link;
 			this.quote = quote;
+			this.emphasis = emphasis;
 			this.tripcode = tripcode;
 			this.capcode = capcode;
 			this.colorGainFactor = colorGainFactor;
@@ -148,6 +150,7 @@ public class ThemeEngine {
 				case "spoiler": return spoiler;
 				case "link": return link;
 				case "quote": return quote;
+				case "emphasis": return emphasis;
 				case "tripcode": return tripcode;
 				case "capcode": return capcode;
 				default: throw new IllegalArgumentException();
@@ -926,6 +929,8 @@ public class ThemeEngine {
 					b -> b.accent, android.R.attr.textColorLink));
 			map.put("quote", new Value((b, c) -> b.quote = c, b -> b.quote,
 					null, R.attr.colorTextQuote));
+			map.put("emphasis", new Value((b, c) -> b.emphasis = c, b -> b.emphasis,
+					null, R.attr.colorTextEmphasis));
 			map.put("tripcode", new Value((b, c) -> b.tripcode = c, b -> b.tripcode,
 					null, R.attr.colorTextTripcode));
 			map.put("capcode", new Value((b, c) -> b.capcode = c, b -> b.capcode,
@@ -942,6 +947,7 @@ public class ThemeEngine {
 		Integer spoiler;
 		Integer link;
 		Integer quote;
+		Integer emphasis;
 		Integer tripcode;
 		Integer capcode;
 
@@ -981,7 +987,7 @@ public class ThemeEngine {
 			}
 			return new Theme(base, name, builtIn, json,
 					window, primary, accent, card, thread, post, meta,
-					spoiler, link, quote, tripcode, capcode, colorGainFactor,
+					spoiler, link, quote, emphasis, tripcode, capcode, colorGainFactor,
 					controlNormal21, disabledAlpha21);
 		}
 

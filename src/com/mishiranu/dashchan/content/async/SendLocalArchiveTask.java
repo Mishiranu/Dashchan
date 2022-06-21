@@ -24,6 +24,7 @@ import com.mishiranu.dashchan.text.style.MediumSpan;
 import com.mishiranu.dashchan.text.style.MonospaceSpan;
 import com.mishiranu.dashchan.text.style.OverlineSpan;
 import com.mishiranu.dashchan.text.style.QuoteSpan;
+import com.mishiranu.dashchan.text.style.EmphasisSpan;
 import com.mishiranu.dashchan.text.style.ScriptSpan;
 import com.mishiranu.dashchan.text.style.SpoilerSpan;
 import com.mishiranu.dashchan.util.Hasher;
@@ -428,6 +429,11 @@ public class SendLocalArchiveTask extends ExecutorTask<Integer, SendLocalArchive
 				closeTag = "</span>";
 				break;
 			}
+			case ChanMarkup.TAG_EMPHASIS: {
+				openTag = "<span class=\"heading emphasis\">";
+				closeTag = "</span>";
+				break;
+			}
 			case ChanMarkup.TAG_SPECIAL_LINK: {
 				openTag = "<a href=\"" + extra + "\">";
 				closeTag = "</a>";
@@ -474,6 +480,8 @@ public class SendLocalArchiveTask extends ExecutorTask<Integer, SendLocalArchive
 			result[0] = ((MonospaceSpan) span).isAsciiArt() ? ChanMarkup.TAG_ASCII_ART : ChanMarkup.TAG_CODE;
 		} else if (span instanceof HeadingSpan) {
 			result[0] = ChanMarkup.TAG_HEADING;
+		} else if (span instanceof EmphasisSpan) {
+			result[0] = ChanMarkup.TAG_EMPHASIS;
 		}
 		return result;
 	}

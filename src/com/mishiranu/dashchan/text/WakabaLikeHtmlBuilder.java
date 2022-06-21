@@ -66,7 +66,8 @@ public class WakabaLikeHtmlBuilder {
 				.append("span.strike {text-decoration: line-through;}\n")
 				.append("span.code {font-family: monospace; white-space: pre;}\n")
 				.append("span.aa {font-family: Mona, \"MS PGothic\", monospace;}\n")
-				.append("span.heading {font-weight: bold; font-size: 1.2rem;}\n</style>\n");
+				.append("span.heading {font-weight: bold; font-size: 1.2rem;}\n")
+				.append("span.emphasis {color: #af0a0f;}\n</style>\n");
 		builder.append("<script type=\"text/javascript\">\nfunction switchStyle(style)\n{\n\t")
 				.append("var links = document.getElementsByTagName('link');\n\tfor (var i = 0; i < links.length; i++)")
 				.append("\n\t{\n\t\tvar rel = links[i].getAttribute(\"rel\");")

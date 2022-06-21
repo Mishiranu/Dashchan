@@ -18,7 +18,8 @@ import java.util.Map;
 
 public class CloudFlareResolver extends FirewallResolver {
 	private static final String COOKIE_CLOUDFLARE = "cf_clearance";
-	private static final String[] TITLES = {"Attention Required! | Cloudflare", "Just a moment..."};
+	private static final String[] TITLES = {"Attention Required! | Cloudflare", "Just a moment...",
+			"Please Wait... | Cloudflare"};
 
 	private static class CookieResult {
 		public final String cookie;
