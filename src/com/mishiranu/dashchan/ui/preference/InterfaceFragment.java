@@ -59,6 +59,7 @@ public class InterfaceFragment extends PreferenceFragment {
 				R.string.paged_board_navigation, R.string.paged_board_navigation__summary);
 		addCheck(true, Preferences.KEY_DISPLAY_HIDDEN_THREADS,
 				Preferences.DEFAULT_DISPLAY_HIDDEN_THREADS, R.string.display_hidden_threads, 0);
+		addCheck(true, Preferences.KEY_SWIPE_TO_HIDE_THREAD, Preferences.DEFAULT_SWIPE_TO_HIDE_THREAD, R.string.swipe_to_hide_thread, 0);
 
 		addHeader(R.string.posts_list);
 		addEdit(Preferences.KEY_POST_MAX_LINES, Preferences.DEFAULT_POST_MAX_LINES,

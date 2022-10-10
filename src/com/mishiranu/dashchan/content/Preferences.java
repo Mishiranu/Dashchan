@@ -1405,4 +1405,12 @@ public class Preferences {
 	public static boolean isWatcherWifiOnly() {
 		return PREFERENCES.getBoolean(KEY_WATCHER_WIFI_ONLY, DEFAULT_WATCHER_WIFI_ONLY);
 	}
+
+	public static final String KEY_SWIPE_TO_HIDE_THREAD = "swipe_to_hide_thread";
+	public static final boolean DEFAULT_SWIPE_TO_HIDE_THREAD = false;
+
+	public static boolean isSwipeToHideThreadEnabled(){
+		return PREFERENCES.getBoolean(KEY_SWIPE_TO_HIDE_THREAD, DEFAULT_SWIPE_TO_HIDE_THREAD);
+	}
+
 }

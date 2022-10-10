@@ -552,5 +552,6 @@
 	<string name="you_cant_delete_too_old_posts">Нельзя удалять старые сообщения</string>
 	<string name="you_cant_send_too_often">Нельзя отправлять так часто</string>
 	<string name="you_need_to_attach_a_file">Необходимо прикрепить файл</string>
+	<string name="swipe_to_hide_thread">Скрывать треды свайпом</string>
 
 </resources>

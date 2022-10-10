@@ -2,6 +2,7 @@ package com.mishiranu.dashchan.ui.navigator.page;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.util.Pair;
@@ -11,7 +12,9 @@ import android.view.SubMenu;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import chan.content.Chan;
 import chan.content.ChanConfiguration;
@@ -108,6 +111,10 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 	protected void onCreate() {
 		Context context = getContext();
 		PaddedRecyclerView recyclerView = getRecyclerView();
+		if (swipeToHideThreadEnabled()) {
+			setupSwipeToHideThread(recyclerView);
+		}
+		setupRecyclerViewAnimations(recyclerView);
 		GridLayoutManager layoutManager = new GridLayoutManager(recyclerView.getContext(), 1);
 		recyclerView.setLayoutManager(layoutManager);
 		Page page = getPage();
@@ -174,6 +181,110 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			}
 		}
 		readViewModel.observe(this, this);
+	}
+
+	private boolean swipeToHideThreadEnabled() {
+		return Preferences.isSwipeToHideThreadEnabled();
+	}
+
+	private void setupSwipeToHideThread(RecyclerView recyclerView) {
+		ItemTouchHelper.Callback callback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
+			@Override
+			public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+				if (threadHidden(viewHolder))
+					return 0; //disable swipe for hidden threads
+				else
+					return super.getSwipeDirs(recyclerView, viewHolder);
+			}
+
+			private boolean threadHidden(RecyclerView.ViewHolder threadViewHolder) {
+				ThreadsAdapter adapter = getAdapter();
+				PostItem post = adapter.getThread(threadViewHolder.getAdapterPosition());
+				return post.getHideState().hidden;
+			}
+
+			@Override
+			public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+				return false;
+			}
+
+			@Override
+			public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+				hideThreadAndNotifyAdapter(viewHolder);
+			}
+
+			private void hideThreadAndNotifyAdapter(RecyclerView.ViewHolder threadViewHolder) {
+				int threadAdapterPosition = threadViewHolder.getAdapterPosition();
+				ThreadsAdapter adapter = getAdapter();
+				PostItem thread = adapter.getThread(threadAdapterPosition);
+				setThreadHideState(thread, PostItem.HideState.HIDDEN);
+				adapter.notifyThreadHidden(thread);
+			}
+
+			@Override
+			public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+				boolean threadIsBeingSwiped = actionState == ItemTouchHelper.ACTION_STATE_SWIPE;
+				if (threadIsBeingSwiped) {
+					setOpacityForSwipedThread(viewHolder, dX);
+				}
+				super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+			}
+
+			private void setOpacityForSwipedThread(RecyclerView.ViewHolder swipedThreadViewWidth, float swipeDeltaX) {
+				View threadRootView = swipedThreadViewWidth.itemView;
+				float opacity = calculateOpacityForSwipedThread(threadRootView.getWidth(), swipeDeltaX);
+				threadRootView.setAlpha(opacity);
+			}
+
+			private float calculateOpacityForSwipedThread(int swipedThreadViewWidth, float swipeDeltaX){
+				return (float) (1 - 1.5 * (Math.abs(swipeDeltaX) / swipedThreadViewWidth));
+			}
+
+			@Override
+			public void clearView(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+				resetOpacityForThread(viewHolder); //need to reset opacity of a thread view holder or it will be transparent when reused
+				super.clearView(recyclerView, viewHolder);
+			}
+
+			private void resetOpacityForThread(RecyclerView.ViewHolder threadViewHolder) {
+				threadViewHolder.itemView.setAlpha(1);
+			}
+
+		};
+
+		ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
+		itemTouchHelper.attachToRecyclerView(recyclerView);
+	}
+
+	private void setupRecyclerViewAnimations(RecyclerView recyclerView) {
+		RecyclerView.ItemAnimator animator = new DefaultItemAnimator() {
+
+			@Override
+			public boolean animateChange(RecyclerView.ViewHolder oldHolder, RecyclerView.ViewHolder newHolder, int fromX, int fromY, int toX, int toY) {
+				boolean threadWasSwiped = oldHolder.itemView.getX() != newHolder.itemView.getX();
+				if (threadWasSwiped) { // if a thread was swiped to hide - animate appearance of a hidden thread view with fade-in animation instead of default
+					dispatchChangeFinished(oldHolder, true);
+					animateHiddenThreadFadeIn(newHolder);
+					return false;
+				}
+				return super.animateChange(oldHolder, newHolder, fromX, fromY, toX, toY);
+			}
+
+			private void animateHiddenThreadFadeIn(RecyclerView.ViewHolder hiddenThreadViewHolder) {
+				View hiddenThreadRootView = hiddenThreadViewHolder.itemView;
+				dispatchChangeStarting(hiddenThreadViewHolder, false);
+				hiddenThreadRootView.setAlpha(0);
+				hiddenThreadRootView
+						.animate()
+						.alpha(1)
+						.setDuration(getChangeDuration())
+						.withEndAction(() -> dispatchChangeFinished(hiddenThreadViewHolder, false))
+						.start();
+			}
+		};
+
+		recyclerView.setItemAnimator(animator);
 	}
 
 	@Override
@@ -243,7 +354,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			Page page = getPage();
 			if (postItem.getHideState().hidden) {
 				setThreadHideState(postItem, PostItem.HideState.SHOWN);
-				getAdapter().notifyDataSetChanged();
+				getAdapter().notifyThreadShown(postItem);
 			} else {
 				getUiManager().navigator().navigatePosts(page.chanName, page.boardName,
 						postItem.getThreadNumber(), null, postItem.getSubjectOrComment());
@@ -284,7 +395,7 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 			if (!postItem.getHideState().hidden) {
 				dialogMenu.add(R.string.hide, () -> {
 					threadsPage.setThreadHideState(postItem, PostItem.HideState.HIDDEN);
-					threadsPage.getAdapter().notifyDataSetChanged();
+					threadsPage.getAdapter().notifyThreadHidden(postItem);
 				});
 			}
 			return dialogMenu.create();
