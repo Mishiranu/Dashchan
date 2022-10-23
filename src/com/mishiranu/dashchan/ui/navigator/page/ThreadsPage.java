@@ -192,15 +192,17 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 
 			@Override
 			public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-				if (threadHidden(viewHolder))
-					return 0; //disable swipe for hidden threads
-				else
+				int threadPosition = viewHolder.getAdapterPosition();
+				if (threadPosition == RecyclerView.NO_POSITION || threadHidden(threadPosition)) {
+					return 0; //disable swipe for hidden threads or if can't get thread's position
+				} else {
 					return super.getSwipeDirs(recyclerView, viewHolder);
+				}
 			}
 
-			private boolean threadHidden(RecyclerView.ViewHolder threadViewHolder) {
+			private boolean threadHidden(int threadPosition) {
 				ThreadsAdapter adapter = getAdapter();
-				PostItem post = adapter.getThread(threadViewHolder.getAdapterPosition());
+				PostItem post = adapter.getThread(threadPosition);
 				return post.getHideState().hidden;
 			}
 
@@ -211,13 +213,18 @@ public class ThreadsPage extends ListPage implements ThreadsAdapter.Callback,
 
 			@Override
 			public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-				hideThreadAndNotifyAdapter(viewHolder);
+				int threadPosition = viewHolder.getAdapterPosition();
+				if (threadPosition != RecyclerView.NO_POSITION){
+					hideThreadAndNotifyAdapter(threadPosition);
+				}
+				else {
+					getAdapter().notifyDataSetChanged(); // this will bring swiped thread view back
+				}
 			}
 
-			private void hideThreadAndNotifyAdapter(RecyclerView.ViewHolder threadViewHolder) {
-				int threadAdapterPosition = threadViewHolder.getAdapterPosition();
+			private void hideThreadAndNotifyAdapter(int threadPosition) {
 				ThreadsAdapter adapter = getAdapter();
-				PostItem thread = adapter.getThread(threadAdapterPosition);
+				PostItem thread = adapter.getThread(threadPosition);
 				setThreadHideState(thread, PostItem.HideState.HIDDEN);
 				adapter.notifyThreadHidden(thread);
 			}
