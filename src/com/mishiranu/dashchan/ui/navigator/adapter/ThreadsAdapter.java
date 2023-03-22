@@ -337,22 +337,22 @@ public class ThreadsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 	}
 
 	public PostItem getThread(int position){
-		return postItems.get(position);
+		return getItem(position);
 	}
 
 	public void notifyThreadHidden(PostItem thread) {
-		int threadPosition = postItems.indexOf(thread);
+		int threadPosition = getPostItems().indexOf(thread);
 		if(Preferences.isDisplayHiddenThreads()){
 			notifyItemChanged(threadPosition);
 		}
 		else {
-			postItems.remove(threadPosition);
+			getPostItems().remove(threadPosition);
 			notifyItemRemoved(threadPosition);
 		}
 	}
 
 	public void notifyThreadShown(PostItem thread){
-		int threadPosition = postItems.indexOf(thread);
+		int threadPosition = getPostItems().indexOf(thread);
 		notifyItemChanged(threadPosition);
 	}
 
