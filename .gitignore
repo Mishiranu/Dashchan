@@ -18,3 +18,7 @@
 !/res
 !/src
 !/update
+!/extensions
+!/extensions/endchan
+# prr state file (auto-generated)
+.pr-resolver-state.json
